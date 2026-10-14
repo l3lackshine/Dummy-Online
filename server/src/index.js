@@ -31,7 +31,7 @@ function publicRoom(room) {
     code: room.code, started: room.started, setupStarted: room.setupStarted, currentPlayer: room.currentPlayer,
     players: room.players.map((p,i)=>({ id:p.id, name:p.name, seat:i, cardCount:p.hand.length, connected:p.connected, score:p.score||0, roundCoins:p.roundCoins||0 })),
     stockCount: room.stock.length, discard: room.discard.slice(-1)[0] || null, discardPile: room.discard,
-    settings: room.settings, firstChoices: room.players.map(p=>({id:p.id, rank:p.firstRank||null})), cutRequests: room.cutRequests||0,
+    settings: room.settings, melds: room.melds || [], mustMeldCount: room.mustMeldCards?.length || 0, firstChoices: room.players.map(p=>({id:p.id, rank:p.firstRank||null})), cutRequests: room.cutRequests||0,
     turnMessage: room.started ? `${room.players[room.currentPlayer]?.name || ''} กำลังเล่น` : (room.setupStarted ? 'เลือกไพ่ J / Q / K / A เพื่อจับสิทธิ์เริ่มก่อน' : 'รอผู้เล่นเข้าห้อง')
   };
 }
@@ -50,7 +50,7 @@ function startGame(room, firstPlayerIndex=0) {
   room.players.forEach(p => { p.hand=deck.splice(0,cardsPerPlayer); p.score=p.score||0; p.roundCoins=0; });
   room.stock = deck; room.discard = [room.stock.pop()];
   room.currentPlayer = firstPlayerIndex; room.started = true; room.setupStarted=false; room.hasDrawn = false; room.melds = [];
-  room.lastDiscardOwner=null; room.lastDiscardCard=null; room.previousDiscardCard=null; room.lastDrawnFromDiscard=null;
+  room.lastDiscardOwner=null; room.lastDiscardCard=null; room.previousDiscardCard=null; room.lastDrawnFromDiscard=null; room.mustMeldCards=[];
   room.players.forEach(p => safeHand(room,p.id)); emitRoom(room); return true;
 }
 function finishFirstChoice(room) {
@@ -84,7 +84,7 @@ io.on('connection', socket => {
   socket.on('room:create', ({name}={}) => {
     if (socket.data.roomCode) return socket.emit('system:error','คุณอยู่ในห้องแล้ว');
     let code; do { code=roomCode(); } while(rooms.has(code));
-    const room={code,players:[],started:false,setupStarted:false,currentPlayer:0,stock:[],discard:[],hasDrawn:false,melds:[],settings:{spetoPoints:50,previousDiscardPoints:30,coinPerPoint:1},cutRequests:0};
+    const room={code,players:[],started:false,setupStarted:false,currentPlayer:0,stock:[],discard:[],hasDrawn:false,melds:[],mustMeldCards:[],settings:{spetoPoints:50,previousDiscardPoints:30,coinPerPoint:1},cutRequests:0};
     rooms.set(code,room);
     joinRoom(socket,room,name);
   });
@@ -125,14 +125,15 @@ io.on('connection', socket => {
     if (source==='discard') {
       const index=Number.isInteger(discardIndex)?discardIndex:room.discard.length-1;
       if(index<0||index>=room.discard.length) return socket.emit('system:error','เลือกกองทิ้งไม่ถูกต้อง');
-      const taken=room.discard.splice(index); p.hand.push(...taken); room.lastDrawnFromDiscard=taken.map(c=>c.id);
-    } else { drawn=room.stock.pop(); if (!drawn) return socket.emit('system:error','ไม่มีไพ่ให้จั่ว'); p.hand.push(drawn); room.lastDrawnFromDiscard=null; }
+      const taken=room.discard.splice(index); p.hand.push(...taken); room.lastDrawnFromDiscard=taken.map(c=>c.id); room.mustMeldCards=taken.length>1?taken.map(c=>c.id):[];
+    } else { drawn=room.stock.pop(); if (!drawn) return socket.emit('system:error','ไม่มีไพ่ให้จั่ว'); p.hand.push(drawn); room.lastDrawnFromDiscard=null; room.mustMeldCards=[]; }
     room.hasDrawn=true; safeHand(room,socket.id); emitRoom(room);
   });
   socket.on('game:discard', ({cardId}={}) => {
     const room=rooms.get(socket.data.roomCode);
     if (!room || !isCurrent(room,socket)) return socket.emit('system:error','ยังไม่ใช่ตาของคุณ');
     if (!room.hasDrawn) return socket.emit('system:error','ต้องจั่วไพ่ก่อนทิ้ง');
+    if ((room.mustMeldCards||[]).length) return socket.emit('system:error',`คุณหยิบไพ่จากกองทิ้งหลายใบ ต้องนำไพ่ที่หยิบมาเกิดให้ครบก่อน (${room.mustMeldCards.length} ใบที่ยังไม่เกิด)`);
     const p=findPlayer(room,socket.id);
     const idx=p.hand.findIndex(c=>c.id===cardId);
     if (idx<0) return socket.emit('system:error','ไม่พบไพ่ใบนี้');
@@ -144,10 +145,15 @@ io.on('connection', socket => {
   socket.on('game:meld', ({cardIds}={}) => {
     const room=rooms.get(socket.data.roomCode);
     if (!room || !isCurrent(room,socket)) return socket.emit('system:error','ยังไม่ใช่ตาของคุณ');
+    if (!room.hasDrawn) return socket.emit('system:error','ต้องจั่วไพ่ก่อนจึงจะลงชุดเกิดได้');
+    if (!Array.isArray(cardIds)) return socket.emit('system:error','กรุณาเลือกไพ่ที่จะลงชุด');
     const p=findPlayer(room,socket.id);
-    const cards=(cardIds||[]).map(id=>p.hand.find(c=>c.id===id)).filter(Boolean);
-    if (cards.length !== (cardIds||[]).length || !validMeld(cards)) return socket.emit('system:error','ชุดไพ่ไม่ถูกต้อง (ต้นแบบรองรับตอง/เรียง 3 ใบขึ้นไป)');
+    const cards=cardIds.map(id=>p.hand.find(c=>c.id===id)).filter(Boolean);
+    if (cards.length !== (cardIds||[]).length || !validMeld(cards)) return socket.emit('system:error','ชุดไพ่ไม่ถูกต้อง (ต้องเป็นตองหรือไพ่เรียงดอกเดียวกัน 3 ใบขึ้นไป)');
+    const forced=room.mustMeldCards||[];
+    if (forced.length && !cards.some(c=>forced.includes(c.id))) return socket.emit('system:error','คุณต้องลงชุดโดยใช้ไพ่ที่หยิบจากกองทิ้งก่อน');
     p.hand=p.hand.filter(c=>!cardIds.includes(c.id));
+    room.mustMeldCards=forced.filter(id=>!cardIds.includes(id));
     room.melds.push({playerId:p.id,playerName:p.name,cards});
     const picked = (room.lastDrawnFromDiscard||[]).filter(id=>cards.some(c=>c.id===id));
     if(picked.length && room.lastDiscardOwner && room.lastDiscardOwner!==p.id) {
