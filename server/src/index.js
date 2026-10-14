@@ -30,7 +30,7 @@ function publicRoom(room) {
   return {
     code: room.code, started: room.started, setupStarted: room.setupStarted, currentPlayer: room.currentPlayer,
     players: room.players.map((p,i)=>({ id:p.id, name:p.name, seat:i, cardCount:p.hand.length, connected:p.connected, score:p.score||0, roundCoins:p.roundCoins||0 })),
-    stockCount: room.stock.length, discard: room.discard.slice(-1)[0] || null, discardPile: room.discard,
+    stockCount: room.stock.length, discard: room.discard.slice(-1)[0] || null, discardPile: room.discard, hasDrawn: !!room.hasDrawn,
     settings: room.settings, melds: room.melds || [], mustMeldCount: room.mustMeldCards?.length || 0, firstChoices: room.players.map(p=>({id:p.id, rank:p.firstRank||null})), cutRequests: room.cutRequests||0,
     turnMessage: room.started ? `${room.players[room.currentPlayer]?.name || ''} กำลังเล่น` : (room.setupStarted ? 'เลือกไพ่ J / Q / K / A เพื่อจับสิทธิ์เริ่มก่อน' : 'รอผู้เล่นเข้าห้อง')
   };
@@ -74,6 +74,13 @@ function validMeld(cards) {
   const order = RANKS;
   const indexes = cards.map(c=>order.indexOf(c.rank)).sort((a,b)=>a-b);
   return indexes.every((v,i)=>i===0 || v===indexes[i-1]+1);
+}
+function canExtendMeld(card, meld) {
+  const cards=meld.cards||[]; if(cards.length<3)return false;
+  if(cards.every(c=>c.rank===cards[0].rank)) return card.rank===cards[0].rank && cards.length<4 && !cards.some(c=>c.suit===card.suit);
+  if(!cards.every(c=>c.suit===cards[0].suit) || card.suit!==cards[0].suit)return false;
+  const indexes=cards.map(c=>RANKS.indexOf(c.rank)).sort((a,b)=>a-b); const ci=RANKS.indexOf(card.rank);
+  return indexes.every((v,i)=>i===0||v===indexes[i-1]+1) && (ci===indexes[0]-1||ci===indexes[indexes.length-1]+1);
 }
 app.get('/health', (_req,res)=>res.json({ok:true,service:'dummy-online-5p',rooms:rooms.size}));
 app.get('/', (_req,res)=>res.send('Dummy Online 5P backend is running'));
@@ -151,9 +158,10 @@ io.on('connection', socket => {
     const cards=cardIds.map(id=>p.hand.find(c=>c.id===id)).filter(Boolean);
     if (cards.length !== (cardIds||[]).length || !validMeld(cards)) return socket.emit('system:error','ชุดไพ่ไม่ถูกต้อง (ต้องเป็นตองหรือไพ่เรียงดอกเดียวกัน 3 ใบขึ้นไป)');
     const forced=room.mustMeldCards||[];
-    if (forced.length && !cards.some(c=>forced.includes(c.id))) return socket.emit('system:error','คุณต้องลงชุดโดยใช้ไพ่ที่หยิบจากกองทิ้งก่อน');
+    if (forced.length && !cards.some(c=>forced.includes(c.id))) return socket.emit('system:error','เมื่อหยิบกองทิ้งหลายใบ ต้องลงชุดเกิดอย่างน้อย 1 ชุดโดยใช้ไพ่ที่หยิบมาด้วยอย่างน้อย 1 ใบ');
     p.hand=p.hand.filter(c=>!cardIds.includes(c.id));
-    room.mustMeldCards=forced.filter(id=>!cardIds.includes(id));
+    // One valid meld containing at least one picked discard card satisfies the obligation.
+    room.mustMeldCards=forced.length?[]:forced;
     room.melds.push({playerId:p.id,playerName:p.name,cards});
     const picked = (room.lastDrawnFromDiscard||[]).filter(id=>cards.some(c=>c.id===id));
     if(picked.length && room.lastDiscardOwner && room.lastDiscardOwner!==p.id) {
@@ -168,6 +176,27 @@ io.on('connection', socket => {
     safeHand(room,socket.id);
     io.to(room.code).emit('game:melds',room.melds);
     emitRoom(room);
+  });
+  socket.on('game:layoff', () => {
+    const room=rooms.get(socket.data.roomCode);
+    if (!room || !isCurrent(room,socket)) return socket.emit('system:error','ยังไม่ใช่ตาของคุณ');
+    if (!room.hasDrawn) return socket.emit('system:error','ต้องจั่วไพ่ก่อนจึงจะฝากได้');
+    if ((room.mustMeldCards||[]).length) return socket.emit('system:error','ต้องลงชุดเกิดโดยใช้ไพ่ที่หยิบจากกองทิ้งอย่างน้อย 1 ใบก่อนฝากไพ่');
+    if (!room.melds || !room.melds.length) return socket.emit('system:error','ยังไม่มีชุดเกิดบนโต๊ะให้ฝาก');
+    const p=findPlayer(room,socket.id); let moved=0, changed=true;
+    while(changed){
+      changed=false;
+      for(const meld of room.melds){
+        for(let i=0;i<p.hand.length;i++){
+          const c=p.hand[i];
+          if(canExtendMeld(c,meld)){meld.cards.push(c);p.hand.splice(i,1);moved++;changed=true;break;}
+        }
+        if(changed)break;
+      }
+    }
+    if(!moved) return socket.emit('system:notice','ไม่มีไพ่ในมือที่ต่อชุดเกิดบนโต๊ะได้');
+    safeHand(room,socket.id); io.to(room.code).emit('game:melds',room.melds); emitRoom(room);
+    socket.emit('system:notice',`ฝากไพ่ให้อัตโนมัติ ${moved} ใบ`);
   });
   socket.on('disconnect', () => {
     const code=socket.data.roomCode, room=rooms.get(code);
