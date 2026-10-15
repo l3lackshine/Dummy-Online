@@ -205,3 +205,52 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
 @media (max-width:360px){.pl-top .chr,.pl-bottom .chr{width:46px}.pl-left .chr,.pl-right .chr{width:38px}}
 @media (orientation:landscape) and (max-height:600px){.pl-top .chr,.pl-bottom .chr{width:36px}.pl-left .chr,.pl-right .chr{width:34px}}
 @media (prefers-reduced-motion:reduce){.pl.active .chr .avatar-img{animation:none}}
+
+/* ===== v7: ตัวละครใหญ่ขึ้น นั่งหลังขอบโต๊ะ (ชั้นโต๊ะทับตัวละครบางส่วน) ===== */
+.arena{isolation:isolate}
+.pl{position:relative;z-index:1}
+.felt{position:relative;z-index:2}                 /* โต๊ะอยู่เหนือตัวละคร */
+.pl-top .chr{width:104px}.pl-bottom .chr{width:92px}.pl-left .chr,.pl-right .chr{width:78px}
+.pl-top{margin-bottom:-36px;align-items:flex-start}                      /* ตัวบน: ครึ่งล่างซ่อนหลังขอบโต๊ะ */
+.pl-top .pl-info{margin-top:6px;align-self:flex-start}
+.pl-left{margin-right:-24px;align-items:flex-start}                      /* ตัวซ้าย/ขวา: ด้านที่ติดโต๊ะซ่อนหลังขอบโต๊ะ */
+.pl-right{margin-left:-24px;align-items:flex-end}
+.pl-left .pl-info,.pl-right .pl-info{width:54px}
+.pl-left .pl-info{align-self:flex-start;align-items:center}.pl-right .pl-info{align-self:flex-end;align-items:center}
+.pl-left .pl-info b,.pl-right .pl-info b{max-width:54px}
+.pl-bottom{margin-top:-4px}
+.pl.active .chr .avatar-img{filter:drop-shadow(0 0 10px #f2b84b) drop-shadow(0 0 3px #f2b84b)}
+@media (max-width:360px){.pl-top .chr{width:84px}.pl-bottom .chr{width:76px}.pl-left .chr,.pl-right .chr{width:62px}
+ .pl-top{margin-bottom:-28px}.pl-left{margin-right:-18px}.pl-right{margin-left:-18px}.pl-left .pl-info,.pl-right .pl-info{width:44px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:44px}}
+@media (orientation:landscape) and (max-height:600px){
+ .pl-top .chr{width:62px}.pl-bottom .chr{width:56px}.pl-left .chr,.pl-right .chr{width:54px}
+ .pl-top{margin-bottom:-20px}.pl-left{margin-right:-14px}.pl-right{margin-left:-14px}.pl-left .pl-info,.pl-right .pl-info{width:40px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:40px}}
+
+/* ===== v7: ตัวละครใหญ่ขึ้น นั่งที่ขอบโต๊ะจริง — โต๊ะทับตัวละครบางส่วน (บน/ซ้าย/ขวา) ===== */
+.felt{position:relative;z-index:3}
+.pl{position:relative;z-index:1}
+.pl-top .chr,.pl-bottom .chr{width:96px}
+.pl-left .chr,.pl-right .chr{width:70px}
+.pl-top{align-items:flex-start;margin-bottom:-34px}
+.pl-top .pl-info{margin-top:8px}
+.pl-left{margin-right:-22px}.pl-right{margin-left:-22px}
+.pl-left,.pl-right{width:auto}
+.pl-left .pl-info,.pl-right .pl-info{width:48px;align-items:center}
+.pl-left .pl-info{align-self:flex-start}.pl-right .pl-info{align-self:flex-end}
+.pl-bottom{z-index:4;margin-top:-14px;align-items:flex-end}
+.pl-bottom .pl-info{margin-bottom:6px}
+.chr .avatar-img{filter:drop-shadow(0 3px 3px #0009)}
+@media (max-width:360px){.pl-top .chr,.pl-bottom .chr{width:78px}.pl-left .chr,.pl-right .chr{width:60px}.pl-top{margin-bottom:-28px}.pl-left{margin-right:-22px}.pl-right{margin-left:-22px}.pl-left .pl-info,.pl-right .pl-info{width:40px}}
+@media (orientation:landscape) and (max-height:600px){
+ .pl-top .chr,.pl-bottom .chr{width:44px}.pl-left .chr,.pl-right .chr{width:46px}
+ .pl-top{margin-bottom:-14px}.pl-bottom{margin-top:-6px}.pl-left{margin-right:-14px}.pl-right{margin-left:-14px}
+ .pl-left .pl-info,.pl-right .pl-info{width:44px}
+}
+
+/* v7.1: ให้ซ้อนทับเฉพาะรูปตัวละคร ส่วนข้อความชื่อ/แต้มอยู่ในคอลัมน์เต็ม ไม่ถูกโต๊ะบัง */
+.pl-left,.pl-right{margin:0}
+.pl-left .chr{align-self:flex-start;margin-right:-22px}
+.pl-right .chr{align-self:flex-end;margin-left:-22px}
+.pl-left .pl-info,.pl-right .pl-info{width:max-content;min-width:44px}
+@media (max-width:360px){.pl-left .chr{margin-right:-20px}.pl-right .chr{margin-left:-20px}}
+@media (orientation:landscape) and (max-height:600px){.pl-left .chr{margin-right:-14px}.pl-right .chr{margin-left:-14px}}
