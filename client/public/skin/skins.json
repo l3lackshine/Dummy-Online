@@ -76,6 +76,27 @@
  ],
  "backgrounds": [
   {
+   "id": "room-night",
+   "name": "ห้องไม้ยามค่ำ (ซากุระ)",
+   "asset": "./skin/backgrounds/room-night.svg",
+   "css": "",
+   "ink": "#ffffff"
+  },
+  {
+   "id": "room-day",
+   "name": "ห้องไม้ยามเช้า",
+   "asset": "./skin/backgrounds/room-day.svg",
+   "css": "",
+   "ink": "#ffffff"
+  },
+  {
+   "id": "room-sakura",
+   "name": "ห้องไม้โทนชมพู",
+   "asset": "./skin/backgrounds/room-sakura.svg",
+   "css": "",
+   "ink": "#ffffff"
+  },
+  {
    "id": "sunset",
    "name": "พระอาทิตย์ตก",
    "asset": "",

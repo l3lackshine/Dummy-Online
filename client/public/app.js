@@ -108,24 +108,32 @@ function render() {
   // ไอคอนผู้เล่นอยู่นอกโต๊ะ ในโต๊ะมีแค่ชุดที่เกิด (วางเป็นแถวยาวตามฝั่งของเจ้าของ) กองจั่ว กองทิ้ง
   const ms = pi => pi == null ? '' : S.melds.map((m, k) => ({ m, k })).filter(x => x.m.o === pi).map(({ m, k }) => `<div class="m${k >= pm ? ' new' : ''}" onclick="dep(${k})">${m.cs.map(mini).join('')}</div>`).join('');
   const pl = (pi, pos) => { if (pi == null) return ''; const p = S.P[pi], on = S.cur === pi && !S.over;
-    return `<div class="pl pl-${pos}${pi === S.my ? ' me' : ''}${on ? ' active' : ''}" style="${esc(bgCss(p.bg))}"><span class="${av(p.n, p.ch).startsWith('<img') ? 'chr' : 'av'}">${av(p.n, p.ch)}</span><div class=pl-info><b>${pi === S.my ? 'คุณ' : esc(p.n)}</b><small>${p.n_cards} ใบ</small><small>${p.pts} แต้ม</small>${on ? '<i class=tm>▶ ตา</i>' : ''}</div></div>`; };
+    return `<div class="pl pl-${pos}${pi === S.my ? ' me' : ''}${on ? ' active' : ''}"><span class="${av(p.n, p.ch).startsWith('<img') ? 'chr' : 'av'}">${av(p.n, p.ch)}</span><div class=pl-info><b>${pi === S.my ? 'คุณ' : esc(p.n)}</b><small>${p.n_cards} ใบ</small><small>${p.pts} แต้ม</small>${on ? '<i class=tm>▶ ตา</i>' : ''}</div></div>`; };
   const left = opp[0]?.i, top = opp[1]?.i, right = opp[2]?.i;
   // ตัวละครของเรา: ย้ายออกจากโต๊ะ ไปอยู่ที่แผงไพ่ของเรา (dock) พร้อมพื้นหลังของเราเอง
   const meOn = S.cur === S.my && !S.over, meA = av(me.n, me.ch);
-  const dockMe = `<div class="dock-me${meOn ? ' active' : ''}" style="${esc(bgCss(me.bg))}"><div class=pl-info><b>คุณ</b><small>${me.n_cards} ใบ · ${me.pts} แต้ม</small>${meOn ? '<i class=tm>▶ ตา</i>' : ''}</div><span class="${meA.startsWith('<img') ? 'chr' : 'av'}">${meA}</span></div>`;
+  const plMe = `<div class="pl pl-bottom${meOn ? ' active' : ''}"><div class=pl-info><b>คุณ</b><small>${me.n_cards} ใบ · ${me.pts} แต้ม</small>${meOn ? '<i class=tm>▶ ตา</i>' : ''}</div><span class="${meA.startsWith('<img') ? 'chr' : 'av'}">${meA}</span></div>`;
+  // พื้นหลังของแต่ละที่นั่งเป็นกรอบรูปล้อมโต๊ะ 4 ชิ้น ตัดทแยงที่มุมโต๊ะ (ขนาดคำนวณใน fitFrame)
+  const frame = `<div class="frame${S.over ? '' : ' has-active'}">${[['top', top], ['right', right], ['bottom', S.my], ['left', left]].map(([pos, pi]) => pi == null ? '' : `<i class="fb fb-${pos}${!S.over && S.cur === pi ? ' active' : ''}" style="${esc(bgCss(S.P[pi].bg))}"></i>`).join('')}</div>`;
   $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>ห้อง ${esc(code)}</span></div>
- <div class=arena>${pl(top, 'top')}${pl(left, 'left')}<div class=felt>
+ <div class=arena>${frame}${pl(top, 'top')}${pl(left, 'left')}<div class=felt>
  <div class="zone zone-top">${ms(top)}</div><div class="zone zone-left">${ms(left)}</div><div class="zone zone-right">${ms(right)}</div><div class="zone zone-bottom">${ms(S.my)}</div>
  <div class=piles><div><button class=back onclick=openPile() aria-label="เปิดกองจั่วและเลือกไพ่">${S.stock}</button><div class=lab>กองจั่ว</div></div>
- <div style="flex:1;min-width:0"><div class=dp id=dp>${S.disc.map(([id, hd], i) => face(id, ' d' + (hd ? ' sp' : '') + (S.ok[i] ? ' ok' : '') + (i >= pd ? ' new' : ''), `onclick=openPile()`)).join('')}</div><div class=lab>กองทิ้ง ${S.disc.length} ใบ · กดกองจั่วเพื่อเลือกเก็บไพ่</div></div></div></div>${pl(right, 'right')}</div>
+ <div style="flex:1;min-width:0"><div class=dp id=dp>${S.disc.map(([id, hd], i) => face(id, ' d' + (hd ? ' sp' : '') + (S.ok[i] ? ' ok' : '') + (i >= pd ? ' new' : ''), `onclick=openPile()`)).join('')}</div><div class=lab>กองทิ้ง ${S.disc.length} ใบ · กดกองจั่วเพื่อเลือกเก็บไพ่</div></div></div></div>${pl(right, 'right')}${plMe}</div>
  </div><div class=colR><div class=logs>${S.logs.slice(-1).map(esc).join('')}</div>
  <div class=hint>${esc(h)}<small>${esc(me.n)} ${me.pts} แต้ม</small></div>
- <div class=dock-wrap>${dockMe}<div class=dock><div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
+ <div class=dock-wrap><div class=dock><div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
  <div class=tools><button onclick="mv(-1)">◀ ซ้าย</button><button onclick="mv(1)">ขวา ▶</button><button onclick=srt()>เรียงไพ่</button></div>
  <div class=acts><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div></div></div>
  ${S.over ? (`<div class=ov><div class=box><h2>${S.res.k == null ? 'ไพ่หมดกอง' : esc(S.P[S.res.k].n) + ' น็อก!'}</h2>${S.down != null ? `<p>ใบที่คว่ำเพื่อน็อก: ${mini(S.down)}</p>` : ''}<p style="color:var(--gold)">ได้รับ +${(S.res.gain||[])[S.my]||0} 🪙 (รวม ${sv.coins})</p>${S.P.map(p => ({ p, pt: S.res.pts[p.i] })).sort((a, b) => b.pt - a.pt).map(({ p, pt }) => `<div class=row><span>${esc(p.n)}<small>${S.res.nt[p.i].join(' · ')}</small></span><b>${pt}</b></div>`).join('')}${isHost ? '<button onclick=begin()>เล่นอีกตา</button>' : '<p>รอเจ้าของห้องเริ่มตาใหม่...</p>'}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`) : ''}`;
   const d = $('dp'); if (d) d.scrollLeft = S.disc.length !== pd ? d.scrollWidth : sl;
+  requestAnimationFrame(fitFrame);
 }
+// คำนวณขนาดกรอบพื้นหลังของที่นั่ง (ระยะจากขอบโต๊ะถึงขอบ arena) เพื่อตัดทแยงที่มุมโต๊ะ
+function fitFrame() { const a = document.querySelector('.arena'), f = document.querySelector('.felt'); if (!a || !f) return;
+  const A = a.getBoundingClientRect(), F = f.getBoundingClientRect(), st = a.style;
+  st.setProperty('--L', (F.left - A.left) + 'px'); st.setProperty('--T', (F.top - A.top) + 'px'); st.setProperty('--R', (A.right - F.right) + 'px'); st.setProperty('--B', (A.bottom - F.bottom) + 'px'); }
+window.addEventListener('resize', () => requestAnimationFrame(fitFrame)); window.addEventListener('orientationchange', () => setTimeout(fitFrame, 250));
 try { applyTheme(); } catch (e) {}
 render();
 
