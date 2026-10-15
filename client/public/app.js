@@ -1,154 +1,100 @@
+const CFG = window.DUMMY_CONFIG || {}, $ = id => document.getElementById(id);
+const SU = ['♠', '♥', '♦', '♣'], RK = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const ALL = Array.from({ length: 52 }, (_, i) => ({ id: i, r: i % 13 + 1, s: (i / 13) | 0 }));
+const sp = c => (c.r === 2 && c.s === 3) || (c.r === 12 && c.s === 0), cn = c => RK[c.r] + SU[c.s];
+const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+let screen = 'home', ho = [], sel = new Set(), sm = 0, paid = false, gain = 0, prevM = 0, prevD = 0, hint = '', lerr = '';
+let sv = { name: localStorage.getItem('dummyName') || 'ผู้เล่น', coins: Number(localStorage.getItem('dummyCoins') || '5000'), own: JSON.parse(localStorage.getItem('dummyOwned') || '[\"classic\"]'), eq: localStorage.getItem('dummySkin') || 'classic' }, nick = localStorage.getItem('dummyName') || 'ผู้เล่น';
+let authed = true, aerr = '', S = null, lob = null, tok = null, code = '', isHost = false, sock = null, noio = false, soloPending = false, soloRoom = false;
+const TH=[{id:'classic',n:'คลาสสิก (เขียว)',price:0,card:'#fbf7ec',blk:'#1b1b1b',red:'#c0282d',edge:'#cfc7b0',b1:'#7a1f2b',b2:'#5d1520',bg:'#0f3d2a',bg2:'#0b2e20'},
+{id:'midnight',n:'มิดไนท์',price:200,card:'#243153',blk:'#e6ebfa',red:'#ff8a98',edge:'#4a5c92',b1:'#4057a3',b2:'#2b3b72',bg:'#0c1226',bg2:'#080c1a'},
+{id:'sakura',n:'ซากุระ',price:400,card:'#fff1f5',blk:'#3b2a35',red:'#d6336c',edge:'#f3b6cb',b1:'#f06595',b2:'#c2255c',bg:'#4a1f3a',bg2:'#35142a'},
+{id:'gold',n:'ทองคำ',price:700,card:'#fff4d6',blk:'#33250a',red:'#a4161a',edge:'#d9b45a',b1:'#c9971c',b2:'#8a6508',bg:'#2e2410',bg2:'#1f180a'}];
+const save=()=>{localStorage.setItem('dummyCoins',sv.coins);localStorage.setItem('dummyOwned',JSON.stringify(sv.own));localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick)};
+function setNick(v){nick=String(v||'').trim().slice(0,14)||'ผู้เล่น';sv.name=nick;save()}
+function applyTheme(){const t=TH.find(x=>x.id==sv.eq)||TH[0],s=document.documentElement.style;for(const k of['card','blk','red','edge','b1','b2','bg','bg2'])s.setProperty('--'+k,t[k])}
+const go=s=>{screen=s;render()};
+const wrap=b=>{$('app').innerHTML=`<div class=page><div class=box>${b}</div></div>`};
+const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'],av=n=>{let h=0;for(const ch of String(n))h=(h*31+ch.charCodeAt(0))|0;return AV[Math.abs(h)%AV.length]};
 
-(() => {
-  const $ = s => document.querySelector(s);
-  const app = $('#app');
-  const config = window.DUMMY_CONFIG || {BACKEND_URL:'http://localhost:3000'};
-  const state = {socket:null, name:localStorage.getItem('dummyName')||'', code:'', room:null, hand:[], selected:new Set(), tab:'play', isHost:false,
-    coins:Number(localStorage.getItem('dummyCoins')||'5000'), gems:Number(localStorage.getItem('dummyGems')||'20'),
-    owned:JSON.parse(localStorage.getItem('dummyOwned')||'["classic"]'), skin:localStorage.getItem('dummySkin')||'classic', message:'',error:'',solo:false,soloDeck:[],soloDiscard:[],soloTurn:0,soloHasDrawn:false,soloPlayers:[],discardIndex:null,discardModal:false,pendingDiscardPick:false,pendingHandCount:0,soloMustMeldCards:[],soloMelds:[],melds:[],settings:{spetoPoints:50,previousDiscardPoints:30,coinPerPoint:1}};
-  const skins=[
-    {id:'classic',name:'คลาสสิก',price:0,kind:'classic',currency:'coin',desc:'ลายมาตรฐาน ฟรี'},
-    {id:'gold',name:'ทองคำ',price:2500,kind:'gold',currency:'coin',desc:'ขอบทองสุดหรู'},
-    {id:'candy',name:'ลูกกวาด',price:150,currency:'gem',kind:'candy',desc:'สีรุ้งสดใส'},
-    {id:'forest',name:'ป่ามหัศจรรย์',price:4000,currency:'coin',kind:'forest',desc:'สีเขียวมรกต'},
-    {id:'flame',name:'เปลวไฟ',price:250,currency:'gem',kind:'flame',desc:'สีร้อนแรง'},
-    {id:'bunny',name:'กระต่ายน้อย',price:300,currency:'gem',kind:'bunny',desc:'พาสเทลน่ารัก'}
-  ];
-  function saveWallet(){localStorage.setItem('dummyCoins',state.coins);localStorage.setItem('dummyGems',state.gems);localStorage.setItem('dummyOwned',JSON.stringify(state.owned));localStorage.setItem('dummySkin',state.skin)}
-  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  function validMeld(cards){if(!Array.isArray(cards)||cards.length<3)return false;const suits=new Set(cards.map(c=>c.suit)),ranks=cards.map(c=>c.rank);if(ranks.every(r=>r===ranks[0]))return suits.size===cards.length; if(suits.size!==1)return false;const order=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];const indexes=ranks.map(r=>order.indexOf(r)).sort((a,b)=>a-b);return indexes.every((v,i)=>i===0||v===indexes[i-1]+1)}
-  function connect(){
-    if(state.socket) return;
-    if(!window.io){state.error='โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต';render();return}
-    state.socket=io(config.BACKEND_URL,{transports:['websocket','polling']});
-    state.socket.on('connect',()=>{state.error='';render()});
-    state.socket.on('connect_error',()=>{state.error='เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ โปรดเปิด backend ที่ '+config.BACKEND_URL;render()});
-    state.socket.on('system:notice',m=>{state.message=m;state.error='';render()});
-    state.socket.on('system:error',m=>{state.pendingDiscardPick=false;state.error=m;render()});
-    state.socket.on('room:joined',d=>{state.code=d.code;state.isHost=d.isHost;state.tab='play';render()});
-    state.socket.on('room:update',room=>{state.room=room;if(room.melds)state.melds=room.melds;render()});
-    state.socket.on('game:hand',hand=>{state.hand=hand;state.selected.clear();if(state.pendingDiscardPick){const count=Math.max(0,hand.length-state.pendingHandCount);state.pendingDiscardPick=false;state.discardModal=false;state.discardIndex=null;state.message=`หยิบไพ่เข้ามือแล้ว ${count} ใบ`;state.error='';}render()});
-    state.socket.on('game:melds',melds=>{state.melds=melds;if(state.room)state.room.melds=melds;render()});
-  }
-  function header(){return `<header class="topbar"><div class="brand">🃏 ดัมมี่<span>ออนไลน์</span> <small style="font-size:13px;color:#fff">สูงสุด 4 คน</small></div><div class="wallet"><span class="pill">🪙 ${state.coins.toLocaleString()}</span><span class="pill">💎 ${state.gems}</span><button class="smallbtn" data-tab="shop">🛍️ Shop</button></div></header><nav class="tabs">${[['play','🎮 เล่นเกม'],['rooms','🌐 ห้องออนไลน์'],['shop','🛍️ ร้านสกิน'],['profile','👤 โปรไฟล์']].map(([id,label])=>`<button class="tab ${state.tab===id?'active':''}" data-tab="${id}">${label}</button>`).join('')}</nav>`}
-  function render(){
-    if(!app)return;
-    let content='';
-    if(state.tab==='shop') content=shop();
-    else if(state.tab==='rooms') content=rooms();
-    else if(state.tab==='profile') content=profile();
-    else content=play();
-    app.innerHTML=`<div class="wrap">${header()}${state.error?`<div class="notice error">⚠️ ${esc(state.error)}</div>`:''}${state.message?`<div class="notice">${esc(state.message)}</div>`:''}${content}<div class="footer">ต้นแบบเกมเพื่อความบันเทิง • ไม่มีการเดิมพันหรือถอนเงินจริง • ระบบเหรียญในหน้านี้เป็นเดโม</div></div>`;
-    app.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>{state.tab=b.dataset.tab;render()}));
-    bind();
-  }
-  function play(){
-    if(!state.room) return `<section class="grid"><div class="panel"><h2 class="section-title">🌈 เล่นดัมมี่กับเพื่อน</h2><p class="muted">สร้างห้องส่วนตัว หรือเข้าห้องด้วยรหัสเพื่อเล่นกับผู้เล่นจริง สูงสุด 4 คนต่อห้อง</p><label class="muted">ชื่อในเกม</label><input id="playerName" class="field" maxlength="18" placeholder="ตั้งชื่อเล่น" value="${esc(state.name)}"><div class="formrow"><button id="soloGame" class="green">🤖 เล่นคนเดียวกับบอท</button><button id="createRoom">✨ สร้างห้องออนไลน์</button><button class="secondary" data-tab="rooms">🔎 เข้าห้อง</button></div><div class="asset-note">🟢 สถานะเซิร์ฟเวอร์: ${state.socket?.connected?'เชื่อมต่อแล้ว':'กำลังเชื่อมต่อ/ยังไม่พร้อม'}<br>ออนไลน์เล่นได้ 2–4 คน • เล่นคนเดียวกับบอทได้</div></div><div class="panel"><h2 class="section-title">🎁 รางวัลรายวัน</h2><p class="muted">รับเหรียญฟรีวันละครั้งเพื่อสะสมสกิน</p><button id="dailyReward" class="green">รับเหรียญฟรี +500 🪙</button><div style="height:12px"></div><h3>สกินที่ใช้อยู่</h3>${skinPreview(state.skin)}<p class="muted">เปลี่ยนลายไพ่ได้ในร้านค้า</p><button class="secondary" data-tab="shop">ไปที่ร้านสกิน</button></div></section>`;
-    const room=state.room;
-    const ownId=state.solo?'you':state.socket?.id;
-    let ownIndex=room.players.findIndex(p=>p.id===ownId); if(ownIndex<0) ownIndex=0;
-    const seatClass=(i)=>{const rel=(i-ownIndex+room.players.length)%room.players.length; if(rel===0)return 'seat-bottom'; if(room.players.length===2)return 'seat-top'; if(room.players.length===3)return rel===1?'seat-left':'seat-right'; return rel===1?'seat-left':rel===2?'seat-top':'seat-right'};
-    const players=room.players.map((p,i)=>`<div class="player ${seatClass(i)} ${room.started&&room.currentPlayer===i?'active':''} ${i===ownIndex?'is-self':''}"><div class="player-name">${i===ownIndex?'👤':'🎭'} ${esc(p.name)} ${i===ownIndex?'<span class="you-tag">คุณ</span>':''}</div><div class="player-meta">${p.cardCount} ใบ ${p.connected?'🟢':'⚪'} ${room.started&&room.currentPlayer===i?'<span class="turn-tag">ตาเล่น</span>':''}</div></div>`).join('');
-    const cards=state.hand.map((c,i)=>{const mid=(state.hand.length-1)/2;const angle=Math.max(-15,Math.min(15,(i-mid)*1.8));const lift=Math.max(0,Math.abs(i-mid)*1.1);return `<div class="playing-card hand-card ${['♥','♦'].includes(c.suit)?'red':''} ${state.selected.has(c.id)?'selected':''}" style="--fan-angle:${angle}deg;--fan-y:${lift}px" data-card="${esc(c.id)}" aria-label="${c.rank}${c.suit}"><span class="small">${c.rank}${c.suit}</span><span class="big">${c.suit}</span><span class="small card-corner-bottom">${c.rank}${c.suit}</span></div>`}).join('');
-    const pileCards=(room.discardPile||[]).map((c,i)=>`<div role="button" tabindex="0" aria-label="เลือก ${c.rank}${c.suit}${i===room.discardPile.length-1?' ไพ่ใบบนสุด':''}" class="playing-card pile-pick-card ${['♥','♦'].includes(c.suit)?'red':''} ${state.discardIndex===i?'selected':''}" data-discard-index="${i}"><span class="small">${c.rank}${c.suit}</span><span class="big">${c.suit}</span><span class="small card-corner-bottom">${c.rank}${c.suit}</span>${i===room.discardPile.length-1?'<span class="pile-top-tag">บนสุด</span>':''}</div>`).join('');
-    const discard=room.discard?`<div role="button" tabindex="0" id="discardPileOpen" class="discard-pile-trigger" aria-label="เปิดรายการไพ่กองทิ้ง"><div class="discard ${['♥','♦'].includes(room.discard.suit)?'red':''}"><span>${room.discard.rank}${room.discard.suit}</span></div><span class="pile-count">${(room.discardPile||[]).length} ใบ · แตะเพื่อดู</span></div>`:'<div role="button" tabindex="0" id="discardPileOpen" class="discard-pile-trigger"><div class="discard">—</div><span class="pile-count">กองทิ้งว่าง</span></div>';
-    const shownMelds=room.melds||state.melds||[];
-    const meldArea=shownMelds.length?`<section class="meld-area"><h3>🀄 ชุดไพ่ที่เกิดแล้ว</h3><div class="meld-groups">${shownMelds.map(m=>`<div class="meld-group"><div class="muted">${esc(m.playerName||'ผู้เล่น')}</div><div class="meld-cards">${(m.cards||[]).map(c=>`<div class="playing-card meld-card ${['♥','♦'].includes(c.suit)?'red':''}"><span class="small">${c.rank}${c.suit}</span><span class="big">${c.suit}</span></div>`).join('')}</div></div>`).join('')}</div></section>`:`<section class="meld-area"><h3>🀄 ชุดไพ่ที่เกิดแล้ว</h3><p class="muted">ยังไม่มีชุดไพ่ที่ลง</p></section>`;
-    const mustMeldCount=state.solo?state.soloMustMeldCards.length:(room.mustMeldCount||0);
-    const mustMeldNotice=mustMeldCount?`<div class="notice error">⚠️ คุณหยิบไพ่จากกองทิ้งหลายใบ ต้องลงชุดเกิดที่ใช้ไพ่จากกองทิ้งอย่างน้อย 1 ใบ ก่อนทิ้งไพ่</div>`:'';
-    const discardModal=state.discardModal?`<div class="modal-backdrop" id="discardModalBackdrop"><section class="discard-modal" role="dialog" aria-modal="true" aria-label="ไพ่ในกองทิ้ง"><div class="row modal-heading"><div><h3>🃏 ไพ่ในกองทิ้ง (${(room.discardPile||[]).length} ใบ)</h3><p class="muted">แตะไพ่ที่ต้องการหยิบ ไพ่ใบนั้นและไพ่ที่อยู่ด้านบนจะเข้ามือทั้งหมด</p></div><button class="ghost smallbtn" id="closeDiscardModal">ปิด</button></div><div class="discard-modal-cards">${pileCards||'<span class="muted">ไม่มีไพ่ในกองทิ้ง</span>'}</div><div class="muted">${Number.isInteger(state.discardIndex)?`เลือก ${room.discardPile.length-state.discardIndex} ใบ ตั้งแต่ไพ่ลำดับ ${state.discardIndex+1} ถึงใบบนสุด`:'เลือกไพ่ก่อนหยิบ'}</div><div class="actions"><button id="confirmDiscardPick" ${!room.started||!room.discardPile?.length||!Number.isInteger(state.discardIndex)||state.pendingDiscardPick?'disabled':''}>หยิบไพ่ที่เลือกเข้ามือ</button><button id="cancelDiscardPick" class="secondary">ยกเลิก</button></div></section></div>`:'';
-    const setup=room.setupStarted?`<div class="panel" style="margin:12px 0"><h3>🎴 เลือกไพ่จับสิทธิ์เริ่มก่อน</h3><p class="muted">เลือก J, Q, K หรือ A คนที่ตรงกับไพ่ที่ระบบเปิดจะเริ่มก่อนและเป็นผู้สับไพ่</p><div class="actions">${['J','Q','K','A'].map(r=>`<button data-first-rank="${r}">${r}</button>`).join('')}<button id="cutDeck" class="secondary">✂️ ขอตัดไพ่ (${room.cutRequests||0})</button></div><p class="muted">${(room.firstChoices||[]).map(x=>esc(room.players.find(p=>p.id===x.id)?.name||'ผู้เล่น')+': '+(x.rank||'ยังไม่เลือก')).join(' • ')}</p></div>`:'';
-    return `<section class="panel game-panel"><div class="row game-heading"><div><h2 class="section-title">🃏 ห้อง ${room.code}</h2><div class="muted">${state.solo?'โหมดฝึกซ้อมกับบอท 3 ตัว • Top View':`โต๊ะ Top View • ${room.players.length}/4 คน`}</div></div><button class="ghost smallbtn" id="leaveRoom">ออกจากห้อง</button></div><div class="game-room-background skin-bg-${esc(state.skin)}"><div class="table-layout">${players}<div class="table-surface"><div class="table-turn">${room.started?'ตาเล่น: '+esc(room.players[room.currentPlayer]?.name||''):'รอเริ่มเกม'}</div><div class="center-cards"><div class="pile-block"><div class="stock">🂠</div><div class="muted">กองจั่ว ${room.stockCount}</div></div><div class="pile-block"><div class="muted">กองทิ้ง</div>${discard}</div></div><div class="table-hint">แตะกองทิ้งเพื่อเลือกไพ่ • เลือกไพ่ในมือแล้วใช้ปุ่มด้านล่าง</div>${meldArea}</div></div></div>${mustMeldNotice}<section class="hand-panel"><div class="hand-title"><h3>ไพ่ในมือ (${state.hand.length})</h3><span class="muted">เลื่อนซ้าย–ขวาเพื่อดูไพ่ทั้งหมด</span></div><div class="hand-scroll"><div class="cardrow">${cards||'<span class="muted">ไพ่จะแสดงเมื่อเริ่มเกม</span>'}</div></div><div class="actions game-actions"><button id="drawStock" class="secondary" ${!room.started?'disabled':''}>🂠 จั่วไพ่</button><button id="drawDiscard" ${!room.started||!room.discard?'disabled':''}>หยิบกองทิ้ง</button><button id="meldCards" class="green" ${!room.started||state.selected.size<3?'disabled':''}>เกิด</button><button id="layoffCards" class="secondary" ${!room.started||!room.hasDrawn&& !state.solo?'disabled':''}>ฝากอัตโนมัติ</button><button id="discardCard" class="pink" ${!room.started||state.selected.size!==1?'disabled':''}>ทิ้งไพ่ที่เลือก</button></div></section>${state.isHost&&!room.started&&!room.setupStarted&&!state.solo?`<div class="panel" style="margin-top:16px"><h3>⚙️ ตั้งค่าคะแนนก่อนเริ่ม</h3><div class="grid"><label class="muted">สเปโต (คะแนนโอน) <input id="spetoPoints" class="field" type="number" min="0" value="${room.settings?.spetoPoints??50}"></label><label class="muted">ไพ่ต่อจากกองทิ้ง (คะแนนโอน) <input id="previousDiscardPoints" class="field" type="number" min="0" value="${room.settings?.previousDiscardPoints??30}"></label><label class="muted">อัตราเหรียญต่อคะแนน <input id="coinPerPoint" class="field" type="number" min="0" value="${room.settings?.coinPerPoint??1}"></label></div><p class="muted">ค่าเริ่มต้น: สเปโต 50, ไพ่ต่อกองทิ้ง 30, เหรียญต่อคะแนน 1 (ปรับได้)</p><button id="startGame">🚀 เริ่มจับสิทธิ์ (ผู้เล่น 2–4 คน)</button></div>`:''}${setup}<div class="muted score-line">คะแนน: ${room.players.map(p=>`${esc(p.name)} ${p.score||0} คะแนน / เหรียญรอบนี้ ${p.roundCoins||0}`).join(' • ')} | เหรียญ/คะแนน ${room.settings?.coinPerPoint??1}</div></section>${discardModal}`;
-  }
-  function rooms(){return `<section class="grid"><div class="panel"><h2 class="section-title">🌐 ห้องออนไลน์</h2><label class="muted">ชื่อในเกม</label><input id="playerName" class="field" maxlength="18" placeholder="ตั้งชื่อเล่น" value="${esc(state.name)}"><div class="formrow"><input id="roomCode" class="field" placeholder="รหัสห้อง เช่น A1B2C3" maxlength="6"><button id="joinRoom" class="green">เข้าห้อง</button></div><p class="muted">ใช้รหัสห้องที่เพื่อนส่งให้ • ห้องละ 2–4 คน</p></div><div class="panel"><h2 class="section-title">✨ สร้างห้องใหม่</h2><p class="muted">เป็นหัวหน้าห้องและเริ่มเกมได้เมื่อมีผู้เล่น 2–4 คน</p><button id="createRoom">สร้างห้องส่วนตัว</button></div></section>`}
-  function skinPreview(id){const s=skins.find(x=>x.id===id)||skins[0];return `<div class="skinpreview ${s.kind}">✦</div>`}
-  function shop(){return `<section class="panel"><div class="row" style="justify-content:space-between"><div><h2 class="section-title">🛍️ ร้านสกินไพ่</h2><p class="muted">สะสมลายไพ่สีสันสดใส ใช้เหรียญหรือเพชรในเกม</p></div><div class="pill">🪙 ${state.coins.toLocaleString()}　💎 ${state.gems}</div></div><div class="shopgrid">${skins.map(s=>`<article class="skin">${skinPreview(s.id)}<strong>${s.name}</strong><p class="muted">${s.desc}</p><p>${s.price===0?'ฟรี':(s.currency==='gem'?'💎 '+s.price:'🪙 '+s.price)}</p>${state.owned.includes(s.id)?`<button class="smallbtn ${state.skin===s.id?'green':'secondary'}" data-equip="${s.id}">${state.skin===s.id?'✓ ใช้อยู่':'ใช้งาน'}</button>`:`<button class="smallbtn" data-buy="${s.id}">ซื้อสกิน</button>`}</article>`).join('')}</div><div class="asset-note" style="margin-top:14px">ระบบซื้อใช้สกุลเงินจำลองที่เก็บในเบราว์เซอร์ ยังไม่ใช่ระบบชำระเงินจริง และไม่ควรใช้เป็นยอดเงินจริง</div><h3>เติมเพชร (ตัวอย่างหน้าร้าน)</h3><div class="row"><button class="secondary" data-gems="50">💎 +50 ฟรีเดโม</button><button class="secondary" data-gems="200">💎 +200 ฟรีเดโม</button></div><p class="muted">ปุ่มนี้เพิ่มเพชรเดโมเท่านั้น ไม่มีการตัดเงิน</p></section>`}
-  function profile(){return `<section class="panel"><h2 class="section-title">👤 โปรไฟล์ผู้เล่น</h2><label class="muted">ชื่อเล่น</label><input id="playerName" class="field" maxlength="18" value="${esc(state.name)}" placeholder="ชื่อเล่น"><button id="saveName" style="margin-top:10px">บันทึกชื่อ</button><div class="row" style="margin-top:18px"><div class="pill">🪙 เหรียญ ${state.coins.toLocaleString()}</div><div class="pill">💎 เพชร ${state.gems}</div><div class="pill">🎴 สกิน ${state.owned.length}</div></div><h3>สกินที่ใช้อยู่</h3>${skinPreview(state.skin)}<p class="muted">บัญชีในต้นแบบนี้ยังไม่ผูกระบบ login หรือฐานข้อมูลถาวร</p></section>`}
-  function soloMakeDeck(){
-    const suits=['♠','♥','♦','♣'], ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-    const deck=suits.flatMap(suit=>ranks.map(rank=>({id:`${suit}-${rank}-${Math.random().toString(36).slice(2,8)}`,suit,rank})));
-    for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
-    return deck;
-  }
-  function startSolo(name){
-    state.solo=true;state.isHost=false;state.code='SOLO';state.selected.clear();state.soloDeck=soloMakeDeck();state.soloDiscard=[];state.soloHasDrawn=false;state.soloTurn=0;state.soloMustMeldCards=[];state.soloMelds=[];
-    state.soloPlayers=[{id:'you',name:name||'ผู้เล่น',hand:[]},...['บอทมะลิ','บอทสายฟ้า','บอทขนมปัง'].map((n,i)=>({id:'bot'+i,name:n,hand:[]}))];
-    state.soloPlayers.forEach(player=>player.hand=state.soloDeck.splice(0,7));state.soloDiscard.push(state.soloDeck.pop());state.hand=state.soloPlayers[0].hand;
-    state.room={code:'SOLO',started:true,currentPlayer:0,players:state.soloPlayers.map((player,i)=>({id:player.id,name:player.name,seat:i,cardCount:player.hand.length,connected:true,score:0})),stockCount:state.soloDeck.length,discard:state.soloDiscard.at(-1),discardPile:state.soloDiscard,settings:state.settings,melds:state.soloMelds,mustMeldCount:0,turnMessage:'ตาของคุณ'};
-    state.message='เริ่มเกมฝึกซ้อมแล้ว แจกไพ่ให้ผู้เล่น 4 คนเรียบร้อย';state.error='';state.tab='play';render();
-  }
-  function soloDraw(source){
-    if(!state.solo||state.soloTurn!==0){state.error='รอให้ถึงตาของคุณก่อน';render();return}
-    if(state.soloHasDrawn){state.error='คุณจั่วไพ่แล้ว ต้องทิ้งไพ่ก่อน';render();return}
-    let picked=[]; if(source==='discard'){const ix=Number.isInteger(state.discardIndex)?state.discardIndex:state.soloDiscard.length-1;picked=state.soloDiscard.splice(ix);state.discardIndex=null;}else{const card=state.soloDeck.pop();if(card)picked=[card]}
-    if(!picked.length){state.error='กองไพ่ที่เลือกหมดแล้ว';render();return}
-    if(source==='discard')state.soloMustMeldCards=picked.length>1?picked.map(c=>c.id):[];else state.soloMustMeldCards=[];state.hand.push(...picked);state.soloPlayers[0].hand=state.hand;state.discardModal=false;state.discardIndex=null;state.soloHasDrawn=true;state.room.discard=state.soloDiscard.at(-1)||null;state.room.discardPile=state.soloDiscard;state.room.stockCount=state.soloDeck.length;state.room.players[0].cardCount=state.hand.length;state.room.mustMeldCount=state.soloMustMeldCards.length;state.message=state.soloMustMeldCards.length?'หยิบไพ่หลายใบ ต้องนำไพ่ที่หยิบมาลงชุดให้ครบก่อนจึงจะทิ้งไพ่ได้':'จั่วไพ่แล้ว เลือกไพ่ 1 ใบแล้วกด “ทิ้งไพ่ที่เลือก”';state.error='';render();
-  }
-  function soloDiscard(id){
-    if(state.soloMustMeldCards.length){state.error=`ต้องนำไพ่ที่หยิบจากกองทิ้งมาเกิดให้ครบก่อน (${state.soloMustMeldCards.length} ใบ)`;render();return}
-    if(!state.soloHasDrawn){state.error='ต้องจั่วไพ่ก่อนทิ้ง';render();return}
-    const index=state.hand.findIndex(card=>card.id===id);if(index<0)return;
-    const [card]=state.hand.splice(index,1);state.soloDiscard.push(card);state.soloPlayers[0].hand=state.hand;state.soloHasDrawn=false;state.selected.clear();state.room.players[0].cardCount=state.hand.length;state.room.discard=card;state.room.discardPile=state.soloDiscard;state.room.stockCount=state.soloDeck.length;state.soloTurn=1;state.room.currentPlayer=1;state.message='บอททั้ง 4 กำลังเล่น...';state.error='';render();window.setTimeout(soloBotsTurn,650);
-  }
-  function soloMeld(){
-    if(!state.soloHasDrawn){state.error='ต้องจั่วไพ่ก่อนจึงจะลงชุดเกิดได้';render();return}
-    const ids=[...state.selected];const cards=ids.map(id=>state.hand.find(c=>c.id===id)).filter(Boolean);
-    if(!validMeld(cards)){state.error='ชุดไพ่ไม่ถูกต้อง ต้องเป็นตองหรือไพ่เรียงดอกเดียวกัน 3 ใบขึ้นไป';render();return}
-    if(state.soloMustMeldCards.length&&!cards.some(c=>state.soloMustMeldCards.includes(c.id))){state.error='ต้องลงชุดโดยใช้ไพ่ที่หยิบจากกองทิ้งก่อน';render();return}
-    state.hand=state.hand.filter(c=>!ids.includes(c.id));state.soloPlayers[0].hand=state.hand;state.soloMelds.push({playerId:'you',playerName:state.soloPlayers[0].name,cards});state.soloMustMeldCards=state.soloMustMeldCards.length?[]:state.soloMustMeldCards;state.room.melds=state.soloMelds;state.room.mustMeldCount=state.soloMustMeldCards.length;state.room.players[0].cardCount=state.hand.length;state.selected.clear();state.message=state.soloMustMeldCards.length?'เกิดแล้ว แต่ต้องใช้ไพ่จากกองทิ้งอย่างน้อย 1 ใบในชุดที่ลง':'ลงชุดไพ่สำเร็จ';state.error='';render();
-  }
-  function cardCanExtend(card,meld){
-    const cards=meld.cards||[]; if(cards.length<3)return false;
-    if(cards.every(c=>c.rank===cards[0].rank))return card.rank===cards[0].rank&&cards.length<4&&!cards.some(c=>c.suit===card.suit);
-    if(!cards.every(c=>c.suit===cards[0].suit)||card.suit!==cards[0].suit)return false;
-    const order=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];const ix=cards.map(c=>order.indexOf(c.rank)).sort((a,b)=>a-b);const ci=order.indexOf(card.rank);
-    return ix.every((v,i)=>i===0||v===ix[i-1]+1)&&(ci===ix[0]-1||ci===ix[ix.length-1]+1);
-  }
-  function soloLayoff(){
-    if(!state.solo||!state.soloHasDrawn){state.error='ต้องจั่วไพ่ก่อนจึงจะฝากได้';render();return}
-    if(state.soloMustMeldCards.length){state.error='ต้องลงชุดเกิดโดยใช้ไพ่ที่หยิบจากกองทิ้งอย่างน้อย 1 ใบก่อนฝากไพ่';render();return}
-    if(!state.soloMelds.length){state.error='ยังไม่มีชุดเกิดบนโต๊ะให้ฝาก';render();return}
-    let moved=0,again=true;
-    while(again){again=false;for(const meld of state.soloMelds){for(let i=0;i<state.hand.length;i++){const card=state.hand[i];if(cardCanExtend(card,meld)){meld.cards.push(card);state.hand.splice(i,1);moved++;again=true;break}}if(again)break}}
-    state.soloPlayers[0].hand=state.hand;state.room.melds=state.soloMelds;state.room.players[0].cardCount=state.hand.length;state.selected.clear();state.message=moved?`ฝากไพ่ให้อัตโนมัติ ${moved} ใบ`:'ไม่มีไพ่ในมือที่ต่อชุดเกิดบนโต๊ะได้';state.error='';render();
-  }
-  function soloBotsTurn(){
-    if(!state.solo||!state.room)return;
-    for(let index=1;index<4;index++){
-      const bot=state.soloPlayers[index];
-      if(state.soloDeck.length)bot.hand.push(state.soloDeck.pop());
-      if(bot.hand.length){const tossed=bot.hand.splice(Math.floor(Math.random()*bot.hand.length),1)[0];state.soloDiscard.push(tossed)}
-      state.room.players[index].cardCount=bot.hand.length;state.room.discard=state.soloDiscard.at(-1)||null;state.room.discardPile=state.soloDiscard;state.room.stockCount=state.soloDeck.length;
-    }
-    state.soloTurn=0;state.room.currentPlayer=0;state.room.players.forEach((player,index)=>player.cardCount=state.soloPlayers[index].hand.length);state.message='ถึงตาคุณแล้ว จั่วไพ่เพื่อเล่นต่อ';state.error='';render();
-  }
-  function bind(){
-    const on=(id,fn)=>{const el=document.getElementById(id);if(el)el.addEventListener('click',fn)};
-    const readName=()=>{const el=document.getElementById('playerName');state.name=(el?.value||'ผู้เล่น').trim().slice(0,18)||'ผู้เล่น';localStorage.setItem('dummyName',state.name);return state.name};
-    on('createRoom',()=>{connect();if(!state.socket?.connected){state.error='กำลังเชื่อมต่อเซิร์ฟเวอร์ ลองอีกครั้ง';render();return}state.socket.emit('room:create',{name:readName()})});
-    on('soloGame',()=>startSolo(readName()));
-    on('joinRoom',()=>{connect();if(!state.socket?.connected){state.error='ยังเชื่อมต่อเซิร์ฟเวอร์ไม่ได้';render();return}const code=$('#roomCode')?.value||'';state.socket.emit('room:join',{name:readName(),code})});
-    on('startGame',()=>{const read=(id,fallback)=>Number(document.getElementById(id)?.value??fallback);state.socket?.emit('game:start',{settings:{spetoPoints:read('spetoPoints',50),previousDiscardPoints:read('previousDiscardPoints',30),coinPerPoint:read('coinPerPoint',1)}})});
-    app.querySelectorAll('[data-first-rank]').forEach(el=>el.addEventListener('click',()=>state.socket?.emit('game:choose-first',{rank:el.dataset.firstRank})));
-    on('cutDeck',()=>state.socket?.emit('game:cut-request'));
-    app.querySelectorAll('[data-discard-index]').forEach(el=>{const choose=()=>{state.discardIndex=Number(el.dataset.discardIndex);render()};el.addEventListener('click',choose);el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}})});
-    const openDiscard=()=>{if(!state.room?.discardPile?.length){state.error='กองทิ้งยังไม่มีไพ่';render();return}state.discardModal=true;if(!Number.isInteger(state.discardIndex)||state.discardIndex>=state.room.discardPile.length)state.discardIndex=state.room.discardPile.length-1;render()};
-    on('discardPileOpen',openDiscard);
-    on('closeDiscardModal',()=>{state.discardModal=false;render()});
-    on('cancelDiscardPick',()=>{state.discardModal=false;render()});
-    on('drawStock',()=>{if(state.solo){soloDraw('stock');return}state.socket?.emit('game:draw',{source:'stock'})});
-    on('drawDiscard',openDiscard);
-    on('confirmDiscardPick',()=>{if(!Number.isInteger(state.discardIndex)){state.error='เลือกไพ่ในกองทิ้งก่อน';render();return}if(state.solo){soloDraw('discard');state.discardModal=false;return}if(!state.socket?.connected){state.error='ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์';render();return}state.pendingHandCount=state.hand.length;state.pendingDiscardPick=true;state.error='';state.message='กำลังหยิบไพ่เข้ามือ...';state.socket.emit('game:draw',{source:'discard',discardIndex:state.discardIndex});render()});
-    on('discardCard',()=>{if(state.selected.size!==1){state.error='เลือกไพ่ 1 ใบเพื่อทิ้ง';render();return}if(state.solo){soloDiscard([...state.selected][0]);return}state.socket?.emit('game:discard',{cardId:[...state.selected][0]})});
-    on('meldCards',()=>{if(state.solo){soloMeld();return}state.socket?.emit('game:meld',{cardIds:[...state.selected]})});
-    on('layoffCards',()=>{if(state.solo){soloLayoff();return}state.socket?.emit('game:layoff')});
-    on('leaveRoom',()=>{if(state.solo){state.solo=false;state.room=null;state.hand=[];state.selected.clear();state.soloPlayers=[];state.message='ออกจากโหมดฝึกซ้อมแล้ว';render();return}state.socket?.disconnect();state.socket=null;state.room=null;state.hand=[];state.code='';state.isHost=false;connect();render()});
-    on('dailyReward',()=>{const today=new Date().toDateString();if(localStorage.getItem('dummyDaily')===today){state.error='รับเหรียญวันนี้ไปแล้ว';}else{state.coins+=500;localStorage.setItem('dummyDaily',today);state.message='รับเหรียญฟรี +500 แล้ว!';saveWallet()}render()});
-    on('saveName',()=>{readName();state.message='บันทึกชื่อแล้ว';render()});
-    app.querySelectorAll('[data-card]').forEach(el=>el.addEventListener('click',()=>{const id=el.dataset.card;state.selected.has(id)?state.selected.delete(id):state.selected.add(id);render()}));
-    app.querySelectorAll('[data-buy]').forEach(el=>el.addEventListener('click',()=>{const s=skins.find(x=>x.id===el.dataset.buy);if(!s)return;const balance=s.currency==='gem'?state.gems:state.coins;if(balance<s.price){state.error='ยอดเงินในเกมไม่พอ';render();return}if(s.currency==='gem')state.gems-=s.price;else state.coins-=s.price;state.owned.push(s.id);state.skin=s.id;saveWallet();state.message='ซื้อสกิน '+s.name+' สำเร็จ';render()}));
-    app.querySelectorAll('[data-equip]').forEach(el=>el.addEventListener('click',()=>{state.skin=el.dataset.equip;saveWallet();state.message='เปลี่ยนสกินแล้ว';render()}));
-    app.querySelectorAll('[data-gems]').forEach(el=>el.addEventListener('click',()=>{state.gems+=Number(el.dataset.gems);saveWallet();state.message='เพิ่มเพชรเดโมแล้ว (ไม่มีการชำระเงินจริง)';render()}));
-  }
-  connect();render();
-})();
+function mv(d){if(!sel.size)return;const o=d<0?ho:[...ho].reverse();for(let i=1;i<o.length;i++)if(sel.has(o[i])&&!sel.has(o[i-1]))[o[i-1],o[i]]=[o[i],o[i-1]];ho=d<0?o:o.reverse();render()}
+function srt(){sm^=1;ho.sort((a,b)=>sm?(ALL[a].s-ALL[b].s||ALL[a].r-ALL[b].r):(ALL[a].r-ALL[b].r||ALL[a].s-ALL[b].s));render()}
+function buy(id){const t=TH.find(x=>x.id===id);if(!t)return;if(!sv.own.includes(id)){if(sv.coins<t.price){hint='เหรียญไม่พอ';return render()}sv.coins-=t.price;sv.own.push(id)}sv.eq=id;save();applyTheme();render()}
+function homeView(){const t=TH.find(x=>x.id==sv.eq)||TH[0];wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><div class=who><span class=av>${av(sv.name)}</span><b>${esc(sv.name||'')}</b><span class=coin>🪙 ${sv.coins}</span></div><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"><button class=org onclick=solo()>🤖 เล่นคนเดียวกับบอท</button><button class=blue onclick="go('lobby')">🌐 เล่นออนไลน์กับเพื่อน</button><button class=g onclick="go('shop')">🛍️ ร้านค้า</button><p>ธีมไพ่: ${t.n} · เล่นได้สูงสุด 4 ที่นั่ง</p>`)}
+function shopView(){wrap(`<h2>🛍️ ร้านค้า</h2><p>เหรียญ <b class=coin>🪙 ${sv.coins}</b></p><div class=shopg>${TH.map(t=>{const own=sv.own.includes(t.id),no=!own&&sv.coins<t.price,cur=sv.eq==t.id;return `<div class=item><div class=pv style="--card:${t.card};--blk:${t.blk};--red:${t.red};--edge:${t.edge};--b1:${t.b1};--b2:${t.b2}"><span class=c>A<span>♠</span></span><span class="c r">K<span>♥</span></span><span class=back style="width:32px;height:44px;cursor:default"></span></div><b>${t.n}</b><button class="${own?(cur?'g':'blue'):'org'}" ${no?'disabled':''} onclick="buy('${t.id}')">${own?(cur?'ใช้อยู่ ✓':'ใช้ธีมนี้'):'🪙 '+t.price}</button></div>`}).join('')}</div><button class=g onclick="go('home')">‹ กลับ</button>`)}
+function conn() {
+  if (sock || noio) return;
+  if (!window.io) { noio = true; lerr = 'โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'; return; }
+  sock = io(CFG.BACKEND_URL || undefined, { transports: ['websocket', 'polling'] });
+  sock.on('connect', () => { lerr = ''; authed = true; if (soloPending && !code) mk(); render(); });
+  sock.on('connect_error', () => { lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
+  sock.on('system:error', m => { hint = m; lerr = m; render(); });
+  sock.on('me', m => { sv = m; applyTheme(); render(); });
+  sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
+  sock.on('room:lobby', l => { lob = l; render(); });
+  sock.on('game:state', s => { S = s; screen = 'game'; if (!s.over) paid = false; if (s.over && !paid) { paid = true; const pts = s.res?.pts || []; gain = Math.max(10, pts[s.my] || 0) + ((pts[s.my] || 0) === Math.max(...pts) ? 50 : 0); sv.coins += Math.max(0, gain); save(); if (s.res) { s.res.gain = s.res.gain || []; s.res.gain[s.my] = Math.max(0, gain); } } else if (s.over && s.res && s.res.gain) gain = s.res.gain[s.my] || 0; sel = new Set([...sel].filter(i => s.hand.includes(i))); render(); });
+}
+function onAuth(r) {}
+function auth(kind) {}
+function out() { leave(); }
+function authView() { wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><input id=au placeholder="ชื่อผู้ใช้" maxlength=14 autocomplete=username><input id=ap type=password placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete=current-password><button onclick="auth('login')">เข้าสู่ระบบ</button><button class=g onclick="auth('register')">สมัครสมาชิก (รับ 100 🪙)</button>${aerr || lerr ? `<p style="color:var(--gold)">${esc(aerr || lerr)}</p>` : ''}`); }
+const emit = a => sock && sock.emit('game:act', a);
+const room = () => { conn(); if (!sock) return render(); };
+function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); sock.emit('room:create', { name: nick }); }
+function jn() { const c = ($('cd').value || '').trim(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick }); } }
+const begin = () => sock.emit('game:start');
+function play() { go('lobby'); }
+function solo() { soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); }
+function leave() { if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
+function lobbyView() {
+  if (screen === 'home') return homeView(); if (screen === 'shop') return shopView(); conn();
+  let b;
+  if (code) {
+    const pl = lob ? lob.players : [];
+    b = `<p>รหัสห้อง</p><div style="font-size:32px;font-weight:700;letter-spacing:4px">${esc(code)}</div><p>ส่งรหัสให้เพื่อน (สูงสุด 4 คน) ระบบเติมบอทให้ครบ 4 ที่นั่ง</p>${pl.map(p => `<div class=row><span>${esc(p.name)}${p.host ? ' 👑' : ''}</span><small>${p.connected ? 'ออนไลน์' : 'หลุด'}</small></div>`).join('')}${isHost ? '<button onclick=begin()>เริ่มเกม</button>' : '<p>รอเจ้าของห้องกดเริ่มเกม...</p>'}<button class=g onclick=leave()>ออกจากห้อง</button>`;
+  } else b = `<input id=au placeholder="ชื่อเล่น" maxlength=14 value="${esc(nick)}"><button onclick=mk()>สร้างห้อง</button><input id=cd placeholder="รหัสห้อง" maxlength=6><button class=g onclick=jn()>เข้าห้อง</button><button class=g onclick="go('home')">‹ กลับ</button>`;
+  wrap(`<h2>ห้องออนไลน์</h2>${b}${lerr ? `<p style="color:var(--gold)">${esc(lerr)}</p>` : ''}`);
+}
+const face = (id, cls = '', x = '') => { const c = ALL[id]; return `<button ${x} class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}${cls}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; };
+const mini = id => { const c = ALL[id]; return `<span class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}">${RK[c.r]}<span>${SU[c.s]}</span></span>`; };
+const mine = () => S && S.cur === S.my && !S.over;
+function drw() { if (mine() && S.phase === 'draw') { hint = ''; emit({ t: 'draw' }); } }
+function tk(i) { if (!mine() || S.phase !== 'draw') return; if (!S.ok[i]) { hint = 'เก็บไม่ได้ ต้องเกิดชุดกับใบนี้ได้ก่อน'; return render(); } hint = ''; emit({ t: 'take', i }); }
+function pick(id) { if (!mine() || S.phase !== 'play') return; const on = !sel.has(id); on ? sel.add(id) : sel.delete(id); const e = document.querySelector('.hand [data-id="' + id + '"]'); if (e) e.classList.toggle('s', on); }
+const act = a => { hint = ''; sel = new Set(); emit(a); };
+function mld() { if (mine() && S.phase === 'play') act({ t: 'meld', ids: [...sel] }); }
+function dep(k) { if (mine() && S.phase === 'play' && sel.size) act({ t: 'dep', k, ids: [...sel] }); }
+function adep() { if (mine() && S.phase === 'play') act({ t: 'autodep' }); }
+function dsc() { if (!mine() || S.phase !== 'play') return; if (S.hand.length === 1) return act({ t: 'knock' }); // ใบสุดท้ายคว่ำเพื่อน็อก
+  if (sel.size !== 1) { hint = 'เลือกไพ่ 1 ใบเพื่อทิ้ง'; return render(); } act({ t: 'dis', id: [...sel][0] }); }
+function render() {
+  if (!authed) { conn(); return authView(); }
+  if (screen !== 'game' || !S) return lobbyView();
+  const me = S.P[S.my], ids = S.hand, fresh = new Set(ids.filter(i => !ho.includes(i)));
+  ho = ho.filter(i => ids.includes(i)); const miss = ids.filter(i => !ho.includes(i)).map(i => ALL[i]);
+  if (!ho.length) miss.sort((a, b) => a.s - b.s || a.r - b.r); ho.push(...miss.map(c => c.id));
+  const pm = prevM, pd = prevD, sl = $('dp') ? $('dp').scrollLeft : 0; prevM = S.melds.length; prevD = S.disc.length;
+  let h = hint; if (!h) h = S.over ? 'จบเกม' : !mine() ? S.P[S.cur].n + ' กำลังเล่น...' : S.phase === 'draw' ? 'ตาคุณ จั่วจากกอง หรือแตะไพ่ในกองทิ้งเพื่อเก็บ' : S.hand.length === 1 ? 'เหลือใบเดียว! กด 🂠 คว่ำน็อก' : S.must != null ? 'เกิดชุดที่มี ' + cn(ALL[S.must]) + ' ก่อน' : 'เลือกไพ่ แล้วเกิด / ฝาก / ทิ้ง';
+  const opp = []; for (let k = 1; k < S.P.length; k++) opp.push(S.P[(S.my + k) % S.P.length]);
+  // ชุดที่เกิดวางไว้ที่แถวของเจ้าของชุดนั้น (แถวของเราอยู่ล่างสุด ใกล้มือเรา)
+  const lane = pi => { const ms = S.melds.map((m, k) => ({ m, k })).filter(x => x.m.o === pi); if (!ms.length) return ''; const p = S.P[pi];
+    return `<div class="lane${pi === S.my ? ' me' : ''}"><div class=who2><span class=av>${av(p.n)}</span><b>${pi === S.my ? 'คุณ' : esc(p.n)}</b></div><div class=ms>${ms.map(({ m, k }) => `<div class="m${k >= pm ? ' new' : ''}" onclick="dep(${k})">${m.cs.map(mini).join('')}</div>`).join('')}</div></div>`; };
+  const lanes = [...opp.map(p => p.i), S.my].map(lane).join('');
+  $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>ห้อง ${esc(code)}</span></div><div class=opps>${opp.map(p => `<div class="o${S.cur === p.i && !S.over ? ' on' : ''}"><span class=av>${av(p.n)}</span><b>${esc(p.n)}</b><span>🂠 ${p.n_cards} · ${p.pts} แต้ม</span></div>`).join('')}</div>
+ <div class="turn${mine() ? ' mine' : ''}">${S.over ? 'จบเกม' : mine() ? '🟢 ถึงตาคุณ!' : '⏳ ถึงตา ' + av(S.P[S.cur].n) + ' ' + esc(S.P[S.cur].n)}</div>
+ <div class=order>${S.P.map((_, k) => S.P[(S.cur + k) % S.P.length]).map(p => `<span class="ch${p.i === S.cur && !S.over ? ' on' : ''}${p.i === S.my ? ' me' : ''}">${av(p.n)} ${p.i === S.my ? 'คุณ' : esc(p.n)}</span>`).join('<i>▸</i>')}</div><div class=felt>
+ <div class=tbl>${lanes || '<div class=empty>ยังไม่มีใครเกิด</div>'}</div>
+ <div class=piles><div><button class=back onclick=drw() aria-label="จั่ว">${S.stock}</button><div class=lab>กองจั่ว</div></div>
+ <div style="flex:1;min-width:0"><div class=dp id=dp>${S.disc.map(([id, hd], i) => face(id, ' d' + (hd ? ' sp' : '') + (S.ok[i] ? ' ok' : '') + (i >= pd ? ' new' : ''), `onclick=tk(${i})`)).join('')}</div><div class=lab>กองทิ้ง ${S.disc.length} ใบ · แตะใบที่ต้องการ จะเก็บใบนั้นและใบที่ทับอยู่ (ขอบทอง = เกิดได้)</div></div></div></div>
+ </div><div class=colR><div class=logs>${S.logs.slice(-2).map(esc).join('<br>')}</div>
+ <div class=hint>${esc(h)}<small>${esc(me.n)} ${me.pts} แต้ม</small></div>
+ <div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
+ <div class=tools><button onclick="mv(-1)">◀ ซ้าย</button><button onclick="mv(1)">ขวา ▶</button><button onclick=srt()>เรียงไพ่</button></div>
+ <div class=acts><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div>
+ ${S.over ? (`<div class=ov><div class=box><h2>${S.res.k == null ? 'ไพ่หมดกอง' : esc(S.P[S.res.k].n) + ' น็อก!'}</h2>${S.down != null ? `<p>ใบที่คว่ำเพื่อน็อก: ${mini(S.down)}</p>` : ''}<p style="color:var(--gold)">ได้รับ +${(S.res.gain||[])[S.my]||0} 🪙 (รวม ${sv.coins})</p>${S.P.map(p => ({ p, pt: S.res.pts[p.i] })).sort((a, b) => b.pt - a.pt).map(({ p, pt }) => `<div class=row><span>${esc(p.n)}<small>${S.res.nt[p.i].join(' · ')}</small></span><b>${pt}</b></div>`).join('')}${isHost ? '<button onclick=begin()>เล่นอีกตา</button>' : '<p>รอเจ้าของห้องเริ่มตาใหม่...</p>'}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`) : ''}`;
+  const d = $('dp'); if (d) d.scrollLeft = S.disc.length !== pd ? d.scrollWidth : sl;
+}
+try { applyTheme(); } catch (e) {}
+render();
+
+
