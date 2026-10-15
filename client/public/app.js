@@ -99,8 +99,8 @@ function render() {
  <div class="turn${mine() ? ' mine' : ''}">${S.over ? 'จบเกม' : mine() ? '🟢 ถึงตาคุณ!' : '⏳ ถึงตา ' + av(S.P[S.cur].n) + ' ' + esc(S.P[S.cur].n)}</div>
  <div class=order>${S.P.map((_, k) => S.P[(S.cur + k) % S.P.length]).map(p => `<span class="ch${p.i === S.cur && !S.over ? ' on' : ''}${p.i === S.my ? ' me' : ''}">${av(p.n)} ${p.i === S.my ? 'คุณ' : esc(p.n)}</span>`).join('<i>▸</i>')}</div><div class=felt>
  <div class="tbl seat-table">${lanes || '<div class=empty>ยังไม่มีใครเกิด</div>'}</div>
- <div class=piles><div><button class=back onclick=openPile aria-label="เปิดกองจั่วและเลือกไพ่">${S.stock}</button><div class=lab>กองจั่ว</div></div>
- <div style="flex:1;min-width:0"><div class=dp id=dp>${S.disc.map(([id, hd], i) => face(id, ' d' + (hd ? ' sp' : '') + (S.ok[i] ? ' ok' : '') + (i >= pd ? ' new' : ''), `onclick=openPile`)).join('')}</div><div class=lab>กองทิ้ง ${S.disc.length} ใบ · กดกองจั่วเพื่อเลือกเก็บไพ่</div></div></div></div>
+ <div class=piles><div><button class=back onclick=openPile() aria-label="เปิดกองจั่วและเลือกไพ่">${S.stock}</button><div class=lab>กองจั่ว</div></div>
+ <div style="flex:1;min-width:0"><div class=dp id=dp>${S.disc.map(([id, hd], i) => face(id, ' d' + (hd ? ' sp' : '') + (S.ok[i] ? ' ok' : '') + (i >= pd ? ' new' : ''), `onclick=openPile()`)).join('')}</div><div class=lab>กองทิ้ง ${S.disc.length} ใบ · กดกองจั่วเพื่อเลือกเก็บไพ่</div></div></div></div>
  </div><div class=colR><div class=logs>${S.logs.slice(-2).map(esc).join('<br>')}</div>
  <div class=hint>${esc(h)}<small>${esc(me.n)} ${me.pts} แต้ม</small></div>
  <div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
