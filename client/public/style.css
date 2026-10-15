@@ -189,3 +189,19 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
  .top{padding:2px 8px 0}.pill{font-size:11px;padding:0 8px}
 }
 .cstat{background:#000a;border:2px solid var(--gold);border-radius:12px;padding:8px 10px;color:#ffe9b0;font-size:13px;line-height:1.4;margin:8px 0}
+
+/* ===== ตัวละครนั่งถือไพ่ที่ขอบโต๊ะ (ผู้เล่นเลือกเอง บอทสุ่ม) ===== */
+.chars{display:flex;gap:10px;justify-content:center;margin:4px 0 8px}
+.char-opt{flex:1;max-width:150px;background:#0c1536;border:2px solid var(--line);border-radius:14px;padding:6px 4px;color:#fff;font:700 12px Sarabun,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.char-opt img{height:84px;width:auto;max-width:100%;object-fit:contain}
+.char-opt.on{border-color:var(--gold);box-shadow:0 0 0 3px #f2b84b66;background:#1d2a5e}
+.box .char-opt{margin:0;width:auto;padding:6px 4px;font-size:12px;background:#0c1536;box-shadow:none}
+.box .char-opt.on{background:#1d2a5e;box-shadow:0 0 0 3px #f2b84b66}
+.chr{display:block;flex:none;line-height:0}
+.chr .avatar-img{display:block;width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 2px #0008)}
+.pl-top .chr,.pl-bottom .chr{width:54px}.pl-left .chr,.pl-right .chr{width:46px}
+.pl.active .chr .avatar-img{filter:drop-shadow(0 0 8px #f2b84b) drop-shadow(0 0 3px #f2b84b);animation:bob 1s ease-in-out infinite}
+.pl.me .chr .avatar-img{filter:drop-shadow(0 0 4px #f2b84b99) drop-shadow(0 2px 2px #0008)}
+@media (max-width:360px){.pl-top .chr,.pl-bottom .chr{width:46px}.pl-left .chr,.pl-right .chr{width:38px}}
+@media (orientation:landscape) and (max-height:600px){.pl-top .chr,.pl-bottom .chr{width:36px}.pl-left .chr,.pl-right .chr{width:34px}}
+@media (prefers-reduced-motion:reduce){.pl.active .chr .avatar-img{animation:none}}

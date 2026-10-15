@@ -9,6 +9,8 @@ const sp = c => (c.r === 2 && c.s === 3) || (c.r === 12 && c.s === 0); // สเ
 const val = c => (sp(c) ? 50 : c.r === 1 ? 15 : c.r >= 10 ? 10 : 5);
 const sc = (c, head) => (head ? (sp(c) ? 100 : 50) : val(c));
 const BOTS = ['น้องมี่', 'ลุงหัว', 'ป้าน็อก', 'ตาโอ', 'พี่เกิด'];
+const CHARS = ['boy', 'girl']; // ต้องตรงกับ id ใน client/public/skin/skins.json (characters)
+const rndChar = () => CHARS[rnd(CHARS.length)];
 const rnd = n => require('crypto').randomInt(n);
 
 // เรียงชุด: ตอง (เลขเดียวกัน ≤4 ดอกต่างกัน) หรือ เรียงดอกเดียวกัน ≥3 (A ต่ำหรือสูงได้ ไม่วนรอบ)
@@ -50,6 +52,7 @@ function newGame(humans) {
   const total = Math.max(4, humans.length);
   const P = Array.from({ length: total }, (_, i) => ({
     i, id: humans[i] ? humans[i].id : null, n: humans[i] ? humans[i].n : BOTS[i - humans.length],
+    ch: humans[i] && CHARS.includes(humans[i].ch) ? humans[i].ch : rndChar(), // ผู้เล่นเลือกเอง / บอทสุ่ม
     bot: !humans[i], h: d.splice(0, 7), pts: 0, melded: false, suits: new Set(),
   }));
   const hd = d.pop(); hd.head = true;
@@ -174,12 +177,12 @@ function view(G, seat) {
     v: G.v, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
     hand: me.h.map(c => c.id), stock: G.stock.length, disc: G.disc.map(pub),
     melds: G.melds.map(m => ({ o: m.o, cs: m.cs.map(c => c.id) })),
-    P: G.P.map(p => ({ i: p.i, n: p.n, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
+    P: G.P.map(p => ({ i: p.i, n: p.n, ch: p.ch, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
     // ไพ่ที่เก็บแล้วเกิดได้ (ใช้ไฮไลต์) — คำนวณจากไพ่ของตัวเองเท่านั้น
     ok: G.cur === seat && G.phase === 'draw' && !G.over ? G.disc.map((_, i) => canTake(G, me, i)) : [],
   };
 }
-module.exports = { newGame, act, botTurn, view, ord, cands, canTake };
+module.exports = { newGame, act, botTurn, view, ord, cands, canTake, CHARS };
 
 return module.exports;
 })()
