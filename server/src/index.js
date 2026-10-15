@@ -18,7 +18,7 @@ const roomCode = () => crypto.randomBytes(3).toString('hex').toUpperCase();
 
 function publicLobby(room) {
   const hostIndex = room.players.findIndex(p => p.connected && p.id);
-  return { code: room.code, started: !!room.game && !room.game.over, players: room.players.map((p,i) => ({ name:p.name, ch:p.ch, connected:p.connected, host:i===hostIndex, seat:i })), maxPlayers:MAX_PLAYERS };
+  return { code: room.code, started: !!room.game && !room.game.over, players: room.players.map((p,i) => ({ name:p.name, ch:p.ch, bg:p.bg, connected:p.connected, host:i===hostIndex, seat:i })), maxPlayers:MAX_PLAYERS };
 }
 function emitLobby(room) { io.to(room.code).emit('room:lobby', publicLobby(room)); }
 function getRoom(socket) { return rooms.get(socket.data.roomCode); }
@@ -49,15 +49,15 @@ function startGame(room) {
   room.players = room.players.filter(p => p.connected && p.id);
   if (room.players.length < 1 || room.players.length > MAX_PLAYERS) return false;
   if (room.botTimer) { clearTimeout(room.botTimer); room.botTimer = null; }
-  room.game = Engine.newGame(room.players.map(p => ({ id:p.id, n:p.name, ch:p.ch })));
+  room.game = Engine.newGame(room.players.map(p => ({ id:p.id, n:p.name, ch:p.ch, bg:p.bg })));
   room.game.v++;
   emitStates(room);
   scheduleBots(room);
   return true;
 }
-function joinRoom(socket, room, name, ch) {
+function joinRoom(socket, room, name, ch, bg) {
   const clean = String(name || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น';
-  room.players.push({ id:socket.id, name:clean, ch:Engine.CHARS.includes(ch) ? ch : null, connected:true });
+  room.players.push({ id:socket.id, name:clean, ch:Engine.CHARS.includes(ch) ? ch : null, bg:Engine.BGS.includes(bg) ? bg : null, connected:true });
   socket.data.roomCode = room.code;
   socket.join(room.code);
   socket.emit('room:joined', { code:room.code, host:room.players.length===1 });
@@ -89,20 +89,20 @@ app.get('/', (_req,res) => res.send('Dummy Online backend is running'));
 
 io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
-  socket.on('room:create', ({name,ch}={}) => {
+  socket.on('room:create', ({name,ch,bg}={}) => {
     if (socket.data.roomCode) return socket.emit('system:error','คุณอยู่ในห้องแล้ว');
     let code; do { code = roomCode(); } while (rooms.has(code));
     const room = { code, players:[], game:null, botTimer:null };
     rooms.set(code,room);
-    joinRoom(socket,room,name,ch);
+    joinRoom(socket,room,name,ch,bg);
   });
-  socket.on('room:join', ({code,name,ch}={}) => {
+  socket.on('room:join', ({code,name,ch,bg}={}) => {
     if (socket.data.roomCode) return socket.emit('system:error','คุณอยู่ในห้องแล้ว');
     const room = rooms.get(String(code||'').trim().toUpperCase());
     if (!room) return socket.emit('system:error','ไม่พบห้องนี้');
     if (room.game && !room.game.over) return socket.emit('system:error','เกมเริ่มแล้ว เข้าห้องไม่ได้');
     if (room.players.length >= MAX_PLAYERS) return socket.emit('system:error','ห้องเต็มแล้ว (4 คน)');
-    joinRoom(socket,room,name,ch);
+    joinRoom(socket,room,name,ch,bg);
   });
   socket.on('game:start', () => {
     const room = getRoom(socket);

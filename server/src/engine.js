@@ -9,16 +9,19 @@ const sp = c => (c.r === 2 && c.s === 3) || (c.r === 12 && c.s === 0); // สเ
 const val = c => (sp(c) ? 50 : c.r === 1 ? 15 : c.r >= 10 ? 10 : 5);
 const sc = (c, head) => (head ? (sp(c) ? 100 : 50) : val(c));
 const BOTS = ['น้องมี่', 'ลุงหัว', 'ป้าน็อก', 'ตาโอ', 'พี่เกิด'];
+const BGS = ['sunset', 'sakura', 'night', 'forest', 'gold']; // พื้นหลังที่นั่งรายผู้เล่น ต้องตรงกับ skins.json (backgrounds)
+const rndBg = () => BGS[rnd(BGS.length)];
 const CHARS = ['boy', 'girl']; // ต้องตรงกับ id ใน client/public/skin/skins.json (characters)
 const rndChar = () => CHARS[rnd(CHARS.length)];
 const rnd = n => require('crypto').randomInt(n);
 
 // เรียงชุด: ตอง (เลขเดียวกัน ≤4 ดอกต่างกัน) หรือ เรียงดอกเดียวกัน ≥3 (A ต่ำหรือสูงได้ ไม่วนรอบ)
+// กติกา: A เป็นไพ่สูงเท่านั้น (Q-K-A เกิดได้ แต่ A-2-3 และ K-A-2 เกิดไม่ได้)
 function ord(cs) {
   if (cs.length < 3) return null;
   if (cs.every(c => c.r === cs[0].r)) return cs.length <= 4 && new Set(cs.map(c => c.s)).size === cs.length ? cs : null;
   if (!cs.every(c => c.s === cs[0].s)) return null;
-  for (const hi of [0, 1]) {
+  for (const hi of [1]) {
     const a = cs.map(c => ({ c, v: hi && c.r === 1 ? 14 : c.r })).sort((x, y) => x.v - y.v);
     if (a.every((x, i) => !i || x.v === a[i - 1].v + 1)) return a.map(x => x.c);
   }
@@ -29,7 +32,7 @@ function cands(h) {
   for (let r = 1; r <= 13; r++) { const g = h.filter(c => c.r === r); if (g.length >= 3) o.push(g); }
   for (let s = 0; s < 4; s++) {
     const g = h.filter(c => c.s === s);
-    for (const hi of [0, 1]) {
+    for (const hi of [1]) {
       const a = g.map(c => ({ c, v: hi && c.r === 1 ? 14 : c.r })).sort((x, y) => x.v - y.v); let run = [];
       a.forEach((x, i) => { if (i && x.v === a[i - 1].v + 1) run.push(x.c); else { if (run.length >= 3) o.push(run); run = [x.c]; } });
       if (run.length >= 3) o.push(run);
@@ -52,6 +55,7 @@ function newGame(humans) {
   const total = Math.max(4, humans.length);
   const P = Array.from({ length: total }, (_, i) => ({
     i, id: humans[i] ? humans[i].id : null, n: humans[i] ? humans[i].n : BOTS[i - humans.length],
+    bg: humans[i] && BGS.includes(humans[i].bg) ? humans[i].bg : rndBg(),
     ch: humans[i] && CHARS.includes(humans[i].ch) ? humans[i].ch : rndChar(), // ผู้เล่นเลือกเอง / บอทสุ่ม
     bot: !humans[i], h: d.splice(0, 7), pts: 0, melded: false, suits: new Set(),
   }));
@@ -177,12 +181,12 @@ function view(G, seat) {
     v: G.v, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
     hand: me.h.map(c => c.id), stock: G.stock.length, disc: G.disc.map(pub),
     melds: G.melds.map(m => ({ o: m.o, cs: m.cs.map(c => c.id) })),
-    P: G.P.map(p => ({ i: p.i, n: p.n, ch: p.ch, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
+    P: G.P.map(p => ({ i: p.i, n: p.n, ch: p.ch, bg: p.bg, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
     // ไพ่ที่เก็บแล้วเกิดได้ (ใช้ไฮไลต์) — คำนวณจากไพ่ของตัวเองเท่านั้น
     ok: G.cur === seat && G.phase === 'draw' && !G.over ? G.disc.map((_, i) => canTake(G, me, i)) : [],
   };
 }
-module.exports = { newGame, act, botTurn, view, ord, cands, canTake, CHARS };
+module.exports = { newGame, act, botTurn, view, ord, cands, canTake, CHARS, BGS };
 
 return module.exports;
 })()

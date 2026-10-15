@@ -190,67 +190,49 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
 }
 .cstat{background:#000a;border:2px solid var(--gold);border-radius:12px;padding:8px 10px;color:#ffe9b0;font-size:13px;line-height:1.4;margin:8px 0}
 
-/* ===== ตัวละครนั่งถือไพ่ที่ขอบโต๊ะ (ผู้เล่นเลือกเอง บอทสุ่ม) ===== */
+/* ===== v8: ตัวละครขนาดเท่ากัน / พื้นหลังรายผู้เล่น / แผงไพ่ (dock) ที่ใส่สกินได้ ===== */
+:root{--chr:92px;--btn-img:none;--dock-bg:linear-gradient(#0000,#0004);--dock-border:#ffffff30;
+ --b-blue-1:#4aa3ff;--b-blue-2:#1f6fe0;--b-blue-3:#134aa0;--b-org-1:#ffa13a;--b-org-2:#f0640d;--b-org-3:#a9440a;
+ --b-grn-1:#4cd36f;--b-grn-2:#1f9c4a;--b-grn-3:#14703a;--b-g-1:#4a5886;--b-g-2:#323d66;--b-g-3:#1b2240;--b-tool-1:#0006;--b-tool-2:#0006;--b-tool-3:#0000}
+@media (max-width:360px){:root{--chr:80px}}
+@media (orientation:landscape) and (max-height:600px){:root{--chr:54px}}
 .chars{display:flex;gap:10px;justify-content:center;margin:4px 0 8px}
 .char-opt{flex:1;max-width:150px;background:#0c1536;border:2px solid var(--line);border-radius:14px;padding:6px 4px;color:#fff;font:700 12px Sarabun,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 .char-opt img{height:84px;width:auto;max-width:100%;object-fit:contain}
 .char-opt.on{border-color:var(--gold);box-shadow:0 0 0 3px #f2b84b66;background:#1d2a5e}
-.box .char-opt{margin:0;width:auto;padding:6px 4px;font-size:12px;background:#0c1536;box-shadow:none}
-.box .char-opt.on{background:#1d2a5e;box-shadow:0 0 0 3px #f2b84b66}
+.box .char-opt{margin:0;width:auto;padding:6px 4px;font-size:12px;background:#0c1536;box-shadow:none}.box .char-opt.on{background:#1d2a5e;box-shadow:0 0 0 3px #f2b84b66}
+.swatches{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:2px 0 6px}
+.box .sw{width:42px;height:42px;margin:0;padding:0;border-radius:12px;border:2px solid #fff5;font-size:16px;color:#fff;text-shadow:0 1px 2px #000a;box-shadow:none}
+.box .dk{width:auto;flex:1;min-width:84px;margin:0;padding:10px 6px;border-radius:12px;border:2px solid #fff5;font-size:13px;color:#fff;text-shadow:0 1px 2px #000a;box-shadow:none}
+.box .sw.on,.box .dk.on{border-color:var(--gold);box-shadow:0 0 0 3px #f2b84b88}
+/* ตัวละคร: ขนาดเท่ากันทุกตัว (กรอบ --chr) ภาพชิดล่าง */
 .chr{display:block;flex:none;line-height:0}
-.chr .avatar-img{display:block;width:100%;height:auto;object-fit:contain;filter:drop-shadow(0 2px 2px #0008)}
-.pl-top .chr,.pl-bottom .chr{width:54px}.pl-left .chr,.pl-right .chr{width:46px}
-.pl.active .chr .avatar-img{filter:drop-shadow(0 0 8px #f2b84b) drop-shadow(0 0 3px #f2b84b);animation:bob 1s ease-in-out infinite}
-.pl.me .chr .avatar-img{filter:drop-shadow(0 0 4px #f2b84b99) drop-shadow(0 2px 2px #0008)}
-@media (max-width:360px){.pl-top .chr,.pl-bottom .chr{width:46px}.pl-left .chr,.pl-right .chr{width:38px}}
-@media (orientation:landscape) and (max-height:600px){.pl-top .chr,.pl-bottom .chr{width:36px}.pl-left .chr,.pl-right .chr{width:34px}}
-@media (prefers-reduced-motion:reduce){.pl.active .chr .avatar-img{animation:none}}
-
-/* ===== v7: ตัวละครใหญ่ขึ้น นั่งหลังขอบโต๊ะ (ชั้นโต๊ะทับตัวละครบางส่วน) ===== */
-.arena{isolation:isolate}
-.pl{position:relative;z-index:1}
-.felt{position:relative;z-index:2}                 /* โต๊ะอยู่เหนือตัวละคร */
-.pl-top .chr{width:104px}.pl-bottom .chr{width:92px}.pl-left .chr,.pl-right .chr{width:78px}
-.pl-top{margin-bottom:-36px;align-items:flex-start}                      /* ตัวบน: ครึ่งล่างซ่อนหลังขอบโต๊ะ */
-.pl-top .pl-info{margin-top:6px;align-self:flex-start}
-.pl-left{margin-right:-24px;align-items:flex-start}                      /* ตัวซ้าย/ขวา: ด้านที่ติดโต๊ะซ่อนหลังขอบโต๊ะ */
-.pl-right{margin-left:-24px;align-items:flex-end}
-.pl-left .pl-info,.pl-right .pl-info{width:54px}
-.pl-left .pl-info{align-self:flex-start;align-items:center}.pl-right .pl-info{align-self:flex-end;align-items:center}
-.pl-left .pl-info b,.pl-right .pl-info b{max-width:54px}
-.pl-bottom{margin-top:-4px}
-.pl.active .chr .avatar-img{filter:drop-shadow(0 0 10px #f2b84b) drop-shadow(0 0 3px #f2b84b)}
-@media (max-width:360px){.pl-top .chr{width:84px}.pl-bottom .chr{width:76px}.pl-left .chr,.pl-right .chr{width:62px}
- .pl-top{margin-bottom:-28px}.pl-left{margin-right:-18px}.pl-right{margin-left:-18px}.pl-left .pl-info,.pl-right .pl-info{width:44px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:44px}}
-@media (orientation:landscape) and (max-height:600px){
- .pl-top .chr{width:62px}.pl-bottom .chr{width:56px}.pl-left .chr,.pl-right .chr{width:54px}
- .pl-top{margin-bottom:-20px}.pl-left{margin-right:-14px}.pl-right{margin-left:-14px}.pl-left .pl-info,.pl-right .pl-info{width:40px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:40px}}
-
-/* ===== v7: ตัวละครใหญ่ขึ้น นั่งที่ขอบโต๊ะจริง — โต๊ะทับตัวละครบางส่วน (บน/ซ้าย/ขวา) ===== */
+.arena .pl .chr,.dock-me .chr{width:var(--chr);height:calc(var(--chr)*1.08)}
+.chr .avatar-img{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 3px 3px #0009)}
+/* ที่นั่งของคู่แข่ง: พื้นหลังของผู้เล่นคนนั้น + โต๊ะ (z-index สูงกว่า) ทับตัวละครส่วนหนึ่ง */
 .felt{position:relative;z-index:3}
-.pl{position:relative;z-index:1}
-.pl-top .chr,.pl-bottom .chr{width:96px}
-.pl-left .chr,.pl-right .chr{width:70px}
-.pl-top{align-items:flex-start;margin-bottom:-34px}
-.pl-top .pl-info{margin-top:8px}
-.pl-left{margin-right:-22px}.pl-right{margin-left:-22px}
-.pl-left,.pl-right{width:auto}
-.pl-left .pl-info,.pl-right .pl-info{width:48px;align-items:center}
+.arena .pl{position:relative;z-index:1;border-radius:18px;padding:4px 8px;border:2px solid #ffffff40;box-shadow:0 3px 0 #0005;color:var(--ink,#fff)}
+.pl-info small{color:inherit;opacity:.85}.pl-info b{max-width:none}
+.pl-top{grid-column:2;grid-row:1;justify-self:center;align-items:flex-start;margin-bottom:calc(var(--chr)*-.40)}
+.pl-top .pl-info{margin-top:6px}
+.pl-left,.pl-right{flex-direction:column;align-self:center;width:auto;padding:4px 2px}
+.pl-left{grid-column:1;grid-row:2}.pl-right{grid-column:3;grid-row:2}
+.pl-left{margin-right:calc(var(--chr)*-.42)}.pl-right{margin-left:calc(var(--chr)*-.42)}.pl-left .chr{align-self:flex-start}.pl-right .chr{align-self:flex-end}
+.pl-left .pl-info,.pl-right .pl-info{width:max-content;min-width:46px;align-items:center}
 .pl-left .pl-info{align-self:flex-start}.pl-right .pl-info{align-self:flex-end}
-.pl-bottom{z-index:4;margin-top:-14px;align-items:flex-end}
-.pl-bottom .pl-info{margin-bottom:6px}
-.chr .avatar-img{filter:drop-shadow(0 3px 3px #0009)}
-@media (max-width:360px){.pl-top .chr,.pl-bottom .chr{width:78px}.pl-left .chr,.pl-right .chr{width:60px}.pl-top{margin-bottom:-28px}.pl-left{margin-right:-22px}.pl-right{margin-left:-22px}.pl-left .pl-info,.pl-right .pl-info{width:40px}}
-@media (orientation:landscape) and (max-height:600px){
- .pl-top .chr,.pl-bottom .chr{width:44px}.pl-left .chr,.pl-right .chr{width:46px}
- .pl-top{margin-bottom:-14px}.pl-bottom{margin-top:-6px}.pl-left{margin-right:-14px}.pl-right{margin-left:-14px}
- .pl-left .pl-info,.pl-right .pl-info{width:44px}
-}
-
-/* v7.1: ให้ซ้อนทับเฉพาะรูปตัวละคร ส่วนข้อความชื่อ/แต้มอยู่ในคอลัมน์เต็ม ไม่ถูกโต๊ะบัง */
-.pl-left,.pl-right{margin:0}
-.pl-left .chr{align-self:flex-start;margin-right:-22px}
-.pl-right .chr{align-self:flex-end;margin-left:-22px}
-.pl-left .pl-info,.pl-right .pl-info{width:max-content;min-width:44px}
-@media (max-width:360px){.pl-left .chr{margin-right:-20px}.pl-right .chr{margin-left:-20px}}
-@media (orientation:landscape) and (max-height:600px){.pl-left .chr{margin-right:-14px}.pl-right .chr{margin-left:-14px}}
+.arena{grid-template-rows:auto minmax(0,1fr)}
+.pl.active,.dock-me.active{box-shadow:0 0 0 3px var(--gold),0 0 14px #f2b84bcc}
+.pl.active .chr .avatar-img,.dock-me.active .chr .avatar-img{animation:bob 1s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.pl.active .chr .avatar-img,.dock-me.active .chr .avatar-img{animation:none}}
+/* แผงไพ่ของเรา (dock) = UI แยกที่ใส่สกินได้: ตัวละครเรา + มือ + ปุ่มเรียงไพ่ + ปุ่มคำสั่ง */
+.dock-wrap{position:relative}
+.dock-me{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;width:fit-content;margin:0 12px 0 auto;padding:4px 10px 0;border-radius:18px 18px 0 0;border:2px solid #ffffff40;border-bottom:0;color:var(--ink,#fff)}
+.dock-me .chr{height:calc(var(--chr)*.74);overflow:hidden}.dock-me .chr .avatar-img{height:calc(var(--chr)*1.08);object-position:center top}
+.dock-me .pl-info{padding-bottom:6px}
+.dock{position:relative;z-index:2;background:var(--dock-bg);border:2px solid var(--dock-border);border-radius:20px 20px 0 0;padding:4px 0 0}
+.dock .tools button{background:linear-gradient(var(--b-tool-1),var(--b-tool-2));box-shadow:0 2px 0 var(--b-tool-3)}
+.dock .acts button{background:var(--btn-img) center/100% 100% no-repeat,linear-gradient(var(--b-g-1),var(--b-g-2));box-shadow:0 4px 0 var(--b-g-3)}
+.dock .acts button.blue{background:var(--btn-img) center/100% 100% no-repeat,linear-gradient(var(--b-blue-1),var(--b-blue-2));box-shadow:0 4px 0 var(--b-blue-3)}
+.dock .acts button.org{background:var(--btn-img) center/100% 100% no-repeat,linear-gradient(var(--b-org-1),var(--b-org-2));box-shadow:0 4px 0 var(--b-org-3)}
+.dock .acts button.grn{background:var(--btn-img) center/100% 100% no-repeat,linear-gradient(var(--b-grn-1),var(--b-grn-2));box-shadow:0 4px 0 var(--b-grn-3)}
+@media (orientation:landscape) and (max-height:600px){.arena .pl{padding:2px 4px}.pl-top{margin-bottom:calc(var(--chr)*-.34)}.pl-left,.pl-right{padding:2px}.pl-left{margin-right:calc(var(--chr)*-.3)}.pl-right{margin-left:calc(var(--chr)*-.3)}.pl-left .pl-info,.pl-right .pl-info{min-width:0;font-size:9px}.dock-me{margin-right:6px}.dock-me .chr{height:calc(var(--chr)*.7)}.dock-me .chr .avatar-img{height:calc(var(--chr)*1.08)}}
