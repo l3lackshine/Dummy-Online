@@ -188,3 +188,4 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
  .pl-top .av,.pl-bottom .av{width:26px;height:26px;font-size:14px}
  .top{padding:2px 8px 0}.pill{font-size:11px;padding:0 8px}
 }
+.cstat{background:#000a;border:2px solid var(--gold);border-radius:12px;padding:8px 10px;color:#ffe9b0;font-size:13px;line-height:1.4;margin:8px 0}

@@ -1,4 +1,6 @@
 const CFG = window.DUMMY_CONFIG || {}, $ = id => document.getElementById(id);
+// ปลุกเซิร์ฟเวอร์ (Render ฟรีจะหลับเมื่อไม่มีคนใช้) ตั้งแต่เปิดหน้าเว็บ เพื่อไม่ให้ต้องรอตอนกดเล่น
+if (CFG.BACKEND_URL) { try { fetch(CFG.BACKEND_URL.replace(/\/$/, '') + '/health', { mode: 'no-cors' }).catch(() => {}); } catch (e) {} }
 const SU = ['♠', '♥', '♦', '♣'], RK = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const ALL = Array.from({ length: 52 }, (_, i) => ({ id: i, r: i % 13 + 1, s: (i / 13) | 0 }));
 const sp = c => (c.r === 2 && c.s === 3) || (c.r === 12 && c.s === 0), cn = c => RK[c.r] + SU[c.s];
@@ -27,7 +29,7 @@ const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'],av=n=>
 function mv(d){if(!sel.size)return;const o=d<0?ho:[...ho].reverse();for(let i=1;i<o.length;i++)if(sel.has(o[i])&&!sel.has(o[i-1]))[o[i-1],o[i]]=[o[i],o[i-1]];ho=d<0?o:o.reverse();render()}
 function srt(){sm^=1;ho.sort((a,b)=>sm?(ALL[a].s-ALL[b].s||ALL[a].r-ALL[b].r):(ALL[a].r-ALL[b].r||ALL[a].s-ALL[b].s));render()}
 function buy(id){const t=TH.find(x=>x.id===id);if(!t)return;if(!sv.own.includes(id)){if(sv.coins<t.price){hint='เหรียญไม่พอ';return render()}sv.coins-=t.price;sv.own.push(id)}sv.eq=id;save();applyTheme();render()}
-function homeView(){const t=TH.find(x=>x.id==sv.eq)||TH[0];wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><div class=who><span class=av>${av(sv.name)}</span><b>${esc(sv.name||'')}</b><span class=coin>🪙 ${sv.coins}</span></div><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"><button class=org onclick=solo()>🤖 เล่นคนเดียวกับบอท</button><button class=blue onclick="go('lobby')">🌐 เล่นออนไลน์กับเพื่อน</button><button class=g onclick="go('shop')">🛍️ ร้านค้า</button><p>ธีมไพ่: ${t.n} · เล่นได้สูงสุด 4 ที่นั่ง</p>`)}
+function homeView(){const t=TH.find(x=>x.id==sv.eq)||TH[0];wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><div class=who><span class=av>${av(sv.name)}</span><b>${esc(sv.name||'')}</b><span class=coin>🪙 ${sv.coins}</span></div>${connStatus()}<input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"><button class=org onclick=solo()>🤖 เล่นคนเดียวกับบอท</button><button class=blue onclick="go('lobby')">🌐 เล่นออนไลน์กับเพื่อน</button><button class=g onclick="go('shop')">🛍️ ร้านค้า</button><p>ธีมไพ่: ${t.n} · เล่นได้สูงสุด 4 ที่นั่ง</p>`)}
 function setDecor(kind,id){const key={characters:'dummyCharacterSkin',tables:'dummyTableSkin',backgrounds:'dummyBackgroundSkin',cards:'dummyCardSkin'}[kind];if(!key)return;localStorage.setItem(key,id);applyTheme();render()}
 function decorShop(){const cats=[['characters','สกินตัวละคร'],['tables','สกินโต๊ะ'],['backgrounds','พื้นหลัง'],['cards','สกินไพ่']];return `<h3>🎨 ของตกแต่งเพิ่มเติม</h3>${cats.map(([key,label])=>{const items=SKIN_REGISTRY[key]||[],store={characters:'dummyCharacterSkin',tables:'dummyTableSkin',backgrounds:'dummyBackgroundSkin',cards:'dummyCardSkin'}[key],cur=localStorage.getItem(store)||(items[0]||{}).id;return `<p>${label}</p><div class=decor-row>${items.map(x=>`<button class="decor-btn ${cur===x.id?'chosen':''}" onclick="setDecor('${key}','${esc(x.id)}')">${esc(x.name||x.n||x.id)}${cur===x.id?' ✓':''}</button>`).join('')}</div>`}).join('')}`}
 function shopView(){wrap(`<h2>🛍️ ร้านค้า</h2><p>เหรียญ <b class=coin>🪙 ${sv.coins}</b></p><div class=shopg>${TH.map(t=>{const own=sv.own.includes(t.id),no=!own&&sv.coins<t.price,cur=sv.eq==t.id;return `<div class=item><div class=pv style="--card:${t.card};--blk:${t.blk};--red:${t.red};--edge:${t.edge};--b1:${t.b1};--b2:${t.b2}"><span class=c>A<span>♠</span></span><span class="c r">K<span>♥</span></span><span class=back style="width:32px;height:44px;cursor:default"></span></div><b>${t.n}</b><button class="${own?(cur?'g':'blue'):'org'}" ${no?'disabled':''} onclick="buy('${t.id}')">${own?(cur?'ใช้อยู่ ✓':'ใช้ธีมนี้'):'🪙 '+t.price}</button></div>`}).join('')}</div>${decorShop()}<button class=g onclick="go('home')">‹ กลับ</button>`)}
@@ -54,7 +56,10 @@ function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || '�
 function jn() { const c = ($('cd').value || '').trim(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick }); } }
 const begin = () => sock.emit('game:start');
 function play() { go('lobby'); }
-function solo() { soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); }
+function connStatus() { // แสดงสถานะที่หน้าแรก: กำลังเชื่อมต่อ / เชื่อมต่อไม่ได้ (เดิมไม่แสดงอะไร ทำให้ดูเหมือนกดแล้วเข้าเล่นไม่ได้)
+  const w = soloPending || (soloRoom && !S), e = lerr ? '⚠️ ' + esc(lerr) : ''; if (!w && !e) return '';
+  return `<p class=cstat>${w ? '⏳ กำลังเข้าเกม... เซิร์ฟเวอร์ฟรีอาจหลับอยู่ ครั้งแรกใช้เวลาราว 1 นาที กรุณารอ' : ''}${w && e ? '<br>' : ''}${e}</p>`; }
+function solo() { soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); render(); }
 function leave() { if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
 function lobbyView() {
   if (screen === 'home') return homeView(); if (screen === 'shop') return shopView(); conn();
