@@ -40,7 +40,7 @@ const fit = (m, h, must) => {
   for (const c of m) { if (c === must) continue; const r = m.filter(x => x !== c); if (ord(r) && h.length - r.length >= 1) return r; }
   return null;
 };
-const canTake = (G, p, i) => !!G.disc[i] && cands([...p.h, ...G.disc.slice(i)]).some(m => m.includes(G.disc[i]));
+const canTake = (G, p, i) => { const first = G.disc[i]; if (!first) return false; const available = [...p.h, ...G.disc.slice(i)]; return cands(available).some(m => m.includes(first)); };
 const lg = (G, t) => { G.logs.push(t); if (G.logs.length > 30) G.logs.shift(); };
 
 // players: [{id, n}] (คนจริง) — เติมบอทให้ครบอย่างน้อย 4 คน

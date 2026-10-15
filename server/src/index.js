@@ -118,7 +118,8 @@ io.on('connection', socket => {
     const seat = findHumanSeat(room,socket.id);
     if (seat < 0) return socket.emit('system:error','ไม่พบที่นั่งของคุณ');
     const msg = Engine.act(room.game,seat,action||{});
-    if (msg) return socket.emit('system:error',msg);
+    if (msg) { socket.emit('game:action-result', { ok:false, error:msg, action:action && action.t }); return socket.emit('system:error',msg); }
+    socket.emit('game:action-result', { ok:true, action:action && action.t });
     room.game.v++;
     emitStates(room);
     scheduleBots(room);

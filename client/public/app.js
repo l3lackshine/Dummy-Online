@@ -37,7 +37,8 @@ function conn() {
   sock = io(CFG.BACKEND_URL || undefined, { transports: ['websocket', 'polling'] });
   sock.on('connect', () => { lerr = ''; authed = true; if (soloPending && !code) mk(); render(); });
   sock.on('connect_error', () => { lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
-  sock.on('system:error', m => { hint = m; lerr = m; render(); });
+  sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
+  sock.on('game:action-result', d => { if (d && d.ok) { hint = ''; } else { hint = 'จั่ว/เก็บไพ่ไม่สำเร็จ: ' + ((d && d.error) || 'ไม่ทราบสาเหตุ'); render(); } });
   sock.on('me', m => { sv = m; applyTheme(); render(); });
   sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
   sock.on('room:lobby', l => { lob = l; render(); });
@@ -47,7 +48,7 @@ function onAuth(r) {}
 function auth(kind) {}
 function out() { leave(); }
 function authView() { wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><input id=au placeholder="ชื่อผู้ใช้" maxlength=14 autocomplete=username><input id=ap type=password placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete=current-password><button onclick="auth('login')">เข้าสู่ระบบ</button><button class=g onclick="auth('register')">สมัครสมาชิก (รับ 100 🪙)</button>${aerr || lerr ? `<p style="color:var(--gold)">${esc(aerr || lerr)}</p>` : ''}`); }
-const emit = a => sock && sock.emit('game:act', a);
+const emit = a => { if (!sock || !sock.connected) { hint = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); return; } sock.emit('game:act', a); };
 const room = () => { conn(); if (!sock) return render(); };
 function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); sock.emit('room:create', { name: nick }); }
 function jn() { const c = ($('cd').value || '').trim(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick }); } }
@@ -79,7 +80,7 @@ function dsc() { if (!mine() || S.phase !== 'play') return; if (S.hand.length ==
 function pileModal(){if(!S)return;const cards=S.disc||[];const old=document.getElementById('pileModal');if(old)old.remove();const el=document.createElement('div');el.id='pileModal';el.className='pile-modal';el.innerHTML=`<div class='pile-dialog'><div class='pile-title'><b>เลือกไพ่จากกองทิ้ง</b><button class='pile-close' onclick=closePile()>✕</button></div><p>จั่วไพ่ใหม่ หรือเลือกไพ่จากกองทิ้ง ไพ่ที่เลือกและไพ่ที่ทิ้งทีหลังจะถูกเก็บไปด้วย และต้องเกิดโดยใช้ไพ่ใบแรกที่เลือก</p><button class='pile-draw' ${S.stock ? '' : 'disabled'} onclick='drw()'>🂠 จั่วไพ่จากกองจั่ว (${S.stock} ใบ)</button><div class='pile-all'>${cards.map(([id,hd],i)=>`<div class='pile-choice${S.ok[i]?' ok':''}' role='button' tabindex='0' onclick='choosePile(${i})'><span class='pile-index'>${i===0?'เก่าสุด':i===cards.length-1?'ล่าสุด':'ลำดับ '+(i+1)}</span>${mini(id)}${S.ok[i]?'<small>เกิดได้</small>':''}</div>`).join('')}</div><div class='pile-foot'>ไพ่ทั้งหมด ${cards.length} ใบ · เลือกไพ่ที่ต้องการเก็บ ระบบจะตรวจว่าต้องเกิดด้วยไพ่ใบแรกที่เลือก</div></div>`;document.body.appendChild(el)}
 function closePile(){document.getElementById('pileModal')?.remove()}
 function choosePile(i){tk(i)}
-function openPile(){if(!mine()||S.phase!=='draw'){hint='เปิดเลือกกองไพ่ได้เมื่อถึงตาคุณและยังไม่ได้จั่ว';return render()}pileModal()}
+function openPile(){if(!S)return;if(!mine()){hint='ยังไม่ถึงตาคุณ';return render()}if(S.phase!=='draw'){hint='คุณจั่วไปแล้วในตานี้';return render()}pileModal()}
 function render() {
   if (!authed) { conn(); return authView(); }
   if (screen !== 'game' || !S) return lobbyView();
