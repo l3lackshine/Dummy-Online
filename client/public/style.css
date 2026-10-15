@@ -125,3 +125,66 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
 .decor-row{display:flex;flex-wrap:wrap;gap:7px;margin:6px 0 12px}.decor-btn{flex:1;min-width:120px;border:1px solid #ffffff3b;border-radius:10px;background:#27375c;color:#fff;padding:9px;font-weight:700}.decor-btn.chosen{border:2px solid var(--gold);background:#6a5320}.avatar-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .felt{background-color:var(--bg);background-image:linear-gradient(#0002,#0002),var(--table-image,radial-gradient(ellipse at center,var(--bg),var(--bg2)));background-position:center;background-size:cover}
 .c{background:var(--card-image,var(--card));background-size:cover;background-position:center}
+
+/* ===== เลย์เอาต์โต๊ะใหม่: ไอคอนผู้เล่นอยู่นอกโต๊ะ / ในโต๊ะมีแค่ชุดที่เกิด กองจั่ว กองทิ้ง ===== */
+.opps,.turn,.order{display:none!important}
+.arena{flex:1;min-height:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;gap:4px;padding:2px 4px}
+.pl{display:flex;align-items:center;gap:6px;min-width:0;color:#fff}
+.pl .av{width:40px;height:40px;font-size:22px;flex:none}
+.pl-info{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.pl-info b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px}
+.pl-info small{font-size:10px;color:var(--mut);white-space:nowrap}
+.pl-top{grid-column:2;grid-row:1;justify-self:center}.pl-bottom{grid-column:2;grid-row:3;justify-self:center}
+.pl-left,.pl-right{flex-direction:column;align-self:center;width:56px;text-align:center}
+.pl-left{grid-column:1;grid-row:2}.pl-right{grid-column:3;grid-row:2}
+.pl-left .pl-info,.pl-right .pl-info{align-items:center}.pl-left .pl-info b,.pl-right .pl-info b{max-width:56px}
+.pl.me .pl-info b{color:var(--gold)}
+.pl.active .av{border-color:var(--gold);box-shadow:0 0 0 4px #f2b84b99,0 3px 0 #0005;animation:bob 1s ease-in-out infinite}
+.tm{font-style:normal;font-size:10px;font-weight:700;background:var(--gold);color:#2a1d00;border-radius:99px;padding:0 7px;margin-top:2px;white-space:nowrap}
+.felt{grid-column:2;grid-row:2;margin:0;min-height:0;border-width:8px;border-radius:34px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;gap:4px;padding:6px;overflow:hidden}
+.zone{display:flex;gap:6px;min-width:0;min-height:0}
+.zone-top,.zone-bottom{grid-column:1/-1;flex-wrap:wrap;justify-content:center;min-height:46px}
+.zone-top{grid-row:1;align-content:flex-start}.zone-bottom{grid-row:3;align-content:flex-end}
+.zone-left,.zone-right{flex-direction:column;flex-wrap:wrap;min-width:40px}
+.zone-left{grid-column:1;grid-row:2;align-content:flex-start}.zone-right{grid-column:3;grid-row:2;align-content:flex-end}
+.felt .piles{grid-column:2;grid-row:2;flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:4px;background:none;border:0;min-width:0;min-height:0}
+.felt .piles>div{max-width:100%;min-width:0}.felt .dp{max-width:100%;justify-content:flex-start}
+.zone .m{margin:0;padding:3px;gap:0;background:#0006;border-radius:8px;overflow:visible;flex:none}
+.zone .m .c{width:28px;height:40px;font-size:12px;align-items:flex-start;justify-content:flex-start;padding:2px 3px;box-shadow:0 1px 2px #0007}
+.zone-top .m .c+.c,.zone-bottom .m .c+.c{margin-left:-13px}
+.zone-left .m,.zone-right .m{flex-direction:column;align-items:flex-start}
+.zone-left .m .c,.zone-right .m .c{width:40px;height:36px;flex-direction:row;gap:1px;align-items:flex-start;line-height:1}
+.zone-left .m .c+.c,.zone-right .m .c+.c{margin-left:0;margin-top:-23px}
+@media (max-width:360px){.pl .av{width:34px;height:34px;font-size:19px}.pl-left,.pl-right{width:46px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:46px}.zone .m .c{width:26px;height:38px}.zone-top .m .c+.c,.zone-bottom .m .c+.c{margin-left:-12px}}
+@media (orientation:landscape) and (max-height:600px){
+ .arena{padding:0 2px;gap:2px}.pl .av{width:28px;height:28px;font-size:15px;border-width:2px}.pl-info b{font-size:10px}.pl-info small{font-size:9px}
+ .pl-left,.pl-right{width:46px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:46px}
+ .felt{border-width:5px;border-radius:22px;padding:3px;gap:2px}
+ .zone .m .c{width:22px;height:32px;font-size:10px;padding:1px 2px}.zone-top .m .c+.c,.zone-bottom .m .c+.c{margin-left:-10px}
+ .zone-left .m .c,.zone-right .m .c{width:32px;height:28px}.zone-left .m .c+.c,.zone-right .m .c+.c{margin-top:-18px}
+ .zone-top,.zone-bottom{min-height:36px}.felt .piles{gap:4px}.felt .piles .lab{display:none}
+}
+
+/* ปรับให้โต๊ะใหญ่ขึ้น: ลดพื้นที่ส่วนอื่น + กันล้นขอบจอ */
+.pl-left,.pl-right{width:48px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:48px}
+.pl-left .av,.pl-right .av{width:36px;height:36px;font-size:20px}
+.pl-info small{display:block;font-size:10px;line-height:1.15}
+.pl-top .pl-info small+small,.pl-bottom .pl-info small+small{display:inline}
+.arena{padding:0 2px;gap:2px}
+.felt{padding:4px;overflow:auto}
+.logs{font-size:11px;line-height:1.2;min-height:0;padding:0 10px;text-align:center;color:#ffe9b0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{min-height:34px;margin:2px 10px 0;padding:3px 12px;font-size:13px}.hint small{font-size:10px}
+.hand{padding:12px 6px 2px}.tools{padding:0 8px 2px}.tools button{padding:3px;font-size:12px}
+.acts{padding:3px 8px 8px}.acts button{padding:10px 4px}
+.top{padding:4px 10px 0}.pill{font-size:13px}
+@media (max-width:360px){.pl-left,.pl-right{width:42px}.pl-left .pl-info b,.pl-right .pl-info b{max-width:42px}.pl-left .av,.pl-right .av{width:30px;height:30px;font-size:16px}}
+
+/* แนวนอนบนมือถือ (จอกว้าง ≥700px แต่เตี้ย) — กันไพ่กองทิ้งใหญ่เกิน และให้ไอคอนล่างไม่ล้นจอ */
+@media (orientation:landscape) and (max-height:600px){
+ .felt .dp .c.d{width:32px;height:46px;font-size:12px;margin-left:-10px}.felt .dp .c.d:first-child{margin-left:0}
+ .felt .piles .back{width:36px;height:50px;font-size:13px}
+ .pl-top .pl-info,.pl-bottom .pl-info{flex-direction:row;align-items:center;gap:5px}
+ .pl-top .pl-info small,.pl-bottom .pl-info small{display:inline}.tm{margin:0}
+ .pl-top .av,.pl-bottom .av{width:26px;height:26px;font-size:14px}
+ .top{padding:2px 8px 0}.pill{font-size:11px;padding:0 8px}
+}
