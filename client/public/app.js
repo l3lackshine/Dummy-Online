@@ -41,7 +41,7 @@ function conn() {
   sock.on('me', m => { sv = m; applyTheme(); render(); });
   sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
   sock.on('room:lobby', l => { lob = l; render(); });
-  sock.on('game:state', s => { S = s; screen = 'game'; if (!s.over) paid = false; if (s.over && !paid) { paid = true; const pts = s.res?.pts || []; gain = Math.max(10, pts[s.my] || 0) + ((pts[s.my] || 0) === Math.max(...pts) ? 50 : 0); sv.coins += Math.max(0, gain); save(); if (s.res) { s.res.gain = s.res.gain || []; s.res.gain[s.my] = Math.max(0, gain); } } else if (s.over && s.res && s.res.gain) gain = s.res.gain[s.my] || 0; sel = new Set([...sel].filter(i => s.hand.includes(i))); render(); });
+  sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); screen = 'game'; if (!s.over) paid = false; if (s.over && !paid) { paid = true; const pts = s.res?.pts || []; gain = Math.max(10, pts[s.my] || 0) + ((pts[s.my] || 0) === Math.max(...pts) ? 50 : 0); sv.coins += Math.max(0, gain); save(); if (s.res) { s.res.gain = s.res.gain || []; s.res.gain[s.my] = Math.max(0, gain); } } else if (s.over && s.res && s.res.gain) gain = s.res.gain[s.my] || 0; sel = new Set([...sel].filter(i => s.hand.includes(i))); render(); });
 }
 function onAuth(r) {}
 function auth(kind) {}
@@ -67,8 +67,8 @@ function lobbyView() {
 const face = (id, cls = '', x = '') => { const c = ALL[id]; return `<button ${x} class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}${cls}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; };
 const mini = id => { const c = ALL[id]; return `<span class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}">${RK[c.r]}<span>${SU[c.s]}</span></span>`; };
 const mine = () => S && S.cur === S.my && !S.over;
-function drw() { if (mine() && S.phase === 'draw') { hint = ''; emit({ t: 'draw' }); } }
-function tk(i) { if (!mine() || S.phase !== 'draw') return; if (!S.ok[i]) { hint = 'เก็บไม่ได้ ต้องเกิดชุดกับใบนี้ได้ก่อน'; return render(); } hint = ''; emit({ t: 'take', i }); }
+function drw() { if (!mine() || S.phase !== 'draw') { hint = 'จั่วได้เมื่อถึงตาคุณและยังไม่ได้จั่ว'; return render(); } if (!S.stock) { hint = 'กองจั่วหมดแล้ว'; return render(); } hint = ''; closePile(); emit({ t: 'draw' }); }
+function tk(i) { if (!mine() || S.phase !== 'draw') { hint = 'เก็บกองทิ้งได้เมื่อถึงตาคุณและยังไม่ได้จั่ว'; return render(); } if (!Number.isInteger(i) || i < 0 || i >= (S.disc||[]).length) return; hint = ''; emit({ t: 'take', i }); }
 function pick(id) { if (!mine() || S.phase !== 'play') return; const on = !sel.has(id); on ? sel.add(id) : sel.delete(id); const e = document.querySelector('.hand [data-id="' + id + '"]'); if (e) e.classList.toggle('s', on); }
 const act = a => { hint = ''; sel = new Set(); emit(a); };
 function mld() { if (mine() && S.phase === 'play') act({ t: 'meld', ids: [...sel] }); }
@@ -76,9 +76,9 @@ function dep(k) { if (mine() && S.phase === 'play' && sel.size) act({ t: 'dep', 
 function adep() { if (mine() && S.phase === 'play') act({ t: 'autodep' }); }
 function dsc() { if (!mine() || S.phase !== 'play') return; if (S.hand.length === 1) return act({ t: 'knock' }); // ใบสุดท้ายคว่ำเพื่อน็อก
   if (sel.size !== 1) { hint = 'เลือกไพ่ 1 ใบเพื่อทิ้ง'; return render(); } act({ t: 'dis', id: [...sel][0] }); }
-function pileModal(){if(!S)return;const cards=S.disc||[];const old=document.getElementById('pileModal');if(old)old.remove();const el=document.createElement('div');el.id='pileModal';el.className='pile-modal';el.innerHTML=`<div class='pile-dialog'><div class='pile-title'><b>เลือกไพ่จากกองทิ้ง</b><button class='pile-close' onclick=closePile()>✕</button></div><p>จั่วไพ่ใหม่ หรือเลือกไพ่จากกองทิ้ง ไพ่ที่เลือกและไพ่ที่ทิ้งทีหลังจะถูกเก็บไปด้วย และต้องเกิดโดยใช้ไพ่ใบแรกที่เลือก</p><button class='pile-draw' onclick='closePile();drw()'>🂠 จั่วไพ่จากกองจั่ว (${S.stock} ใบ)</button><div class='pile-all'>${cards.map(([id,hd],i)=>`<div class='pile-choice${S.ok[i]?' ok':''}' role='button' tabindex='0' onclick='choosePile(${i})'><span class='pile-index'>${i===0?'เก่าสุด':i===cards.length-1?'ล่าสุด':'ลำดับ '+(i+1)}</span>${mini(id)}${S.ok[i]?'<small>เกิดได้</small>':''}</div>`).join('')}</div><div class='pile-foot'>ไพ่ทั้งหมด ${cards.length} ใบ · เลือกได้เฉพาะใบที่ทำชุดเกิดได้</div></div>`;document.body.appendChild(el)}
+function pileModal(){if(!S)return;const cards=S.disc||[];const old=document.getElementById('pileModal');if(old)old.remove();const el=document.createElement('div');el.id='pileModal';el.className='pile-modal';el.innerHTML=`<div class='pile-dialog'><div class='pile-title'><b>เลือกไพ่จากกองทิ้ง</b><button class='pile-close' onclick=closePile()>✕</button></div><p>จั่วไพ่ใหม่ หรือเลือกไพ่จากกองทิ้ง ไพ่ที่เลือกและไพ่ที่ทิ้งทีหลังจะถูกเก็บไปด้วย และต้องเกิดโดยใช้ไพ่ใบแรกที่เลือก</p><button class='pile-draw' ${S.stock ? '' : 'disabled'} onclick='drw()'>🂠 จั่วไพ่จากกองจั่ว (${S.stock} ใบ)</button><div class='pile-all'>${cards.map(([id,hd],i)=>`<div class='pile-choice${S.ok[i]?' ok':''}' role='button' tabindex='0' onclick='choosePile(${i})'><span class='pile-index'>${i===0?'เก่าสุด':i===cards.length-1?'ล่าสุด':'ลำดับ '+(i+1)}</span>${mini(id)}${S.ok[i]?'<small>เกิดได้</small>':''}</div>`).join('')}</div><div class='pile-foot'>ไพ่ทั้งหมด ${cards.length} ใบ · เลือกไพ่ที่ต้องการเก็บ ระบบจะตรวจว่าต้องเกิดด้วยไพ่ใบแรกที่เลือก</div></div>`;document.body.appendChild(el)}
 function closePile(){document.getElementById('pileModal')?.remove()}
-function choosePile(i){closePile();tk(i)}
+function choosePile(i){tk(i)}
 function openPile(){if(!mine()||S.phase!=='draw'){hint='เปิดเลือกกองไพ่ได้เมื่อถึงตาคุณและยังไม่ได้จั่ว';return render()}pileModal()}
 function render() {
   if (!authed) { conn(); return authView(); }
