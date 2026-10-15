@@ -1,0 +1,12 @@
+{
+  "themes": [
+    {"id":"classic","n":"คลาสสิก (เขียว)","price":0,"card":"#fbf7ec","blk":"#1b1b1b","red":"#c0282d","edge":"#cfc7b0","b1":"#7a1f2b","b2":"#5d1520","bg":"#0f3d2a","bg2":"#0b2e20"},
+    {"id":"midnight","n":"มิดไนท์","price":200,"card":"#243153","blk":"#e6ebfa","red":"#ff8a98","edge":"#4a5c92","b1":"#4057a3","b2":"#2b3b72","bg":"#0c1226","bg2":"#080c1a"},
+    {"id":"sakura","n":"ซากุระ","price":400,"card":"#fff1f5","blk":"#3b2a35","red":"#d6336c","edge":"#f3b6cb","b1":"#f06595","b2":"#c2255c","bg":"#4a1f3a","bg2":"#35142a"},
+    {"id":"gold","n":"ทองคำ","price":700,"card":"#fff4d6","blk":"#33250a","red":"#a4161a","edge":"#d9b45a","b1":"#c9971c","b2":"#8a6508","bg":"#2e2410","bg2":"#1f180a"}
+  ],
+  "characters": [{"id":"emoji","name":"อีโมจิเริ่มต้น","asset":""}],
+  "tables": [{"id":"green-felt","name":"โต๊ะผ้าสักหลาด","asset":"","bg":"#0f3d2a","bg2":"#0b2e20"}],
+  "backgrounds": [{"id":"sunset","name":"พระอาทิตย์ตก","asset":"","css":"linear-gradient(180deg,#2b2160 0%,#7a3b78 55%,#d9774f 100%)"}],
+  "cards": [{"id":"classic-card","name":"ไพ่คลาสสิก","asset":"","card":"#fbf7ec","blk":"#1b1b1b","red":"#c0282d","edge":"#cfc7b0"}]
+}
