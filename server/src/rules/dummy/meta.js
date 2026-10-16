@@ -8,7 +8,7 @@ const meta = {
   minPlayers: 1,
   maxPlayers: 4,
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 1, max: 10000, step: 1, presets: [10, 20, 50, 100] },
+    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 1, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
     { key: 'spetoMode', label: 'อมสเปโตแล้วจบเกม จ่ายให้', type: 'select', default: 'all', choices: [{ v: 'all', label: 'ทุกคนรอบวง' }, { v: 'knocker', label: 'เฉพาะคนน็อก' }] },
   ],
   // สรุปการนับเหรียญที่แสดงในหน้าสร้างห้อง — {stake} = เดิมพัน, {stake*0.75} = เดิมพันคูณ 0.75 (client แทนค่าให้)
