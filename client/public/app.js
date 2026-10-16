@@ -7,6 +7,7 @@ const sp = c => (c.r === 2 && c.s === 3) || (c.r === 12 && c.s === 0), cn = c =>
 const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
 let screen = 'home', ho = [], sel = new Set(), sm = 0, paid = false, gain = 0, prevM = 0, prevD = 0, hint = '', lerr = '';
 let sv = { name: localStorage.getItem('dummyName') || 'ผู้เล่น', coins: Number(localStorage.getItem('dummyCoins') || '5000'), own: JSON.parse(localStorage.getItem('dummyOwned') || '[\"classic\"]'), eq: localStorage.getItem('dummySkin') || 'classic' }, nick = localStorage.getItem('dummyName') || 'ผู้เล่น';
+let shufAnim = null, shufTimer = null;
 let authed = true, aerr = '', S = null, lob = null, tok = null, code = '', isHost = false, sock = null, noio = false, soloPending = false, soloRoom = false;
 const DEFAULT_SKINS={themes:[
 {id:'classic',n:'คลาสสิก (เขียว)',price:0,card:'#fbf7ec',blk:'#1b1b1b',red:'#c0282d',edge:'#cfc7b0',b1:'#7a1f2b',b2:'#5d1520',bg:'#0f3d2a',bg2:'#0b2e20'},
@@ -47,36 +48,60 @@ function conn() {
   if (sock || noio) return;
   if (!window.io) { noio = true; lerr = 'โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'; return; }
   sock = io(CFG.BACKEND_URL || undefined, { transports: ['websocket', 'polling'] });
-  sock.on('connect', () => { lerr = ''; authed = true; if (soloPending && !code) mk(); render(); });
+  sock.on('connect', () => { lerr = ''; authed = true; const ss = getSess(); if (ss && !code && !soloPending) sock.emit('room:rejoin', ss); else if (soloPending && !code) mk(); render(); });
+  sock.on('room:rejoin-failed', () => { setSess(null); if (soloPending && !code) mk(); render(); });
   sock.on('connect_error', () => { lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
   sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
   sock.on('game:action-result', d => { if (d && d.ok) { hint = ''; } else { hint = 'จั่ว/เก็บไพ่ไม่สำเร็จ: ' + ((d && d.error) || 'ไม่ทราบสาเหตุ'); render(); } });
   sock.on('me', m => { sv = m; applyTheme(); render(); });
-  sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
-  sock.on('room:lobby', l => { lob = l; render(); });
-  sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); screen = 'game'; if (!s.over) paid = false; if (s.over && !paid) { paid = true; const pts = s.res?.pts || []; gain = Math.max(10, pts[s.my] || 0) + ((pts[s.my] || 0) === Math.max(...pts) ? 50 : 0); sv.coins += Math.max(0, gain); save(); if (s.res) { s.res.gain = s.res.gain || []; s.res.gain[s.my] = Math.max(0, gain); } } else if (s.over && s.res && s.res.gain) gain = s.res.gain[s.my] || 0; sel = new Set([...sel].filter(i => s.hand.includes(i))); render(); });
+  sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (d.token) setSess({ code: d.code, token: d.token }); if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
+  // เซิร์ฟเวอร์ส่งเฉพาะ "ชนิดท่าสับ" มาให้เล่นแอนิเมชัน (ไม่มีลำดับไพ่) — ทุกคนในห้องเห็นพร้อมกัน
+  sock.on('room:shuffled', d => { lerr = ''; shufAnim = { by: d.by, seq: d.seq, steps: d.steps || [] }; clearTimeout(shufTimer); shufTimer = setTimeout(() => { shufAnim = null; render(); }, 1400); render(); });
+  sock.on('room:lobby', l => { lob = l; if (typeof l.youHost === 'boolean') isHost = l.youHost; render(); });
+  sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); screen = 'game'; if (!s.over) { paid = false; gain = 0; }
+    if (s.over && !paid) { paid = true; if (localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); const pts = s.res?.pts || []; gain = Math.max(10, pts[s.my] || 0) + ((pts[s.my] || 0) === Math.max(...pts) ? 50 : 0); gain = Math.max(0, gain); sv.coins += gain; save(); } else gain = 0; }
+    sel = new Set([...sel].filter(i => s.hand.includes(i))); render(); });
 }
 function onAuth(r) {}
 function auth(kind) {}
 function out() { leave(); }
 function authView() { wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><input id=au placeholder="ชื่อผู้ใช้" maxlength=14 autocomplete=username><input id=ap type=password placeholder="รหัสผ่าน (6 ตัวขึ้นไป)" autocomplete=current-password><button onclick="auth('login')">เข้าสู่ระบบ</button><button class=g onclick="auth('register')">สมัครสมาชิก (รับ 100 🪙)</button>${aerr || lerr ? `<p style="color:var(--gold)">${esc(aerr || lerr)}</p>` : ''}`); }
+const getSess = () => { try { const v = JSON.parse(localStorage.getItem('dummySession') || 'null'); return v && v.code && v.token ? v : null; } catch (e) { return null; } };
+const setSess = v => { try { v ? localStorage.setItem('dummySession', JSON.stringify(v)) : localStorage.removeItem('dummySession'); } catch (e) {} };
 const emit = a => { if (!sock || !sock.connected) { hint = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); return; } sock.emit('game:act', a); };
 const room = () => { conn(); if (!sock) return render(); };
 function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); sock.emit('room:create', { name: nick, ch: myChar(), bg: myBg() }); }
 function jn() { const c = ($('cd').value || '').trim(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, ch: myChar(), bg: myBg() }); } }
 const begin = () => sock.emit('game:start');
+const doShuffle = () => { if (!sock || !sock.connected) { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (shufAnim) return; sock.emit('game:shuffle'); };
+// ส่วนสับไพ่ (ล็อบบี้ + หน้าจบตา): ผู้สับ = เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป)
+function shufflePanel() {
+  const sh = lob && lob.shuffle; if (!sh || soloRoom || !sh.shuffler) return '';
+  const lbl = { cut: 'ตัดไพ่', riffle: 'รีฟเฟิล', overhand: 'โอเวอร์แฮนด์' }, cnt = {};
+  if (shufAnim) shufAnim.steps.forEach(t => { cnt[t] = (cnt[t] || 0) + 1; });
+  const anim = shufAnim ? `<div class=shuf-anim aria-hidden=true>${Array.from({ length: 12 }, (_, i) => `<i style="--i:${i};--s:${i % 2 ? 1 : -1}"></i>`).join('')}</div><p class=shuf-steps>${esc(shufAnim.by)} สับไพ่: ${Object.keys(cnt).map(t => (lbl[t] || t) + ' ×' + cnt[t]).join(' · ')}</p>` : '';
+  const who = sh.youShuffler ? 'คุณ' : esc(sh.shuffler), why = sh.round ? '🏆 ผู้ชนะตาก่อนหน้า' : '👑 เจ้าของห้อง';
+  const st = sh.ready ? '✅ สับไพ่แล้ว' + (sh.by ? ' โดย ' + esc(sh.by) : '') : sh.needed ? '⏳ ยังไม่ได้สับไพ่' : 'เล่นคนเดียว: ระบบสับให้อัตโนมัติ';
+  return `<div class=shuf><p>🔀 ผู้สับไพ่: <b>${who}</b> (${why})</p>${anim}<p class=shuf-st>${st}</p>${sh.youShuffler ? `<button class=org onclick=doShuffle() ${shufAnim ? 'disabled' : ''}>🔀 ${sh.ready ? 'สับอีกครั้ง' : 'สับไพ่'}</button>` : ''}</div>`;
+}
+// ปุ่มเริ่ม: เจ้าของห้องเท่านั้น และต้องสับไพ่แล้ว (เว้นเล่นคนเดียว)
+function startBtn(label) {
+  const sh = lob && lob.shuffle, blocked = !!(sh && sh.needed && !sh.ready);
+  if (!isHost) return '<p>รอเจ้าของห้องกดเริ่มเกม...</p>';
+  return `<button onclick=begin() ${blocked ? 'disabled' : ''}>${label}</button>${blocked ? `<p>ต้องให้ ${sh.youShuffler ? 'คุณ' : esc(sh.shuffler || 'ผู้สับไพ่')} กดสับไพ่ก่อน</p>` : ''}`;
+}
 function play() { go('lobby'); }
 function connStatus() { // แสดงสถานะที่หน้าแรก: กำลังเชื่อมต่อ / เชื่อมต่อไม่ได้ (เดิมไม่แสดงอะไร ทำให้ดูเหมือนกดแล้วเข้าเล่นไม่ได้)
   const w = soloPending || (soloRoom && !S), e = lerr ? '⚠️ ' + esc(lerr) : ''; if (!w && !e) return '';
   return `<p class=cstat>${w ? '⏳ กำลังเข้าเกม... เซิร์ฟเวอร์ฟรีอาจหลับอยู่ ครั้งแรกใช้เวลาราว 1 นาที กรุณารอ' : ''}${w && e ? '<br>' : ''}${e}</p>`; }
-function solo() { soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); render(); }
-function leave() { if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
+function solo() { setSess(null); soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); render(); }
+function leave() { setSess(null); if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
 function lobbyView() {
   if (screen === 'home') return homeView(); if (screen === 'shop') return shopView(); conn();
   let b;
   if (code) {
     const pl = lob ? lob.players : [];
-    b = `<p>รหัสห้อง</p><div style="font-size:32px;font-weight:700;letter-spacing:4px">${esc(code)}</div><p>ส่งรหัสให้เพื่อน (สูงสุด 4 คน) ระบบเติมบอทให้ครบ 4 ที่นั่ง</p>${pl.map(p => `<div class=row><span>${esc(p.name)}${p.host ? ' 👑' : ''}</span><small>${p.connected ? 'ออนไลน์' : 'หลุด'}</small></div>`).join('')}${isHost ? '<button onclick=begin()>เริ่มเกม</button>' : '<p>รอเจ้าของห้องกดเริ่มเกม...</p>'}<button class=g onclick=leave()>ออกจากห้อง</button>`;
+    b = `<p>รหัสห้อง</p><div style="font-size:32px;font-weight:700;letter-spacing:4px">${esc(code)}</div><p>ส่งรหัสให้เพื่อน (สูงสุด 4 คน) ระบบเติมบอทให้ครบ 4 ที่นั่ง</p>${pl.map(p => `<div class=row><span>${esc(p.name)}${p.host ? ' 👑' : ''}</span><small>${p.connected ? 'ออนไลน์' : 'หลุด'}</small></div>`).join('')}${shufflePanel()}${startBtn('เริ่มเกม')}<button class=g onclick=leave()>ออกจากห้อง</button>`;
   } else b = `<input id=au placeholder="ชื่อเล่น" maxlength=14 value="${esc(nick)}"><button onclick=mk()>สร้างห้อง</button><input id=cd placeholder="รหัสห้อง" maxlength=6><button class=g onclick=jn()>เข้าห้อง</button><button class=g onclick="go('home')">‹ กลับ</button>`;
   wrap(`<h2>ห้องออนไลน์</h2>${b}${lerr ? `<p style="color:var(--gold)">${esc(lerr)}</p>` : ''}`);
 }
@@ -125,7 +150,7 @@ function render() {
  <div class=dock-wrap><div class=dock><div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
  <div class=tools><button onclick="mv(-1)">◀ ซ้าย</button><button onclick="mv(1)">ขวา ▶</button><button onclick=srt()>เรียงไพ่</button></div>
  <div class=acts><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div></div></div>
- ${S.over ? (`<div class=ov><div class=box><h2>${S.res.k == null ? 'ไพ่หมดกอง' : esc(S.P[S.res.k].n) + ' น็อก!'}</h2>${S.down != null ? `<p>ใบที่คว่ำเพื่อน็อก: ${mini(S.down)}</p>` : ''}<p style="color:var(--gold)">ได้รับ +${(S.res.gain||[])[S.my]||0} 🪙 (รวม ${sv.coins})</p>${S.P.map(p => ({ p, pt: S.res.pts[p.i] })).sort((a, b) => b.pt - a.pt).map(({ p, pt }) => `<div class=row><span>${esc(p.n)}<small>${S.res.nt[p.i].join(' · ')}</small></span><b>${pt}</b></div>`).join('')}${isHost ? '<button onclick=begin()>เล่นอีกตา</button>' : '<p>รอเจ้าของห้องเริ่มตาใหม่...</p>'}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`) : ''}`;
+ ${S.over ? (`<div class=ov><div class=box><h2>${S.res.k == null ? 'ไพ่หมดกอง' : esc(S.P[S.res.k].n) + ' น็อก!'}</h2>${S.down != null ? `<p>ใบที่คว่ำเพื่อน็อก: ${mini(S.down)}</p>` : ''}<p style="color:var(--gold)">ได้รับ +${gain} 🪙 (รวม ${sv.coins})</p>${S.P.map(p => ({ p, pt: S.res.pts[p.i] })).sort((a, b) => b.pt - a.pt).map(({ p, pt }) => `<div class=row><span>${esc(p.n)}<small>${S.res.nt[p.i].join(' · ')}</small></span><b>${pt}</b></div>`).join('')}${shufflePanel()}${startBtn('เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`) : ''}`;
   const d = $('dp'); if (d) d.scrollLeft = S.disc.length !== pd ? d.scrollWidth : sl;
   requestAnimationFrame(fitFrame);
 }
@@ -136,5 +161,6 @@ function fitFrame() { const a = document.querySelector('.arena'), f = document.q
 window.addEventListener('resize', () => requestAnimationFrame(fitFrame)); window.addEventListener('orientationchange', () => setTimeout(fitFrame, 250));
 try { applyTheme(); } catch (e) {}
 render();
+if (getSess()) conn();
 
 

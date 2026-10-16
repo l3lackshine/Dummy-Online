@@ -257,3 +257,12 @@ body{background:var(--page-background,linear-gradient(180deg,#2b2160 0%,#7a3b78 
 .pl-bottom .pl-info{margin-bottom:6px}
 @media (orientation:landscape) and (max-height:600px){.pl-bottom{margin-right:6px}.pl-bottom .chr{height:calc(var(--chr)*.7)}}
 @media (orientation:portrait) and (max-height:700px){.logs{display:none}}
+
+/* สับไพ่ */
+.shuf{margin-top:10px;padding:8px 10px;border:2px dashed var(--gold);border-radius:14px;background:#0003;text-align:center}
+.shuf p{margin:4px 0}.shuf .shuf-st{color:var(--gold);font-weight:700}.shuf .shuf-steps{font-size:12px}
+.box .shuf button{margin-top:8px}
+.shuf-anim{position:relative;height:84px;width:130px;margin:8px auto 0}
+.shuf-anim i{position:absolute;left:50%;top:10px;width:42px;height:60px;margin-left:-21px;border-radius:7px;border:3px solid #fff;background:repeating-linear-gradient(45deg,var(--b1),var(--b1) 4px,var(--b2) 4px,var(--b2) 8px);box-shadow:0 2px 0 #0005;animation:riff 1.2s ease-in-out both;animation-delay:calc(var(--i) * 25ms)}
+@keyframes riff{0%{transform:translate(calc(var(--s) * -32px),0) rotate(calc(var(--s) * -5deg))}30%{transform:translate(calc(var(--s) * -32px),-8px) rotate(calc(var(--s) * -12deg))}65%{transform:translate(calc(var(--s) * -3px),calc(var(--i) * -.8px)) rotate(0)}100%{transform:translate(0,calc(var(--i) * -.5px))}}
+@media (prefers-reduced-motion:reduce){.shuf-anim i{animation:none}}

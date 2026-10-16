@@ -1,12 +1,13 @@
 {
-  "name": "dummy-online-5p-server",
+  "name": "dummy-online-4p-server",
   "version": "1.0.0",
   "private": true,
-  "description": "Socket.IO backend starter for 5-player Thai rummy",
+  "description": "Socket.IO backend starter for 4-player Thai rummy",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "dev": "node --watch src/index.js",
+    "test": "node test-shuffle.js && node test-rules.js && node test-fuzz.js && node test-online.js && node test-client.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const Shuffle = require('./shuffle');
 const Engine = (() => {
 const module = { exports: {} };
 // กติกาดัมมี่ (ตามที่ใช้ในเกมเดิม) — ฝั่งเซิร์ฟเวอร์เป็นผู้ตัดสินทั้งหมด
@@ -45,13 +46,15 @@ const fit = (m, h, must) => {
   for (const c of m) { if (c === must) continue; const r = m.filter(x => x !== c); if (ord(r) && h.length - r.length >= 1) return r; }
   return null;
 };
-const canTake = (G, p, i) => { const first = G.disc[i]; if (!first) return false; const available = [...p.h, ...G.disc.slice(i)]; return cands(available).some(m => m.includes(first)); };
+// เก็บได้ก็ต่อเมื่อมีชุดที่ใช้ใบแรกที่เลือก และเกิดแล้วยังเหลือไพ่ในมือ ≥ 1 ใบ (ไม่งั้นผู้เล่นจะเกิดไม่ได้และทิ้งไม่ได้ = เกมค้าง)
+const canTake = (G, p, i) => { const first = G.disc[i]; if (!first) return false; const available = [...p.h, ...G.disc.slice(i)]; return cands(available).some(m => m.includes(first) && !!fit(m, available, first)); };
 const lg = (G, t) => { G.logs.push(t); if (G.logs.length > 30) G.logs.shift(); };
 
 // players: [{id, n}] (คนจริง) — เติมบอทให้ครบอย่างน้อย 4 คน
-function newGame(humans) {
-  const d = Array.from({ length: 52 }, (_, i) => card(i));
-  for (let i = 51; i > 0; i--) { const j = rnd(i + 1); [d[i], d[j]] = [d[j], d[i]]; }
+// opts.deck = ลำดับไพ่ (id จากบนสุดถึงล่างสุด) ที่สับมาแล้วจากเอนจิ้น shuffle.js — ถ้าไม่ส่งมาหรือไม่ถูกต้อง จะสับใหม่ด้วยเอนจิ้นเดียวกัน
+function newGame(humans, opts) {
+  const order = opts && Shuffle.isValidIds(opts.deck) ? opts.deck : Shuffle.shuffle().ids;
+  const d = order.map(card);
   const total = Math.max(4, humans.length);
   const P = Array.from({ length: total }, (_, i) => ({
     i, id: humans[i] ? humans[i].id : null, n: humans[i] ? humans[i].n : BOTS[i - humans.length],
@@ -61,7 +64,7 @@ function newGame(humans) {
   }));
   const hd = d.pop(); hd.head = true;
   // DUMMY_FIRST (env) ใช้เฉพาะตอนทดสอบ เพื่อกำหนดคนเริ่ม
-  const G = { P, melds: [], stock: d, disc: [hd], cur: typeof process !== 'undefined' && process.env.DUMMY_FIRST ? +process.env.DUMMY_FIRST % total : rnd(total), over: false, res: null, logs: ['หัวคือ ' + cn(hd) + ' เริ่มเลย!'], v: 0 };
+  const G = { P, melds: [], stock: d, disc: [hd], cur: typeof process !== 'undefined' && process.env.DUMMY_FIRST ? +process.env.DUMMY_FIRST % total : rnd(total), over: false, res: null, gid: crypto.randomBytes(6).toString('hex'), logs: ['หัวคือ ' + cn(hd) + ' เริ่มเลย!'], v: 0 };
   G.logs.push('สุ่มได้ ' + P[G.cur].n + ' เริ่มก่อน!'); begin(G); return G;
 }
 function begin(G) {
@@ -174,11 +177,14 @@ function botTurn(G) {
   const h = [...p.h].sort((a, b) => keep(a, p.h) - keep(b, p.h) || val(b) - val(a)); discard(G, p, h[0]);
 }
 
+// ผู้ชนะตา: คนน็อก (ถ้าไพ่หมดกอง = คนแต้มสูงสุด) — คืนเลขที่นั่ง
+function winner(G) { if (!G || !G.over || !G.res) return null; if (G.res.k != null) return G.res.k; const m = Math.max(...G.res.pts); return G.res.pts.indexOf(m); }
+
 // มุมมองเฉพาะผู้เล่น — ไม่ส่งไพ่ในมือคนอื่น/กองจั่ว
 function view(G, seat) {
   const me = G.P[seat], pub = c => [c.id, c.head ? 1 : 0];
   return {
-    v: G.v, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
+    v: G.v, gid: G.gid, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
     hand: me.h.map(c => c.id), stock: G.stock.length, disc: G.disc.map(pub),
     melds: G.melds.map(m => ({ o: m.o, cs: m.cs.map(c => c.id) })),
     P: G.P.map(p => ({ i: p.i, n: p.n, ch: p.ch, bg: p.bg, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
@@ -186,7 +192,7 @@ function view(G, seat) {
     ok: G.cur === seat && G.phase === 'draw' && !G.over ? G.disc.map((_, i) => canTake(G, me, i)) : [],
   };
 }
-module.exports = { newGame, act, botTurn, view, ord, cands, canTake, CHARS, BGS };
+module.exports = { newGame, act, botTurn, view, winner, ord, cands, canTake, CHARS, BGS };
 
 return module.exports;
 })()

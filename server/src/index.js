@@ -4,6 +4,7 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 const crypto = require('crypto');
 const Engine = require('./engine');
+const Shuffle = require('./shuffle');
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
@@ -11,120 +12,231 @@ const app = express();
 app.use(cors({ origin: ALLOWED_ORIGIN === '*' ? true : ALLOWED_ORIGIN.split(',') }));
 app.use(express.json());
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET','POST'] } });
+const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
 const rooms = new Map();
 const MAX_PLAYERS = 4;
+const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
+const BOT_DELAY = Number(process.env.BOT_DELAY_MS || 650);        // ปรับได้เพื่อทดสอบ
+const EMPTY_ROOM_TTL = Number(process.env.EMPTY_ROOM_TTL_MS || 120000); // ห้องที่ไม่มีคนจริงเหลือ จะถูกลบหลังเวลานี้ (เผื่อเชื่อมต่อกลับ)
+const RATE_PER_SEC = Number(process.env.RATE_PER_SEC || 20);
 const roomCode = () => crypto.randomBytes(3).toString('hex').toUpperCase();
+const newToken = () => crypto.randomBytes(16).toString('hex');
 
-function publicLobby(room) {
-  const hostIndex = room.players.findIndex(p => p.connected && p.id);
-  return { code: room.code, started: !!room.game && !room.game.over, players: room.players.map((p,i) => ({ name:p.name, ch:p.ch, bg:p.bg, connected:p.connected, host:i===hostIndex, seat:i })), maxPlayers:MAX_PLAYERS };
+// ผู้เล่นแต่ละคนมี seat (ที่นั่งใน engine) แยกจากลำดับใน room.players — กันที่นั่งเลื่อนผิดเมื่อมีคนออก/เข้า
+// player: { id(socket), name, ch, bg, connected, token, seat|null }
+const active = room => !!room.game && !room.game.over;
+const connectedPlayers = room => room.players.filter(p => p.connected && p.id);
+const findPlayer = (room, socketId) => room.players.find(p => p.id === socketId);
+
+// สิทธิ์กดสับไพ่: ตาแรก = เจ้าของห้อง · ตาถัดไป = ผู้ชนะตาก่อนหน้า (ถ้าเขาออก/หลุด/เป็นบอท → กลับไปเป็นเจ้าของห้อง)
+function shufflerOf(room) {
+  const w = room.lastWinner;
+  if (w && w.connected && w.id && room.players.includes(w)) return w;
+  return connectedPlayers(room)[0] || null;
 }
-function emitLobby(room) { io.to(room.code).emit('room:lobby', publicLobby(room)); }
-function getRoom(socket) { return rooms.get(socket.data.roomCode); }
-function findHumanSeat(room, socketId) { return room.players.findIndex(p => p.id === socketId); }
+// ผู้เล่นจริงตั้งแต่ 2 คนขึ้นไปต้องมีการกดสับก่อนเริ่ม · เล่นคนเดียวกับบอทไม่มีใครให้ดูการสับ → เซิร์ฟเวอร์สับให้อัตโนมัติ
+const needShuffle = room => connectedPlayers(room).length > 1;
+function publicLobby(room, forPlayer) {
+  settle(room);                                // idempotent: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
+  const host = connectedPlayers(room)[0], sh = shufflerOf(room);
+  return {
+    code: room.code, started: active(room), maxPlayers: MAX_PLAYERS,
+    youHost: !!forPlayer && forPlayer === host,
+    // ไม่ส่งลำดับไพ่ที่สับแล้วออกไปเด็ดขาด — ส่งแค่ว่าสับแล้วหรือยัง
+    shuffle: { ready: !!room.deck, needed: needShuffle(room), by: room.shuffledBy || null, shuffler: sh ? sh.name : null, youShuffler: !!forPlayer && forPlayer === sh, round: room.round || 0, seq: room.shuffleSeq || 0 },
+    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, shuffler: p === sh, seat: p.seat })),
+  };
+}
+// จบตาแล้วจดผู้ชนะไว้ (ครั้งเดียวต่อเกม) เพื่อมอบสิทธิ์สับไพ่ตาถัดไป
+function settle(room) {
+  const G = room.game;
+  if (!G || !G.over || G.settled) return;
+  G.settled = true;
+  const seat = Engine.winner(G);
+  const w = seat == null ? null : room.players.find(p => p.seat === seat);
+  room.lastWinner = w || null;                 // ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับแทน
+  room.round = (room.round || 0) + 1;
+}
+function emitLobby(room) { connectedPlayers(room).forEach(p => io.to(p.id).emit('room:lobby', publicLobby(room, p))); }
 function emitStates(room) {
   if (!room.game) return;
-  room.players.forEach((p, seat) => {
-    if (p.connected && p.id) io.to(p.id).emit('game:state', Engine.view(room.game, seat));
-  });
+  settle(room);
+  room.players.forEach(p => { if (p.connected && p.id && p.seat != null && room.game.P[p.seat]) io.to(p.id).emit('game:state', Engine.view(room.game, p.seat)); });
   emitLobby(room);
 }
+function alive(room) { return rooms.get(room.code) === room; }
 function scheduleBots(room) {
-  if (!room.game || room.game.over || room.botTimer) return;
+  if (!alive(room) || !room.game || room.game.over || room.botTimer) return;
   const p = room.game.P[room.game.cur];
   if (!p || !p.bot) return;
   room.botTimer = setTimeout(() => {
     room.botTimer = null;
-    if (!room.game || room.game.over) return;
+    if (!alive(room) || !room.game || room.game.over) return;
     const now = room.game.P[room.game.cur];
     if (!now || !now.bot) return;
-    Engine.botTurn(room.game);
+    try { Engine.botTurn(room.game); } catch (e) { console.error('botTurn error', e); return; }
     room.game.v++;
     emitStates(room);
     scheduleBots(room);
-  }, 650);
+  }, BOT_DELAY);
+}
+// ห้องที่ไม่มีคนจริงเชื่อมต่ออยู่ → รอ EMPTY_ROOM_TTL แล้วลบ (กันหน่วยความจำรั่ว) ถ้ามีคนกลับมาก่อนก็ยกเลิก
+function checkEmpty(room) {
+  if (!alive(room)) return;
+  if (connectedPlayers(room).length) { if (room.emptyTimer) { clearTimeout(room.emptyTimer); room.emptyTimer = null; } return; }
+  if (room.emptyTimer) return;
+  room.emptyTimer = setTimeout(() => {
+    if (connectedPlayers(room).length) return;
+    if (room.botTimer) clearTimeout(room.botTimer);
+    rooms.delete(room.code);
+  }, EMPTY_ROOM_TTL);
 }
 function startGame(room) {
-  room.players = room.players.filter(p => p.connected && p.id);
-  if (room.players.length < 1 || room.players.length > MAX_PLAYERS) return false;
+  const humans = connectedPlayers(room);
+  if (humans.length < 1 || humans.length > MAX_PLAYERS) return false;
   if (room.botTimer) { clearTimeout(room.botTimer); room.botTimer = null; }
-  room.game = Engine.newGame(room.players.map(p => ({ id:p.id, n:p.name, ch:p.ch, bg:p.bg })));
+  room.players = humans;                       // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
+  room.players.forEach((p, i) => { p.seat = i; });
+  const deck = room.deck; room.deck = null; room.shuffledBy = null;   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
+  room.game = Engine.newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
   room.game.v++;
   emitStates(room);
   scheduleBots(room);
   return true;
 }
+const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
 function joinRoom(socket, room, name, ch, bg) {
-  const clean = String(name || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น';
-  room.players.push({ id:socket.id, name:clean, ch:Engine.CHARS.includes(ch) ? ch : null, bg:Engine.BGS.includes(bg) ? bg : null, connected:true });
+  const p = { id: socket.id, name: cleanName(name), ch: Engine.CHARS.includes(ch) ? ch : null, bg: Engine.BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
+  room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
-  socket.emit('room:joined', { code:room.code, host:room.players.length===1 });
+  checkEmpty(room);
+  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token });
   emitLobby(room);
 }
-function leaveRoom(socket, disconnected=false) {
-  const room = getRoom(socket);
-  if (!room) return;
-  const i = findHumanSeat(room, socket.id);
-  if (i >= 0) {
-    if (room.game && !room.game.over) {
-      const p = room.game.P[i];
-      if (p) { p.bot = true; p.id = null; p.n = room.players[i].name + ' (บอท)'; }
-      room.players[i].connected = false;
-      room.players[i].id = null;
+// ปล่อยที่นั่งของ socket นี้ — ระหว่างเกม ที่นั่งกลายเป็นบอทแต่เก็บ token ไว้ให้กลับมาเล่นต่อได้
+function leaveRoom(socket, disconnected = false, forget = false) {
+  const room = rooms.get(socket.data.roomCode);
+  if (!room) { socket.data.roomCode = null; return; }
+  const p = findPlayer(room, socket.id);
+  if (p) {
+    if (room.game && p.seat != null && room.game.P[p.seat]) {
+      if (active(room)) { const gp = room.game.P[p.seat]; gp.bot = true; gp.id = null; gp.n = p.name + ' (บอท)'; }
+      p.connected = false; p.id = null;
+      if (forget) p.token = null;              // กดออกเอง = ไม่ให้กลับเข้าที่นั่งเดิม
       emitStates(room);
       scheduleBots(room);
     } else {
-      room.players.splice(i,1);
+      room.players.splice(room.players.indexOf(p), 1);
       emitLobby(room);
-      if (!room.players.length) rooms.delete(room.code);
     }
   }
   if (!disconnected) socket.leave(room.code);
   socket.data.roomCode = null;
+  if (!room.players.length) { if (room.botTimer) clearTimeout(room.botTimer); if (room.emptyTimer) clearTimeout(room.emptyTimer); rooms.delete(room.code); }
+  else checkEmpty(room);
 }
-app.get('/health', (_req,res) => res.json({ ok:true, service:'dummy-online-5p', rooms:rooms.size }));
-app.get('/', (_req,res) => res.send('Dummy Online backend is running'));
+// เชื่อมต่อกลับด้วย token (รีเฟรชหน้า/เน็ตหลุด) — ได้ที่นั่งเดิมคืน และบอทที่ครองที่นั่งอยู่ถูกปลดออก
+function rejoinRoom(socket, code, token) {
+  const room = rooms.get(String(code || '').trim().toUpperCase());
+  const p = room && token ? room.players.find(x => x.token && x.token === token) : null;
+  if (!p) return false;
+  if (p.id && p.id !== socket.id) { const old = io.sockets.sockets.get(p.id); if (old) { old.data.roomCode = null; old.leave(room.code); } }
+  p.id = socket.id; p.connected = true;
+  socket.data.roomCode = room.code; socket.join(room.code);
+  if (room.game && p.seat != null && room.game.P[p.seat]) { const gp = room.game.P[p.seat]; gp.bot = false; gp.id = p.id; gp.n = p.name; }
+  checkEmpty(room);
+  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token, rejoined: true });
+  emitStates(room);
+  emitLobby(room);
+  return true;
+}
+// กันสแปมเหตุการณ์ต่อ socket
+function allow(socket) {
+  const now = Date.now(), b = socket.data.bucket || (socket.data.bucket = { t: now, n: 0 });
+  if (now - b.t >= 1000) { b.t = now; b.n = 0; }
+  if (++b.n > RATE_PER_SEC) { socket.emit('system:error', 'ส่งคำสั่งเร็วเกินไป'); return false; }
+  return true;
+}
+// รับเฉพาะฟิลด์ที่ engine ใช้จริง และจำกัดขนาด
+function cleanAction(a) {
+  if (!a || typeof a !== 'object') return null;
+  const out = { t: String(a.t || '') };
+  if (Array.isArray(a.ids)) out.ids = a.ids.slice(0, 24).map(Number);
+  for (const k of ['i', 'k', 'id']) if (a[k] != null) out[k] = Number(a[k]);
+  return out;
+}
+// exception ใน handler ของ socket.io ที่ไม่ถูกดักจะทำให้โปรเซสล้มทั้งตัว (payload จาก client เชื่อถือไม่ได้) จึงห่อทุก handler
+const on = (socket, ev, fn) => socket.on(ev, (...a) => { try { fn(...a); } catch (e) { console.error('handler error:', ev, e && e.message); } });
+const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
+app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', rooms: rooms.size }));
+app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 
 io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
-  socket.on('room:create', ({name,ch,bg}={}) => {
-    if (socket.data.roomCode) return socket.emit('system:error','คุณอยู่ในห้องแล้ว');
+  on(socket, 'room:create', d => { const { name, ch, bg } = obj(d);
+    if (!allow(socket)) return;
+    if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
+    if (rooms.size >= MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
     let code; do { code = roomCode(); } while (rooms.has(code));
-    const room = { code, players:[], game:null, botTimer:null };
-    rooms.set(code,room);
-    joinRoom(socket,room,name,ch,bg);
+    const room = { code, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
+    rooms.set(code, room);
+    joinRoom(socket, room, name, ch, bg);
   });
-  socket.on('room:join', ({code,name,ch,bg}={}) => {
-    if (socket.data.roomCode) return socket.emit('system:error','คุณอยู่ในห้องแล้ว');
-    const room = rooms.get(String(code||'').trim().toUpperCase());
-    if (!room) return socket.emit('system:error','ไม่พบห้องนี้');
-    if (room.game && !room.game.over) return socket.emit('system:error','เกมเริ่มแล้ว เข้าห้องไม่ได้');
-    if (room.players.length >= MAX_PLAYERS) return socket.emit('system:error','ห้องเต็มแล้ว (4 คน)');
-    joinRoom(socket,room,name,ch,bg);
+  on(socket, 'room:join', d => { const { code, name, ch, bg } = obj(d);
+    if (!allow(socket)) return;
+    if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
+    const room = rooms.get(String(code || '').trim().toUpperCase());
+    if (!room) return socket.emit('system:error', 'ไม่พบห้องนี้');
+    if (active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
+    if (connectedPlayers(room).length >= MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
+    joinRoom(socket, room, name, ch, bg);
   });
-  socket.on('game:start', () => {
-    const room = getRoom(socket);
-    if (!room) return socket.emit('system:error','กรุณาเข้าห้องก่อน');
-    const host = room.players.find(p => p.connected && p.id);
-    if (host?.id !== socket.id) return socket.emit('system:error','เฉพาะเจ้าของห้องเริ่มเกมได้');
-    if (!startGame(room)) return socket.emit('system:error','เริ่มเกมไม่ได้');
-    io.to(room.code).emit('system:notice','เริ่มเกมแล้ว!');
+  on(socket, 'room:rejoin', d => { const { code, token } = obj(d);
+    if (!allow(socket)) return;
+    if (socket.data.roomCode) return;
+    if (!rejoinRoom(socket, code, token)) socket.emit('room:rejoin-failed');
   });
-  socket.on('game:act', action => {
-    const room = getRoom(socket);
-    if (!room || !room.game) return socket.emit('system:error','ยังไม่มีเกมที่กำลังเล่น');
-    const seat = findHumanSeat(room,socket.id);
-    if (seat < 0) return socket.emit('system:error','ไม่พบที่นั่งของคุณ');
-    const msg = Engine.act(room.game,seat,action||{});
-    if (msg) { socket.emit('game:action-result', { ok:false, error:msg, action:action && action.t }); return socket.emit('system:error',msg); }
-    socket.emit('game:action-result', { ok:true, action:action && action.t });
+  on(socket, 'game:start', () => {
+    if (!allow(socket)) return;
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return socket.emit('system:error', 'กรุณาเข้าห้องก่อน');
+    if (connectedPlayers(room)[0]?.id !== socket.id) return socket.emit('system:error', 'เฉพาะเจ้าของห้องเริ่มเกมได้');
+    if (active(room)) return socket.emit('system:error', 'เกมกำลังเล่นอยู่');
+    if (!room.deck && needShuffle(room)) { const sh = shufflerOf(room); return socket.emit('system:error', 'ต้องให้ ' + (sh ? sh.name : 'ผู้สับไพ่') + ' กดสับไพ่ก่อนเริ่มเกม'); }
+    if (!startGame(room)) return socket.emit('system:error', 'เริ่มเกมไม่ได้');
+    io.to(room.code).emit('system:notice', 'เริ่มเกมแล้ว!');
+  });
+  // สับไพ่ก่อนเริ่มตา: เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป) เท่านั้น — สับซ้ำได้จนกว่าจะเริ่มเกม
+  on(socket, 'game:shuffle', () => {
+    if (!allow(socket)) return;
+    const room = rooms.get(socket.data.roomCode);
+    if (!room) return socket.emit('system:error', 'กรุณาเข้าห้องก่อน');
+    if (active(room)) return socket.emit('system:error', 'เกมกำลังเล่นอยู่ สับไพ่ไม่ได้');
+    const sh = shufflerOf(room);
+    if (!sh || sh.id !== socket.id) return socket.emit('system:error', 'สิทธิ์สับไพ่เป็นของ ' + (sh ? sh.name : 'เจ้าของห้อง') + (room.round ? ' (ผู้ชนะตาก่อนหน้า)' : ' (เจ้าของห้อง)'));
+    const r = Shuffle.shuffle();
+    room.deck = r.ids; room.shuffledBy = sh.name; room.shuffleSeq = (room.shuffleSeq || 0) + 1;
+    io.to(room.code).emit('room:shuffled', { by: sh.name, seq: room.shuffleSeq, steps: r.steps.map(x => x.t) }); // ส่งแค่ชนิดท่าสับสำหรับแอนิเมชัน ไม่ส่งลำดับไพ่
+    emitLobby(room);
+  });
+  on(socket, 'game:act', raw => {
+    if (!allow(socket)) return;
+    const room = rooms.get(socket.data.roomCode);
+    if (!room || !room.game) return socket.emit('system:error', 'ยังไม่มีเกมที่กำลังเล่น');
+    const p = findPlayer(room, socket.id);
+    if (!p || p.seat == null) return socket.emit('system:error', 'ไม่พบที่นั่งของคุณ');
+    const action = cleanAction(raw);
+    if (!action) return socket.emit('system:error', 'คำสั่งไม่ถูกต้อง');
+    const msg = Engine.act(room.game, p.seat, action);
+    if (msg) { socket.emit('game:action-result', { ok: false, error: msg, action: action.t }); return socket.emit('system:error', msg); }
+    socket.emit('game:action-result', { ok: true, action: action.t });
     room.game.v++;
     emitStates(room);
     scheduleBots(room);
   });
-  socket.on('room:leave', () => leaveRoom(socket,false));
-  socket.on('disconnect', () => leaveRoom(socket,true));
+  on(socket, 'room:leave', () => { if (allow(socket)) leaveRoom(socket, false, true); });
+  on(socket, 'disconnect', () => leaveRoom(socket, true));
 });
-server.listen(PORT, () => console.log(`Dummy Online backend listening on ${PORT}`));
+if (require.main === module) server.listen(PORT, () => console.log(`Dummy Online backend listening on ${PORT}`));
+module.exports = { server, io, rooms };
