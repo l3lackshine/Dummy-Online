@@ -57,79 +57,122 @@
   {
    "id": "boy",
    "name": "หนุ่มน้อยซากุระ",
-   "asset": "./skin/characters/boy.webp"
+   "asset": "./skin/characters/boy.webp",
+   "price": 0
   },
   {
    "id": "girl",
    "name": "สาวน้อยหางม้า",
-   "asset": "./skin/characters/girl.webp"
+   "asset": "./skin/characters/girl.webp",
+   "price": 0
   }
  ],
  "tables": [
   {
    "id": "green-felt",
    "name": "โต๊ะผ้าสักหลาด",
+   "price": 0,
    "asset": "",
    "bg": "#0f3d2a",
    "bg2": "#0b2e20"
+  },
+  {
+   "id": "sakura-felt",
+   "name": "โต๊ะชมพูซากุระ",
+   "price": 250,
+   "asset": "",
+   "bg": "#8a3a5c",
+   "bg2": "#5a2340"
+  },
+  {
+   "id": "navy-felt",
+   "name": "โต๊ะกรมท่า",
+   "price": 250,
+   "asset": "",
+   "bg": "#1f3a6e",
+   "bg2": "#142650"
+  },
+  {
+   "id": "wood",
+   "name": "โต๊ะไม้",
+   "price": 400,
+   "asset": "",
+   "bg": "#8a5a2e",
+   "bg2": "#5a3718"
   }
  ],
  "backgrounds": [
+  {
+   "id": "sakura-house",
+   "name": "ห้องญี่ปุ่นซากุระ",
+   "price": 0,
+   "asset": "./skin/backgrounds/sakura-house.webp",
+   "css": "",
+   "ink": "#ffffff"
+  },
   {
    "id": "room-night",
    "name": "ห้องไม้ยามค่ำ (ซากุระ)",
    "asset": "./skin/backgrounds/room-night.svg",
    "css": "",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 250
   },
   {
    "id": "room-day",
    "name": "ห้องไม้ยามเช้า",
    "asset": "./skin/backgrounds/room-day.svg",
    "css": "",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 250
   },
   {
    "id": "room-sakura",
    "name": "ห้องไม้โทนชมพู",
    "asset": "./skin/backgrounds/room-sakura.svg",
    "css": "",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 250
   },
   {
    "id": "sunset",
    "name": "พระอาทิตย์ตก",
    "asset": "",
    "css": "linear-gradient(160deg,#2b2160 0%,#7a3b78 55%,#d9774f 100%)",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 150
   },
   {
    "id": "sakura",
    "name": "ซากุระ",
    "asset": "",
    "css": "linear-gradient(160deg,#ffd1e3,#f06595)",
-   "ink": "#3a1020"
+   "ink": "#3a1020",
+   "price": 150
   },
   {
    "id": "night",
    "name": "ราตรีประดับดาว",
    "asset": "",
    "css": "radial-gradient(circle at 22% 24%,#ffffffaa 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 38%,#ffffff88 0 1px,transparent 2px),radial-gradient(circle at 48% 70%,#ffffff77 0 1px,transparent 2px),linear-gradient(160deg,#0c1226,#3b4a7a)",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 150
   },
   {
    "id": "forest",
    "name": "ป่าเขียว",
    "asset": "",
    "css": "linear-gradient(160deg,#2f9e63,#0b3d2a)",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "price": 150
   },
   {
    "id": "gold",
    "name": "ทองคำ",
    "asset": "",
    "css": "linear-gradient(160deg,#ffe29a,#c9971c)",
-   "ink": "#33250a"
+   "ink": "#33250a",
+   "price": 300
   }
  ],
  "cards": [
@@ -248,6 +291,48 @@
      "#0000"
     ]
    }
+  }
+ ],
+ "backs": [
+  {
+   "id": "sakura-navy",
+   "name": "ซากุระกรมท่า",
+   "price": 0,
+   "asset": "./skin/cards/backs/sakura-navy.svg",
+   "b1": "#1d2650",
+   "b2": "#141b3a"
+  },
+  {
+   "id": "classic-red",
+   "name": "คลาสสิกแดง",
+   "price": 100,
+   "asset": "./skin/cards/backs/classic-red.svg",
+   "b1": "#7a1f2b",
+   "b2": "#5d1520"
+  },
+  {
+   "id": "midnight",
+   "name": "มิดไนท์",
+   "price": 200,
+   "asset": "./skin/cards/backs/midnight.svg",
+   "b1": "#4057a3",
+   "b2": "#2b3b72"
+  },
+  {
+   "id": "paw-pink",
+   "name": "รอยเท้าแมว",
+   "price": 300,
+   "asset": "./skin/cards/backs/paw-pink.svg",
+   "b1": "#f06595",
+   "b2": "#c2255c"
+  },
+  {
+   "id": "gold",
+   "name": "ทองคำ",
+   "price": 700,
+   "asset": "./skin/cards/backs/gold.svg",
+   "b1": "#c9971c",
+   "b2": "#8a6508"
   }
  ]
 }

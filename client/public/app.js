@@ -15,6 +15,7 @@ const DEFAULT_SKINS={themes:[
 {id:'sakura',n:'ซากุระ',price:400,card:'#fff1f5',blk:'#3b2a35',red:'#d6336c',edge:'#f3b6cb',b1:'#f06595',b2:'#c2255c',bg:'#4a1f3a',bg2:'#35142a'},
 {id:'gold',n:'ทองคำ',price:700,card:'#fff4d6',blk:'#33250a',red:'#a4161a',edge:'#d9b45a',b1:'#c9971c',b2:'#8a6508',bg:'#2e2410',bg2:'#1f180a'}],
 characters:[{id:'emoji',name:'อีโมจิเริ่มต้น',asset:''}],
+backs:[{id:'classic-red',name:'คลาสสิกแดง',price:0,b1:'#7a1f2b',b2:'#5d1520'}],
 tables:[{id:'green-felt',name:'โต๊ะผ้าสักหลาด',asset:'',bg:'#0f3d2a',bg2:'#0b2e20'}],
 backgrounds:[{id:'sunset',name:'พระอาทิตย์ตก',asset:'',css:'linear-gradient(180deg,#2b2160 0%,#7a3b78 55%,#d9774f 100%)'}],
 cards:[{id:'classic-card',name:'ไพ่คลาสสิก',asset:'',card:'#fbf7ec',blk:'#1b1b1b',red:'#c0282d',edge:'#cfc7b0'}]};
@@ -22,28 +23,60 @@ let SKIN_REGISTRY=DEFAULT_SKINS, TH=DEFAULT_SKINS.themes;
 fetch('./skin/skins.json').then(r=>r.ok?r.json():DEFAULT_SKINS).then(v=>{SKIN_REGISTRY=v;TH=Array.isArray(v.themes)&&v.themes.length?v.themes:DEFAULT_SKINS.themes;applyTheme();render()}).catch(()=>{});
 const save=()=>{localStorage.setItem('dummyCoins',sv.coins);localStorage.setItem('dummyOwned',JSON.stringify(sv.own));localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick)};
 function setNick(v){nick=String(v||'').trim().slice(0,14)||'ผู้เล่น';sv.name=nick;save()}
-function applyTheme(){const t=TH.find(x=>x.id==sv.eq)||TH[0],s=document.documentElement.style;for(const k of['card','blk','red','edge','b1','b2','bg','bg2'])if(t[k])s.setProperty('--'+k,t[k]);const table=(SKIN_REGISTRY.tables||[]).find(x=>x.id===localStorage.getItem('dummyTableSkin'))||(SKIN_REGISTRY.tables||[])[0];const dock=(SKIN_REGISTRY.docks||[]).find(x=>x.id===localStorage.getItem('dummyDockSkin'))||(SKIN_REGISTRY.docks||[])[0];const cards=(SKIN_REGISTRY.cards||[]).find(x=>x.id===localStorage.getItem('dummyCardSkin'))||(SKIN_REGISTRY.cards||[])[0];if(table){if(table.bg)s.setProperty('--bg',table.bg);if(table.bg2)s.setProperty('--bg2',table.bg2);if(table.asset)s.setProperty('--table-image',`url('${table.asset}')`)}if(dock){s.setProperty('--dock-bg',dock.panelAsset?`url('${dock.panelAsset}') center/100% 100% no-repeat`:(dock.panel||'none'));s.setProperty('--dock-border',dock.border||'transparent');s.setProperty('--btn-img',dock.buttonAsset?`url('${dock.buttonAsset}')`:'none');const b=dock.buttons||{};for(const k of['blue','org','grn','g','tool'])(b[k]||[]).forEach((v,i)=>s.setProperty(`--b-${k}-${i+1}`,v))}if(cards){for(const k of['card','blk','red','edge'])if(cards[k])s.setProperty('--'+k,cards[k]);if(cards.asset)s.setProperty('--card-image',`url('${cards.asset}')`)}document.documentElement.dataset.characterSkin=(SKIN_REGISTRY.characters||[]).find(x=>x.id===localStorage.getItem('dummyCharacterSkin'))?.id||'emoji'}
-const go=s=>{screen=s;render()};
+function applyTheme(){const t=TH.find(x=>x.id==sv.eq)||TH[0],s=document.documentElement.style;for(const k of['card','blk','red','edge','b1','b2','bg','bg2'])if(t&&t[k])s.setProperty('--'+k,t[k]);const pk=(kind,store)=>{const l=SKIN_REGISTRY[kind]||[];return l.find(x=>x.id===localStorage.getItem(store))||l[0]};const table=pk('tables','dummyTableSkin'),dock=pk('docks','dummyDockSkin'),cards=pk('cards','dummyCardSkin'),back=pk('backs','dummyBackSkin'),room=pk('backgrounds','dummyBackgroundSkin');if(table){if(table.bg)s.setProperty('--bg',table.bg);if(table.bg2)s.setProperty('--bg2',table.bg2);table.asset?s.setProperty('--table-image',`url('${table.asset}')`):s.removeProperty('--table-image')}if(dock){s.setProperty('--dock-bg',dock.panelAsset?`url('${dock.panelAsset}') center/100% 100% no-repeat`:(dock.panel||'none'));s.setProperty('--dock-border',dock.border||'transparent');s.setProperty('--btn-img',dock.buttonAsset?`url('${dock.buttonAsset}')`:'none');const b=dock.buttons||{};for(const k of['blue','org','grn','g','tool'])(b[k]||[]).forEach((v,i)=>s.setProperty(`--b-${k}-${i+1}`,v))}if(cards){for(const k of['card','blk','red','edge'])if(cards[k])s.setProperty('--'+k,cards[k]);cards.asset?s.setProperty('--card-image',`url('${cards.asset}')`):s.removeProperty('--card-image')}if(back)s.setProperty('--back-img',back.asset?`url('${back.asset}')`:`repeating-linear-gradient(45deg,${back.b1||'#7a1f2b'},${back.b1||'#7a1f2b'} 4px,${back.b2||'#5d1520'} 4px,${back.b2||'#5d1520'} 8px)`);if(room){s.setProperty('--page-background',room.asset?`url('${room.asset}') center/cover no-repeat`:(room.css||'#2a1a10'));s.setProperty('--page-wide',room.asset?`url('${room.asset}') center/auto 100% no-repeat`:(room.css||'#2a1a10'))}document.documentElement.dataset.characterSkin=myChar()||'emoji'}
+const go=s=>{screen=s;shopNote='';render()};
 const wrap=b=>{$('app').innerHTML=`<div class=page><div class=box>${b}</div></div>`};
 const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'];
-const myChar=()=>{const l=SKIN_REGISTRY.characters||[],c=localStorage.getItem('dummyCharacterSkin');return(l.find(x=>x.id===c)||l[0]||{}).id||null};
+const myChar=()=>equipped('characters')||null;
 const av=(n,ch)=>{const skin=(SKIN_REGISTRY.characters||[]).find(x=>x.id===ch);if(skin&&skin.asset)return `<img class=avatar-img src="${esc(skin.asset)}" alt="${esc(skin.name||'ตัวละคร')}">`;let h=0;for(const k of String(n))h=(h*31+k.charCodeAt(0))|0;return AV[Math.abs(h)%AV.length]};
-function charPicker(){const l=SKIN_REGISTRY.characters||[];if(!l.some(x=>x.asset))return '';const cur=myChar();return `<p>เลือกตัวละครของคุณ</p><div class=chars>${l.map(x=>`<button class="char-opt${cur===x.id?' on':''}" onclick="pickChar('${esc(x.id)}')" aria-pressed="${cur===x.id}"><img src="${esc(x.asset)}" alt=""><span>${esc(x.name)}${cur===x.id?' ✓':''}</span></button>`).join('')}</div>`}
-function pickChar(id){localStorage.setItem('dummyCharacterSkin',id);render()}
-const myBg=()=>{const l=SKIN_REGISTRY.backgrounds||[],c=localStorage.getItem('dummyBackgroundSkin');return(l.find(x=>x.id===c)||l[0]||{}).id||null};
+const myBg=()=>equipped('backgrounds')||null;
 const bgCss=id=>{const b=(SKIN_REGISTRY.backgrounds||[]).find(x=>x.id===id);if(!b)return '';return `background:${b.asset?`url('${b.asset}') center/cover`:(b.css||'none')};--ink:${b.ink||'#fff'};`};
-function bgPicker(){const l=SKIN_REGISTRY.backgrounds||[];if(l.length<2)return '';const cur=myBg();return `<p>พื้นหลังที่นั่งของคุณ (ทุกคนในห้องเห็น)</p><div class=swatches>${l.map(x=>`<button class="sw${cur===x.id?' on':''}" style="${esc(bgCss(x.id))}" onclick="pickBg('${esc(x.id)}')" aria-label="${esc(x.name)}" aria-pressed="${cur===x.id}">${cur===x.id?'✓':''}</button>`).join('')}</div>`}
-function pickBg(id){localStorage.setItem('dummyBackgroundSkin',id);render()}
-function dockPicker(){const l=SKIN_REGISTRY.docks||[];if(l.length<2)return '';const cur=localStorage.getItem('dummyDockSkin')||l[0].id;return `<p>สกินแผงไพ่และปุ่มของคุณ</p><div class=swatches>${l.map(x=>`<button class="dk${cur===x.id?' on':''}" style="background:${esc(x.panelAsset?`url('${x.panelAsset}') center/cover`:(x.panel||'none'))};border-color:${esc(x.border||'#fff4')}" onclick="pickDock('${esc(x.id)}')" aria-pressed="${cur===x.id}">${esc(x.name)}${cur===x.id?' ✓':''}</button>`).join('')}</div>`}
-function pickDock(id){localStorage.setItem('dummyDockSkin',id);applyTheme();render()}
 
 function mv(d){if(!sel.size)return;const o=d<0?ho:[...ho].reverse();for(let i=1;i<o.length;i++)if(sel.has(o[i])&&!sel.has(o[i-1]))[o[i-1],o[i]]=[o[i],o[i-1]];ho=d<0?o:o.reverse();render()}
 function srt(){sm^=1;ho.sort((a,b)=>sm?(ALL[a].s-ALL[b].s||ALL[a].r-ALL[b].r):(ALL[a].r-ALL[b].r||ALL[a].s-ALL[b].s));render()}
-function buy(id){const t=TH.find(x=>x.id===id);if(!t)return;if(!sv.own.includes(id)){if(sv.coins<t.price){hint='เหรียญไม่พอ';return render()}sv.coins-=t.price;sv.own.push(id)}sv.eq=id;save();applyTheme();render()}
-function homeView(){const t=TH.find(x=>x.id==sv.eq)||TH[0];wrap(`<div class=logo>ไพ่ดัมมี่<small>ออนไลน์</small></div><div class=who><span class=av>${av(sv.name,myChar())}</span><b>${esc(sv.name||'')}</b><span class=coin>🪙 ${sv.coins}</span></div>${charPicker()}${bgPicker()}${dockPicker()}${connStatus()}<input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"><button class=org onclick=solo()>🤖 เล่นคนเดียวกับบอท</button><button class=blue onclick="go('lobby')">🌐 เล่นออนไลน์กับเพื่อน</button><button class=g onclick="go('shop')">🛍️ ร้านค้า</button><p>ธีมไพ่: ${t.n} · เล่นได้สูงสุด 4 ที่นั่ง</p>`)}
-function setDecor(kind,id){const key={characters:'dummyCharacterSkin',tables:'dummyTableSkin',backgrounds:'dummyBackgroundSkin',docks:'dummyDockSkin',cards:'dummyCardSkin'}[kind];if(!key)return;localStorage.setItem(key,id);applyTheme();render()}
-function decorShop(){const cats=[['characters','สกินตัวละคร'],['tables','สกินโต๊ะ'],['backgrounds','พื้นหลังที่นั่งของฉัน'],['docks','สกินแผงไพ่และปุ่ม'],['cards','สกินไพ่']];return `<h3>🎨 ของตกแต่งเพิ่มเติม</h3>${cats.map(([key,label])=>{const items=SKIN_REGISTRY[key]||[],store={characters:'dummyCharacterSkin',tables:'dummyTableSkin',backgrounds:'dummyBackgroundSkin',docks:'dummyDockSkin',cards:'dummyCardSkin'}[key],cur=localStorage.getItem(store)||(items[0]||{}).id;return `<p>${label}</p><div class=decor-row>${items.map(x=>`<button class="decor-btn ${cur===x.id?'chosen':''}" onclick="setDecor('${key}','${esc(x.id)}')">${esc(x.name||x.n||x.id)}${cur===x.id?' ✓':''}</button>`).join('')}</div>`}).join('')}`}
-function shopView(){wrap(`<h2>🛍️ ร้านค้า</h2><p>เหรียญ <b class=coin>🪙 ${sv.coins}</b></p><div class=shopg>${TH.map(t=>{const own=sv.own.includes(t.id),no=!own&&sv.coins<t.price,cur=sv.eq==t.id;return `<div class=item><div class=pv style="--card:${t.card};--blk:${t.blk};--red:${t.red};--edge:${t.edge};--b1:${t.b1};--b2:${t.b2}"><span class=c>A<span>♠</span></span><span class="c r">K<span>♥</span></span><span class=back style="width:32px;height:44px;cursor:default"></span></div><b>${t.n}</b><button class="${own?(cur?'g':'blue'):'org'}" ${no?'disabled':''} onclick="buy('${t.id}')">${own?(cur?'ใช้อยู่ ✓':'ใช้ธีมนี้'):'🪙 '+t.price}</button></div>`}).join('')}</div>${decorShop()}<button class=g onclick="go('home')">‹ กลับ</button>`)}
+// ===== UI v6: หน้าแรกใหม่ + หน้าเล่นเกม / ร้านค้า / โปรไฟล์ =====
+let shopNote = '', joinOpen = false, joinCode = '';
+const KINDS = [['characters', 'ตัวละคร', 'dummyCharacterSkin', '🧑'], ['backs', 'หลังไพ่', 'dummyBackSkin', '🂠'], ['tables', 'สกินโต๊ะ', 'dummyTableSkin', '🎴'], ['backgrounds', 'พื้นหลัง', 'dummyBackgroundSkin', '🖼️']];
+const price = x => Number(x && x.price) || 0;
+const owned = (kind, x) => price(x) <= 0 || sv.own.includes(kind + ':' + x.id);
+function equipped(kind) { const k = KINDS.find(z => z[0] === kind), l = SKIN_REGISTRY[kind] || [], c = localStorage.getItem(k[2]); const x = l.find(y => y.id === c && owned(kind, y)) || l.find(y => owned(kind, y)) || l[0]; return x ? x.id : null; }
+function equip(kind, id) { const k = KINDS.find(z => z[0] === kind), x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!k || !x || !owned(kind, x)) return; localStorage.setItem(k[2], id); applyTheme(); render(); }
+function buyItem(kind, id) { const x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!x || owned(kind, x)) return; if (sv.coins < price(x)) { shopNote = 'เหรียญไม่พอ'; return render(); } sv.coins -= price(x); sv.own.push(kind + ':' + id); save(); shopNote = 'ซื้อ “' + (x.name || id) + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }
+const backCss = x => x.asset ? `url('${x.asset}') center/cover no-repeat` : `repeating-linear-gradient(45deg,${x.b1 || '#7a1f2b'},${x.b1 || '#7a1f2b'} 4px,${x.b2 || '#5d1520'} 4px,${x.b2 || '#5d1520'} 8px)`;
+function prevBox(kind, x) {
+  if (kind === 'characters') return `<span class=pv-ch><img src="${esc(x.asset || '')}" alt=""></span>`;
+  if (kind === 'backs') return `<span class=pv-back style="background:${esc(backCss(x))}"></span>`;
+  if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
+  return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
+}
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<span class=coin-pill>🪙 ${sv.coins}</span></div>`;
+const page2 = (title, body) => { $('app').className = ''; $('app').innerHTML = `<div class=pg>${hud('home')}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
+function homeView() {
+  const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
+  $('app').className = 'home';
+  $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./ui/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./ui/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./ui/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}</div>`;
+}
+function goPlay() { joinOpen = false; conn(); go('play'); }
+function toggleJoin() { joinOpen = !joinOpen; render(); if (joinOpen) { const i = $('cd'); if (i) i.focus(); } }
+function playView() {
+  conn();
+  const plank = (fn, t, s) => `<button class=plank onclick="${fn}"><b>${t}</b><small>${s}</small></button>`;
+  page2('เล่นเกม', `${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('mk()', 'สร้างห้อง', 'ชวนเพื่อนได้สูงสุด 4 คน')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`);
+}
+function shopView() {
+  const secs = KINDS.map(([kind, label, , ic]) => {
+    const items = (SKIN_REGISTRY[kind] || []).filter(x => price(x) > 0); if (!items.length) return '';
+    return `<h3 class=sec>${ic} ${label}</h3><div class=grid>${items.map(x => { const own = owned(kind, x), no = !own && sv.coins < price(x); return `<div class=item2>${prevBox(kind, x)}<b>${esc(x.name || x.n || x.id)}</b>${own ? '<button class=wbtn disabled>ซื้อแล้ว ✓</button>' : `<button class="wbtn go" ${no ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}')">🪙 ${price(x)}</button>`}</div>`; }).join('')}</div>`;
+  }).join('');
+  page2('ร้านค้า', `<p class=note>${esc(shopNote || 'เลือกซื้อของตกแต่ง แล้วไปเลือกใช้ที่หน้าโปรไฟล์')}</p><div class=panel>${secs}</div>`);
+}
+function profileView() {
+  const secs = KINDS.map(([kind, label, , ic]) => {
+    const items = (SKIN_REGISTRY[kind] || []).filter(x => owned(kind, x)), cur = equipped(kind);
+    return `<h3 class=sec>${ic} ${label}</h3><div class=pick-row>${items.map(x => `<button class="pick${cur === x.id ? ' on' : ''}" onclick="equip('${kind}','${esc(x.id)}')" aria-pressed="${cur === x.id}">${prevBox(kind, x)}<small>${esc(x.name || x.n || x.id)}${cur === x.id ? ' ✓' : ''}</small></button>`).join('')}</div>`;
+  }).join('');
+  page2('โปรไฟล์', `<div class=panel><label class=namebox><span>ชื่อเล่น</span><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"></label>${secs}<button class=wbtn onclick="go('shop')">🛍️ ซื้อของเพิ่มที่ร้านค้า</button></div>`);
+}
 function conn() {
   if (sock || noio) return;
   if (!window.io) { noio = true; lerr = 'โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'; return; }
@@ -71,7 +104,7 @@ const setSess = v => { try { v ? localStorage.setItem('dummySession', JSON.strin
 const emit = a => { if (!sock || !sock.connected) { hint = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); return; } sock.emit('game:act', a); };
 const room = () => { conn(); if (!sock) return render(); };
 function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); sock.emit('room:create', { name: nick, ch: myChar(), bg: myBg() }); }
-function jn() { const c = ($('cd').value || '').trim(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, ch: myChar(), bg: myBg() }); } }
+function jn() { const c = ($('cd').value || '').trim().toUpperCase(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, ch: myChar(), bg: myBg() }); } }
 const begin = () => sock.emit('game:start');
 const doShuffle = () => { if (!sock || !sock.connected) { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (shufAnim) return; sock.emit('game:shuffle'); };
 // ส่วนสับไพ่ (ล็อบบี้ + หน้าจบตา): ผู้สับ = เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป)
@@ -97,7 +130,7 @@ function connStatus() { // แสดงสถานะที่หน้าแ�
 function solo() { setSess(null); soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); render(); }
 function leave() { setSess(null); if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
 function lobbyView() {
-  if (screen === 'home') return homeView(); if (screen === 'shop') return shopView(); conn();
+  if (screen === 'home') return homeView(); if (screen === 'shop') return shopView(); if (screen === 'profile') return profileView(); if (screen === 'play' || (screen === 'lobby' && !code)) return playView(); conn();
   let b;
   if (code) {
     const pl = lob ? lob.players : [];
@@ -124,6 +157,7 @@ function openPile(){if(!S)return;if(!mine()){hint='ยังไม่ถึง�
 function render() {
   if (!authed) { conn(); return authView(); }
   if (screen !== 'game' || !S) return lobbyView();
+  $('app').className = '';
   const me = S.P[S.my], ids = S.hand, fresh = new Set(ids.filter(i => !ho.includes(i)));
   ho = ho.filter(i => ids.includes(i)); const miss = ids.filter(i => !ho.includes(i)).map(i => ALL[i]);
   if (!ho.length) miss.sort((a, b) => a.s - b.s || a.r - b.r); ho.push(...miss.map(c => c.id));
@@ -139,7 +173,7 @@ function render() {
   const meOn = S.cur === S.my && !S.over, meA = av(me.n, me.ch);
   const plMe = `<div class="pl pl-bottom${meOn ? ' active' : ''}"><div class=pl-info><b>คุณ</b><small>${me.n_cards} ใบ · ${me.pts} แต้ม</small>${meOn ? '<i class=tm>▶ ตา</i>' : ''}</div><span class="${meA.startsWith('<img') ? 'chr' : 'av'}">${meA}</span></div>`;
   // พื้นหลังของแต่ละที่นั่งเป็นกรอบรูปล้อมโต๊ะ 4 ชิ้น ตัดทแยงที่มุมโต๊ะ (ขนาดคำนวณใน fitFrame)
-  const frame = `<div class="frame${S.over ? '' : ' has-active'}">${[['top', top], ['right', right], ['bottom', S.my], ['left', left]].map(([pos, pi]) => pi == null ? '' : `<i class="fb fb-${pos}${!S.over && S.cur === pi ? ' active' : ''}" style="${esc(bgCss(S.P[pi].bg))}"></i>`).join('')}</div>`;
+  const frame = ''; // ทุกห้องใช้พื้นหลังเดียวกัน (พื้นหลังหน้าเว็บ) ไม่มีกรอบพื้นหลังรายที่นั่งแล้ว
   $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>ห้อง ${esc(code)}</span></div>
  <div class=arena>${frame}${pl(top, 'top')}${pl(left, 'left')}<div class=felt>
  <div class="zone zone-top">${ms(top)}</div><div class="zone zone-left">${ms(left)}</div><div class="zone zone-right">${ms(right)}</div><div class="zone zone-bottom">${ms(S.my)}</div>

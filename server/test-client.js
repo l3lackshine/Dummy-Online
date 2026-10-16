@@ -8,8 +8,8 @@ let passed = 0; const ok = (c, m) => { assert(c, m); passed++; console.log('  �
 function openPage() { // = เปิด/รีเฟรชหน้าเว็บหนึ่งครั้ง
   const appEl = { innerHTML: '' }, socks = [];
   const g = { localStorage: { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } },
-    document: { getElementById: id => (id === 'app' ? appEl : null), querySelector: () => null, documentElement: { style: { setProperty() {} }, dataset: {} }, body: { appendChild() {} } },
-    fetch: () => Promise.resolve({ ok: false }), requestAnimationFrame: () => 0, confirm: () => true, console, setTimeout, clearTimeout, JSON, Math, Set, Array, Number, String, Object, Date, Promise, Error };
+    document: { getElementById: id => (id === 'app' ? appEl : null), querySelector: () => null, documentElement: { style: { setProperty() {}, removeProperty() {} }, dataset: {} }, body: { appendChild() {} } },
+    fetch: u => (String(u).includes('skins.json') ? Promise.resolve({ ok: true, json: () => Promise.resolve(JSON.parse(fs.readFileSync(path.join(__dirname, '../client/public/skin/skins.json'), 'utf8'))) }) : Promise.resolve({ ok: false })), requestAnimationFrame: () => 0, confirm: () => true, console, setTimeout, clearTimeout, JSON, Math, Set, Array, Number, String, Object, Date, Promise, Error };
   g.window = g; g.addEventListener = () => {}; g.DUMMY_CONFIG = { BACKEND_URL: 'http://fake' };
   g.io = () => { const c = M.client(srv); socks.push(c); return c; };
   const ctx = vm.createContext(g); vm.runInContext(SRC, ctx, { filename: 'app.js' });
@@ -17,7 +17,10 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
 }
 (async () => {
   console.log('\n[A] เปิดหน้าแรก + เล่นคนเดียว');
-  let pg = openPage(); ok(pg.appEl.innerHTML.includes('เล่นคนเดียวกับบอท'), 'หน้าแรกแสดงปุ่มเล่นคนเดียว');
+  let pg = openPage(); await sleep(30); ok(pg.appEl.innerHTML.includes('goPlay()') && pg.appEl.innerHTML.includes('sign-shop.webp') && pg.appEl.innerHTML.includes('sign-profile.webp'), 'หน้าแรกแสดงป้ายเล่นเกม/ร้านค้า/โปรไฟล์');
+  pg.ev('goPlay()'); ok(pg.ev('screen') === 'play' && ['solo()', 'mk()', 'toggleJoin()'].every(f => pg.appEl.innerHTML.includes(f)), 'หน้าเล่นเกมมีป้ายเล่นคนเดียว/สร้างห้อง/เข้าห้อง');
+  pg.ev("go('shop')"); ok(pg.appEl.innerHTML.includes('buyItem(') && !pg.appEl.innerHTML.includes('equip('), 'หน้าร้านค้ามีแต่ของที่ขาย');
+  pg.ev("go('profile')"); ok(['characters', 'backs', 'tables', 'backgrounds'].every(k => pg.appEl.innerHTML.includes("equip('" + k + "'")), 'หน้าโปรไฟล์เลือกตัวละคร/หลังไพ่/โต๊ะ/พื้นหลังได้');
   pg.ev('solo()'); for (let i = 0; i < 200 && !pg.ev('lob'); i++) await sleep(10);
   ok(!pg.ev('S') && pg.appEl.innerHTML.includes('doShuffle()') && /<button onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'ห้องเล่นกับบอท: เข้าหน้าสับไพ่ก่อน มีปุ่มสับ และปุ่มเริ่มถูกปิดจนกว่าจะสับ');
   pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
@@ -42,9 +45,9 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
   ok(Number(store.dummyCoins) === coin1, 'รีเฟรช 3 ครั้งหลังเกมจบ เหรียญไม่เพิ่ม (บั๊กเดิม: ได้เหรียญซ้ำทุกครั้ง)');
   console.log('\n[D] กดออกจากห้อง → ล้าง session ไม่ย้อนกลับ');
   pg.ev('leave()'); await sleep(40); ok(!store.dummySession && pg.ev('screen') === 'home', 'ออกจากห้องแล้วกลับหน้าแรก ไม่มี session ค้าง');
-  pg.socks.forEach(s => s.close()); pg = openPage(); await sleep(60); ok(pg.ev('S') === null && pg.appEl.innerHTML.includes('เล่นคนเดียวกับบอท'), 'เปิดหน้าใหม่หลังออกห้อง ไม่ถูกดึงกลับเข้าเกมเก่า');
+  pg.socks.forEach(s => s.close()); pg = openPage(); await sleep(60); ok(pg.ev('S') === null && pg.appEl.innerHTML.includes('goPlay()'), 'เปิดหน้าใหม่หลังออกห้อง ไม่ถูกดึงกลับเข้าเกมเก่า');
   console.log('\n[E] ห้องออนไลน์ 2 คน: ปุ่มสับไพ่ในล็อบบี้ (เจ้าของห้อง) → เริ่มเกมได้หลังสับ');
-  pg.socks.forEach(s => s.close()); pg = openPage(); pg.ev("go('lobby')"); pg.ev('mk()'); for (let i = 0; i < 200 && !pg.ev('code'); i++) await sleep(10);
+  pg.socks.forEach(s => s.close()); pg = openPage(); pg.ev('goPlay()'); pg.ev('mk()'); for (let i = 0; i < 200 && !pg.ev('code'); i++) await sleep(10);
   const rc = pg.ev('code'), guest = M.client(srv); let gl = null; guest.on('room:lobby', l => { gl = l; }); guest.emit('room:join', { code: rc, name: 'เพื่อน' });
   for (let i = 0; i < 200 && !(pg.ev('lob && lob.players.length === 2')); i++) await sleep(10);
   ok(pg.appEl.innerHTML.includes('ผู้สับไพ่') && pg.appEl.innerHTML.includes('doShuffle()') && /<button onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'เจ้าของห้องเห็นปุ่มสับไพ่ และปุ่มเริ่มเกมถูกปิดไว้จนกว่าจะสับ');
