@@ -54,7 +54,7 @@ function conn() {
   sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
   sock.on('game:action-result', d => { if (d && d.ok) { hint = ''; } else { hint = 'จั่ว/เก็บไพ่ไม่สำเร็จ: ' + ((d && d.error) || 'ไม่ทราบสาเหตุ'); render(); } });
   sock.on('me', m => { sv = m; applyTheme(); render(); });
-  sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (d.token) setSess({ code: d.code, token: d.token }); if (soloPending) { soloPending = false; soloRoom = true; sock.emit('game:start'); } if (screen !== 'game') screen = 'lobby'; render(); });
+  sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (d.token) setSess({ code: d.code, token: d.token }); if (soloPending) { soloPending = false; soloRoom = true; /* ห้องเล่นกับบอท: ไปหน้าสับไพ่ก่อน แล้วค่อยกดเริ่มเกม */ } if (screen !== 'game') screen = 'lobby'; render(); });
   // เซิร์ฟเวอร์ส่งเฉพาะ "ชนิดท่าสับ" มาให้เล่นแอนิเมชัน (ไม่มีลำดับไพ่) — ทุกคนในห้องเห็นพร้อมกัน
   sock.on('room:shuffled', d => { lerr = ''; shufAnim = { by: d.by, seq: d.seq, steps: d.steps || [] }; clearTimeout(shufTimer); shufTimer = setTimeout(() => { shufAnim = null; render(); }, 1400); render(); });
   sock.on('room:lobby', l => { lob = l; if (typeof l.youHost === 'boolean') isHost = l.youHost; render(); });
@@ -76,12 +76,12 @@ const begin = () => sock.emit('game:start');
 const doShuffle = () => { if (!sock || !sock.connected) { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (shufAnim) return; sock.emit('game:shuffle'); };
 // ส่วนสับไพ่ (ล็อบบี้ + หน้าจบตา): ผู้สับ = เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป)
 function shufflePanel() {
-  const sh = lob && lob.shuffle; if (!sh || soloRoom || !sh.shuffler) return '';
+  const sh = lob && lob.shuffle; if (!sh || !sh.shuffler) return '';
   const lbl = { cut: 'ตัดไพ่', riffle: 'รีฟเฟิล', overhand: 'โอเวอร์แฮนด์' }, cnt = {};
   if (shufAnim) shufAnim.steps.forEach(t => { cnt[t] = (cnt[t] || 0) + 1; });
   const anim = shufAnim ? `<div class=shuf-anim aria-hidden=true>${Array.from({ length: 12 }, (_, i) => `<i style="--i:${i};--s:${i % 2 ? 1 : -1}"></i>`).join('')}</div><p class=shuf-steps>${esc(shufAnim.by)} สับไพ่: ${Object.keys(cnt).map(t => (lbl[t] || t) + ' ×' + cnt[t]).join(' · ')}</p>` : '';
   const who = sh.youShuffler ? 'คุณ' : esc(sh.shuffler), why = sh.round ? '🏆 ผู้ชนะตาก่อนหน้า' : '👑 เจ้าของห้อง';
-  const st = sh.ready ? '✅ สับไพ่แล้ว' + (sh.by ? ' โดย ' + esc(sh.by) : '') : sh.needed ? '⏳ ยังไม่ได้สับไพ่' : 'เล่นคนเดียว: ระบบสับให้อัตโนมัติ';
+  const st = sh.ready ? '✅ สับไพ่แล้ว' + (sh.by ? ' โดย ' + esc(sh.by) : '') : '⏳ ยังไม่ได้สับไพ่';
   return `<div class=shuf><p>🔀 ผู้สับไพ่: <b>${who}</b> (${why})</p>${anim}<p class=shuf-st>${st}</p>${sh.youShuffler ? `<button class=org onclick=doShuffle() ${shufAnim ? 'disabled' : ''}>🔀 ${sh.ready ? 'สับอีกครั้ง' : 'สับไพ่'}</button>` : ''}</div>`;
 }
 // ปุ่มเริ่ม: เจ้าของห้องเท่านั้น และต้องสับไพ่แล้ว (เว้นเล่นคนเดียว)
@@ -101,9 +101,9 @@ function lobbyView() {
   let b;
   if (code) {
     const pl = lob ? lob.players : [];
-    b = `<p>รหัสห้อง</p><div style="font-size:32px;font-weight:700;letter-spacing:4px">${esc(code)}</div><p>ส่งรหัสให้เพื่อน (สูงสุด 4 คน) ระบบเติมบอทให้ครบ 4 ที่นั่ง</p>${pl.map(p => `<div class=row><span>${esc(p.name)}${p.host ? ' 👑' : ''}</span><small>${p.connected ? 'ออนไลน์' : 'หลุด'}</small></div>`).join('')}${shufflePanel()}${startBtn('เริ่มเกม')}<button class=g onclick=leave()>ออกจากห้อง</button>`;
+    b = `${soloRoom ? '<p>🤖 เล่นกับบอท — กดสับไพ่ก่อนเริ่มเกม</p>' : `<p>รหัสห้อง</p><div style="font-size:32px;font-weight:700;letter-spacing:4px">${esc(code)}</div><p>ส่งรหัสให้เพื่อน (สูงสุด 4 คน) ระบบเติมบอทให้ครบ 4 ที่นั่ง</p>`}${pl.map(p => `<div class=row><span>${esc(p.name)}${p.host ? ' 👑' : ''}</span><small>${p.connected ? 'ออนไลน์' : 'หลุด'}</small></div>`).join('')}${shufflePanel()}${startBtn('เริ่มเกม')}<button class=g onclick=leave()>ออกจากห้อง</button>`;
   } else b = `<input id=au placeholder="ชื่อเล่น" maxlength=14 value="${esc(nick)}"><button onclick=mk()>สร้างห้อง</button><input id=cd placeholder="รหัสห้อง" maxlength=6><button class=g onclick=jn()>เข้าห้อง</button><button class=g onclick="go('home')">‹ กลับ</button>`;
-  wrap(`<h2>ห้องออนไลน์</h2>${b}${lerr ? `<p style="color:var(--gold)">${esc(lerr)}</p>` : ''}`);
+  wrap(`<h2>${soloRoom && code ? 'เล่นกับบอท' : 'ห้องออนไลน์'}</h2>${b}${lerr ? `<p style="color:var(--gold)">${esc(lerr)}</p>` : ''}`);
 }
 const face = (id, cls = '', x = '') => { const c = ALL[id]; return `<button ${x} class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}${cls}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; };
 const mini = id => { const c = ALL[id]; return `<span class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}">${RK[c.r]}<span>${SU[c.s]}</span></span>`; };

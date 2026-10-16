@@ -18,7 +18,9 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
 (async () => {
   console.log('\n[A] เปิดหน้าแรก + เล่นคนเดียว');
   let pg = openPage(); ok(pg.appEl.innerHTML.includes('เล่นคนเดียวกับบอท'), 'หน้าแรกแสดงปุ่มเล่นคนเดียว');
-  pg.ev('solo()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
+  pg.ev('solo()'); for (let i = 0; i < 200 && !pg.ev('lob'); i++) await sleep(10);
+  ok(!pg.ev('S') && pg.appEl.innerHTML.includes('doShuffle()') && /<button onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'ห้องเล่นกับบอท: เข้าหน้าสับไพ่ก่อน มีปุ่มสับ และปุ่มเริ่มถูกปิดจนกว่าจะสับ');
+  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
   ok(pg.ev('S && S.my === 0 && S.hand.length >= 7') && pg.appEl.innerHTML.includes('class=hand'), 'เริ่มเกม: หน้าจอเกมแสดงไพ่ในมือ');
   const sess = JSON.parse(store.dummySession || 'null'); ok(sess && sess.code && sess.token, 'บันทึก session (รหัสห้อง+token) ไว้ใน localStorage');
   const coin0 = Number(store.dummyCoins || 5000);

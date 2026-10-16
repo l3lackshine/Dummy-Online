@@ -34,8 +34,8 @@ function shufflerOf(room) {
   if (w && w.connected && w.id && room.players.includes(w)) return w;
   return connectedPlayers(room)[0] || null;
 }
-// ผู้เล่นจริงตั้งแต่ 2 คนขึ้นไปต้องมีการกดสับก่อนเริ่ม · เล่นคนเดียวกับบอทไม่มีใครให้ดูการสับ → เซิร์ฟเวอร์สับให้อัตโนมัติ
-const needShuffle = room => connectedPlayers(room).length > 1;
+// ทุกห้อง (รวมห้องเล่นกับบอทคนเดียว) ต้องกดสับไพ่ก่อนเริ่มทุกตา
+const needShuffle = () => true;
 function publicLobby(room, forPlayer) {
   settle(room);                                // idempotent: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
   const host = connectedPlayers(room)[0], sh = shufflerOf(room);

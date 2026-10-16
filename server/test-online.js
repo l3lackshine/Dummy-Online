@@ -42,10 +42,11 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
     console.log('\n[1] เล่นคนเดียวกับบอท 5 เกมติด (ผ่าน Socket.IO จริง)');
     for (let g = 0; g < 5; g++) {
       const h = mk(A, 'solo'); await h.connected; h.emit('room:create', { name: 'solo', ch: 'boy', bg: 'gold' }); await until(() => h.joined, 3000, 'joined');
-      ok(h.lob.shuffle.needed === false, 'เล่นคนเดียว: ไม่บังคับกดสับไพ่'); h.emit('game:start'); await until(() => h.S && h.S.over, 20000, 'solo game ' + g);
+      h.errors.length = 0; h.emit('game:start'); await sleep(60); ok(!h.S && h.errors.some(e => /กดสับไพ่ก่อนเริ่มเกม/.test(e)), 'ห้องเล่นกับบอท: ไม่สับไพ่ก็เริ่มเกมไม่ได้');
+      h.emit('game:shuffle'); await until(() => h.lob.shuffle.ready, 3000, 'solo shuffle'); h.emit('game:start'); await until(() => h.S && h.S.over, 20000, 'solo game ' + g);
       assert(!h.errors.includes('STUCK')); h.sock.close();
     }
-    ok(true, 'เล่นคนเดียวกับบอทจบครบ 5 เกม ไม่มี STUCK');
+    ok(true, 'เล่นคนเดียวกับบอท (สับก่อนเริ่ม) จบครบ 5 เกม ไม่มี STUCK');
 
     console.log('\n[2] 3 คนจริงในห้องเดียว + บอทเติม 1 ที่นั่ง, ความเป็นส่วนตัวของไพ่');
     const p = [mk(A, 'P1'), mk(A, 'P2'), mk(A, 'P3')]; await Promise.all(p.map(x => x.connected));
@@ -112,7 +113,7 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
     q1b.sock.close(); q2.sock.close(); thief.sock.close();
 
     console.log('\n[5] กดออกเอง = ไม่ให้กลับที่นั่งเดิม, ห้องว่างถูกลบเอง');
-    const r1 = mk(A, 'R1'); await r1.connected; r1.emit('room:create', { name: 'R1' }); await until(() => r1.joined); r1.emit('game:start'); await until(() => r1.S);
+    const r1 = mk(A, 'R1'); await r1.connected; r1.emit('room:create', { name: 'R1' }); await until(() => r1.joined); r1.emit('game:shuffle'); await until(() => r1.lob.shuffle.ready); r1.emit('game:start'); await until(() => r1.S);
     const rcode = r1.joined.code, rtok = r1.joined.token; r1.emit('room:leave'); await sleep(100);
     const r1b = mk(A, 'R1b'); await r1b.connected; let f2 = false; r1b.sock.on('room:rejoin-failed', () => f2 = true); r1b.emit('room:rejoin', { code: rcode, token: rtok }); await sleep(100);
     ok(f2, 'ออกจากห้องเอง แล้วใช้ token เดิมกลับเข้าไม่ได้');
@@ -122,7 +123,7 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
     console.log('\n[6] ความทนทาน: payload ขยะ, สแปม, ห้องไม่ซ้ำ');
     const g = mk(B, 'G', { auto: false }); await g.connected; g.emit('room:create', { name: '\u0000\u0007<b>' + 'x'.repeat(50) }); await until(() => g.joined);
     ok(g.lob.players[0].name.length <= 14 && !/[\u0000-\u001f]/.test(g.lob.players[0].name), 'ชื่อถูกตัดความยาว/ล้างอักขระควบคุม');
-    g.emit('game:start'); await until(() => g.S);
+    g.emit('game:shuffle'); await until(() => g.lob.shuffle.ready); g.emit('game:start'); await until(() => g.S);
     for (const bad of [null, 'str', 42, [], { t: 5 }, { t: 'meld', ids: { a: 1 } }, { t: 'meld', ids: new Array(5000).fill(1) }, { t: 'take', i: 'NaN' }, { t: 'dep', k: {}, ids: 'x' }]) { g.emit('game:act', bad); await sleep(60); }
     ok((await health(B)).ok === true, 'ส่ง action ขยะ 9 แบบ เซิร์ฟเวอร์ยังอยู่ดี');
     const z = mk(B, 'Z', { auto: false }); await z.connected; await sleep(10);
