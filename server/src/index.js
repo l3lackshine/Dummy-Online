@@ -3,10 +3,18 @@ const http = require('http');
 const cors = require('cors');
 const { Server } = require('socket.io');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 const Rules = require('./rules');
 const { CHARS, BGS } = require('./rules/common');
 const VERSION = require('../package.json').version;
 const Shuffle = require('./shuffle');
+const Wallet = require('./wallet');
+const wallet = new Wallet({ initialBalance: Number(process.env.INITIAL_COINS || 5000) });
+let SKIN_CATALOG = null;
+try { SKIN_CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, '../../client/public/skin/skins.json'), 'utf8')); } catch (_) { SKIN_CATALOG = null; }
+// Rooms are in-memory, so reservations from games lost during a process restart must be refunded.
+wallet.releaseOrphanedReservations();
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
@@ -16,7 +24,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
 const rooms = new Map();
-const MAX_PLAYERS = 4;
+const MAX_PLAYERS = 6;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
 const BOT_DELAY = Number(process.env.BOT_DELAY_MS || 650);        // ปรับได้เพื่อทดสอบ
 const EMPTY_ROOM_TTL = Number(process.env.EMPTY_ROOM_TTL_MS || 120000); // ห้องที่ไม่มีคนจริงเหลือ จะถูกลบหลังเวลานี้ (เผื่อเชื่อมต่อกลับ)
@@ -44,7 +52,7 @@ function publicLobby(room, forPlayer) {
   settle(room);                                // idempotent: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
   const host = connectedPlayers(room)[0], sh = shufflerOf(room);
   return {
-    code: room.code, started: active(room), maxPlayers: MAX_PLAYERS,
+    code: room.code, started: active(room), maxPlayers: Math.min(MAX_PLAYERS, ruleOf(room).meta.maxPlayers || MAX_PLAYERS),
     rule: { id: ruleOf(room).meta.id, name: ruleOf(room).meta.name }, options: room.options,
     youHost: !!forPlayer && forPlayer === host,
     // ไม่ส่งลำดับไพ่ที่สับแล้วออกไปเด็ดขาด — ส่งแค่ว่าสับแล้วหรือยัง
@@ -52,10 +60,32 @@ function publicLobby(room, forPlayer) {
     players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
   };
 }
+// ชำระเหรียญโดยเซิร์ฟเวอร์เท่านั้น: ผลจาก engine เป็นข้อมูลอ้างอิง แต่ client ไม่มีสิทธิ์ส่งยอดเหรียญมาเอง
+function settleCoins(room) {
+  const G = room.game;
+  if (!G || !G.over || G.walletSettled) return true;
+  const players = room.players.filter(p => p.walletId && p.reservationId && p.seat != null);
+  if (!players.length) { G.walletSettled = true; return true; }
+  const entries = players.map(p => ({
+    walletId: p.walletId, reservationId: p.reservationId,
+    delta: Math.trunc(Number(G.res && G.res.coin && G.res.coin.delta && G.res.coin.delta[p.seat]) || 0),
+    reason: 'ผลเกม ' + G.gid
+  }));
+  const result = wallet.settleBatch(room.code + ':' + G.gid + ':coins', entries);
+  if (!result.ok) {
+    console.error('coin settlement failed', room.code, G.gid, result.error);
+    connectedPlayers(room).forEach(p => io.to(p.id).emit('system:error', 'ชำระเหรียญไม่สำเร็จ: ' + result.error + ' กรุณาติดต่อผู้ดูแล'));
+    return false;
+  }
+  G.walletSettled = true;
+  players.forEach(p => { p.reservationId = null; if (p.connected && p.id) io.to(p.id).emit('wallet:state', wallet.state(p.walletId)); });
+  return true;
+}
 // จบตาแล้วจดผู้ชนะไว้ (ครั้งเดียวต่อเกม) เพื่อมอบสิทธิ์สับไพ่ตาถัดไป
 function settle(room) {
   const G = room.game;
   if (!G || !G.over || G.settled) return;
+  if (!settleCoins(room)) return;
   G.settled = true;
   const seat = ruleOf(room).winner(G);
   const w = seat == null ? null : room.players.find(p => p.seat === seat);
@@ -66,6 +96,7 @@ function emitLobby(room) { connectedPlayers(room).forEach(p => io.to(p.id).emit(
 function emitStates(room) {
   if (!room.game) return;
   settle(room);
+  room.players.forEach(p => { if (p.connected && p.id && p.walletId) io.to(p.id).emit('wallet:state', wallet.state(p.walletId)); });
   room.players.forEach(p => { if (p.connected && p.id && p.seat != null && room.game.P[p.seat]) io.to(p.id).emit('game:state', ruleOf(room).view(room.game, p.seat)); });
   emitLobby(room);
 }
@@ -100,23 +131,50 @@ function startGame(room) {
   const humans = connectedPlayers(room);
   if (humans.length < 1 || humans.length > MAX_PLAYERS) return false;
   if (room.botTimer) { clearTimeout(room.botTimer); room.botTimer = null; }
+  const stake = Math.max(1, Math.floor(Number(room.options && room.options.stake) || 20));
+  // วงเงินสำรองครอบคลุมการจ่ายตามกฎดัมมี่ปัจจุบัน (รวมโบนัส/ตีปี้) ก่อนเริ่มตา
+  const exposure = stake * 60 + 500;
+  const reserved = [];
+  for (const p of humans) {
+    if (!p.walletId) continue;
+    const rid = room.code + ':' + ((room.round || 0) + 1) + ':' + p.walletId;
+    const r = wallet.reserve(p.walletId, rid, exposure, 'reserve game ' + room.code);
+    if (!r.ok) {
+      reserved.forEach(x => { wallet.release(x.rid, 'game start cancelled'); x.p.reservationId = null; });
+      humans.forEach(q => { if (q.connected && q.id && q.walletId) io.to(q.id).emit('wallet:state', wallet.state(q.walletId)); });
+      const who = p.name || 'ผู้เล่น';
+      connectedPlayers(room).forEach(q => io.to(q.id).emit('system:error', who + ': ' + r.error + ' (เดิมพัน ' + stake + ' 🪙)'));
+      return false;
+    }
+    p.reservationId = rid; reserved.push({ p, rid });
+  }
   room.players = humans;                       // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
   room.players.forEach((p, i) => { p.seat = i; });
-  const deck = room.deck; room.deck = null; room.shuffledBy = null;   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
-  room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
+  const deck = room.deck; room.deck = null; room.shuffledBy = null;
+  try {
+    room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options });
+  } catch (e) {
+    reserved.forEach(x => { wallet.release(x.rid, 'game creation failed'); x.p.reservationId = null; });
+    throw e;
+  }
   room.game.v++;
+  room.players.forEach(p => { if (p.connected && p.id) io.to(p.id).emit('wallet:state', wallet.state(p.walletId)); });
   emitStates(room);
   scheduleBots(room);
   return true;
 }
 const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
-function joinRoom(socket, room, name, ch, bg) {
-  const p = { id: socket.id, name: cleanName(name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
+function joinRoom(socket, room, name, ch, bg, walletId) {
+  if (/^[a-f0-9]{32,64}$/i.test(String(walletId || '')) && room.players.some(p => p.walletId === String(walletId).toLowerCase())) { socket.emit('system:error', 'กระเป๋าเหรียญเดียวกันเข้าห้องนี้ซ้ำไม่ได้'); return false; }
+  const w = wallet.ensure(walletId, cleanName(name));
+  const p = { id: socket.id, name: cleanName(name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), walletId: w.walletId, reservationId: null, seat: null };
   room.players.push(p);
   socket.data.roomCode = room.code;
+  socket.data.walletId = p.walletId;
   socket.join(room.code);
   checkEmpty(room);
-  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token });
+  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token, walletId: p.walletId });
+  socket.emit('wallet:state', wallet.state(p.walletId));
   emitLobby(room);
 }
 // ปล่อยที่นั่งของ socket นี้ — ระหว่างเกม ที่นั่งกลายเป็นบอทแต่เก็บ token ไว้ให้กลับมาเล่นต่อได้
@@ -148,10 +206,11 @@ function rejoinRoom(socket, code, token) {
   if (!p) return false;
   if (p.id && p.id !== socket.id) { const old = io.sockets.sockets.get(p.id); if (old) { old.data.roomCode = null; old.leave(room.code); } }
   p.id = socket.id; p.connected = true;
-  socket.data.roomCode = room.code; socket.join(room.code);
+  socket.data.roomCode = room.code; socket.data.walletId = p.walletId; socket.join(room.code);
   if (room.game && p.seat != null && room.game.P[p.seat]) { const gp = room.game.P[p.seat]; gp.bot = false; gp.id = p.id; gp.n = p.name; }
   checkEmpty(room);
-  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token, rejoined: true });
+  socket.emit('room:joined', { code: room.code, host: connectedPlayers(room)[0] === p, token: p.token, walletId: p.walletId, rejoined: true });
+  if (p.walletId) socket.emit('wallet:state', wallet.state(p.walletId));
   emitStates(room);
   emitLobby(room);
   return true;
@@ -182,24 +241,27 @@ io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
   socket.emit('rules:list', rulesPayload()); // รายการกฎ + ตัวเลือกของแต่ละกฎ ให้ client สร้างหน้าตั้งค่าห้องเอง
   on(socket, 'rules:get', () => { if (allow(socket)) socket.emit('rules:list', rulesPayload()); });
-  on(socket, 'room:create', d => { const { name, ch, bg, rule, options } = obj(d);
+  on(socket, 'wallet:open', d => { if (!allow(socket)) return; const { walletId, name } = obj(d); const w = wallet.ensure(walletId, cleanName(name)); socket.data.walletId = w.walletId; socket.emit('wallet:state', wallet.state(w.walletId)); });
+  on(socket, 'wallet:spend', d => { if (!allow(socket)) return; const walletId = socket.data.walletId; if (!walletId) return socket.emit('wallet:spend-result', { ok: false, error: 'กรุณาเชื่อมต่อกระเป๋าเหรียญก่อน' }); const { amount, transactionId, itemId } = obj(d); const key = String(itemId || ''), sep = key.indexOf(':'), kind = sep < 0 ? '' : key.slice(0, sep), id = sep < 0 ? '' : key.slice(sep + 1); const item = SKIN_CATALOG && Array.isArray(SKIN_CATALOG[kind]) ? SKIN_CATALOG[kind].find(x => x.id === id) : null; const price = item ? Math.floor(Number(item.price) || 0) : -1; if (!item || price <= 0 || Number(amount) !== price) { socket.emit('wallet:spend-result', { ok: false, error: 'สินค้า/ราคาไม่ถูกต้อง', itemId: key }); return; } const r = wallet.spend(walletId, transactionId, price, 'shop item ' + key); socket.emit('wallet:spend-result', { ...r, itemId: key }); socket.emit('wallet:state', wallet.state(walletId)); });
+  on(socket, 'room:create', d => { const { name, ch, bg, rule, options, walletId } = obj(d);
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     if (rooms.size >= MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
     let code; do { code = roomCode(); } while (rooms.has(code));
     const rid = Rules.has(rule) ? rule : Rules.DEFAULT;
+    if (Rules.get(rid).meta.enabled === false) return socket.emit('system:error', 'กติกานี้ยังไม่เปิดให้เล่น ต้องยืนยันกติกาท้องถิ่นก่อน');
     const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
     rooms.set(code, room);
-    joinRoom(socket, room, name, ch, bg);
+    joinRoom(socket, room, name, ch, bg, walletId);
   });
-  on(socket, 'room:join', d => { const { code, name, ch, bg } = obj(d);
+  on(socket, 'room:join', d => { const { code, name, ch, bg, walletId } = obj(d);
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     const room = rooms.get(String(code || '').trim().toUpperCase());
     if (!room) return socket.emit('system:error', 'ไม่พบห้องนี้');
     if (active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
-    if (connectedPlayers(room).length >= MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
-    joinRoom(socket, room, name, ch, bg);
+    if (connectedPlayers(room).length >= Math.min(MAX_PLAYERS, ruleOf(room).meta.maxPlayers || MAX_PLAYERS)) return socket.emit('system:error', 'ห้องเต็มแล้ว (' + Math.min(MAX_PLAYERS, ruleOf(room).meta.maxPlayers || MAX_PLAYERS) + ' คน)');
+    joinRoom(socket, room, name, ch, bg, walletId);
   });
   on(socket, 'room:rejoin', d => { const { code, token } = obj(d);
     if (!allow(socket)) return;
@@ -212,6 +274,7 @@ io.on('connection', socket => {
     if (!room) return socket.emit('system:error', 'กรุณาเข้าห้องก่อน');
     if (connectedPlayers(room)[0]?.id !== socket.id) return socket.emit('system:error', 'เฉพาะเจ้าของห้องเริ่มเกมได้');
     if (active(room)) return socket.emit('system:error', 'เกมกำลังเล่นอยู่');
+    if (ruleOf(room).meta.enabled === false) return socket.emit('system:error', 'กติกานี้ยังไม่เปิดให้เล่น ต้องยืนยันกติกาท้องถิ่นก่อน');
     if (!room.deck && needShuffle(room)) { const sh = shufflerOf(room); return socket.emit('system:error', 'ต้องให้ ' + (sh ? sh.name : 'ผู้สับไพ่') + ' กดสับไพ่ก่อนเริ่มเกม'); }
     if (!startGame(room)) return socket.emit('system:error', 'เริ่มเกมไม่ได้');
     io.to(room.code).emit('system:notice', 'เริ่มเกมแล้ว!');
@@ -248,4 +311,4 @@ io.on('connection', socket => {
   on(socket, 'disconnect', () => leaveRoom(socket, true));
 });
 if (require.main === module) server.listen(PORT, () => console.log(`Dummy Online backend listening on ${PORT}`));
-module.exports = { server, io, rooms };
+module.exports = { server, io, rooms, wallet };

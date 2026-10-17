@@ -1,3 +1,7 @@
 node_modules/
 .env
 dist/
+
+# Server-authoritative virtual coin ledger (do not commit user balances)
+server/data/wallets.json
+server/data/*.tmp

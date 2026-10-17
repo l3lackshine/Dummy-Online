@@ -11,7 +11,10 @@ function register(mod) {
 }
 
 register(require('./dummy'));
-// register(require('./hearts'));   ← กฎใหม่ในอนาคตเพิ่มตรงนี้
+register(require('./pokdeng/engine'));
+register(require('./gaogae/engine'));
+register(require('./oldmaid/engine'));
+register(require('./korat')); // แสดงตัวเลือก แต่ปิดจนกว่าจะยืนยันกติกาโคราช
 
 const DEFAULT = 'dummy';
 const has = id => registry.has(id);

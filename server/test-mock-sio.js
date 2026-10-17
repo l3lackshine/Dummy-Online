@@ -30,4 +30,4 @@ const apps = []; const express = () => { const a = { routes: {}, use() {}, get(p
 const mocks = { express, cors: () => () => {}, 'socket.io': { Server } };
 const orig = Module._load; Module._load = function (req, ...r) { return mocks[req] || orig.call(this, req, ...r); };
 const callRoute = (srv, p) => { let out; apps[servers.indexOf(srv)].routes[p]({}, { json: v => (out = v), send: v => (out = v) }); return out; };
-module.exports = { servers, client, callRoute, load(envv) { Object.assign(process.env, envv); delete require.cache[require.resolve('./src/index.js')]; require('./src/index.js'); return servers[servers.length - 1]; } };
+module.exports = { servers, client, callRoute, load(envv) { Object.assign(process.env, envv); if (!Object.prototype.hasOwnProperty.call(envv || {}, 'WALLET_FILE')) process.env.WALLET_FILE = 'memory'; delete require.cache[require.resolve('./src/index.js')]; require('./src/index.js'); return servers[servers.length - 1]; } };

@@ -28,13 +28,12 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
   pg.ev('startCreate()'); for (let i = 0; i < 200 && !pg.ev('lob'); i++) await sleep(10);
   ok(!pg.ev('S') && pg.appEl.innerHTML.includes('class="deckbox') && pg.appEl.innerHTML.includes('doShuffle()') && /<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'ห้องเล่นกับบอท: เข้าที่โต๊ะ มีกองไพ่กลางโต๊ะ ปุ่มสับ และปุ่มเริ่มถูกปิดจนกว่าจะสับ');
   ok(pg.ev('lob.options.stake') === 50 && pg.ev('lob.rule.id') === 'dummy' && pg.appEl.innerHTML.includes('ตัวละ 50'), 'ห้องใช้เดิมพัน 50 ที่ตั้งไว้ และแสดงที่โต๊ะ');
-  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
+  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); const coin0 = Number(store.dummyCoins || 5000); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
   ok(pg.ev('deal') !== null && pg.ev('S.stake') === 50, 'เริ่มเกม: เข้าสู่ช่วงแจกไพ่ (deal) และเซิร์ฟเวอร์ส่งเดิมพันมาด้วย');
   ok(pg.appEl.innerHTML.includes('กำลังแจกไพ่') && pg.ev('S.P.every(p => p.n_cards === 7)') && pg.appEl.innerHTML.includes('data-pc=0>0<'), 'ระหว่างแจก: โต๊ะแสดงผู้เล่นมี 0 ใบ ไม่โชว์ไพ่ก่อนแจก');
   for (let i = 0; i < 300 && pg.ev('deal'); i++) await sleep(10);
   ok(pg.ev('deal') === null && pg.ev('S && S.my === 0 && S.hand.length >= 7') && pg.appEl.innerHTML.includes('class=hand') && !pg.appEl.innerHTML.includes('กำลังแจกไพ่'), 'แจกครบแล้ว: หน้าจอเกมแสดงไพ่ในมือ');
   const sess = JSON.parse(store.dummySession || 'null'); ok(sess && sess.code && sess.token, 'บันทึก session (รหัสห้อง+token) ไว้ใน localStorage');
-  const coin0 = Number(store.dummyCoins || 5000);
 
   console.log('\n[B] รีเฟรชหน้ากลางเกม → ต้องกลับเข้าที่นั่งเดิมเอง');
   pg.socks.forEach(s => s.close()); await sleep(60); // แท็บเดิมหาย

@@ -4,11 +4,11 @@ const meta = {
   id: 'dummy',
   name: 'ดัมมี่',
   icon: '🂡',
-  desc: 'ดัมมี่ไทย 4 ที่นั่ง เกิดชุด ฝากไพ่ น็อก — แพ้ชนะกันด้วยเหรียญ',
-  minPlayers: 1,
-  maxPlayers: 4,
+  desc: 'ดัมมี่ไทย เล่นได้ 2–6 คน (เล่นกับบอทได้) เกิดชุด ฝากไพ่ น็อก',
+  minPlayers: 2,
+  maxPlayers: 6,
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
+    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 1, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
     { key: 'spetoMode', label: 'อมสเปโตแล้วจบเกม จ่ายให้', type: 'select', default: 'all', choices: [{ v: 'all', label: 'ทุกคนรอบวง' }, { v: 'knocker', label: 'เฉพาะคนน็อก' }] },
   ],
   // สรุปการนับเหรียญที่แสดงในหน้าสร้างห้อง — {stake} = เดิมพัน, {stake*0.75} = เดิมพันคูณ 0.75 (client แทนค่าให้)
