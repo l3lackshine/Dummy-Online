@@ -1,6 +1,6 @@
 // รัน client/public/app.js ตัวจริงใน sandbox (DOM/localStorage จำลอง) ต่อกับ src/index.js: โฮมเพจ → เล่นคนเดียว → รีเฟรชหน้า → เชื่อมต่อกลับ → จ่ายเหรียญครั้งเดียว
 const vm = require('vm'), fs = require('fs'), path = require('path'), assert = require('assert'), M = require('./test-mock-sio');
-const SRC = fs.readFileSync(path.join(__dirname, '../client/public/app.js'), 'utf8');
+const SRC = fs.readFileSync(path.join(__dirname, '../client/public/app.js'), 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '../client/public/games.js'), 'utf8');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const srv = M.load({ BOT_DELAY_MS: 10, EMPTY_ROOM_TTL_MS: 60000, RATE_PER_SEC: 5000 });
 const store = {}; // localStorage ที่ "คงอยู่ข้ามการรีเฟรช"
@@ -18,22 +18,24 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
 (async () => {
   console.log('\n[A] เปิดหน้าแรก + เล่นคนเดียว');
   let pg = openPage(); await sleep(30); ok(pg.appEl.innerHTML.includes('class=ver>v7.0.0-test') && pg.appEl.innerHTML.includes('goPlay()') && pg.appEl.innerHTML.includes('sign-shop.webp') && pg.appEl.innerHTML.includes('sign-profile.webp'), 'หน้าแรกแสดงป้ายเล่นเกม/ร้านค้า/โปรไฟล์');
-  pg.ev('goPlay()'); ok(pg.ev('screen') === 'play' && ['solo()', "openCreate('room')", 'toggleJoin()'].every(f => pg.appEl.innerHTML.includes(f)), 'หน้าเล่นเกมมีป้ายเล่นคนเดียว/สร้างห้อง/เข้าห้อง');
+  pg.ev('goPlay()'); await sleep(30); ok(pg.ev('screen') === 'games' && ['dummy', 'pokdeng', 'gaogae', 'somsip', 'eekae'].every(id => pg.appEl.innerHTML.includes("chooseGame('" + id + "')")), 'กดเล่นเกม → หน้าเลือกเกม มีครบ 5 เกม (ดัมมี่ ป๊อกเด้ง เก้าเก ผสมสิบ อีแก่)');
+  pg.ev("chooseGame('dummy')"); ok(pg.ev('screen') === 'play' && ['solo()', "openCreate('room')", 'toggleJoin()'].every(f => pg.appEl.innerHTML.includes(f)), 'เลือกเกมแล้ว → หน้าเล่นเกมมีป้ายเล่นคนเดียว/สร้างห้อง/เข้าห้อง');
   pg.ev("go('shop')"); ok(pg.appEl.innerHTML.includes('buyItem(') && !pg.appEl.innerHTML.includes('equip('), 'หน้าร้านค้ามีแต่ของที่ขาย');
   pg.ev("go('profile')"); ok(['characters', 'backs', 'tables', 'backgrounds'].every(k => pg.appEl.innerHTML.includes("equip('" + k + "'")), 'หน้าโปรไฟล์เลือกตัวละคร/หลังไพ่/โต๊ะ/พื้นหลังได้');
-  ok(pg.ev('goPlay()') === undefined, 'กลับหน้าเล่นเกม'); pg.ev('solo()'); await sleep(40);
-  ok(pg.ev('screen') === 'create' && ['setRule(', 'setOpt(', 'startCreate()', 'name=', 'เลือกไพ่ที่จะเล่น', 'การนับเหรียญ'].every(t => t === 'name=' || pg.appEl.innerHTML.includes(t)), 'เล่นคนเดียว → หน้าเลือกไพ่/ตั้งค่า (มีรายการกฎจากเซิร์ฟเวอร์ ตัวเลือกเดิมพัน และสรุปการนับเหรียญ)');
+  pg.ev('goPlay()'); pg.ev("chooseGame('dummy')"); pg.ev('solo()'); await sleep(40);
+  ok(pg.ev('screen') === 'create' && ["go('games')", 'setOpt(', 'startCreate()', 'name=', 'เกมที่เลือก', 'การนับเหรียญ'].every(t => t === 'name=' || pg.appEl.innerHTML.includes(t)), 'เล่นคนเดียว → หน้าเลือกไพ่/ตั้งค่า (มีรายการกฎจากเซิร์ฟเวอร์ ตัวเลือกเดิมพัน และสรุปการนับเหรียญ)');
   ok(pg.appEl.innerHTML.includes('ดัมมี่') && pg.appEl.innerHTML.includes('value="20"') && pg.appEl.innerHTML.includes('20 🪙') && pg.appEl.innerHTML.includes('15 🪙') && pg.appEl.innerHTML.includes('10 🪙'), 'หน้าตั้งค่าแสดงกฎ ดัมมี่ เดิมพันเริ่มต้น 20 และสรุปอันดับ 20/15/10');
   pg.ev("setOpt('stake', 50)"); ok(pg.appEl.innerHTML.includes('value="50"') && pg.appEl.innerHTML.includes('38 🪙') && pg.appEl.innerHTML.includes('25 🪙'), 'ตั้งเดิมพัน 50 → สรุปเปลี่ยนเป็น 50/38/25 ทันที');
   pg.ev('startCreate()'); for (let i = 0; i < 200 && !pg.ev('lob'); i++) await sleep(10);
   ok(!pg.ev('S') && pg.appEl.innerHTML.includes('class="deckbox') && pg.appEl.innerHTML.includes('doShuffle()') && /<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'ห้องเล่นกับบอท: เข้าที่โต๊ะ มีกองไพ่กลางโต๊ะ ปุ่มสับ และปุ่มเริ่มถูกปิดจนกว่าจะสับ');
   ok(pg.ev('lob.options.stake') === 50 && pg.ev('lob.rule.id') === 'dummy' && pg.appEl.innerHTML.includes('ตัวละ 50'), 'ห้องใช้เดิมพัน 50 ที่ตั้งไว้ และแสดงที่โต๊ะ');
-  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); const coin0 = Number(store.dummyCoins || 5000); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
+  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10); pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10);
   ok(pg.ev('deal') !== null && pg.ev('S.stake') === 50, 'เริ่มเกม: เข้าสู่ช่วงแจกไพ่ (deal) และเซิร์ฟเวอร์ส่งเดิมพันมาด้วย');
   ok(pg.appEl.innerHTML.includes('กำลังแจกไพ่') && pg.ev('S.P.every(p => p.n_cards === 7)') && pg.appEl.innerHTML.includes('data-pc=0>0<'), 'ระหว่างแจก: โต๊ะแสดงผู้เล่นมี 0 ใบ ไม่โชว์ไพ่ก่อนแจก');
   for (let i = 0; i < 300 && pg.ev('deal'); i++) await sleep(10);
   ok(pg.ev('deal') === null && pg.ev('S && S.my === 0 && S.hand.length >= 7') && pg.appEl.innerHTML.includes('class=hand') && !pg.appEl.innerHTML.includes('กำลังแจกไพ่'), 'แจกครบแล้ว: หน้าจอเกมแสดงไพ่ในมือ');
   const sess = JSON.parse(store.dummySession || 'null'); ok(sess && sess.code && sess.token, 'บันทึก session (รหัสห้อง+token) ไว้ใน localStorage');
+  const coin0 = Number(store.dummyCoins || 5000);
 
   console.log('\n[B] รีเฟรชหน้ากลางเกม → ต้องกลับเข้าที่นั่งเดิมเอง');
   pg.socks.forEach(s => s.close()); await sleep(60); // แท็บเดิมหาย

@@ -11,10 +11,11 @@ function register(mod) {
 }
 
 register(require('./dummy'));
-register(require('./pokdeng/engine'));
-register(require('./gaogae/engine'));
-register(require('./oldmaid/engine'));
-register(require('./korat')); // แสดงตัวเลือก แต่ปิดจนกว่าจะยืนยันกติกาโคราช
+register(require('./pokdeng'));   // ป๊อกเด้ง
+register(require('./gaogae'));    // เก้าเก
+register(require('./somsip'));    // ผสมสิบ
+register(require('./eekae'));     // อีแก่
+// register(require('./hearts'));   ← กฎใหม่ในอนาคตเพิ่มตรงนี้
 
 const DEFAULT = 'dummy';
 const has = id => registry.has(id);
