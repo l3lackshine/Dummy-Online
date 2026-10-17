@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- ไพ่ใบหลัง -->
+    <path
+        android:fillColor="#FFD75E"
+        android:pathData="M34,30 L62,26 L72,70 L44,76 Z" />
+    <!-- ไพ่ใบหน้า -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,34 L68,34 L68,76 L40,76 Z" />
+    <!-- ดาว/ประกายบนไพ่ -->
+    <path
+        android:fillColor="#4AA3FF"
+        android:pathData="M54,42 L57,50 L65,51 L59,57 L61,65 L54,61 L47,65 L49,57 L43,51 L51,50 Z" />
+</vector>
