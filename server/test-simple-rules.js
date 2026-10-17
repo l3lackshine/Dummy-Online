@@ -22,7 +22,9 @@ console.log('\n[Pok Deng] basic turn and settlement');
 console.log('\n[Gao Gae] pot distribution and rank evaluation');
 {
  const R=Rules.get('gaogae'), G=R.newGame([P(0),P(1),P(2),P(3)],{options:{stake:25}});
- ok(G.over && G.res.coin.delta.reduce((a,b)=>a+b,0)===0,'เก้าเกแบ่งกองกลางโดยยอดเหรียญรวมเป็นศูนย์');
+ ok(!G.over && G.phase==='decision' && R.view(G,0).actions.includes('fight') && R.view(G,0).actions.includes('fold'),'เก้าเกเริ่มด้วยช่วงให้ผู้เล่นตัดสินใจสู้หรือหมอบ');
+ let turns=0; while(!G.over && turns++<10) { const i=G.cur; assert.equal(R.act(G,i,{t:'fight'}),null); }
+ ok(G.over && G.res.coin.delta.reduce((a,b)=>a+b,0)===0,'เก้าเกเปิดผลหลังผู้เล่นทุกคนตัดสินใจ และยอดเหรียญรวมเป็นศูนย์');
  ok(G.res.coin.delta.length===4 && G.res.ranks.length===4,'เก้าเกส่งอันดับครบทุกคน');
  const E=R.evaluate;
  const card=(r,s)=>({id:(s*13)+(r-1),r,s});

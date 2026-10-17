@@ -226,7 +226,7 @@ function renderSimpleGame() {
   const hand = (S.hand || []).map(mini).join(' ');
   const rows = S.P.map(p => {
     const i = p.i, isWinner = S.res && Array.isArray(S.res.winners) && S.res.winners.includes(i), isLoser = S.res && S.res.loser === i;
-    const status = S.over ? (isLoser ? 'แพ้' : isWinner ? 'ชนะ/รับเงิน' : '') : p.dealer ? 'เจ้ามือ' : p.stood ? 'หยุดแล้ว' : p.active === false ? 'ออกจากรอบ' : '';
+    const status = S.over ? (isLoser ? 'แพ้' : isWinner ? 'ชนะ/รับเงิน' : '') : S.rule === 'gaogae' ? (p.choice === 'fight' ? 'เลือกสู้แล้ว' : p.choice === 'fold' ? 'เลือกหมอบแล้ว' : '') : p.dealer ? 'เจ้ามือ' : p.stood ? 'หยุดแล้ว' : p.active === false ? 'ออกจากรอบ' : '';
     const result = S.over && S.res && S.res.nt && S.res.nt[i] ? S.res.nt[i].join(' · ') : '';
     const cards = S.rule === 'gaogae' && S.over ? (S.res.ranks?.[i] ? `${esc(S.res.ranks[i].label)} · ${S.res.ranks[i].points} แต้ม` : '') : `${p.n_cards} ใบ`;
     const d = S.over && S.res && S.res.coin ? Number(S.res.coin.delta[i] || 0) : 0;
@@ -235,10 +235,11 @@ function renderSimpleGame() {
   let actionPanel = '';
   if (!S.over && active) {
     if (S.rule === 'pokdeng') actionPanel = `<div class=acts>${(S.actions||[]).includes('hit')?'<button class=blue onclick="simpleAct(\'hit\')">จั่วเพิ่ม 1 ใบ</button>':''}${(S.actions||[]).includes('stand')?'<button class=org onclick="simpleAct(\'stand\')">อยู่ / หยุดจั่ว</button>':''}</div>`;
+    else if (S.rule === 'gaogae') actionPanel = `<p class=note>ดูไพ่ 3 ใบของคุณ แล้วตัดสินใจว่าจะสู้เพื่อชิงกองกลางหรือหมอบ</p><div class=acts>${(S.actions||[]).includes('fight')?'<button class=blue onclick="simpleAct(\'fight\')">🎴 สู้ / เปิดไพ่</button>':''}${(S.actions||[]).includes('fold')?'<button class=org onclick="simpleAct(\'fold\')">หมอบ</button>':''}</div>`;
     else if (S.rule === 'oldmaid') actionPanel = `<div class=acts><button class=blue onclick="simpleAct('draw')">🂠 จั่วจากผู้เล่นถัดไป</button></div><p class=note>ระบบสุ่มไพ่จากมือผู้เล่นถัดไปให้โดยอัตโนมัติ</p>`;
   }
   const over = S.over ? `<div class=ov><div class=box><h2>${S.rule === 'pokdeng' ? 'ป๊อกเด้ง · จบตา' : S.rule === 'gaogae' ? 'เก้าเก · ผลไพ่' : 'อีแก่ · จบเกม'}</h2>${S.res && S.res.lastCard != null ? `<p>ไพ่ใบสุดท้าย: ${mini(S.res.lastCard)}</p>` : ''}<p style="color:var(--gold)">ผลเหรียญตานี้ ${coinDelta>0?'+':''}${coinDelta} 🪙 · ยอดเซิร์ฟเวอร์ ${sv.coins} 🪙</p>${rows}${coinLines()}${shufflePanel()}${startBtn('เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>` : '';
-  $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom?'🤖 เล่นกับบอท':'ห้อง '+esc(code)} · ${esc(S.rule)} · เดิมพัน ${esc(S.stake)} 🪙</span></div><div class=panel><h2>${S.rule==='pokdeng'?'🃏 ป๊อกเด้ง Basic':S.rule==='gaogae'?'🎴 เก้าเก Standard':'👵 อีแก่'}</h2><p class=hint>${esc(S.over?'เกมจบแล้ว':active?'ตาคุณ':(S.P[S.cur]?.n||'ผู้เล่น')+' กำลังเล่น...')}</p><h3 class=sec>ไพ่ในมือของคุณ</h3><div class=hand>${hand || '<span>ไม่มีไพ่ในมือ</span>'}</div>${actionPanel}<h3 class=sec>ผู้เล่นในตานี้</h3>${rows}<div class=logs>${S.logs.slice(-5).map(esc).join('<br>')}</div><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออกจากห้อง</button></div></div>${over}`;
+  $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom?'🤖 เล่นกับบอท':'ห้อง '+esc(code)} · ${esc(S.rule)} · เดิมพัน ${esc(S.stake)} 🪙</span></div><div class=panel><h2>${S.rule==='pokdeng'?'🃏 ป๊อกเด้ง Basic':S.rule==='gaogae'?'🎴 เก้าเก · เลือกสู้/หมอบ':'👵 อีแก่'}</h2><p class=hint>${esc(S.over?'เกมจบแล้ว':active?'ตาคุณ':(S.P[S.cur]?.n||'ผู้เล่น')+' กำลังเล่น...')}</p><h3 class=sec>ไพ่ในมือของคุณ</h3><div class=hand>${hand || '<span>ไม่มีไพ่ในมือ</span>'}</div>${actionPanel}<h3 class=sec>ผู้เล่นในตานี้</h3>${rows}<div class=logs>${S.logs.slice(-5).map(esc).join('<br>')}</div><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออกจากห้อง</button></div></div>${over}`;
 }
 function renderGame() {
   if (!authed) { conn(); return authView(); }
