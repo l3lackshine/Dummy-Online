@@ -333,6 +333,14 @@
    "asset": "./skin/cards/backs/gold.svg",
    "b1": "#c9971c",
    "b2": "#8a6508"
+  },
+  {
+   "id": "sakura-01",
+   "name": "Sakura",
+   "price": 100,
+   "asset": "./skin/cards/backs/sakura-01.webp",
+   "b1": "#a58fff",
+   "b2": "#5d1520"
   }
  ]
 }
