@@ -71,6 +71,18 @@
    "name": "รินกะ",
    "asset": "./skin/characters/rina-01.webp",
    "price": 1500
+  },
+  {
+   "id": "arya-01",
+   "name": "อายะ",
+   "asset": "./skin/characters/arya-01.webp",
+   "price": 1500
+  },
+  {
+   "id": "rena-01",
+   "name": "เรนะ",
+   "asset": "./skin/characters/rena-01.png",
+   "price": 1500
   }
  ],
  "tables": [
