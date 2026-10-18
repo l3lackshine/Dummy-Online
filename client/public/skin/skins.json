@@ -65,6 +65,12 @@
    "name": "สาวน้อยหางม้า",
    "asset": "./skin/characters/girl.webp",
    "price": 0
+  },
+  {
+   "id": "rina-01",
+   "name": "รินกะ",
+   "asset": "./skin/characters/rina-01.webp",
+   "price": 1500
   }
  ],
  "tables": [
