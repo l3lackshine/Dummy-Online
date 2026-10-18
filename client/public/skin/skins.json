@@ -117,14 +117,6 @@
    "asset": "",
    "bg": "#8a5a2e",
    "bg2": "#5a3718"
-  },
-  {
-   "id": "table-sakura01",
-   "name": "Sakura Table",
-   "price": 100,
-   "asset": "./skin/tables/table-sakura01.webp",
-   "bg": "#ffffff",
-   "bg2": "#ffffff"
   }
  ],
  "backgrounds": [
