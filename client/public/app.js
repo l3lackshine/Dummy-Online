@@ -8,7 +8,7 @@ const esc = s => String(s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';'
 let screen = 'home', ho = [], sel = new Set(), sm = 0, paid = false, coinDelta = 0, prevM = 0, prevD = 0, hint = '', lerr = '';
 let sv = { name: localStorage.getItem('dummyName') || 'ผู้เล่น', coins: Number(localStorage.getItem('dummyCoins') || '5000'), own: JSON.parse(localStorage.getItem('dummyOwned') || '[\"classic\"]'), eq: localStorage.getItem('dummySkin') || 'classic' }, nick = localStorage.getItem('dummyName') || 'ผู้เล่น';
 let shufAnim = null, shufTimer = null;
-const APP_VER = String(window.DUMMY_VERSION || ''); // เลขเวอร์ชันของ client (ตั้งที่ client/public/version.js)
+const APP_VER = String(window.DUMMY_VERSION || ''), isNumVer = v => /^\d/.test(String(v)), fmtVer = v => !v ? '?' : isNumVer(v) ? 'v' + v : String(v); // เลขเวอร์ชันของ client (ตั้งที่ client/public/version.js)
 let RULES = [], SRV_VER = '', createMode = 'room', createSel = loadCreateSel(), deal = null, dealtGid = null;
 let authed = true, aerr = '', S = null, lob = null, tok = null, code = '', isHost = false, sock = null, noio = false, soloPending = false, soloRoom = false;
 const DEFAULT_SKINS={themes:[
@@ -56,7 +56,7 @@ const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app'
 function homeView() {
   const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
   $('app').className = 'home';
-  $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./ui/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./ui/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./ui/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
+  $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./ui/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./ui/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./ui/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>${esc(fmtVer(APP_VER))}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ ' + esc(fmtVer(SRV_VER)) + (isNumVer(APP_VER) && isNumVer(SRV_VER) ? ' ⚠️ ต่างเวอร์ชัน' : '') : ''}</span></div>`;
 }
 function goPlay() { joinOpen = false; conn(); if (sock && sock.connected && !RULES.length) sock.emit('rules:get'); go('games'); }
 // ===== หน้าเลือกเกม (หลังกดเล่นเกม): รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา เพิ่มกฎใหม่แล้วโผล่เองโดยไม่ต้องแก้ client =====

@@ -10,11 +10,13 @@ const Shuffle = require('./shuffle');
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
+const APP_ORIGINS = ['https://localhost', 'http://localhost', 'capacitor://localhost']; // WebView ของแอป Android/iOS (Capacitor) — อนุญาตเสมอ แม้ตั้ง CLIENT_ORIGIN เจาะจงเว็บ
+const ORIGINS = ALLOWED_ORIGIN === '*' ? true : [...ALLOWED_ORIGIN.split(','), ...APP_ORIGINS];
 const app = express();
-app.use(cors({ origin: ALLOWED_ORIGIN === '*' ? true : ALLOWED_ORIGIN.split(',') }));
+app.use(cors({ origin: ORIGINS }));
 app.use(express.json());
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
+const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ORIGINS, methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
 const rooms = new Map();
 const MAX_PLAYERS = 4;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
