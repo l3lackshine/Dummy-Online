@@ -337,7 +337,7 @@
   {
    "id": "sakura-01",
    "name": "Sakura",
-   "price": 100,
+   "price": 700,
    "asset": "./skin/cards/backs/sakura-01.webp",
    "b1": "#a58fff",
    "b2": "#5d1520"
