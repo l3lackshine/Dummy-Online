@@ -52,7 +52,7 @@ function prevBox(kind, x) {
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
-const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<button class=hud-sk onclick=openSkills() aria-label="ความสามารถ">⚡</button><span class=coin-pill>🪙 ${sv.coins}</span></div>`;
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<span class=coin-pill>🪙 ${sv.coins}</span></div>`;
 const pgKind = b => (b.includes('class=plank') ? 'play' : b.includes('gtiles') ? 'games' : b.includes('scoreSum') ? 'create' : b.includes('class=ksec') ? (b.includes('namebox') ? 'profile' : 'shop') : '');
 const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app').innerHTML = `<div class=pg data-pg="${pgKind(body)}">${hud(back)}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
 function homeView() {
@@ -155,7 +155,7 @@ function conn() {
   sock.on('room:lobby', l => { lob = l; if (typeof l.youHost === 'boolean') isHost = l.youHost; render(); });
   sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); if (s.rule && s.rule !== 'dummy') clearDeal(); screen = 'game'; if (!s.over) { paid = false; coinDelta = 0; }
     if (!s.over && (!s.rule || s.rule === 'dummy') && s.v <= 1 && s.gid && s.gid !== dealtGid) { dealtGid = s.gid; startDeal(s); } // ตาใหม่ (ยังไม่มีใครเดิน) → แจกไพ่ทีละใบ
-    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; if (coinDelta > 0 && window.skCoinBonus) coinDelta += skCoinBonus(coinDelta); // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
+    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
       if (!paid) { paid = true; if (localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
     sel = new Set([...sel].filter(i => s.hand.includes(i))); if (s.rule && s.rule !== 'dummy') closeRules(); render(); });
 }
