@@ -2,15 +2,15 @@
 @media (min-aspect-ratio:5/4){
 #app.gx{display:block;position:relative;width:100%;height:100vh;height:100dvh;max-width:none;margin:0;padding:0;overflow:hidden;gap:0;
   --u:min(1vh,.62vw);--cw:clamp(38px,calc(var(--u)*11.5),96px);--chr:calc(var(--u)*30);
-  background:radial-gradient(ellipse at 50% 45%,#2a1d63 0,#120d33 60%,#090620 100%);font-family:Sarabun,sans-serif}
+  background:transparent;font-family:Sarabun,sans-serif}
 @supports (height:1dvh){#app.gx{--u:min(1dvh,.62vw)}}
 .gx .gx-stage{position:absolute;inset:0;overflow:hidden}
 
 /* ฝั่งทแยง 4 ชิ้น */
 .gx .gx-bg{position:absolute;inset:0;width:100%;height:100%}
-.gx .gx-q{stroke:#ffffff2e;stroke-width:1.5;vector-effect:non-scaling-stroke;fill:#2d2268}
+.gx .gx-q{stroke:#ffffff2e;stroke-width:1.5;vector-effect:non-scaling-stroke;fill:#2d2268;fill-opacity:.48}
 .gx .gx-q-top{fill:#3b2a86}.gx .gx-q-left{fill:#26548f}.gx .gx-q-right{fill:#6b2f78}.gx .gx-q-bottom{fill:#1e6a72}
-.gx .gx-q.on{stroke:#2ff3ff;stroke-width:4;filter:drop-shadow(0 0 7px #2ff3ff);fill-opacity:1}
+.gx .gx-q.on{stroke:#2ff3ff;stroke-width:4;filter:drop-shadow(0 0 7px #2ff3ff);fill-opacity:.62}
 
 /* ตัวละคร/อวตารของแต่ละฝั่ง */
 .gx .gx-art{position:absolute;pointer-events:none;opacity:.42;display:flex;align-items:center;justify-content:center;transition:opacity .25s}
@@ -51,7 +51,7 @@
 
 /* ศูนย์กลาง: กองจั่ว + กองทิ้ง */
 #app.gx .gx-hub{position:absolute;z-index:3;left:28%;right:28%;top:28%;bottom:40%;margin:0;padding:calc(var(--u)*1);border:3px solid #ffe45c;border-radius:calc(var(--u)*3);
-  background:linear-gradient(#171233ee,#0d0a22ee);box-shadow:0 0 14px #ffe45c66,inset 0 0 18px #0009;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*.8);min-height:0;overflow:hidden}
+  background-color:#0d0a22;background-image:linear-gradient(#0005,#0005),var(--table-image,linear-gradient(#171233,#0d0a22));background-size:cover;background-position:center;box-shadow:0 0 14px #ffe45c66,inset 0 0 18px #0009;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*.8);min-height:0;overflow:hidden}
 #app.gx .gx-hub .piles{grid-column:auto;grid-row:auto;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:calc(var(--u)*1.6);padding:0;width:100%;min-width:0;background:none;border:0}
 #app.gx .gx-hub .piles>div{max-width:none;min-width:0}
 #app.gx .gx-stock{flex:none;text-align:center}
@@ -88,4 +88,9 @@
 .gx .gx-tools button:nth-child(2){background:linear-gradient(#86e84a,#3fae1e);color:#0f2a06;border-color:#e6ffb8}
 #app.gx .gx-acts{position:absolute;z-index:6;right:calc(var(--u)*2);bottom:calc(var(--u)*2.5);width:calc(var(--u)*26);display:flex;flex-direction:column;gap:calc(var(--u)*1);margin:0;padding:0}
 #app.gx .gx-acts button{flex:none;width:100%;padding:calc(var(--u)*1.3) 0;font-size:max(13px,calc(var(--u)*3.4));border-radius:calc(var(--u)*2)}
+
+#app.gx .gx-lobbypile{flex-direction:column;gap:calc(var(--u)*.6)}
+#app.gx .gx-lobbypile .lab{color:#fff;font-weight:700}
+.gx .gx-pre{margin:0 auto;max-width:96%;text-align:center;color:#e6e9ff;font-size:max(9px,calc(var(--u)*2.1));text-shadow:0 1px 2px #000}
+.gx .gx-me .gx-pts,.gx .gx-seat .gx-pts{background:#000a;border-radius:99px;padding:0 calc(var(--u)*1.4)}
 }

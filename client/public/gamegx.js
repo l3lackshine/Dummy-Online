@@ -32,4 +32,24 @@ function gxView(c) {
   <div class="acts gx-acts"><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button></div>
 </div>`;
 }
+
+/* หน้าสับไพ่/รอเริ่มเกม (ล็อบบี้โต๊ะ) ใช้เลย์เอาต์เดียวกับหน้าเล่น */
+function gxLobby(c) {
+  const { ps, total, seatOf, L, sh, h, deck, stake, youSh, blocked, who } = c;
+  const info = si => { const p = ps[si], bot = !p; const nm = bot ? 'บอท' : p.you ? 'คุณ' : p.name, a = bot ? av('บอท' + si, botChar(si)) : av(p.name, p.ch);
+    return { nm: nm + (p && p.host ? ' 👑' : ''), role: bot ? 'บอทเล่นแทน' : p.shuffler ? '🔀 ผู้สับไพ่' : 'พร้อม', on: !!(p && p.shuffler), art: a.startsWith('<img') ? `<span class=gx-chr>${a}</span>` : `<span class=gx-emo>${a}</span>` }; };
+  const seat = (k, pos) => { const si = seatOf(k), o = info(si), cls = pos === 'bottom' ? 'gx-me' : 'gx-seat gx-' + pos;
+    return `<div class="gx-art gx-art-${pos}${o.on ? ' on' : ''}">${o.art}</div><div class="${cls}${o.on ? ' active' : ''}" data-seat=${si}><div class=gx-name>${esc(o.nm)}</div><small class=gx-pts>${o.role}</small></div>`; };
+  const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
+  const on = k => { const p = ps[seatOf(k)]; return !!(p && p.shuffler); };
+  const pre = (soloRoom ? '' : `รหัสห้อง ${esc(code)} · ชวนเพื่อนได้สูงสุด 4 คน`) + (!isHost ? ' รอเจ้าของห้องเริ่มเกม...' : blocked ? ` ต้องให้ ${who} สับไพ่ก่อนเริ่มเกม` : '');
+  return `<div class=gx-stage>
+  <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(2))}${q('left', on(1))}${q('right', on(3))}${q('bottom', on(0))}</svg>
+  ${seat(2, 'top')}${seat(1, 'left')}${seat(3, 'right')}${seat(0, 'bottom')}
+  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${stake != null ? ' · ตัวละ ' + esc(stake) + ' 🪙' : ''}</span>${L.rule && L.rule.id ? `<button class="pill rl" onclick="showRules('${esc(L.rule.id)}')">📖 กติกา</button>` : ''}</div>
+  <button class=gx-gear onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">⚙</button>
+  <div class="felt gx-hub"><div class="piles gx-lobbypile">${deck}</div><div class=gx-hint>${h}</div>${pre ? `<div class=gx-pre>${pre}</div>` : ''}</div>
+  <div class="acts gx-acts">${youSh ? `<button class=org onclick=doShuffle() ${shufAnim ? 'disabled' : ''}>🔀 ${sh.ready ? 'สับอีกครั้ง' : 'สับไพ่'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}<button class=g onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div>
+</div>`;
+}
 let _gxW = null; window.addEventListener('resize', () => { const w = isWide(); if (_gxW !== null && w !== _gxW && typeof S !== 'undefined' && S && screen === 'game') render(); _gxW = w; });

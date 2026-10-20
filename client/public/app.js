@@ -210,7 +210,8 @@ function tableView() {
   if (shufAnim) shufAnim.steps.forEach(t => { cnt[t] = (cnt[t] || 0) + 1; });
   const h = lerr ? '⚠️ ' + lerr : shufAnim ? esc(shufAnim.by) + ' สับไพ่: ' + Object.keys(cnt).map(t => (lbl[t] || t) + ' ×' + cnt[t]).join(' · ') : soloRoom ? 'เล่นกับบอท — กดสับไพ่ แล้วกดเริ่มเกม' : noBots ? 'รอผู้เล่น ' + ps.length + '/4 · ปิดบอทไว้ ต้องมีผู้เล่นจริงอย่างน้อย 2 คน' : 'รอผู้เล่น ' + ps.length + '/4 · ที่ว่างบอทจะเล่นแทน';
   const who = youSh ? 'คุณ' : esc(sh.shuffler || '-');
-  $('app').className = '';
+  const gx = isWide(); $('app').className = gx ? 'gx' : '';
+  if (gx) { $('app').innerHTML = gxLobby({ ps, total, seatOf, L, sh, h, deck, stake, youSh, blocked, who }); return; }
   $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${stake != null ? ' · ตัวละ ' + esc(stake) + ' 🪙' : ''}</span>${L.rule && L.rule.id ? `<button class="pill rl" onclick="showRules('${esc(L.rule.id)}')">📖 กติกา</button>` : ''}</div>
  <div class=arena>${pl(seatOf(2), 'top')}${pl(seatOf(1), 'left')}<div class=felt><div class=piles>${deck}</div></div>${pl(seatOf(3), 'right')}${pl(seatOf(0), 'bottom')}</div></div>
  <div class=colR><div class=logs></div><div class=hint>${h}<small>${L.rule && L.rule.name ? '🎴 ' + esc(L.rule.name) + ' · ' : ''}ผู้สับไพ่: ${who} ${sh.round ? '🏆 ผู้ชนะตาก่อน' : '👑 เจ้าของห้อง'}</small></div>
