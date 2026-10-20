@@ -1,0 +1,157 @@
+// ทดสอบ src/index.js ตัวจริงแบบหลาย client พร้อมกัน (ผ่านตัวจำลอง socket.io ในหน่วยความจำ — ดู test-mock-sio.js)
+const assert = require('assert'), M = require('./test-mock-sio');
+const E = require('./src/engine');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const cardOf = id => ({ id, r: id % 13 + 1, s: (id / 13) | 0 });
+let passed = 0; const ok = (c, m) => { assert(c, m); passed++; console.log('  ✓', m); };
+
+// client ที่จำสถานะล่าสุดและเก็บ log เหตุการณ์
+function mk(srv, name, opts = {}) {
+  const c = { name, S: null, lob: null, joined: null, errors: [], states: 0, auto: opts.auto !== false, sock: M.client(srv) };
+  c.sock.on('room:joined', d => { c.joined = d; });
+  c.sock.on('room:lobby', l => { c.lob = l; });
+  c.sock.on('system:error', m => c.errors.push(m));
+  c.sock.on('game:state', s => { if (!c.first || c.first.gid !== s.gid) c.first = s; c.S = s; c.states++; if (c.auto) setTimeout(() => play(c), 0); });
+  c.emit = (ev, d) => c.sock.emit(ev, d);
+  c.connected = Promise.resolve();
+  return c;
+}
+// ผู้เล่นอัตโนมัติ ตัดสินใจจากสถานะที่เซิร์ฟเวอร์ส่งมาอย่างเดียว (เหมือนหน้าเว็บ)
+function play(c) {
+  const S = c.S; if (!S || S.over || S.cur !== S.my || !c.sock.connected) return;
+  const hand = S.hand.map(cardOf), must = S.must != null ? cardOf(S.must) : null;
+  if (S.phase === 'draw') { const i = S.ok.findIndex(Boolean); return c.emit('game:act', i >= 0 && Math.random() < .7 ? { t: 'take', i } : { t: 'draw' }); }
+  if (S.phase === 'play') {
+    const fitOf = m => { if (hand.length - m.length >= 1) return m; for (const x of m) { if (must && x.id === must.id) continue; const r = m.filter(y => y !== x); if (E.ord(r) && hand.length - r.length >= 1) return r; } return null; };
+    let ms = E.cands(hand).filter(m => !must || m.some(x => x.id === must.id)).map(fitOf).filter(Boolean);
+    if (ms.length) return c.emit('game:act', { t: 'meld', ids: ms[0].map(x => x.id) });
+    if (must) { c.errors.push('STUCK'); return; }
+    if (hand.length === 1) return c.emit('game:act', { t: 'knock' });
+    return c.emit('game:act', { t: 'dis', id: hand[Math.floor(Math.random() * hand.length)].id });
+  }
+}
+const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while (Date.now() - t < ms) { if (fn()) return true; await sleep(15); } throw new Error('timeout: ' + what); };
+
+(async () => {
+  // A: เล่นจริง (rate สูง) / B: ทดสอบ rate limit (ค่าเริ่มต้น 20/วินาที)
+  const A = M.load({ BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 });
+  const roomsA = require.cache[require.resolve('./src/index.js')].exports.rooms; // เข้าไปตรวจสถานะห้องฝั่งเซิร์ฟเวอร์ (สำรับที่สับ ฯลฯ)
+  const health = async srv => M.callRoute(srv, '/health');
+  const B = M.load({ BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 500, RATE_PER_SEC: 20 });
+  try {
+    console.log('\n[1] เล่นคนเดียวกับบอท 5 เกมติด (ผ่าน Socket.IO จริง)');
+    for (let g = 0; g < 5; g++) {
+      const h = mk(A, 'solo'); await h.connected; h.emit('room:create', { name: 'solo', ch: 'boy', bg: 'gold' }); await until(() => h.joined, 3000, 'joined');
+      h.errors.length = 0; h.emit('game:start'); await sleep(60); ok(!h.S && h.errors.some(e => /กดสับไพ่ก่อนเริ่มเกม/.test(e)), 'ห้องเล่นกับบอท: ไม่สับไพ่ก็เริ่มเกมไม่ได้');
+      h.emit('game:shuffle'); await until(() => h.lob.shuffle.ready, 3000, 'solo shuffle'); h.emit('game:start'); await until(() => h.S && h.S.over, 20000, 'solo game ' + g);
+      assert(!h.errors.includes('STUCK')); h.sock.close();
+    }
+    ok(true, 'เล่นคนเดียวกับบอท (สับก่อนเริ่ม) จบครบ 5 เกม ไม่มี STUCK');
+
+    console.log('\n[2] 3 คนจริงในห้องเดียว + บอทเติม 1 ที่นั่ง, ความเป็นส่วนตัวของไพ่');
+    const p = [mk(A, 'P1'), mk(A, 'P2'), mk(A, 'P3')]; await Promise.all(p.map(x => x.connected));
+    p[0].emit('room:create', { name: 'P1', ch: 'girl', bg: 'room-day' }); await until(() => p[0].joined);
+    const code = p[0].joined.code; ok(/^[0-9A-F]{6}$/.test(code), 'ได้รหัสห้อง ' + code);
+    p[1].emit('room:join', { code, name: 'P2' }); p[2].emit('room:join', { code: code.toLowerCase(), name: 'P3' });
+    await until(() => p[1].joined && p[2].joined, 3000, 'join'); await until(() => p[0].lob && p[0].lob.players.length === 3);
+    ok(p[0].lob.players[0].host && p[0].joined.host === true, 'ผู้สร้างห้องเป็นเจ้าของห้อง');
+    p[1].emit('game:start'); await sleep(80); ok(p[1].errors.includes('เฉพาะเจ้าของห้องเริ่มเกมได้') && !p[1].S, 'คนที่ไม่ใช่เจ้าของห้องเริ่มเกมไม่ได้');
+    const lateGuy = mk(A, 'Late', { auto: false }); await lateGuy.connected;
+    p[0].errors.length = 0; p[0].emit('game:start'); await sleep(80);
+    ok(p[0].errors.some(e => /ต้องให้ P1 กดสับไพ่ก่อนเริ่มเกม/.test(e)) && !p[0].S, 'ห้องหลายคน: เจ้าของห้องกดเริ่มโดยยังไม่สับไพ่ไม่ได้');
+    ok(p[0].lob.shuffle.shuffler === 'P1' && p[0].lob.shuffle.youShuffler === true && p[1].lob.shuffle.youShuffler === false && p[0].lob.shuffle.ready === false && p[0].lob.shuffle.needed === true, 'ตาแรก: สิทธิ์สับไพ่เป็นของเจ้าของห้อง (P1) และยังไม่ได้สับ');
+    p[1].errors.length = 0; p[1].emit('game:shuffle'); await sleep(80); ok(p[1].errors.some(e => /สิทธิ์สับไพ่เป็นของ P1/.test(e)) && !roomsA.get(code).deck, 'คนที่ไม่ใช่เจ้าของห้องกดสับไพ่ไม่ได้');
+    let shufEv = null; p[1].sock.on('room:shuffled', d => { shufEv = d; });
+    p[0].emit('game:shuffle'); await until(() => p[0].lob.shuffle.ready && p[1].lob.shuffle.ready && shufEv, 3000, 'shuffled');
+    const deck1 = roomsA.get(code).deck.slice();
+    ok(deck1.length === 52 && new Set(deck1).size === 52 && shufEv.by === 'P1' && shufEv.steps.includes('riffle') && p[1].lob.shuffle.by === 'P1', 'เจ้าของห้องสับไพ่สำเร็จ สำรับ 52 ใบครบ ทุกคนในห้องเห็นว่าสับแล้ว');
+    ok(!JSON.stringify([shufEv, p[0].lob, p[1].lob]).includes(deck1.join(',')) && !JSON.stringify([shufEv, p[1].lob]).includes(require('./src/shuffle').toLetters(deck1)), 'ลำดับไพ่ที่สับไม่รั่วไปหา client');
+    p[0].emit('game:shuffle'); await sleep(80); ok(roomsA.get(code).deck.join() !== deck1.join(), 'สับซ้ำก่อนเริ่มเกมได้ (ได้สำรับใหม่)'); const deck = roomsA.get(code).deck.slice();
+    p[0].emit('game:start'); await until(() => p.every(x => x.S), 3000, 'state');
+    ok(roomsA.get(code).deck === null, 'สำรับถูกใช้แล้วหมดไป ตาถัดไปต้องสับใหม่');
+    ok(p.every((x, i) => x.first.hand.join() === deck.slice(i * 7, i * 7 + 7).join()) && p[0].first.disc[0][0] === deck[51], 'ไพ่ที่แจกจริงตรงกับสำรับที่เจ้าของห้องสับ (ผู้เล่น 3 คน + หัว)');
+    ok(p.every((x, i) => x.first.my === i && x.first.hand.length === 7 && x.first.P.length === 4 && x.first.my === x.S.my), 'ทุกคนได้ที่นั่งตรงลำดับ ไพ่ 7 ใบ และมีโต๊ะ 4 ที่นั่ง');
+    ok(p[0].S.P.filter(q => q.bot).length === 1, 'เติมบอทให้ครบ 4 ที่นั่ง');
+    const allStateJson = JSON.stringify(p.map(x => x.S));
+    ok(!('P' in {}) && p.every(x => x.S.P.every(q => q.h === undefined) && x.S.stock >= 0 && typeof x.S.stock === 'number'), 'state ไม่ส่งไพ่ในมือคนอื่น/กองจั่ว (ส่งแค่จำนวน)');
+    lateGuy.emit('room:join', { code, name: 'Late' }); await sleep(80); ok(lateGuy.errors.includes('เกมเริ่มแล้ว เข้าห้องไม่ได้'), 'เข้าห้องระหว่างเกมไม่ได้');
+    await until(() => p.every(x => x.S.over), 25000, 'game over 3 humans');
+    ok(p.every(x => !x.errors.includes('STUCK')) && p.every(x => x.S.res.pts.length === 4), 'เกม 3 คนจริงจบ ไม่ค้าง ผลคะแนนครบ 4 ที่นั่ง');
+
+    { const R = roomsA.get(code), seat = R.game.res.k != null ? R.game.res.k : R.game.res.pts.indexOf(Math.max(...R.game.res.pts)), expect = seat < 3 ? ['P1', 'P2', 'P3'][seat] : 'P1';
+      await sleep(60); ok(p[1].lob.shuffle.shuffler === expect && p[1].lob.shuffle.round === 1, `จบตา: สิทธิ์สับไพ่ตาถัดไปเป็นของผู้ชนะ (${seat < 3 ? expect + ' ที่นั่ง ' + seat : 'ผู้ชนะเป็นบอท → กลับเป็นเจ้าของห้อง P1'})`); }
+    console.log('\n[3] หลังจบเกม: คนมาใหม่ต้องไม่เห็นไพ่บอท / ย้ายเจ้าของห้อง / เล่นอีกตา');
+    lateGuy.emit('room:join', { code, name: 'Late' }); await until(() => lateGuy.joined, 3000, 'late join'); await sleep(100);
+    ok(lateGuy.S === null, 'คนที่เข้าห้องหลังเกมจบไม่ได้รับ state ของที่นั่งใครเลย (บั๊กเดิม: เห็นไพ่บอท)');
+    p[0].emit('room:leave'); await sleep(120);
+    ok(p[1].lob.players.find(x => x.host)?.name === 'P2' && p[1].lob.youHost === true && p[2].lob.youHost === false, 'เจ้าของห้องออก → P2 ได้เป็นเจ้าของห้อง และ client รู้ (บั๊กเดิม: ปุ่มเริ่มไม่ขึ้น)');
+    lateGuy.auto = true; p[2].S = null; p[1].S = null;
+    p[1].errors.length = 0; p[1].emit('game:start'); await sleep(80); ok(p[1].errors.some(e => /กดสับไพ่ก่อนเริ่มเกม/.test(e)) && !p[1].S, 'ตาถัดไป: เจ้าของห้องใหม่กดเริ่มโดยยังไม่สับไม่ได้');
+    const sh = [p[1], p[2], lateGuy].find(x => x.lob.shuffle.youShuffler); ok(!!sh, 'มีผู้มีสิทธิ์สับไพ่ตาถัดไปพอดี 1 คน (' + sh.name + ')');
+    const other = [p[1], p[2], lateGuy].find(x => x !== sh); other.errors.length = 0; other.emit('game:shuffle'); await sleep(80); ok(other.errors.some(e => /สิทธิ์สับไพ่เป็นของ/.test(e)), 'คนอื่นที่ไม่ใช่ผู้มีสิทธิ์สับไพ่กดสับไม่ได้');
+    sh.emit('game:shuffle'); await until(() => p[1].lob.shuffle.ready, 3000, 'shuffle round 2');
+    p[1].emit('game:start'); await until(() => p[1].S && p[2].S && lateGuy.S, 3000, 'rematch');
+    ok(p[1].S.my === 0 && p[2].S.my === 1 && lateGuy.S.my === 2, 'ตาใหม่จัดที่นั่งใหม่ถูกต้อง (P1 ที่ออกไปไม่ถูกนับ)');
+    await until(() => p[1].S.over, 25000, 'rematch over'); ok(true, 'เล่นอีกตาจบได้');
+    p.forEach(x => x.sock.close()); lateGuy.sock.close();
+
+    console.log('\n[4] หลุดกลางเกม → บอทรับช่วง → เชื่อมต่อกลับด้วย token ได้ที่นั่งเดิม');
+    const q1 = mk(A, 'Q1', { auto: false }), q2 = mk(A, 'Q2'); await Promise.all([q1.connected, q2.connected]);
+    q1.emit('room:create', { name: 'Q1' }); await until(() => q1.joined); const code2 = q1.joined.code, tok = q1.joined.token;
+    q2.emit('room:join', { code: code2, name: 'Q2' }); await until(() => q2.joined);
+    q1.emit('game:shuffle'); await until(() => q1.lob && q1.lob.shuffle.ready, 3000, 'q1 shuffle'); q1.emit('game:start'); await until(() => q1.S && q2.S);
+    q1.sock.close(); await sleep(150);
+    ok(q2.S.P[0].bot === true && /บอท/.test(q2.S.P[0].n), 'Q1 หลุด → ที่นั่งกลายเป็นบอท เกมไม่หยุด');
+    const q1b = mk(A, 'Q1b'); await q1b.connected; q1b.emit('room:rejoin', { code: code2, token: tok });
+    await until(() => q1b.S, 3000, 'rejoin state');
+    ok(q1b.S.my === 0 && q1b.S.hand.length > 0 && q1b.joined.rejoined === true, 'เชื่อมต่อกลับได้ที่นั่งและไพ่เดิม');
+    await sleep(100); ok(q2.S.P[0].bot === false && q2.S.P[0].n === 'Q1', 'บอทถูกปลด ที่นั่งกลับเป็นคนจริง ชื่อเดิม');
+    const thief = mk(A, 'Thief'); await thief.connected; let failed = false; thief.sock.on('room:rejoin-failed', () => failed = true);
+    thief.emit('room:rejoin', { code: code2, token: 'deadbeef' }); await sleep(100); ok(failed && !thief.S, 'token ปลอมใช้เชื่อมกลับไม่ได้');
+    await until(() => q1b.S.over && q2.S.over, 25000, 'game over after rejoin');
+    ok(q1b.S.res && !q1b.errors.includes('STUCK'), 'เกมที่มีคนหลุด-กลับ จบสมบูรณ์');
+    q1b.sock.close(); q2.sock.close(); thief.sock.close();
+
+    console.log('\n[5] กดออกเอง = ไม่ให้กลับที่นั่งเดิม, ห้องว่างถูกลบเอง');
+    const r1 = mk(A, 'R1'); await r1.connected; r1.emit('room:create', { name: 'R1' }); await until(() => r1.joined); r1.emit('game:shuffle'); await until(() => r1.lob.shuffle.ready); r1.emit('game:start'); await until(() => r1.S);
+    const rcode = r1.joined.code, rtok = r1.joined.token; r1.emit('room:leave'); await sleep(100);
+    const r1b = mk(A, 'R1b'); await r1b.connected; let f2 = false; r1b.sock.on('room:rejoin-failed', () => f2 = true); r1b.emit('room:rejoin', { code: rcode, token: rtok }); await sleep(100);
+    ok(f2, 'ออกจากห้องเอง แล้วใช้ token เดิมกลับเข้าไม่ได้');
+    const before = (await health(A)).rooms; await sleep(900); const after = (await health(A)).rooms;
+    ok(after < before && after === 0, `ห้องที่ไม่มีคนจริงถูกลบหลัง TTL (ห้อง ${before} → ${after})`); r1b.sock.close();
+
+    console.log('\n[6] ความทนทาน: payload ขยะ, สแปม, ห้องไม่ซ้ำ');
+    const g = mk(B, 'G', { auto: false }); await g.connected; g.emit('room:create', { name: '\u0000\u0007<b>' + 'x'.repeat(50) }); await until(() => g.joined);
+    ok(g.lob.players[0].name.length <= 14 && !/[\u0000-\u001f]/.test(g.lob.players[0].name), 'ชื่อถูกตัดความยาว/ล้างอักขระควบคุม');
+    g.emit('game:shuffle'); await until(() => g.lob.shuffle.ready); g.emit('game:start'); await until(() => g.S);
+    for (const bad of [null, 'str', 42, [], { t: 5 }, { t: 'meld', ids: { a: 1 } }, { t: 'meld', ids: new Array(5000).fill(1) }, { t: 'take', i: 'NaN' }, { t: 'dep', k: {}, ids: 'x' }]) { g.emit('game:act', bad); await sleep(60); }
+    ok((await health(B)).ok === true, 'ส่ง action ขยะ 9 แบบ เซิร์ฟเวอร์ยังอยู่ดี');
+    const z = mk(B, 'Z', { auto: false }); await z.connected; await sleep(10);
+    for (const ev of ['room:create', 'room:join', 'room:rejoin', 'game:start', 'game:act', 'room:leave', 'no:such:event']) for (const bad of [null, 'x', 7, [], [1, 2], { code: {} , token: [] , name: {} }]) { z.emit(ev, bad); await sleep(3); }
+    await sleep(50); ok((await health(B)).ok === true, 'ส่ง null/สตริง/เลข/อาร์เรย์ ให้ทุก event เซิร์ฟเวอร์ไม่ล้ม (บั๊กใหม่ที่ดักไว้: destructure null)'); z.sock.close();
+    g.errors.length = 0; for (let i = 0; i < 200; i++) g.emit('game:act', { t: 'draw' }); await sleep(300);
+    ok(g.errors.includes('ส่งคำสั่งเร็วเกินไป'), 'ยิงคำสั่ง 200 ครั้งใน ~0 วินาที → ถูก rate limit');
+    await sleep(1100); g.errors.length = 0; g.emit('game:act', { t: 'draw' }); await sleep(100); ok(!g.errors.includes('ส่งคำสั่งเร็วเกินไป'), 'หลังหยุดสั้น ๆ ใช้งานได้ปกติ');
+    const codes = new Set(); const cs = []; for (let i = 0; i < 30; i++) { const c = mk(B, 'c' + i, { auto: false }); cs.push(c); await c.connected; c.emit('room:create', { name: 'c' }); } await sleep(500);
+    cs.forEach(c => c.joined && codes.add(c.joined.code)); ok(codes.size === 30, 'สร้างห้อง 30 ห้องพร้อมกัน รหัสไม่ซ้ำ'); cs.forEach(c => c.sock.close()); g.sock.close();
+    console.log('\n[7] สิทธิ์สับไพ่ตามผู้ชนะ (บังคับผลแพ้ชนะเพื่อทดสอบทุกกรณี)');
+    { const H = mk(A, 'H', { auto: false }), W = mk(A, 'W', { auto: false }); await Promise.all([H.connected, W.connected]);
+      H.emit('room:create', { name: 'H' }); await until(() => H.joined); const rc = H.joined.code; W.emit('room:join', { code: rc, name: 'W' }); await until(() => W.joined && H.lob.players.length === 2);
+      const R = roomsA.get(rc), force = k => { R.game.over = true; R.game.res = { k, nt: [[], [], [], []], pts: [0, k === 1 ? 60 : 0, 0, k === 3 ? 60 : 0] }; };
+      H.emit('game:shuffle'); await until(() => H.lob.shuffle.ready); H.emit('game:start'); await until(() => H.S && W.S);
+      force(1); const J = mk(A, 'J', { auto: false }); await J.connected; J.emit('room:join', { code: rc, name: 'J' }); await until(() => J.joined && H.lob.shuffle.round === 1);
+      ok(H.lob.shuffle.shuffler === 'W' && W.lob.shuffle.youShuffler && !H.lob.shuffle.youShuffler && H.lob.players.find(x => x.name === 'W').shuffler, 'W (ผู้ชนะที่ไม่ใช่เจ้าของห้อง) ได้สิทธิ์สับไพ่ตาถัดไป');
+      H.errors.length = 0; H.emit('game:shuffle'); await sleep(80); ok(H.errors.some(e => /สิทธิ์สับไพ่เป็นของ W/.test(e)), 'เจ้าของห้องสับแทนผู้ชนะไม่ได้');
+      H.errors.length = 0; H.emit('game:start'); await sleep(80); ok(H.errors.some(e => /ต้องให้ W กดสับไพ่ก่อน/.test(e)), 'เจ้าของห้องเริ่มตาใหม่ไม่ได้จนกว่า W จะสับ');
+      W.emit('game:shuffle'); await until(() => H.lob.shuffle.ready && H.lob.shuffle.by === 'W', 3000, 'W shuffled'); const dk = R.deck.slice();
+      W.S = H.S = J.S = null; H.emit('game:start'); await until(() => H.S && W.S && J.S, 3000, 'round 2');
+      ok(H.S.hand.join() === dk.slice(0, 7).join() && W.S.hand.join() === dk.slice(7, 14).join() && J.S.hand.join() === dk.slice(14, 21).join(), 'ตาที่ 2 แจกไพ่จากสำรับที่ผู้ชนะ (W) สับ');
+      force(3); J.emit('room:leave'); await until(() => H.lob.shuffle.round === 2);
+      ok(H.lob.shuffle.shuffler === 'H' && H.lob.shuffle.youShuffler, 'ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับ');
+      H.emit('game:shuffle'); await until(() => H.lob.shuffle.ready); W.S = H.S = null; H.emit('game:start'); await until(() => H.S && W.S);
+      force(1); W.sock.close(); await until(() => H.lob.shuffle.round === 3);
+      ok(H.lob.shuffle.shuffler === 'H' && H.lob.shuffle.youShuffler, 'ผู้ชนะหลุดการเชื่อมต่อก่อนสับ → สิทธิ์กลับไปที่เจ้าของห้อง');
+      H.emit('game:shuffle'); await until(() => H.lob.shuffle.ready); ok(true, 'เจ้าของห้องสับแทนได้เมื่อผู้ชนะไม่อยู่'); H.sock.close(); J.sock.close(); }
+    console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`);
+  } finally { setTimeout(() => process.exit(0), 50); }
+})().catch(e => { console.error('\n✗ ล้มเหลว:', e.message); process.exit(1); });
