@@ -33,6 +33,10 @@ function prepAndroid() {
   const gradle = path.join(AND, 'app/build.gradle'); let g = read(gradle);
   const g2 = g.replace(/versionCode\s+\d+/, `versionCode ${code}`).replace(/versionName\s+"[^"]*"/, `versionName "${ver.replace(/"/g, '')}"`);
   if (g2 === g) die('แก้ versionCode/versionName ใน build.gradle ไม่สำเร็จ (รูปแบบไฟล์เปลี่ยน?)'); fs.writeFileSync(gradle, g2);
+  // บังคับแนวนอนทั้งแอป
+  const mf = path.join(AND, 'app/src/main/AndroidManifest.xml'); let m = read(mf);
+  if (!/screenOrientation/.test(m)) { const m2 = m.replace(/<activity\b/, '<activity android:screenOrientation="sensorLandscape"'); if (m2 === m) die('ไม่พบ <activity> ใน AndroidManifest.xml'); fs.writeFileSync(mf, m2); }
+  console.log('✓ ล็อกแนวนอน (sensorLandscape)');
   console.log(`• versionName "${ver}" · versionCode ${code}`); console.log('✓ เตรียมโปรเจกต์ Android แล้ว');
 }
 const mode = process.argv[2]; if (mode === 'www') prepWww(); else if (mode === 'android') prepAndroid(); else die('ใช้: node mobile/prepare.js www | android');

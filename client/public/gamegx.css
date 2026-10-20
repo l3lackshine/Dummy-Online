@@ -94,3 +94,13 @@
 .gx .gx-pre{margin:0 auto;max-width:96%;text-align:center;color:#e6e9ff;font-size:max(9px,calc(var(--u)*2.1));text-shadow:0 1px 2px #000}
 .gx .gx-me .gx-pts,.gx .gx-seat .gx-pts{background:#000a;border-radius:99px;padding:0 calc(var(--u)*1.4)}
 }
+
+/* หน้าจอบอกให้หมุนเครื่อง (แนวตั้งบนมือถือ/แท็บเล็ต) */
+#rotHint{display:none}
+@media (orientation:portrait) and (max-width:900px){
+#rotHint{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#120d33f2;color:#fff;text-align:center;font-family:Sarabun,sans-serif;padding:24px}
+#rotHint .rh-ico{font-size:72px;animation:rhr 2s ease-in-out infinite}
+#rotHint b{font-size:22px;color:#ffd978}#rotHint small{font-size:14px;color:#cfd3ff}
+#rotHint button{margin-top:8px;padding:12px 26px;border:0;border-radius:99px;background:linear-gradient(#ffa13a,#f0640d);color:#fff;font:700 16px Sarabun,sans-serif;box-shadow:0 4px 0 #a9440a}
+}
+@keyframes rhr{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
