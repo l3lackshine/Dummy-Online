@@ -1,0 +1,127 @@
+/* gamegx.css — หน้าโต๊ะเล่นแนวนอน 4 ฝั่งทแยง (โหลดหลัง layout.css) · ใช้เฉพาะ #app.gx */
+@media (min-aspect-ratio:5/4){
+#app.gx{display:block;position:relative;width:100%;height:100vh;height:100dvh;max-width:none;margin:0;padding:0;overflow:hidden;gap:0;
+  --u:min(1vh,.62vw);--cw:clamp(38px,calc(var(--u)*11.5),96px);--chr:calc(var(--u)*30);
+  background:transparent;font-family:Sarabun,sans-serif}
+@supports (height:1dvh){#app.gx{--u:min(1dvh,.62vw)}}
+.gx .gx-stage{position:absolute;inset:0;overflow:hidden}
+
+/* ฝั่งทแยง 4 ชิ้น */
+.gx .gx-bg{position:absolute;inset:0;width:100%;height:100%}
+.gx .gx-q{stroke:#ffffff2e;stroke-width:1.5;vector-effect:non-scaling-stroke;fill:#2d2268;fill-opacity:.48}
+.gx .gx-q-top{fill:#3b2a86}.gx .gx-q-left{fill:#26548f}.gx .gx-q-right{fill:#6b2f78}.gx .gx-q-bottom{fill:#1e6a72}
+.gx .gx-q.on{stroke:#2ff3ff;stroke-width:4;filter:drop-shadow(0 0 7px #2ff3ff);fill-opacity:.62}
+
+/* ตัวละคร/อวตารของแต่ละฝั่ง */
+.gx .gx-art{position:absolute;pointer-events:none;opacity:.42;display:flex;align-items:center;justify-content:center;transition:opacity .25s}
+.gx .gx-art.on{opacity:1}
+.gx .gx-art-top{left:50%;top:0;transform:translateX(-50%);width:44%;height:26%}
+.gx .gx-art-left{left:0;top:26%;width:28%;height:40%}
+.gx .gx-art-right{right:0;top:26%;width:28%;height:40%}
+.gx .gx-art-bottom{left:0;bottom:0;width:17%;height:34%}
+.gx .gx-chr{display:block;width:100%;height:100%}
+.gx .gx-chr .avatar-img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 3px 4px #0009)}
+.gx .gx-emo{font-size:calc(var(--u)*20);line-height:1;filter:drop-shadow(0 3px 4px #0008)}
+.gx .gx-art-top .gx-emo{font-size:calc(var(--u)*17)}
+
+/* แผงผู้เล่น: ชื่อ + แถวไพ่ซ้อนพร้อมจำนวนใบ */
+.gx .gx-seat,.gx .gx-me{position:absolute;z-index:4;display:flex;flex-direction:column;align-items:center;gap:calc(var(--u)*.5)}
+.gx .gx-top{left:50%;top:calc(var(--u)*1);transform:translateX(-50%)}
+.gx .gx-left{left:calc(var(--u)*2.5);top:calc(var(--u)*29.5)}
+.gx .gx-top .gx-pts{position:absolute;left:100%;bottom:0;white-space:nowrap;margin-left:calc(var(--u)*1)}
+.gx .gx-right{right:calc(var(--u)*2.5);top:calc(var(--u)*29.5)}
+.gx .gx-left,.gx .gx-right{transform:none}
+.gx .gx-me{left:calc(var(--u)*2);bottom:calc(var(--u)*2.5)}
+.gx .gx-name{max-width:calc(var(--u)*30);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:calc(var(--u)*.5) calc(var(--u)*3);border-radius:99px;
+  background:#120d2ee8;border:2px solid #f2b84b;color:#fff;font-weight:800;font-style:italic;font-size:max(10px,calc(var(--u)*2.9));box-shadow:0 2px 0 #0007}
+.gx .active .gx-name{border-color:#2ff3ff;box-shadow:0 0 10px #2ff3ff}
+.gx .gx-stack{display:flex;align-items:flex-end;gap:calc(var(--u)*.35)}
+.gx .gx-stack i,.gx .gx-stack b{display:block;border-radius:calc(var(--u)*.7);border:2px solid #cdbcff;background:linear-gradient(#a487f0,#5b3cb3);box-shadow:0 2px 0 #0006}
+.gx .gx-stack i{width:calc(var(--u)*2.4);height:calc(var(--u)*5.6);opacity:.95}
+.gx .gx-stack b{width:calc(var(--u)*5.4);height:calc(var(--u)*7.4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:max(11px,calc(var(--u)*3.6))}
+.gx .gx-pts{color:#ffe9b0;font-weight:700;font-size:max(9px,calc(var(--u)*2.3));text-shadow:0 1px 2px #000}
+.gx .gx-turn{font-style:normal;font-weight:800;font-size:max(9px,calc(var(--u)*2.2));padding:0 calc(var(--u)*1.4);border-radius:99px;background:#2ff3ff;color:#06222a;animation:gxp 1s ease-in-out infinite}
+@keyframes gxp{50%{transform:scale(1.12)}}
+
+/* มุมบนซ้าย/ขวา */
+.gx .gx-hud{position:absolute;z-index:6;left:calc(var(--u)*1.5);top:calc(var(--u)*1.2);display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--u)*.6)}
+.gx .gx-hud .pill{font-size:max(10px,calc(var(--u)*2.5));padding:0 calc(var(--u)*1.6);background:#0009}
+.gx .gx-gear{position:absolute;z-index:6;right:calc(var(--u)*1.5);top:calc(var(--u)*1.2);width:calc(var(--u)*8);height:calc(var(--u)*8);min-width:32px;min-height:32px;border-radius:50%;
+  border:2px solid #5d6aa8;background:#1a2150;color:#fff;font-size:calc(var(--u)*4.4);line-height:1;cursor:pointer;box-shadow:0 0 0 3px #0006}
+
+/* ศูนย์กลาง: กองจั่ว + กองทิ้ง */
+#app.gx .gx-hub{position:absolute;z-index:3;left:28%;right:28%;top:28%;bottom:40%;margin:0;padding:calc(var(--u)*1);border:3px solid #ffe45c;border-radius:calc(var(--u)*3);
+  background-color:#0d0a22;background-image:linear-gradient(#0005,#0005),var(--table-image,linear-gradient(#171233,#0d0a22));background-size:cover;background-position:center;box-shadow:0 0 14px #ffe45c66,inset 0 0 18px #0009;display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*.8);min-height:0;overflow:hidden}
+#app.gx .gx-hub .piles{grid-column:auto;grid-row:auto;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:calc(var(--u)*1.6);padding:0;width:100%;min-width:0;background:none;border:0}
+#app.gx .gx-hub .piles>div{max-width:none;min-width:0}
+#app.gx .gx-stock{flex:none;text-align:center}
+#app.gx .gx-disc{flex:1 1 0;min-width:0}
+#app.gx .gx-hub .back{width:calc(var(--u)*11);height:calc(var(--u)*15.5);font-size:max(12px,calc(var(--u)*3.6));display:flex;align-items:center;justify-content:center}
+#app.gx .gx-hub .dp{display:flex;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;padding:calc(var(--u)*1.2) calc(var(--u)*.8) calc(var(--u)*.4);scrollbar-width:thin;max-width:100%}
+#app.gx .gx-hub .dp .c.d{width:calc(var(--u)*10.4);height:calc(var(--u)*14.6);margin-left:calc(var(--u)*-3.8);font-size:max(11px,calc(var(--u)*3.2));flex:none}
+#app.gx .gx-hub .dp .c.d:first-child{margin-left:0}
+#app.gx .gx-hub .lab{display:block;text-align:center;color:#cfd3ff;font-size:max(9px,calc(var(--u)*2));margin-top:1px}
+.gx .gx-hint{margin:0 auto;max-width:96%;padding:calc(var(--u)*.4) calc(var(--u)*2.4);border-radius:99px;background:#000a;border:2px solid #ffffff2e;color:#ffd978;font-weight:700;text-align:center;
+  font-size:max(10px,calc(var(--u)*2.5));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ไพ่ที่เกิด วางหน้าผู้เล่นแต่ละฝั่ง */
+#app.gx .zone{position:absolute;z-index:2;display:flex;gap:calc(var(--u)*1);align-items:center;justify-content:center;flex-wrap:wrap;pointer-events:none;min-height:0}
+#app.gx .zone .m{display:flex;flex-direction:row;pointer-events:auto;cursor:pointer;padding:calc(var(--u)*.4);border-radius:calc(var(--u)*1);background:#0000004d}
+#app.gx .zone .m .c{width:calc(var(--u)*6.2);height:calc(var(--u)*8.8);font-size:max(9px,calc(var(--u)*2.5));margin:0;transform:none}
+#app.gx .zone .m .c+.c{margin-left:calc(var(--u)*-3.4);margin-top:0}
+#app.gx .zone-top{left:30%;right:30%;top:calc(var(--u)*17)}
+#app.gx .zone-left{left:calc(var(--u)*1.5);width:25%;top:calc(var(--u)*49);align-content:flex-start;justify-content:flex-start}
+#app.gx .zone-right{right:calc(var(--u)*1.5);width:25%;top:calc(var(--u)*49);align-content:flex-start;justify-content:flex-end}
+#app.gx .zone-bottom{left:30%;right:30%;bottom:calc(var(--cw)*1.0 + var(--u)*4.5)}
+
+/* ไพ่ในมือ: เรียงกลางล่าง ล้นขอบจอเล็กน้อยแบบภาพตัวอย่าง */
+#app.gx .gx-dock{position:absolute;z-index:5;left:17%;right:17%;bottom:calc(var(--cw)*-.3);margin:0;padding:0;background:none;border:0}
+#app.gx .gx-dock .hand{display:flex;flex-wrap:nowrap;justify-content:safe center;overflow-x:auto;overflow-y:visible;padding:calc(var(--u)*4) calc(var(--u)*1) 0;min-height:0;scrollbar-width:none}
+#app.gx .gx-dock .hand::-webkit-scrollbar{display:none}
+#app.gx .gx-dock .hand .c{flex:0 0 var(--cw);width:var(--cw);height:calc(var(--cw)*1.42);margin-left:calc(var(--cw)*-.26);font-size:max(14px,calc(var(--cw)*.42));transform:none;border-radius:calc(var(--u)*1.2);box-shadow:0 2px 6px #0008}
+#app.gx .gx-dock .hand .c:first-child{margin-left:0}
+#app.gx .gx-dock .hand .c.s{transform:translateY(calc(var(--u)*-3.5));box-shadow:0 0 0 3px #ffd34d,0 6px 10px #000a}
+
+/* ปุ่มเรียงไพ่ (ซ้าย) · ปุ่มกระทำ (ขวา) */
+.gx .gx-tools{position:absolute;z-index:6;left:calc(var(--u)*2);bottom:calc(var(--u)*26);display:flex;gap:calc(var(--u)*.7)}
+.gx .gx-tools button{padding:calc(var(--u)*.8) calc(var(--u)*1.6);border-radius:99px;border:2px solid #ffffff55;background:#1b2b12dd;color:#c9ff6b;font-weight:800;font-size:max(10px,calc(var(--u)*2.5));cursor:pointer;box-shadow:0 2px 0 #0007}
+.gx .gx-tools button:nth-child(2){background:linear-gradient(#86e84a,#3fae1e);color:#0f2a06;border-color:#e6ffb8}
+#app.gx .gx-acts{position:absolute;z-index:6;right:calc(var(--u)*2);bottom:calc(var(--u)*2.5);width:calc(var(--u)*26);display:flex;flex-direction:column;gap:calc(var(--u)*1);margin:0;padding:0}
+#app.gx .gx-acts button{flex:none;width:100%;padding:calc(var(--u)*1.3) 0;font-size:max(13px,calc(var(--u)*3.4));border-radius:calc(var(--u)*2)}
+
+#app.gx .gx-lobbypile{flex-direction:column;gap:calc(var(--u)*.6)}
+#app.gx .gx-lobbypile .lab{color:#fff;font-weight:700}
+.gx .gx-pre{margin:0 auto;max-width:96%;text-align:center;color:#e6e9ff;font-size:max(9px,calc(var(--u)*2.1));text-shadow:0 1px 2px #000}
+.gx .gx-me .gx-pts,.gx .gx-seat .gx-pts{background:#000a;border-radius:99px;padding:0 calc(var(--u)*1.4)}
+}
+
+/* หน้าจอบอกให้หมุนเครื่อง (แนวตั้งบนมือถือ/แท็บเล็ต) */
+#rotHint{display:none}
+@media (orientation:portrait) and (max-width:900px){
+#rotHint{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#120d33f2;color:#fff;text-align:center;font-family:Sarabun,sans-serif;padding:24px}
+#rotHint .rh-ico{font-size:72px;animation:rhr 2s ease-in-out infinite}
+#rotHint b{font-size:22px;color:#ffd978}#rotHint small{font-size:14px;color:#cfd3ff}
+#rotHint button{margin-top:8px;padding:12px 26px;border:0;border-radius:99px;background:linear-gradient(#ffa13a,#f0640d);color:#fff;font:700 16px Sarabun,sans-serif;box-shadow:0 4px 0 #a9440a}
+}
+@keyframes rhr{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+
+/* ===== ระบบสกิล ===== */
+.sk-modal{position:fixed;inset:0;z-index:99990;background:#000a;display:flex;align-items:center;justify-content:center;font-family:Sarabun,sans-serif}
+.sk-box{position:relative;width:min(92vw,560px);max-height:88vh;overflow:auto;background:linear-gradient(#241a55,#150f38);border:3px solid #f2b84b;border-radius:18px;padding:14px 16px;color:#fff}
+.sk-box h3{margin:0 0 6px;font-size:20px;color:#ffd978}.sk-box h4,.ksec h4{margin:12px 0 4px;color:#9fe8ff;font-size:14px}
+.sk-coin{float:right;font-size:15px}.sk-x{position:absolute;right:10px;top:8px;border:0;background:#0006;color:#fff;border-radius:50%;width:28px;height:28px;display:none}
+.sk-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #ffffff1f}
+.sk-row small{display:block;color:#cfd3ff;font-size:12px}.sk-row em{font-style:normal;color:#ffd978;font-size:12px}.sk-v{color:#9fe8ff!important}
+.sk-pips{display:flex;gap:3px;margin-top:4px}.sk-pips i{width:14px;height:6px;border-radius:3px;background:#ffffff2a}.sk-pips i.on{background:linear-gradient(#ffd978,#f0a020)}
+.sk-up,.sk-tg{border:0;border-radius:99px;padding:8px 14px;font:700 14px Sarabun,sans-serif;color:#fff;background:linear-gradient(#4cd36f,#1f9c4a);box-shadow:0 3px 0 #14703a;white-space:nowrap}
+.sk-up:disabled{background:#4a5886;box-shadow:none;opacity:.7}.sk-tg{display:block;width:100%;margin:6px 0;background:linear-gradient(#a487f0,#5b3cb3);box-shadow:0 3px 0 #3a2680}
+.sk-tag{font-size:11px;color:#cfd3ff;white-space:nowrap}.sk-test{display:block;margin:12px 0 4px;font-size:13px;color:#ffd978}
+.sk-bar{position:absolute;z-index:7;left:50%;transform:translateX(-50%);bottom:calc(var(--cw,46px)*1 + var(--u,6px)*14);display:flex;flex-direction:row;gap:6px}
+.sk-b{display:flex;align-items:center;gap:6px;border:2px solid #cdbcff;border-radius:99px;padding:5px 10px;background:linear-gradient(#a487f0,#5b3cb3);color:#fff;font:700 12px Sarabun,sans-serif;box-shadow:0 2px 0 #0006}
+.sk-b span{font-size:16px}.sk-b i{font-style:normal;background:#000a;border-radius:99px;padding:0 6px;color:#ffd978}.sk-b.off{opacity:.5}
+.sk-count{position:absolute;z-index:7;left:50%;transform:translateX(-50%);top:calc(60% + var(--u,6px)*.3);background:#000b;border:2px solid #9fe8ff;border-radius:99px;padding:2px 12px;color:#fff;font:700 12px Sarabun,sans-serif;white-space:nowrap}
+.sk-count b{color:#ffd978}
+.sk-toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);z-index:99995;background:#000d;border:2px solid #ffd978;color:#fff;padding:8px 18px;border-radius:99px;font:700 14px Sarabun,sans-serif}
+.c.d.hk,.c.hk{box-shadow:0 0 0 3px #2ff3ff,0 0 14px #2ff3ff!important;animation:gxp 1s ease-in-out infinite}
+body.sk-mist::after{content:"";position:fixed;inset:auto 0 0 0;height:45%;z-index:9000;pointer-events:none;background:linear-gradient(#fff0,#ffffffb0);backdrop-filter:blur(2px);animation:gxp 1.2s ease-in-out infinite}
+.hud-sk,.gx-sk{border:2px solid #f2b84b;background:#0009;color:#ffd978;border-radius:99px;font-weight:700;padding:0 10px;cursor:pointer}
