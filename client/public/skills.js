@@ -68,26 +68,20 @@
       document.body.classList.add('sk-mist'); toast('🎭 ' + E(f.from) + ' ป่วนสายตาคุณ! กด "เรียงไพ่" แก้ได้'); render(); setTimeout(() => document.body.classList.remove('sk-mist'), ms); }); }
   setInterval(hook, 700);
   window.skCoinBonus = function (delta) { const s = has('coinbonus'); return s && delta > 0 ? Math.floor(delta * val(s, 'pct') / 100) : 0; };
-  // ---- เนื้อหาหน้าความสามารถ (ใช้ร่วมกัน: ฝังในหน้าโปรไฟล์ + โมดอลระหว่างเล่นเกม) ----
-  window.skillsPanelHtml = function () {
+  // ---- หน้าความสามารถ ----
+  window.openSkills = function () {
+    document.querySelectorAll('.sk-modal').forEach(n => n.remove());
+    const m = document.createElement('div'); m.className = 'sk-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
     const st = SK.stats.map(s => { const lv = slv(s.id), max = s.max || 10, cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
       return `<div class=sk-row><div><b>${E(s.icon)} ${E(s.name)}</b> <em>Lv ${lv}/${max}</em><small>${E(s.desc || '')}</small><div class=sk-pips>${Array.from({ length: max }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</div></div>
       <button class=sk-up ${lv >= max || sv.coins < cost ? 'disabled' : ''} onclick="skUp('${E(s.id)}')">${lv >= max ? 'เต็ม' : '⬆ 🪙' + cost}</button></div>`; }).join('');
     const mine = mySkills().map(s => s.id), sl = (SK.skills || []).filter(s => SAFE.includes(s.effect)).map(s => `<div class=sk-row><div><b>${E(s.icon)} ${E(s.name)}</b> <em>${s.type === 'active' ? 'กดใช้' : 'ติดตัว'}</em>${s.enabled === false ? ' <em>ปิดอยู่</em>' : ''}<small>${E(s.desc || '')}</small>
       <small class=sk-v>${Object.keys(s.params || {}).map(k => k + ': ' + val(s, k)).join(' · ')}</small></div><span class=sk-tag>${mine.includes(s.id) ? '✔ ใช้งานอยู่' : 'ยังไม่ผูกตัวละคร'}</span></div>`).join('');
-    return `<h4>ค่าความสามารถ</h4>${st || '<small>ยังไม่มีข้อมูลสกิล</small>'}<h4>สกิลทั้งหมด</h4>${sl}
-      <label class=sk-test><input type=checkbox ${testMode() ? 'checked' : ''} onchange="skTest(this.checked)"> โหมดทดสอบ: ให้ตัวละครมีทุกสกิลตอนนี้</label><small>สกิลไม่เปลี่ยนกติกา ไม่เห็นไพ่คนอื่น และไม่มีผลกับการแจกไพ่</small>`;
-  };
-  // โมดอลนี้ยังใช้ตอนกด ⚡ ระหว่างเล่นเกม (gamegx.js) — นอกเกม ย้ายเนื้อหานี้ไปฝังอยู่ในหน้าโปรไฟล์แทนแล้ว (ดู profileView ใน app.js)
-  window.openSkills = function () {
-    document.querySelectorAll('.sk-modal').forEach(n => n.remove());
-    const m = document.createElement('div'); m.className = 'sk-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
-    m.innerHTML = `<div class=sk-box><button class=sk-x onclick="this.closest('.sk-modal').remove()">✕</button><h3>⚡ ความสามารถ <span class=sk-coin>🪙 ${sv.coins}</span></h3>${skillsPanelHtml()}</div>`;
+    m.innerHTML = `<div class=sk-box><button class=sk-x onclick="this.closest('.sk-modal').remove()">✕</button><h3>⚡ ความสามารถ <span class=sk-coin>🪙 ${sv.coins}</span></h3><h4>ค่าความสามารถ</h4>${st || '<small>ยังไม่มีข้อมูลสกิล</small>'}<h4>สกิลทั้งหมด</h4>${sl}
+      <label class=sk-test><input type=checkbox ${testMode() ? 'checked' : ''} onchange="skTest(this.checked)"> โหมดทดสอบ: ให้ตัวละครมีทุกสกิลตอนนี้</label><small>สกิลไม่เปลี่ยนกติกา ไม่เห็นไพ่คนอื่น และไม่มีผลกับการแจกไพ่</small></div>`;
     document.body.appendChild(m); };
   window.skUp = function (id) { const s = SK.stats.find(x => x.id === id); if (!s) return; const lv = slv(id), cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
-    if (lv >= (s.max || 10) || sv.coins < cost) return; sv.coins -= cost; prog.lv[id] = lv + 1; saveProg(); save();
-    if (document.querySelector('.sk-modal')) openSkills(); // กำลังเปิดจากโมดอลระหว่างเล่นเกม → รีเฟรชโมดอลเดิม
-    render(); }; // นอกเกม (หน้าโปรไฟล์) → render() วาดหน้าโปรไฟล์ใหม่พร้อมค่าที่อัปเดตแล้วอยู่แล้ว
+    if (lv >= (s.max || 10) || sv.coins < cost) return; sv.coins -= cost; prog.lv[id] = lv + 1; saveProg(); save(); openSkills(); render(); };
   window.skTest = on => { LS.setItem('dummySkillTest', on ? '1' : '0'); render(); };
   if (typeof render === 'function') { const _r = render; window.render = render = function () { const r = _r.apply(this, arguments); try { paint(); } catch (e) {} return r; }; }
   load();

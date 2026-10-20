@@ -108,7 +108,7 @@
 /* ===== ระบบสกิล ===== */
 .sk-modal{position:fixed;inset:0;z-index:99990;background:#000a;display:flex;align-items:center;justify-content:center;font-family:Sarabun,sans-serif}
 .sk-box{position:relative;width:min(92vw,560px);max-height:88vh;overflow:auto;background:linear-gradient(#241a55,#150f38);border:3px solid #f2b84b;border-radius:18px;padding:14px 16px;color:#fff}
-.sk-box h3{margin:0 0 6px;font-size:20px;color:#ffd978}.sk-box h4,.ksec h4{margin:12px 0 4px;color:#9fe8ff;font-size:14px}
+.sk-box h3{margin:0 0 6px;font-size:20px;color:#ffd978}.sk-box h4{margin:12px 0 4px;color:#9fe8ff;font-size:14px}
 .sk-coin{float:right;font-size:15px}.sk-x{position:absolute;right:10px;top:8px;border:0;background:#0006;color:#fff;border-radius:50%;width:28px;height:28px;display:none}
 .sk-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #ffffff1f}
 .sk-row small{display:block;color:#cfd3ff;font-size:12px}.sk-row em{font-style:normal;color:#ffd978;font-size:12px}.sk-v{color:#9fe8ff!important}

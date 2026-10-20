@@ -52,9 +52,7 @@ function prevBox(kind, x) {
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
-const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<span class=coin-pill>🪙 ${sv.coins}</span></div>`;
-// ⚡ ปุ่ม "ความสามารถ" ย้ายไปอยู่ในหน้าโปรไฟล์แล้ว (ดู profileView) — เอาออกจากแถบบนสุดที่เคยลอยอยู่ทุกหน้า
-// เอาออกจากระหว่างเล่นเกมด้วย (ดู gamegx.js) กันอัปเกรดจนเหรียญหมดแล้วจ่ายเดิมพันไม่ได้ — ต้องจบเกมก่อนถึงจะอัปที่หน้าโปรไฟล์ได้
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<button class=hud-sk onclick=openSkills() aria-label="ความสามารถ">⚡</button><span class=coin-pill>🪙 ${sv.coins}</span></div>`;
 const pgKind = b => (b.includes('class=plank') ? 'play' : b.includes('gtiles') ? 'games' : b.includes('scoreSum') ? 'create' : b.includes('class=ksec') ? (b.includes('namebox') ? 'profile' : 'shop') : '');
 const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app').innerHTML = `<div class=pg data-pg="${pgKind(body)}">${hud(back)}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
 function homeView() {
@@ -138,9 +136,7 @@ function profileView() {
     const items = (SKIN_REGISTRY[kind] || []).filter(x => owned(kind, x)), cur = equipped(kind);
     return `<section class=ksec><h3 class=sec>${ic} ${label}</h3><div class=pick-row>${items.map(x => `<button class="pick${cur === x.id ? ' on' : ''}" onclick="equip('${kind}','${esc(x.id)}')" aria-pressed="${cur === x.id}">${prevBox(kind, x)}<small>${esc(x.name || x.n || x.id)}${cur === x.id ? ' ✓' : ''}</small></button>`).join('')}</div></section>`;
   }).join('');
-  // ⚡ ความสามารถ — ย้ายมาฝังในหน้าโปรไฟล์แทนปุ่มลอยเดิม (skills.js ยังเป็นเจ้าของข้อมูล/ตรรกะทั้งหมด ที่นี่แค่เรียกมาวาด)
-  const skillsSec = typeof skillsPanelHtml === 'function' ? `<section class=ksec><h3 class=sec>⚡ ความสามารถ</h3>${skillsPanelHtml()}</section>` : '';
-  page2('โปรไฟล์', `<div class=panel><label class=namebox><span>ชื่อเล่น</span><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"></label>${secs}${skillsSec}<button class=wbtn onclick="go('shop')">🛍️ ซื้อของเพิ่มที่ร้านค้า</button></div>`);
+  page2('โปรไฟล์', `<div class=panel><label class=namebox><span>ชื่อเล่น</span><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"></label>${secs}<button class=wbtn onclick="go('shop')">🛍️ ซื้อของเพิ่มที่ร้านค้า</button></div>`);
 }
 function conn() {
   if (sock || noio) return;
