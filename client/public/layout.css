@@ -76,6 +76,17 @@ html,body{height:100%;overflow:hidden}
 .ksec .pick-row{flex-wrap:wrap;overflow:visible;gap:calc(var(--u)*.9);padding:0}
 .ksec .pick{min-width:calc(var(--u)*16);padding:calc(var(--u)*.7) calc(var(--u)*.5)}
 
+/* ร้านค้า: การ์ดไอเทมขนาดใหญ่ขึ้น (เฉพาะ .grid.big) — specificity สูงกว่า .ksec .grid เดิมด้านบนโดยตั้งใจ */
+.ksec .grid.big{grid-template-columns:repeat(auto-fill,minmax(calc(var(--u)*21),1fr));gap:calc(var(--u)*1)}
+.ksec .grid.big .item2{padding:calc(var(--u)*.8);gap:calc(var(--u)*.5);font-size:max(13px,calc(var(--u)*2.8));border-radius:14px}
+.ksec .grid.big .wbtn{padding:calc(var(--u)*.55) calc(var(--u)*1.1);font-size:max(12.5px,calc(var(--u)*2.6))}
+.ksec .grid.big .pv-ch{width:calc(var(--u)*11.5);height:calc(var(--u)*11.5);border-radius:14px}
+.ksec .grid.big .pv-table{width:calc(var(--u)*14);height:calc(var(--u)*9);border-width:4px;border-radius:14px}
+.ksec .grid.big .pv-back{width:calc(var(--u)*8.5);height:calc(var(--u)*12);border-width:3px}
+.ksec .grid.big .pv-bg{width:calc(var(--u)*15.5);height:calc(var(--u)*9.2);border-radius:11px}
+.cattabs{padding:0 0 calc(var(--u)*.8)}
+.catbtn{padding:calc(var(--u)*.55) calc(var(--u)*1.1);font-size:max(11.5px,calc(var(--u)*2.4))}
+
 /* การ์ดตัวอย่างหลังไพ่/ตัวละคร ในร้านค้า: ย่อรูปให้พอดี */
 .ksec .pv-back{width:calc(var(--u)*6);height:calc(var(--u)*8.4);border-width:2px;border-radius:5px}
 .ksec .pv-bg{width:calc(var(--u)*11);height:calc(var(--u)*6.6);border-radius:8px}
