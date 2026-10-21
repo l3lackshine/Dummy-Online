@@ -1,0 +1,12 @@
+{
+  "appId": "com.dummyonline.game",
+  "appName": "ดัมมี่ออนไลน์",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#2b1f14"
+  }
+}
