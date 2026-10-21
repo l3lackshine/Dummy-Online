@@ -23,7 +23,8 @@ backgrounds:[{id:'sunset',name:'พระอาทิตย์ตก',asset:'',c
 cards:[{id:'classic-card',name:'ไพ่คลาสสิก',asset:'',card:'#fbf7ec',blk:'#1b1b1b',red:'#c0282d',edge:'#cfc7b0'}]};
 let SKIN_REGISTRY=DEFAULT_SKINS, TH=DEFAULT_SKINS.themes;
 fetch('./skin/skins.json').then(r=>r.ok?r.json():DEFAULT_SKINS).then(v=>{SKIN_REGISTRY=v;TH=Array.isArray(v.themes)&&v.themes.length?v.themes:DEFAULT_SKINS.themes;applyTheme();render()}).catch(()=>{});
-const save=()=>{localStorage.setItem('dummyCoins',sv.coins);localStorage.setItem('dummyOwned',JSON.stringify(sv.own));localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick)};
+const acctOn=()=>!!(window.dummyAcct&&window.dummyAcct.on()),acctWait=()=>!!(window.dummyAcct&&window.dummyAcct.waiting()); // ล็อกอินและเซิร์ฟเวอร์ยืนยันแล้ว → เหรียญ/ของเป็นของเซิร์ฟเวอร์ (ดู account.js)
+const save=()=>{if(acctOn()){localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick);window.dummyAcct.push();return}localStorage.setItem('dummyCoins',sv.coins);localStorage.setItem('dummyOwned',JSON.stringify(sv.own));localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick)};
 function setNick(v){nick=String(v||'').trim().slice(0,14)||'ผู้เล่น';sv.name=nick;save()}
 function applyTheme(){const t=TH.find(x=>x.id==sv.eq)||TH[0],s=document.documentElement.style;for(const k of['card','blk','red','edge','b1','b2','bg','bg2'])if(t&&t[k])s.setProperty('--'+k,t[k]);const pk=(kind,store)=>{const l=SKIN_REGISTRY[kind]||[];return l.find(x=>x.id===localStorage.getItem(store))||l[0]};const table=pk('tables','dummyTableSkin'),dock=pk('docks','dummyDockSkin'),cards=pk('cards','dummyCardSkin'),back=pk('backs','dummyBackSkin'),room=pk('backgrounds','dummyBackgroundSkin');if(table){if(table.bg)s.setProperty('--bg',table.bg);if(table.bg2)s.setProperty('--bg2',table.bg2);table.asset?s.setProperty('--table-image',`url('${table.asset}')`):s.removeProperty('--table-image')}if(dock){s.setProperty('--dock-bg',dock.panelAsset?`url('${dock.panelAsset}') center/100% 100% no-repeat`:(dock.panel||'none'));s.setProperty('--dock-border',dock.border||'transparent');s.setProperty('--btn-img',dock.buttonAsset?`url('${dock.buttonAsset}')`:'none');const b=dock.buttons||{};for(const k of['blue','org','grn','g','tool'])(b[k]||[]).forEach((v,i)=>s.setProperty(`--b-${k}-${i+1}`,v))}if(cards){for(const k of['card','blk','red','edge'])if(cards[k])s.setProperty('--'+k,cards[k]);cards.asset?s.setProperty('--card-image',`url('${cards.asset}')`):s.removeProperty('--card-image')}if(back)s.setProperty('--back-img',back.asset?`url('${back.asset}')`:`repeating-linear-gradient(45deg,${back.b1||'#7a1f2b'},${back.b1||'#7a1f2b'} 4px,${back.b2||'#5d1520'} 4px,${back.b2||'#5d1520'} 8px)`);if(room){s.setProperty('--page-background',room.asset?`url('${room.asset}') center/cover no-repeat`:(room.css||'#2a1a10'));s.setProperty('--page-wide',room.asset?`url('${room.asset}') center 58%/cover no-repeat`:(room.css||'#2a1a10'))}document.documentElement.dataset.characterSkin=myChar()||'emoji'}
 const go=s=>{screen=s;shopNote='';render()};
@@ -43,8 +44,8 @@ const KINDS = [['characters', 'ตัวละคร', 'dummyCharacterSkin', '�
 const price = x => Number(x && x.price) || 0;
 const owned = (kind, x) => price(x) <= 0 || sv.own.includes(kind + ':' + x.id);
 function equipped(kind) { const k = KINDS.find(z => z[0] === kind), l = SKIN_REGISTRY[kind] || [], c = localStorage.getItem(k[2]); const x = l.find(y => y.id === c && owned(kind, y)) || l.find(y => owned(kind, y)) || l[0]; return x ? x.id : null; }
-function equip(kind, id) { const k = KINDS.find(z => z[0] === kind), x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!k || !x || !owned(kind, x)) return; localStorage.setItem(k[2], id); applyTheme(); render(); }
-function buyItem(kind, id) { const x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!x || owned(kind, x)) return; if (sv.coins < price(x)) { shopNote = 'เหรียญไม่พอ'; return render(); } sv.coins -= price(x); sv.own.push(kind + ':' + id); save(); shopNote = 'ซื้อ “' + (x.name || id) + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }
+function equip(kind, id) { const k = KINDS.find(z => z[0] === kind), x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!k || !x || !owned(kind, x)) return; localStorage.setItem(k[2], id); if (acctOn()) window.dummyAcct.push(); applyTheme(); render(); }
+function buyItem(kind, id) { const x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!x || owned(kind, x)) return; if (acctOn()) { if (sock && sock.connected) { shopNote = 'กำลังซื้อ…'; sock.emit('shop:buy', { kind, id }); } else shopNote = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (sv.coins < price(x)) { shopNote = 'เหรียญไม่พอ'; return render(); } sv.coins -= price(x); sv.own.push(kind + ':' + id); save(); shopNote = 'ซื้อ “' + (x.name || id) + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }
 const backCss = x => x.asset ? `url('${x.asset}') center/cover no-repeat` : `repeating-linear-gradient(45deg,${x.b1 || '#7a1f2b'},${x.b1 || '#7a1f2b'} 4px,${x.b2 || '#5d1520'} 4px,${x.b2 || '#5d1520'} 8px)`;
 function prevBox(kind, x) {
   if (kind === 'characters') return `<span class=pv-ch><img src="${esc(x.asset || '')}" alt=""></span>`;
@@ -136,27 +137,28 @@ function profileView() {
     const items = (SKIN_REGISTRY[kind] || []).filter(x => owned(kind, x)), cur = equipped(kind);
     return `<section class=ksec><h3 class=sec>${ic} ${label}</h3><div class=pick-row>${items.map(x => `<button class="pick${cur === x.id ? ' on' : ''}" onclick="equip('${kind}','${esc(x.id)}')" aria-pressed="${cur === x.id}">${prevBox(kind, x)}<small>${esc(x.name || x.n || x.id)}${cur === x.id ? ' ✓' : ''}</small></button>`).join('')}</div></section>`;
   }).join('');
-  page2('โปรไฟล์', `<div class=panel><label class=namebox><span>ชื่อเล่น</span><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"></label>${secs}<button class=wbtn onclick="go('shop')">🛍️ ซื้อของเพิ่มที่ร้านค้า</button></div>`);
+  page2('โปรไฟล์', `<div class=panel>${window.dummyAcct ? dummyAcct.panel() : ''}<label class=namebox><span>ชื่อเล่น</span><input id=nickInput maxlength=14 placeholder="ชื่อเล่น" value="${esc(nick)}" oninput="setNick(this.value)"></label>${secs}<button class=wbtn onclick="go('shop')">🛍️ ซื้อของเพิ่มที่ร้านค้า</button></div>`);
 }
 function conn() {
   if (sock || noio) return;
   if (!window.io) { noio = true; lerr = 'โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'; return; }
   sock = io(CFG.BACKEND_URL || undefined, { transports: ['websocket', 'polling'] });
+  if (window.dummyAcct) dummyAcct.attach(sock);
   sock.on('connect', () => { lerr = ''; authed = true; const ss = getSess(); if (ss && !code && !soloPending) sock.emit('room:rejoin', ss); else if (soloPending && !code) mk(); if (!RULES.length) sock.emit('rules:get'); render(); });
   sock.on('room:rejoin-failed', () => { setSess(null); if (soloPending && !code) mk(); render(); });
   sock.on('rules:list', d => { if (d && Array.isArray(d.rules)) { RULES = d.rules; SRV_VER = String(d.version || ''); render(); } });
   sock.on('connect_error', () => { lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
   sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
   sock.on('game:action-result', d => { if (d && d.ok) { hint = ''; } else { hint = 'จั่ว/เก็บไพ่ไม่สำเร็จ: ' + ((d && d.error) || 'ไม่ทราบสาเหตุ'); render(); } });
-  sock.on('me', m => { sv = m; applyTheme(); render(); });
+  sock.on('me', m => { if (window.dummyAcct) dummyAcct.onMe(m); sv = m; applyTheme(); render(); });
   sock.on('room:joined', d => { code = d.code; isHost = d.host ?? d.isHost; lerr = ''; if (d.token) setSess({ code: d.code, token: d.token }); if (soloPending) { soloPending = false; soloRoom = true; /* ห้องเล่นกับบอท: ไปหน้าสับไพ่ก่อน แล้วค่อยกดเริ่มเกม */ } if (screen !== 'game') screen = 'lobby'; render(); });
   // เซิร์ฟเวอร์ส่งเฉพาะ "ชนิดท่าสับ" มาให้เล่นแอนิเมชัน (ไม่มีลำดับไพ่) — ทุกคนในห้องเห็นพร้อมกัน
   sock.on('room:shuffled', d => { lerr = ''; shufAnim = { by: d.by, seq: d.seq, steps: d.steps || [] }; clearTimeout(shufTimer); shufTimer = setTimeout(() => { shufAnim = null; render(); }, 1400); render(); });
   sock.on('room:lobby', l => { lob = l; if (typeof l.youHost === 'boolean') isHost = l.youHost; render(); });
   sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); if (s.rule && s.rule !== 'dummy') clearDeal(); screen = 'game'; if (!s.over) { paid = false; coinDelta = 0; }
     if (!s.over && (!s.rule || s.rule === 'dummy') && s.v <= 1 && s.gid && s.gid !== dealtGid) { dealtGid = s.gid; startDeal(s); } // ตาใหม่ (ยังไม่มีใครเดิน) → แจกไพ่ทีละใบ
-    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; if (coinDelta > 0 && window.skCoinBonus) coinDelta += skCoinBonus(coinDelta); // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
-      if (!paid) { paid = true; if (localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
+    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; if (coinDelta > 0 && window.skCoinBonus && !acctOn()) coinDelta += skCoinBonus(coinDelta); // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
+      if (!paid && !acctWait()) { paid = true; if (!acctOn() && localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
     sel = new Set([...sel].filter(i => s.hand.includes(i))); if (s.rule && s.rule !== 'dummy') closeRules(); render(); });
 }
 function onAuth(r) {}

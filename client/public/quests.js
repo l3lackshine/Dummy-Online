@@ -97,10 +97,12 @@
   const pay = n => { sv.coins = Math.max(0, sv.coins + n); save(); };
   const periodOf = k => (k === 'd' ? ST.d : ST.w);
   window.qClaim = function (kind, id) {
+    if (window.dummyAcct && dummyAcct.on()) return toast('📜 รางวัลเควสของบัญชีออนไลน์กำลังย้ายไปเซิร์ฟเวอร์ (เร็วๆ นี้)');
     roll(); const p = periodOf(kind), q = BY_ID[id]; if (!p || !q || !p.ids.includes(id) || p.claimed[id] || !isDone(p, q)) return;
     p.claimed[id] = 1; persist(); pay(q.r); toast('🪙 +' + q.r + ' เหรียญ'); afterClaim();
   };
   window.qBonus = function (kind) {
+    if (window.dummyAcct && dummyAcct.on()) return toast('📜 รางวัลเควสของบัญชีออนไลน์กำลังย้ายไปเซิร์ฟเวอร์ (เร็วๆ นี้)');
     roll(); const p = periodOf(kind); if (!p || p.bonus || !allClaimed(p)) return;
     const n = kind === 'd' ? DAILY_BONUS : WEEKLY_BONUS; p.bonus = true; persist(); pay(n); toast('🎁 โบนัสครบทุกเควส +' + n + ' เหรียญ'); afterClaim();
   };

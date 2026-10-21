@@ -21,7 +21,7 @@
       .then(() => { loading = false; if (typeof screen !== 'undefined' && screen === 'profile' && typeof render === 'function') render(); });
   }
 
-  window.pfTitle = v => { try { LS.setItem(TK, String(v || '').slice(0, 16)); } catch (e) {} };
+  window.pfTitle = v => { try { LS.setItem(TK, String(v || '').slice(0, 16)); } catch (e) {} if (window.dummyAcct && dummyAcct.on()) dummyAcct.push(); };
 
   function skinPanel() {
     return KINDS.map(([kind, label, , ic]) => {

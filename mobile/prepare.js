@@ -12,8 +12,10 @@ function prepWww() {
   const index = path.join(WWW, 'index.html'); if (!fs.existsSync(index)) die('ไม่พบ client/public/index.html');
   // 1) ที่อยู่เซิร์ฟเวอร์ — ตั้งผ่าน env BACKEND_URL (เช่น repo variable) ถ้าไม่ตั้งใช้ค่าใน client/public/config.js
   const be = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
-  if (be) { if (!/^https?:\/\//.test(be)) die('BACKEND_URL ต้องขึ้นต้นด้วย http:// หรือ https://'); fs.writeFileSync(path.join(WWW, 'config.js'), `window.DUMMY_CONFIG = {\n  BACKEND_URL: '${be}'\n};\n`); console.log('• BACKEND_URL =', be); }
+  if (be) { if (!/^https?:\/\//.test(be)) die('BACKEND_URL ต้องขึ้นต้นด้วย http:// หรือ https://'); const cfgPath = path.join(WWW, 'config.js'); let cfg = read(cfgPath).replace(/BACKEND_URL:\s*'[^']*'/, `BACKEND_URL: '${be}'`); fs.writeFileSync(cfgPath, cfg); console.log('• BACKEND_URL =', be); }
   else console.log('• BACKEND_URL ใช้ค่าจาก client/public/config.js:', (read(path.join(WWW, 'config.js')).match(/BACKEND_URL:\s*'([^']*)'/) || [])[1] || '(ว่าง)');
+  // Supabase (ล็อกอิน): ตั้งผ่าน env SUPABASE_URL / SUPABASE_ANON_KEY ได้เหมือนกัน (anon key เปิดเผยได้ ห้ามใช้ service_role)
+  for (const k of ['SUPABASE_URL', 'SUPABASE_ANON_KEY']) { const v = (process.env[k] || '').trim(); if (!v) continue; if (/['\\\n]/.test(v)) die(k + ' มีอักขระที่ไม่รองรับ'); const cp = path.join(WWW, 'config.js'); fs.writeFileSync(cp, read(cp).replace(new RegExp(k + ":\\s*'[^']*'"), `${k}: '${v}'`)); console.log('• ' + k + ' ตั้งแล้ว'); }
   // 2) ใช้ socket.io-client ที่แพ็กมากับแอป (ไม่พึ่ง CDN)
   const sio = path.join(__dirname, 'node_modules/socket.io-client/dist/socket.io.min.js');
   if (fs.existsSync(sio)) {

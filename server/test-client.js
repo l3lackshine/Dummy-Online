@@ -1,6 +1,6 @@
 // รัน client/public/app.js ตัวจริงใน sandbox (DOM/localStorage จำลอง) ต่อกับ src/index.js: โฮมเพจ → เล่นคนเดียว → รีเฟรชหน้า → เชื่อมต่อกลับ → จ่ายเหรียญครั้งเดียว
 const vm = require('vm'), fs = require('fs'), path = require('path'), assert = require('assert'), M = require('./test-mock-sio');
-const SRC = fs.readFileSync(path.join(__dirname, '../client/public/app.js'), 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '../client/public/games.js'), 'utf8');
+const SRC = fs.readFileSync(path.join(__dirname, '../client/public/gamegx.js'), 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '../client/public/app.js'), 'utf8') + '\n' + fs.readFileSync(path.join(__dirname, '../client/public/games.js'), 'utf8');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const srv = M.load({ BOT_DELAY_MS: 10, EMPTY_ROOM_TTL_MS: 60000, RATE_PER_SEC: 5000 });
 const store = {}; // localStorage ที่ "คงอยู่ข้ามการรีเฟรช"

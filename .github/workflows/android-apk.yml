@@ -56,6 +56,8 @@ jobs:
         run: node mobile/prepare.js www
         env:
           BACKEND_URL: ${{ inputs.backend_url || vars.BACKEND_URL }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
 
       - name: สร้างโปรเจกต์ Android
         working-directory: mobile
