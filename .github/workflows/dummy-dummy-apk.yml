@@ -1,0 +1,70 @@
+# สร้างเกม "Dummy Dummy" เป็นไฟล์ APK สำหรับติดตั้งบน Android ให้อัตโนมัติ
+# รันเมื่อแก้ไฟล์ใน client/public/, android/ หรือกด Actions → "Build Dummy Dummy APK" → Run workflow เอง
+# ได้ไฟล์ .apk 2 ที่: (1) หน้า Releases ของ repo (โหลดผ่านมือถือได้เลย) (2) Artifacts ของ run นั้น
+name: Build Dummy Dummy APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'client/public/**'
+      - 'client/package*.json'
+      - 'android/**'
+      - 'scripts/prepare-android-web.sh'
+      - '.github/workflows/dummy-dummy-apk.yml'
+
+permissions:
+  contents: write   # สร้าง Release แนบไฟล์ APK
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: ตรวจ handler ในหน้าเกม
+        run: node scripts/check-handlers.js
+
+      - name: ติดตั้ง socket.io client (เพื่อฝังไว้ในแอป)
+        run: npm ci --omit=dev
+        working-directory: client
+
+      - name: เตรียมไฟล์เว็บเข้าแอป Android
+        run: bash scripts/prepare-android-web.sh
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+
+      - name: Build release APK
+        run: >
+          gradle -p android :app:assembleRelease --no-daemon --stacktrace
+          -PversionCode=${{ github.run_number }}
+          -PversionName=1.0.${{ github.run_number }}
+
+      - name: ตั้งชื่อไฟล์ APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/DummyDummy-${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DummyDummy-apk
+          path: dist/*.apk
+
+      - name: แนบ APK ใน Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dummy-dummy-${{ github.run_number }}
+          name: Dummy Dummy #${{ github.run_number }}
+          body: "APK ของเกม Dummy Dummy (สร้างอัตโนมัติ) — โหลดไฟล์ .apk ด้านล่างแล้วติดตั้งบน Android (ต้องอนุญาต 'ติดตั้งจากแหล่งอื่น')"
+          files: dist/*.apk

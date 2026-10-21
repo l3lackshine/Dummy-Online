@@ -56,19 +56,6 @@ body{background:var(--page-background,#2a1a10);background-color:#1b0f08;backgrou
 .sec{margin:14px 0 6px;font-size:15px;color:var(--ui-gold)}.sec:first-child{margin-top:0}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .item2{background:#00000033;border:2px solid #7a5530;border-radius:14px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:13px}
-
-/* ร้านค้า: แท็บหมวดหมู่ + การ์ดไอเทมขนาดใหญ่ขึ้น (ดูง่ายกว่าเดิม) */
-.cattabs{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 8px;width:100%;max-width:520px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.cattabs::-webkit-scrollbar{display:none}
-.catbtn{flex:none;padding:8px 14px;border-radius:99px;border:2px solid #7a5530;background:#00000033;color:var(--cream);font:700 13.5px Sarabun,sans-serif;cursor:pointer;white-space:nowrap}
-.catbtn.on{border-color:#ffd75e;background:#5a371866;box-shadow:0 0 0 3px #ffd75e55;color:#ffd75e}
-.grid.big{grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:14px}
-.grid.big .item2{padding:14px 10px;gap:10px;font-size:15px;border-radius:18px}
-.grid.big .pv-ch{width:104px;height:104px;border-radius:18px}
-.grid.big .pv-back{width:72px;height:100px}
-.grid.big .pv-table{width:120px;height:80px;border-radius:20px}
-.grid.big .pv-bg{width:112px;height:80px;border-radius:14px}
-.grid.big .wbtn{font-size:15px;padding:10px 14px}
 .wbtn{padding:9px 14px;border-radius:12px;border:2px solid var(--wood-d);background:linear-gradient(var(--wood-1),var(--wood-2));color:var(--cream);font:700 15px Sarabun,sans-serif;text-shadow:0 1px 0 var(--wood-d);box-shadow:0 3px 0 var(--wood-d);cursor:pointer}
 .wbtn.go{background:linear-gradient(#f48fb1,#d6336c);border-color:#8a1f45;box-shadow:0 3px 0 #8a1f45;text-shadow:0 1px 0 #8a1f45}
 .wbtn:active{transform:translateY(2px)}.wbtn:disabled{opacity:.55;cursor:default}

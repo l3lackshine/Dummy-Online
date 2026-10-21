@@ -7,7 +7,7 @@ const G0 = (extra = {}) => Object.assign({ stake: 20, spetoMode: 'all', ledger: 
 console.log('\n[1] ทะเบียนกฎ');
 ok(Rules.list().some(m => m.id === 'dummy') && Rules.get('dummy') === Rules.get('ไม่มีกฎนี้'), 'มีกฎ dummy และ id ที่ไม่รู้จักใช้กฎเริ่มต้น');
 ok(JSON.stringify(Rules.cleanOptions('dummy', { stake: 'abc', spetoMode: 'x' })) === '{"stake":20,"spetoMode":"all"}', 'ตัวเลือกที่ผิดใช้ค่าเริ่มต้น');
-ok(Rules.cleanOptions('dummy', { stake: 99999 }).stake === 10000 && Rules.cleanOptions('dummy', { stake: -5 }).stake === 5 && Rules.cleanOptions('dummy', { stake: 35.6 }).stake === 36, 'เดิมพันถูกบีบให้อยู่ในช่วง 5–10000 (ตาม meta.js ของดัมมี่) และปัดเป็นจำนวนเต็ม');
+ok(Rules.cleanOptions('dummy', { stake: 99999 }).stake === 10000 && Rules.cleanOptions('dummy', { stake: -5 }).stake === 1 && Rules.cleanOptions('dummy', { stake: 35.6 }).stake === 36, 'เดิมพันถูกบีบให้อยู่ในช่วง 1–10000 และปัดเป็นจำนวนเต็ม');
 ok(Rules.cleanOptions('dummy', null).stake === 20 && Rules.cleanOptions('dummy', [1]).stake === 20, 'options เป็น null/array ไม่ทำพัง');
 assert.throws(() => Rules.register({ meta: { id: 'x' } }), /ฟังก์ชัน/); ok(true, 'กฎที่ไม่ครบสัญญาลงทะเบียนไม่ได้');
 

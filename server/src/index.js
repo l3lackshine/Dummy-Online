@@ -1,3 +1,4 @@
+const { verifyToken } = require('./auth');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -10,13 +11,11 @@ const Shuffle = require('./shuffle');
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
-const APP_ORIGINS = ['https://localhost', 'http://localhost', 'capacitor://localhost']; // WebView ของแอป Android/iOS (Capacitor) — อนุญาตเสมอ แม้ตั้ง CLIENT_ORIGIN เจาะจงเว็บ
-const ORIGINS = ALLOWED_ORIGIN === '*' ? true : [...ALLOWED_ORIGIN.split(','), ...APP_ORIGINS];
 const app = express();
-app.use(cors({ origin: ORIGINS }));
+app.use(cors({ origin: ALLOWED_ORIGIN === '*' ? true : ALLOWED_ORIGIN.split(',') }));
 app.use(express.json());
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ORIGINS, methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
+const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : ALLOWED_ORIGIN.split(','), methods: ['GET', 'POST'] }, maxHttpBufferSize: 1e5 });
 const rooms = new Map();
 const MAX_PLAYERS = 4;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
@@ -51,7 +50,6 @@ function publicLobby(room, forPlayer) {
     youHost: !!forPlayer && forPlayer === host,
     // ไม่ส่งลำดับไพ่ที่สับแล้วออกไปเด็ดขาด — ส่งแค่ว่าสับแล้วหรือยัง
     shuffle: { ready: !!room.deck, needed: needShuffle(room), by: room.shuffledBy || null, shuffler: sh ? sh.name : null, youShuffler: !!forPlayer && forPlayer === sh, round: room.round || 0, seq: room.shuffleSeq || 0 },
-    allowBots: room.allowBots !== false, // ห้องนี้เติมบอทในที่นั่งว่างหรือไม่ (ตั้งตอนสร้างห้อง เปลี่ยนไม่ได้ระหว่างเล่น)
     players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
   };
 }
@@ -106,8 +104,7 @@ function startGame(room) {
   room.players = humans;                       // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
   room.players.forEach((p, i) => { p.seat = i; });
   const deck = room.deck; room.deck = null; room.shuffledBy = null;   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
-  const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
-  room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
+  room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
   room.game.v++;
   emitStates(room);
   scheduleBots(room);
@@ -185,15 +182,19 @@ const rulesPayload = () => ({ version: VERSION, default: Rules.DEFAULT, rules: R
 io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
   socket.emit('rules:list', rulesPayload()); // รายการกฎ + ตัวเลือกของแต่ละกฎ ให้ client สร้างหน้าตั้งค่าห้องเอง
+  socket.on('auth:token', async token => { // ผูกบัญชี Supabase กับ socket (ใช้ socket.data.uid ระบุผู้เล่น)
+    const u = await verifyToken(token);
+    if (!u) { socket.data.uid = null; return socket.emit('auth:fail'); }
+    socket.data.uid = u.id; socket.emit('auth:ok', { id: u.id });
+  });
   on(socket, 'rules:get', () => { if (allow(socket)) socket.emit('rules:list', rulesPayload()); });
-  on(socket, 'room:create', d => { const { name, ch, bg, rule, options, bots } = obj(d);
+  on(socket, 'room:create', d => { const { name, ch, bg, rule, options } = obj(d);
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     if (rooms.size >= MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
     let code; do { code = roomCode(); } while (rooms.has(code));
     const rid = Rules.has(rule) ? rule : Rules.DEFAULT;
-    // bots: false เฉพาะห้องที่สร้างเอง (ไม่ใช่โหมดเล่นคนเดียว) — ปิดได้ = ไม่เติมบอทในที่นั่งว่าง ต้องรอผู้เล่นจริง
-    const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), allowBots: bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
+    const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
     rooms.set(code, room);
     joinRoom(socket, room, name, ch, bg);
   });
@@ -217,7 +218,6 @@ io.on('connection', socket => {
     if (!room) return socket.emit('system:error', 'กรุณาเข้าห้องก่อน');
     if (connectedPlayers(room)[0]?.id !== socket.id) return socket.emit('system:error', 'เฉพาะเจ้าของห้องเริ่มเกมได้');
     if (active(room)) return socket.emit('system:error', 'เกมกำลังเล่นอยู่');
-    if (room.allowBots === false && connectedPlayers(room).length < 2) return socket.emit('system:error', 'ห้องนี้ปิดบอทไว้ ต้องมีผู้เล่นจริงอย่างน้อย 2 คนก่อนเริ่มเกม');
     if (!room.deck && needShuffle(room)) { const sh = shufflerOf(room); return socket.emit('system:error', 'ต้องให้ ' + (sh ? sh.name : 'ผู้สับไพ่') + ' กดสับไพ่ก่อนเริ่มเกม'); }
     if (!startGame(room)) return socket.emit('system:error', 'เริ่มเกมไม่ได้');
     io.to(room.code).emit('system:notice', 'เริ่มเกมแล้ว!');
@@ -249,26 +249,6 @@ io.on('connection', socket => {
     room.game.v++;
     emitStates(room);
     scheduleBots(room);
-  });
-  // ===== สกิล "ป่วนสายตา": เซิร์ฟเวอร์แค่ตรวจโควตา/คูลดาวน์ แล้วส่งเอฟเฟกต์ภาพไปให้เป้าหมาย (ไม่แตะกติกา/ไพ่จริง) =====
-  on(socket, 'skill:use', raw => {
-    if (!allow(socket)) return; const d = obj(raw);
-    const room = rooms.get(socket.data.roomCode); if (!room || !room.game) return;
-    const p = findPlayer(room, socket.id); if (!p || p.seat == null) return;
-    const res = (ok, error) => socket.emit('skill:result', { ok, id: 'scramble', error });
-    if (d.id !== 'scramble') return res(false, 'สกิลนี้ยังไม่รองรับ');
-    const t = room.players.find(x => x.seat === Number(d.to) && x.connected && x.id && x.seat !== p.seat);
-    if (!t) return res(false, 'เป้าหมายต้องเป็นผู้เล่นจริงคนอื่นที่ออนไลน์อยู่');
-    const sk = room.skUse && room.skUse.game === room.game ? room.skUse : (room.skUse = { game: room.game, m: {} });
-    const m = sk.m[p.seat] || (sk.m[p.seat] = { n: 0, at: 0, last: null }), now = Date.now();
-    if (m.n >= 2) return res(false, 'ใช้ครบโควตาของเกมนี้แล้ว');
-    if (now - m.at < 18000) return res(false, 'สกิลยังคูลดาวน์');
-    if (m.last === t.seat) return res(false, 'ใช้ซ้ำกับคนเดิมติดกันไม่ได้');
-    const ms = Math.min(6000, Math.max(3000, Math.round(Number(d.ms) || 5000)));
-    m.n++; m.at = now; m.last = t.seat;
-    io.to(t.id).emit('skill:fx', { type: 'scramble', from: p.name, ms });
-    io.to(room.code).emit('system:notice', p.name + ' ใช้ 🎭 ป่วนสายตา ใส่ ' + t.name);
-    res(true);
   });
   on(socket, 'room:leave', () => { if (allow(socket)) leaveRoom(socket, false, true); });
   on(socket, 'disconnect', () => leaveRoom(socket, true));

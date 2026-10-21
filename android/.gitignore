@@ -1,0 +1,6 @@
+# ไฟล์เว็บถูกคัดลอกมาจาก client/public ตอน build (scripts/prepare-android-web.sh)
+app/src/main/assets/www/
+build/
+app/build/
+.gradle/
+local.properties

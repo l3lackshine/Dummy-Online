@@ -76,17 +76,6 @@ html,body{height:100%;overflow:hidden}
 .ksec .pick-row{flex-wrap:wrap;overflow:visible;gap:calc(var(--u)*.9);padding:0}
 .ksec .pick{min-width:calc(var(--u)*16);padding:calc(var(--u)*.7) calc(var(--u)*.5)}
 
-/* ร้านค้า: การ์ดไอเทมขนาดใหญ่ขึ้น (เฉพาะ .grid.big) — specificity สูงกว่า .ksec .grid เดิมด้านบนโดยตั้งใจ */
-.ksec .grid.big{grid-template-columns:repeat(auto-fill,minmax(calc(var(--u)*21),1fr));gap:calc(var(--u)*1)}
-.ksec .grid.big .item2{padding:calc(var(--u)*.8);gap:calc(var(--u)*.5);font-size:max(13px,calc(var(--u)*2.8));border-radius:14px}
-.ksec .grid.big .wbtn{padding:calc(var(--u)*.55) calc(var(--u)*1.1);font-size:max(12.5px,calc(var(--u)*2.6))}
-.ksec .grid.big .pv-ch{width:calc(var(--u)*11.5);height:calc(var(--u)*11.5);border-radius:14px}
-.ksec .grid.big .pv-table{width:calc(var(--u)*14);height:calc(var(--u)*9);border-width:4px;border-radius:14px}
-.ksec .grid.big .pv-back{width:calc(var(--u)*8.5);height:calc(var(--u)*12);border-width:3px}
-.ksec .grid.big .pv-bg{width:calc(var(--u)*15.5);height:calc(var(--u)*9.2);border-radius:11px}
-.cattabs{padding:0 0 calc(var(--u)*.8)}
-.catbtn{padding:calc(var(--u)*.55) calc(var(--u)*1.1);font-size:max(11.5px,calc(var(--u)*2.4))}
-
 /* การ์ดตัวอย่างหลังไพ่/ตัวละคร ในร้านค้า: ย่อรูปให้พอดี */
 .ksec .pv-back{width:calc(var(--u)*6);height:calc(var(--u)*8.4);border-width:2px;border-radius:5px}
 .ksec .pv-bg{width:calc(var(--u)*11);height:calc(var(--u)*6.6);border-radius:8px}
@@ -166,4 +155,54 @@ html,body{height:100%;overflow:hidden}
 /* จอกว้างมาก (คอม): จำกัดความกว้างปุ่มใหญ่ๆ ไม่ให้ยืดเกินไป */
 @media (min-aspect-ratio:5/4) and (min-width:1400px){
 .acts button{max-width:calc(var(--u)*45)}
+}
+
+/* ===== บัญชี: รางวัลล็อกอิน · เควสต์ · สถิติ ===== */
+.hud-r{display:flex;align-items:center;gap:6px}
+.gift-btn{position:relative;border:2px solid #d9a441;background:#3b2412cc;color:#fff;border-radius:999px;min-width:38px;height:34px;font-size:18px;cursor:pointer}
+.gift-btn i,.tabs i{position:absolute;top:-4px;right:-3px;background:#e0364a;color:#fff;border-radius:50%;width:16px;height:16px;font:700 11px/16px sans-serif;text-align:center}
+.tabs i{position:static;display:inline-block;margin-left:3px}
+.coin-pill.mc{background:#2a2350cc}
+.acct-root{max-width:720px;width:100%}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tabs button{flex:1;padding:8px 4px;border-radius:12px;border:2px solid #8a5a2b;background:#3b2412aa;color:#f7e6c4;font:600 14px Mali,sans-serif;cursor:pointer}
+.tabs button.on{background:#d9a441;color:#2b1608}
+.streak{text-align:center;font-size:15px;margin:4px 0 8px}.streak small{opacity:.8}
+.rw-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:6px 0 10px}
+.rw{position:relative;border:2px solid #8a5a2b;border-radius:10px;background:#2b1608aa;padding:6px 2px;text-align:center;display:flex;flex-direction:column;gap:2px;font-size:12px}
+.rw b{font-size:13px}.rw em{font-style:normal;color:#9fd6ff}.rw small{opacity:.8}
+.rw.now{border-color:#ffd25a;background:#6b4a14;box-shadow:0 0 10px #ffd25a88}.rw.done{opacity:.55}.rw.big{grid-column:auto}
+.rw u{position:absolute;top:2px;right:4px;text-decoration:none;color:#7be08a}
+.acct-note{text-align:center;font-size:12px;opacity:.85;margin:6px 0}
+.qrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #8a5a2b88;border-radius:10px;margin:5px 0;background:#2b160888}
+.qrow.cl{opacity:.55}.qt{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0}.qt small{opacity:.85}
+.bar{display:block;height:7px;border-radius:5px;background:#0006;overflow:hidden}.bar s{display:block;height:100%;background:linear-gradient(90deg,#ffd25a,#ff9a3c)}
+.qdone,.qwait{font-size:12px;opacity:.8;min-width:56px;text-align:center}
+.sec small{font-weight:400;opacity:.8;font-size:.8em}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.card{border:1px solid #8a5a2b88;border-radius:12px;padding:8px;background:#2b160888;display:flex;flex-direction:column;gap:4px}.card small{opacity:.8}.card b{font-size:20px}.card b.sm{font-size:13px}
+.stt{width:100%;border-collapse:collapse;font-size:13px}.stt th,.stt td{padding:5px 4px;text-align:center;border-bottom:1px solid #8a5a2b55}.stt td:first-child,.stt th:first-child{text-align:left}
+.stt .pos{color:#7be08a}.stt .neg{color:#ff8a8a}
+.rw-pop{max-width:460px;width:94%}.rw-pop .wbtn{width:100%;margin-top:6px}
+.lg-toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#2b1608f2;color:#ffe9b0;border:2px solid #d9a441;border-radius:999px;padding:8px 18px;z-index:99;font:600 14px Mali,sans-serif}
+@media (min-aspect-ratio:5/4){
+.pg[data-pg=acct] .pg-body{align-items:flex-start}
+.acct-root{max-width:calc(var(--u)*190);padding:calc(var(--u)*1) calc(var(--u)*1.6)}
+.tabs button{padding:calc(var(--u)*.8);font-size:max(12px,calc(var(--u)*2.6))}
+.acct-body{font-size:max(11.5px,calc(var(--u)*2.5))}
+.rw{padding:calc(var(--u)*.8) 2px;font-size:max(10.5px,calc(var(--u)*2.2))}.rw b{font-size:max(11px,calc(var(--u)*2.5))}
+.pg[data-pg=acct] .qrow{margin:calc(var(--u)*.4) 0;padding:calc(var(--u)*.6) calc(var(--u)*1)}
+.hud-r{gap:calc(var(--u)*.8)}.gift-btn{height:calc(var(--u)*8);min-width:calc(var(--u)*8);font-size:max(14px,calc(var(--u)*3.6))}
+.rw-pop{max-height:92dvh;overflow:auto}
+.qcols{columns:2;column-gap:calc(var(--u)*2.4)}.qcols .sec,.qcols .qrow{break-inside:avoid}.qcols .sec{margin-top:0}
+}
+.qrow .wbtn{width:auto;flex:none;padding:6px 16px;margin:0}
+.card .wbtn{width:auto;padding:4px 10px;font-size:12px;margin:0}
+@media (min-aspect-ratio:5/4){
+.cards{grid-template-columns:repeat(4,1fr);gap:calc(var(--u)*1)}
+.card{padding:calc(var(--u)*.8);gap:calc(var(--u)*.3)}.card b{font-size:max(15px,calc(var(--u)*4))}.card b.sm{font-size:max(11px,calc(var(--u)*2.6))}
+.card small{font-size:max(10.5px,calc(var(--u)*2.2))}.card .wbtn{padding:calc(var(--u)*.4) calc(var(--u)*1);font-size:max(10px,calc(var(--u)*2))}
+.qrow .wbtn{padding:calc(var(--u)*.6) calc(var(--u)*2);font-size:max(12px,calc(var(--u)*2.6))}
+.stt{font-size:max(11px,calc(var(--u)*2.4))}.stt th,.stt td{padding:calc(var(--u)*.6) 3px}
+.pg[data-pg=acct] .sec{margin:calc(var(--u)*1) 0 calc(var(--u)*.5)}
 }
