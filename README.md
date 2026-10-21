@@ -35,10 +35,6 @@ npm start
 - ไฟล์ `client/public/config.js` ต้องชี้ไปยัง URL ของ Backend
 
 
-## บัญชีผู้เล่น + ฐานข้อมูล (Supabase)
-
-ล็อกอิน เหรียญ ของที่ซื้อ และประวัติแพ้/ชนะ เก็บบน Supabase — ดูวิธีตั้งค่าที่ [SUPABASE-SETUP.md](SUPABASE-SETUP.md) (ไม่ตั้งค่า = เล่นแบบแขก เหรียญเก็บในเครื่องเหมือนเดิม)
-
 ## อัปเดตล่าสุด: ระบบสกินและโต๊ะเกม
 
 - เพิ่ม `client/public/skin/` พร้อมหมวด `characters`, `tables`, `backgrounds`, `cards` และไฟล์ `skins.json` สำหรับลงทะเบียนสกินโดยไม่แก้ `app.js`

@@ -83,7 +83,7 @@ console.log('\n[B] กติกาเฉพาะเกม');
 
 console.log('\n[C] client จริง ต่อเซิร์ฟเวอร์: เลือกเกม → เล่น → จบ');
 const M = require('./test-mock-sio'), sleep = ms => new Promise(r => setTimeout(r, ms));
-const SRC = ['gamegx.js', 'app.js', 'games.js'].map(f => fs.readFileSync(path.join(__dirname, '../client/public', f), 'utf8')).join('\n');
+const SRC = ['app.js', 'games.js'].map(f => fs.readFileSync(path.join(__dirname, '../client/public', f), 'utf8')).join('\n');
 const srv = M.load({ BOT_DELAY_MS: 5, EMPTY_ROOM_TTL_MS: 60000, RATE_PER_SEC: 100000 });
 const store = {};
 function openPage() {

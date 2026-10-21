@@ -7,8 +7,6 @@ const Rules = require('./rules');
 const { CHARS, BGS } = require('./rules/common');
 const VERSION = require('../package.json').version;
 const Shuffle = require('./shuffle');
-const Db = require('./db');
-const db = Db.create();   // Supabase เมื่อตั้ง SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY ไม่งั้นใช้หน่วยความจำ
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
@@ -66,40 +64,6 @@ function settle(room) {
   const w = seat == null ? null : room.players.find(p => p.seat === seat);
   room.lastWinner = w || null;                 // ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับแทน
   room.round = (room.round || 0) + 1;
-  persistMatch(room);                          // บันทึกผล + จ่ายเหรียญให้ผู้เล่นที่ล็อกอิน (ครั้งเดียวต่อเกม เพราะอยู่หลังเช็ค G.settled)
-}
-// บันทึกผลตาที่จบลง DB: ผู้เล่นผูกกับ p.userId (ไม่ใช่ socket) — คนที่หลุดกลางเกมกลายเป็นบอทแต่ยังได้รับ/เสียเหรียญตามผลจริง
-// ผู้เล่นแขก/บอทถูกบันทึกเป็นแถวไม่มี user_id (client ของแขกยังหักบวกในเครื่องเหมือนเดิม)
-const SETTLE_RETRY_MS = Number(process.env.SETTLE_RETRY_MS || 1000);
-function persistMatch(room) {
-  const G = room.game, coin = G && G.res && G.res.coin;
-  if (!coin || !Array.isArray(coin.delta) || !G.gid) return;
-  const deltas = G.P.map((gp, idx) => Math.trunc(Number(coin.delta[gp.i != null ? gp.i : idx])) || 0);
-  const rows = G.P.map((gp, idx) => {
-    const seat = gp.i != null ? gp.i : idx, hp = room.players.find(p => p.seat === seat), d = deltas[idx];
-    return { user_id: hp && hp.userId ? hp.userId : null, seat, name: hp ? hp.name : String(gp.n || 'บอท').replace(' (บอท)', ''), delta: d, won: d > 0, place: 1 + deltas.filter(x => x > d).length };
-  });
-  if (!rows.some(r => r.user_id)) return;      // ไม่มีผู้เล่นล็อกอินในตานี้ → ไม่ต้องบันทึก
-  const match = { gid: G.gid, rule: ruleOf(room).meta.id, stake: Math.max(0, Math.trunc(Number(G.stake)) || 0), seats: G.P.length, humans: room.players.filter(p => p.seat != null && G.P[p.seat]).length, players: rows };
-  const attempt = async n => {
-    try {
-      const r = await db.settleMatch(match);
-      if (!r || !r.ok) throw new Error('settle_match: ' + JSON.stringify(r));
-      for (const row of rows) if (row.user_id) await pushMe(room, row.user_id);
-    } catch (e) {
-      console.error('settle failed (try ' + n + '):', e && e.message);
-      if (n < 4) { const t = setTimeout(() => attempt(n + 1), SETTLE_RETRY_MS * Math.pow(3, n - 1)); if (t.unref) t.unref(); }
-      else console.error('SETTLE_LOST ' + JSON.stringify(match));   // เก็บไว้ในล็อกเพื่อรันซ้ำด้วยมือ (settle_match ซ้ำได้ปลอดภัยเพราะ gid ไม่ซ้ำ)
-    }
-  };
-  attempt(1);
-}
-// ส่งยอดล่าสุดจาก DB ให้ socket ปัจจุบันของผู้ใช้ (ถ้ายังออนไลน์)
-async function pushMe(room, userId) {
-  const p = room.players.find(x => x.userId === userId); if (!p || !p.id) return;
-  const prof = await db.getProfile(userId), s = io.sockets.sockets.get(p.id);
-  if (s) s.data.profile = prof;
-  io.to(p.id).emit('me', db.meOf(prof));
 }
 function emitLobby(room) { connectedPlayers(room).forEach(p => io.to(p.id).emit('room:lobby', publicLobby(room, p))); }
 function emitStates(room) {
@@ -150,11 +114,8 @@ function startGame(room) {
   return true;
 }
 const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
-// ผู้เล่นที่ล็อกอิน: ชื่อมาจากบัญชี และใช้ตัวละคร/พื้นหลังได้เฉพาะที่ฟรีหรือซื้อแล้ว (แขกยังเป็นไปตามเดิม)
-const usable = (prof, kind, id) => { if (!prof || id == null) return true; const pr = db.priceOf(kind, id); return pr == null || pr <= 0 || prof.own.includes(kind + ':' + id); };
 function joinRoom(socket, room, name, ch, bg) {
-  const prof = socket.data.userId ? socket.data.profile : null;
-  const p = { id: socket.id, name: prof ? prof.name : cleanName(name), ch: CHARS.includes(ch) && usable(prof, 'characters', ch) ? ch : null, bg: BGS.includes(bg) && usable(prof, 'backgrounds', bg) ? bg : null, connected: true, token: newToken(), seat: null, userId: socket.data.userId || null };
+  const p = { id: socket.id, name: cleanName(name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
   room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
@@ -217,9 +178,7 @@ function cleanAction(a) {
 // exception ใน handler ของ socket.io ที่ไม่ถูกดักจะทำให้โปรเซสล้มทั้งตัว (payload จาก client เชื่อถือไม่ได้) จึงห่อทุก handler
 const on = (socket, ev, fn) => socket.on(ev, (...a) => { try { fn(...a); } catch (e) { console.error('handler error:', ev, e && e.message); } });
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
-// handler แบบ async: ต้องดัก rejection เอง ไม่งั้นโปรเซสล้ม
-const onA = (socket, ev, fn) => socket.on(ev, (...a) => { Promise.resolve().then(() => fn(...a)).catch(e => console.error('handler error:', ev, e && e.message)); });
-app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size, db: db.mode }));
+app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size }));
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 
 const rulesPayload = () => ({ version: VERSION, default: Rules.DEFAULT, rules: Rules.list() });
@@ -311,53 +270,8 @@ io.on('connection', socket => {
     io.to(room.code).emit('system:notice', p.name + ' ใช้ 🎭 ป่วนสายตา ใส่ ' + t.name);
     res(true);
   });
-  // ===== บัญชีผู้เล่น (Supabase Auth) =====
-  // client ล็อกอินกับ Supabase เองแล้วส่ง access_token มา เซิร์ฟเวอร์ตรวจกับ Supabase แล้วผูก userId กับ socket
-  // โทเคนถูกตรวจครั้งเดียวตอนเชื่อม; ระหว่างอยู่ในห้องเปลี่ยนบัญชีไม่ได้ (ยกเว้นเชื่อมกลับด้วยบัญชีเดิมของที่นั่งนั้น)
-  onA(socket, 'auth:token', async raw => {
-    if (!allow(socket)) return;
-    const d = obj(raw), token = typeof d.token === 'string' && d.token.length < 4096 ? d.token : '';
-    const fail = m => socket.emit('auth:error', m);
-    if (!token) return fail('ไม่พบโทเคนเข้าสู่ระบบ');
-    const who = await db.verifyToken(token);
-    if (!who) return fail('เข้าสู่ระบบไม่ถูกต้องหรือหมดอายุ ลองเข้าสู่ระบบใหม่');
-    const room = rooms.get(socket.data.roomCode), seated = room && findPlayer(room, socket.id);
-    if (room && !(seated && seated.userId === who.userId)) return fail('ออกจากห้องก่อนเปลี่ยนบัญชี');
-    await db.loadShop();
-    const prof = await db.getProfile(who.userId, d.name);
-    if (!socket.connected && socket.connected !== undefined) return;
-    socket.data.userId = who.userId; socket.data.profile = prof;
-    socket.emit('me', db.meOf(prof, who.email));
-    socket.emit('auth:ok', { mode: db.mode });
-  });
-  on(socket, 'auth:logout', () => {
-    if (!allow(socket)) return;
-    if (socket.data.roomCode) return socket.emit('auth:error', 'ออกจากห้องก่อนออกจากระบบ');
-    socket.data.userId = null; socket.data.profile = null;
-    socket.emit('auth:out');
-  });
-  onA(socket, 'shop:buy', async raw => {
-    if (!allow(socket)) return;
-    const d = obj(raw), kind = String(d.kind || ''), id = String(d.id || ''), uid = socket.data.userId;
-    const res = (ok, error) => socket.emit('shop:result', { ok, error, kind, id });
-    if (!uid) return res(false, 'ต้องเข้าสู่ระบบก่อนซื้อของ');
-    if (!/^[a-z]{1,20}$/.test(kind) || !/^[A-Za-z0-9_-]{1,40}$/.test(id)) return res(false, 'รายการไม่ถูกต้อง');
-    const r = await db.buy(uid, kind, id);
-    const prof = await db.getProfile(uid); socket.data.profile = prof;
-    socket.emit('me', db.meOf(prof));
-    const ERR = { insufficient: 'เหรียญไม่พอ', unknown_item: 'ไม่พบสินค้านี้', no_profile: 'ไม่พบบัญชี' };
-    res(!!(r && r.ok), r && r.ok ? undefined : (ERR[r && r.error] || 'ซื้อไม่สำเร็จ'));
-  });
-  // บันทึกชื่อ + สกินที่ใส่อยู่ (ตรวจสิทธิ์ว่าเป็นของฟรี/ซื้อแล้วเท่านั้น)
-  onA(socket, 'profile:save', async raw => {
-    if (!allow(socket)) return;
-    const uid = socket.data.userId, cur = socket.data.profile; if (!uid || !cur) return;
-    const patch = db.cleanProfilePatch(raw, cur);
-    if (!patch.name && !patch.equipped) return;
-    socket.data.profile = await db.saveProfile(uid, patch);
-  });
   on(socket, 'room:leave', () => { if (allow(socket)) leaveRoom(socket, false, true); });
   on(socket, 'disconnect', () => leaveRoom(socket, true));
 });
 if (require.main === module) server.listen(PORT, () => console.log(`Dummy Online backend listening on ${PORT}`));
-module.exports = { server, io, rooms, db };
+module.exports = { server, io, rooms };

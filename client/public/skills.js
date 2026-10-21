@@ -80,7 +80,7 @@
     m.innerHTML = `<div class=sk-box><button class=sk-x onclick="this.closest('.sk-modal').remove()">✕</button><h3>⚡ ความสามารถ <span class=sk-coin>🪙 ${sv.coins}</span></h3><h4>ค่าความสามารถ</h4>${st || '<small>ยังไม่มีข้อมูลสกิล</small>'}<h4>สกิลทั้งหมด</h4>${sl}
       <label class=sk-test><input type=checkbox ${testMode() ? 'checked' : ''} onchange="skTest(this.checked)"> โหมดทดสอบ: ให้ตัวละครมีทุกสกิลตอนนี้</label><small>สกิลไม่เปลี่ยนกติกา ไม่เห็นไพ่คนอื่น และไม่มีผลกับการแจกไพ่</small></div>`;
     document.body.appendChild(m); };
-  window.skUp = function (id) { if (window.dummyAcct && dummyAcct.on()) return toast('⚡ อัปสกิลของบัญชีออนไลน์กำลังย้ายไปเซิร์ฟเวอร์ (เร็วๆ นี้)'); const s = SK.stats.find(x => x.id === id); if (!s) return; const lv = slv(id), cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
+  window.skUp = function (id) { const s = SK.stats.find(x => x.id === id); if (!s) return; const lv = slv(id), cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
     if (lv >= (s.max || 10) || sv.coins < cost) return; sv.coins -= cost; prog.lv[id] = lv + 1; saveProg(); save(); openSkills(); render(); };
   window.skTest = on => { LS.setItem('dummySkillTest', on ? '1' : '0'); render(); };
   if (typeof render === 'function') { const _r = render; window.render = render = function () { const r = _r.apply(this, arguments); try { paint(); } catch (e) {} return r; }; }
