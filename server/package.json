@@ -5,9 +5,9 @@
   "description": "Socket.IO backend starter for 4-player Thai rummy",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
-    "test": "node test-shuffle.js && node test-rules.js && node test-scoring.js && node test-fuzz.js && node test-online.js && node test-client.js && node test-games.js && node test-wallet.js"
+    "start": "node -r ./src/env.js src/index.js",
+    "dev": "node -r ./src/env.js --watch src/index.js",
+    "test": "node test-shuffle.js && node test-rules.js && node test-scoring.js && node test-fuzz.js && node test-online.js && node test-client.js && node test-games.js && node test-wallet.js && node test-supabase.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

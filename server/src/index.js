@@ -7,6 +7,7 @@ const Rules = require('./rules');
 const { CHARS, BGS } = require('./rules/common');
 const VERSION = require('../package.json').version;
 const Shuffle = require('./shuffle');
+const SB = require('./supabase');   // บัญชีผู้เล่น + บันทึกผลเกมลง Supabase (ปิดเองถ้าไม่ได้ตั้งค่า)
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
@@ -62,6 +63,7 @@ function settle(room) {
   G.settled = true;
   const seat = ruleOf(room).winner(G);
   const w = seat == null ? null : room.players.find(p => p.seat === seat);
+  recordResults(room);
   room.lastWinner = w || null;                 // ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับแทน
   room.round = (room.round || 0) + 1;
 }
@@ -109,13 +111,14 @@ function startGame(room) {
   const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
   room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
   room.game.v++;
+  if (SB.enabled()) room.players.forEach(p => { if (p.uid) SB.rpc('touch_last_game', { p_user: p.uid, p_game: room.rule }).catch(() => {}); });
   emitStates(room);
   scheduleBots(room);
   return true;
 }
 const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
 function joinRoom(socket, room, name, ch, bg) {
-  const p = { id: socket.id, name: cleanName(name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
+  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
   room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
@@ -181,6 +184,27 @@ const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size }));
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 
+// ===== ตรวจตัวตน: เมื่อเปิดใช้ Supabase ต้องแนบ access token ตอนเชื่อมต่อ (client ส่งใน auth.token) =====
+io.use(async (socket, next) => {
+  if (!SB.enabled()) return next();
+  const u = await SB.verifyToken(socket.handshake.auth && socket.handshake.auth.token);
+  if (!u) return next(new Error('unauthorized'));
+  socket.data.uid = u.id; socket.data.uname = u.name;
+  next();
+});
+// เมื่อจบตา: ส่งผลของผู้เล่นที่ล็อกอินแต่ละคนไปบันทึก (เหรียญ/สถิติ/เควส) แล้วแจ้งยอดใหม่กลับไปที่ client
+function recordResults(room) {
+  if (!SB.enabled()) return;
+  const G = room.game, rid = room.rule, win = ruleOf(room).winner(G), gid = String(G.gid || room.code + ':' + room.round);
+  for (const p of room.players) {
+    if (!p.uid || p.seat == null || !G.P[p.seat]) continue;
+    const seat = p.seat, delta = Math.round(Number(G.res && G.res.coin && G.res.coin.delta ? G.res.coin.delta[seat] : 0)) || 0;
+    const args = { p_user: p.uid, p_gid: gid, p_game: rid, p_delta: delta, p_won: win === seat,
+      p_melds: rid === 'dummy' ? (G.melds || []).filter(m => m.o === seat).length : 0, p_knock: rid === 'dummy' && !!G.res && G.res.k === seat, p_char: p.ch || null };
+    SB.rpcRetry('record_game_result', args).then(r => { if (r && p.id) io.to(p.id).emit('wallet:update', { gid, ...r }); })
+      .catch(e => console.error('record_game_result failed', e && e.message));
+  }
+}
 const rulesPayload = () => ({ version: VERSION, default: Rules.DEFAULT, rules: Rules.list() });
 io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');

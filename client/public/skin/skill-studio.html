@@ -1,0 +1,85 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skill Studio — Dummy Online</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#150f38;color:#fff;font:14px/1.4 Sarabun,system-ui,sans-serif;padding:12px;max-width:860px;margin:auto}
+h1{font-size:20px;color:#ffd978;margin:4px 0 10px}h2{font-size:15px;color:#9fe8ff;margin:20px 0 6px}h3{font-size:14px;margin:0}
+.card{background:#241a55;border:2px solid #ffffff2a;border-radius:14px;padding:10px;margin:8px 0}.card.ch{border-color:#ffd97855}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0}label{font-size:12px;color:#cfd3ff}
+input,select,textarea{background:#0d0a22;color:#fff;border:1px solid #ffffff40;border-radius:8px;padding:6px 8px;font:inherit}
+input[type=number]{width:76px}input.w{flex:1;min-width:110px}input[type=checkbox]{width:auto}textarea{width:100%;min-height:90px;font:12px monospace}
+button{border:0;border-radius:99px;padding:8px 14px;font:700 13px inherit;color:#fff;background:linear-gradient(#a487f0,#5b3cb3);cursor:pointer}
+button.g{background:linear-gradient(#4cd36f,#1f9c4a)}button.r{background:linear-gradient(#ff6b6b,#c0282d)}button.o{background:linear-gradient(#ffa13a,#f0640d)}button.s{padding:4px 10px;font-size:12px}
+.sub{font-size:12px;color:#cfd3ff}.pr{display:grid;grid-template-columns:70px 64px 1fr 1fr 1fr 1fr;gap:4px;align-items:center;font-size:12px}.pr input{width:100%}
+.bar{position:sticky;bottom:0;background:#150f38ee;padding:8px 0;display:flex;gap:6px;flex-wrap:wrap}
+table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:3px 4px;text-align:center;border-bottom:1px solid #ffffff1f}th:first-child,td:first-child{text-align:left}td input{width:62px}.pv{color:#9fe8ff}
+.sks{display:flex;gap:10px;flex-wrap:wrap}.sks label{display:flex;gap:4px;align-items:center;background:#0004;border-radius:99px;padding:3px 10px}
+.ph{display:flex;gap:10px;align-items:center}.ph img{height:54px;width:auto;object-fit:contain}.tag{font-size:11px;background:#ffd97833;color:#ffd978;border-radius:99px;padding:1px 8px}
+</style></head><body>
+<h1>🛠 Skill Studio — ค่าความสามารถ · ดาว · สกิลของตัวละคร</h1>
+<div class="sub">ค่าความสามารถ <b>ผูกกับตัวละคร</b>: ค่า = <code>ค่าเริ่มต้น + เพิ่มต่อดาว × (ดาว − 1)</code> · ผู้เล่นอัพ "ดาวตัวละคร" (เสียเหรียญ) แล้วค่าเพิ่มตามนี้ ·
+ แก้เสร็จกด <b>ดาวน์โหลด skills.json</b> วางที่ <code>client/public/skin/skills.json</code> และกด <b>คัดลอก SQL</b> ไปรันใน Supabase SQL Editor (ให้ฐานข้อมูลรู้ราคาอัพดาว/โบนัสเหรียญ — ไม่งั้นราคาจริงใช้ค่ากลาง)</div>
+<div class="row"><button onclick="loadRemote()">โหลดจากเซิร์ฟเวอร์</button><label>หรือนำเข้าไฟล์ <input type="file" id="f" accept=".json" onchange="imp(this)"></label></div>
+
+<h2>ค่าความสามารถ (Stats) — ชนิดของค่า</h2><div id="stats"></div><div class="row"><button class="g s" onclick="addStat()">＋ เพิ่มค่าความสามารถ</button></div>
+<h2>ค่าเริ่มต้นของทุกตัวละคร (ใช้เมื่อตัวละครไม่ได้ตั้งเอง)</h2><div id="defs" class="card"></div>
+<h2>ตัวละคร</h2><div class="sub">ตัวละครอ่านจาก skins.json — ตั้งค่า/ผูกสกิลให้แต่ละตัวได้เลย (ตัวที่ไม่ได้ตั้งจะใช้ค่าเริ่มต้นด้านบน)</div><div id="chars"></div>
+<h2>สกิล</h2><div id="skills"></div>
+<div class="row"><select id="neff"><option value="hawkeye">hawkeye — ไฮไลต์ไพ่ที่เก็บแล้วเกิดได้</option><option value="cardcount">cardcount — ตัวนับไพ่</option><option value="coinbonus">coinbonus — โบนัสเหรียญ</option><option value="scramble">scramble — ป่วนสายตา</option></select><button class="g" onclick="addSkill()">＋ เพิ่มสกิล</button></div>
+<h2>SQL สำหรับฐานข้อมูล (character_defs)</h2><textarea id="sql" readonly></textarea>
+<div class="bar"><button class="g" onclick="dl()">⬇ skills.json</button><button onclick="cp()">คัดลอก JSON</button><button class="g" onclick="dlSql()">⬇ character_defs.sql</button><button onclick="cpSql()">คัดลอก SQL</button><button class="o" onclick="test()">ทดสอบในเครื่องนี้</button><button class="r" onclick="clr()">ล้างการทดสอบ</button></div>
+<script src="../skills-core.js"></script>
+<script>
+const EFF={hawkeye:{uses:2,cooldown:20,duration:6},cardcount:{ranks:3},coinbonus:{pct:3},scramble:{uses:1,cooldown:25,duration:5}};
+const LIM={uses:[1,4],cooldown:[8,60],duration:[3,10],ranks:[2,8],pct:[0,20]};
+let D={version:2,stats:[],skills:[],characters:{},defaults:{maxStars:5,starCosts:[500,1000,2000,4000],stats:{}}}, SKINS=[];
+const $=i=>document.getElementById(i),N=v=>Number(v)||0,esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const costs=s=>String(s).split(',').map(x=>Math.max(0,Math.floor(N(x.trim())))).filter(x=>x>0);
+function cfgOf(id){D.characters=D.characters||{};let c=D.characters[id];if(Array.isArray(c))c=D.characters[id]={skills:c};return c||null}
+function own(id){let c=cfgOf(id);if(!c)c=D.characters[id]={skills:[]};return c}
+function render(){
+ D.defaults=D.defaults||{maxStars:5,starCosts:[500,1000,2000,4000],stats:{}};D.defaults.stats=D.defaults.stats||{};
+ $('stats').innerHTML=D.stats.map((s,i)=>`<div class=card><div class=row><input class=w value="${esc(s.id)}" onchange="D.stats[${i}].id=this.value;render()" title="id"><input style="width:56px" value="${esc(s.icon||'')}" onchange="D.stats[${i}].icon=this.value"><input class=w value="${esc(s.name||'')}" onchange="D.stats[${i}].name=this.value;render()"><label>ค่าสูงสุด <input type=number value="${s.max||10}" onchange="D.stats[${i}].max=N(this.value);render()"></label><button class="r s" onclick="if(confirm('ลบค่านี้?')){D.stats.splice(${i},1);render()}">ลบ</button></div>
+ <div class=row><input class=w value="${esc(s.desc||'')}" placeholder="คำอธิบาย" onchange="D.stats[${i}].desc=this.value"></div></div>`).join('');
+ const dc=D.defaults;
+ $('defs').innerHTML=`<div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${dc.maxStars||5}" onchange="D.defaults.maxStars=Math.min(10,Math.max(1,N(this.value)));render()"></label><label>ราคาอัพดาว (เหรียญ) ดาว1→2, 2→3, ... คั่นด้วยคอมมา <input class=w value="${(dc.starCosts||[]).join(', ')}" onchange="D.defaults.starCosts=costs(this.value);render()"></label></div>
+ <table><tr><th>ค่า</th><th>เริ่มต้น</th><th>เพิ่มต่อดาว</th></tr>${D.stats.map(s=>{const o=dc.stats[s.id]||{base:0,perStar:0};return `<tr><td>${esc(s.icon||'')} ${esc(s.name)}</td><td><input type=number step=any value="${o.base||0}" onchange="dset('${esc(s.id)}','base',N(this.value))"></td><td><input type=number step=any value="${o.perStar||0}" onchange="dset('${esc(s.id)}','perStar',N(this.value))"></td></tr>`}).join('')}</table>`;
+ const ids=[...new Set([...SKINS.map(c=>c.id),...Object.keys(D.characters||{})])];
+ $('chars').innerHTML=ids.map(id=>{const sk=SKINS.find(c=>c.id==id),c=cfgOf(id),cc=SkillCore.charCfg(D,id),mx=cc.maxStars,cols=Array.from({length:mx},(_,i)=>i+1);
+  const st=D.stats.map(s=>{const o=(c&&c.stats&&c.stats[s.id])||(dc.stats[s.id])||{base:0,perStar:0};
+   return `<tr><td>${esc(s.icon||'')} ${esc(s.name)}</td><td><input type=number step=any value="${o.base||0}" onchange="cset('${esc(id)}','${esc(s.id)}','base',N(this.value))"></td><td><input type=number step=any value="${o.perStar||0}" onchange="cset('${esc(id)}','${esc(s.id)}','perStar',N(this.value))"></td>${cols.map(k=>`<td class=pv>${SkillCore.statValue(D,s.id,id,k)}</td>`).join('')}</tr>`}).join('');
+  const bp=SkillCore.bonusPct(D,id);
+  return `<div class="card ch"><div class=ph>${sk&&sk.asset?`<img src="${esc(sk.asset.replace(/^\.\/skin\//,'./'))}" alt="">`:''}<div><h3>${esc((sk&&sk.name)||id)} <span class=tag>${esc(id)}</span>${c?'':' <span class=tag>ใช้ค่าเริ่มต้น</span>'}</h3>
+  <div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${c&&c.maxStars||''}" placeholder="${dc.maxStars||5}" onchange="own('${esc(id)}').maxStars=this.value===''?undefined:Math.min(10,Math.max(1,N(this.value)));render()"></label><label>ราคาอัพดาว (ว่าง = ค่าเริ่มต้น) <input class=w value="${c&&c.starCosts?c.starCosts.join(', '):''}" placeholder="${(dc.starCosts||[]).join(', ')}" onchange="own('${esc(id)}').starCosts=this.value.trim()?costs(this.value):undefined;render()"></label></div></div></div>
+  <table><tr><th>ค่า</th><th>เริ่มต้น</th><th>+/ดาว</th>${cols.map(k=>`<th>★${k}</th>`).join('')}</tr>${st}</table>
+  <div class=sks>${D.skills.map(s=>`<label><input type=checkbox ${cc.skills.includes(s.id)?'checked':''} onchange="tgl('${esc(id)}','${esc(s.id)}',this.checked)"> ${esc(s.icon||'')} ${esc(s.name)}</label>`).join('')||'<span class=sub>ยังไม่มีสกิล</span>'}</div>
+  ${bp.some(Boolean)?`<div class=sub>โบนัสเหรียญเมื่อชนะ (ตามดาว): ${bp.map((p,i)=>'★'+(i+1)+' '+p+'%').join(' · ')}</div>`:''}
+  <div class=row><button class="r s" onclick="if(confirm('ล้างค่าเฉพาะตัวนี้ (กลับไปใช้ค่าเริ่มต้น)?')){delete D.characters['${esc(id)}'];render()}">ล้างค่าตัวละครนี้</button></div></div>`}).join('');
+ const sids=D.stats.map(s=>s.id);
+ $('skills').innerHTML=D.skills.map((s,i)=>`<div class=card><div class=row><input class=w value="${esc(s.id)}" onchange="D.skills[${i}].id=this.value;render()" title="id"><input style="width:56px" value="${esc(s.icon||'')}" onchange="D.skills[${i}].icon=this.value"><input class=w value="${esc(s.name||'')}" onchange="D.skills[${i}].name=this.value;render()"></div>
+ <div class=row><span class=sub>effect: <b>${esc(s.effect)}</b></span><select onchange="D.skills[${i}].type=this.value"><option value=active ${s.type=='active'?'selected':''}>กดใช้</option><option value=passive ${s.type=='passive'?'selected':''}>ติดตัว</option></select><label><input type=checkbox ${s.enabled!==false?'checked':''} onchange="D.skills[${i}].enabled=this.checked;render()"> เปิดใช้</label><button class="r s" onclick="if(confirm('ลบสกิลนี้?')){D.skills.splice(${i},1);render()}">ลบสกิล</button></div>
+ <div class=row><input class=w value="${esc(s.desc||'')}" onchange="D.skills[${i}].desc=this.value"></div>
+ <div class="pr sub"><b>ค่า</b><b>เริ่มต้น</b><b>ผูกกับ stat</b><b>+ต่อ 1 หน่วย stat</b><b>ต่ำสุด</b><b>สูงสุด</b></div>
+ ${Object.keys(s.params||{}).map(k=>{const sc=(s.scale||{})[k]||{},lm=(s.limit||{})[k]||LIM[k]||[0,99];return `<div class=pr><span>${k}</span><input type=number step=any value="${s.params[k]}" onchange="D.skills[${i}].params['${k}']=N(this.value);render()"><select onchange="ssc(${i},'${k}','stat',this.value)"><option value="">—</option>${sids.map(x=>`<option ${sc.stat==x?'selected':''}>${esc(x)}</option>`).join('')}</select><input type=number step=any value="${sc.per||0}" onchange="ssc(${i},'${k}','per',N(this.value))"><input type=number step=any value="${lm[0]}" onchange="slm(${i},'${k}',0,N(this.value))"><input type=number step=any value="${lm[1]}" onchange="slm(${i},'${k}',1,N(this.value))"></div>`}).join('')}</div>`).join('');
+ $('sql').value=genSql();
+}
+function dset(sid,f,v){D.defaults.stats[sid]=D.defaults.stats[sid]||{base:0,perStar:0};D.defaults.stats[sid][f]=v;render()}
+function cset(id,sid,f,v){const c=own(id);c.stats=c.stats||{};c.stats[sid]=Object.assign({base:0,perStar:0},(c.stats[sid]||D.defaults.stats[sid]||{}));c.stats[sid][f]=v;render()}
+function tgl(id,sk,on){const c=own(id);const cur=new Set(SkillCore.charCfg(D,id).skills);on?cur.add(sk):cur.delete(sk);c.skills=[...cur];render()}
+function ssc(i,k,f,v){const s=D.skills[i];s.scale=s.scale||{};const o=s.scale[k]=s.scale[k]||{stat:'',per:0};o[f]=v;if(!o.stat)delete s.scale[k];render()}
+function slm(i,k,j,v){const s=D.skills[i];s.limit=s.limit||{};const a=s.limit[k]=s.limit[k]||(LIM[k]||[0,99]).slice();a[j]=v;render()}
+function addStat(){let id='stat',n=1;while(D.stats.some(s=>s.id==id))id='stat'+(++n);D.stats.push({id,name:'ค่าใหม่',icon:'✨',desc:'',max:10});render()}
+function addSkill(){const e=$('neff').value;let id=e,n=1;while(D.skills.some(s=>s.id==id))id=e+(++n);D.skills.push({id,name:'สกิลใหม่ ('+e+')',icon:'⚡',type:['cardcount','coinbonus'].includes(e)?'passive':'active',effect:e,enabled:true,desc:'',params:{...EFF[e]},scale:{},limit:Object.fromEntries(Object.keys(EFF[e]).map(k=>[k,LIM[k]]))});render()}
+const q=s=>"'"+String(s).replace(/'/g,"''")+"'",arr=a=>"'{"+a.map(x=>Math.max(0,Math.floor(x))).join(',')+"}'";
+function genSql(){const ids=[...new Set([...SKINS.map(c=>c.id),...Object.keys(D.characters||{})])];if(!ids.length)return '-- ไม่มีตัวละคร';
+ const rows=ids.map(id=>{const c=SkillCore.charCfg(D,id),o=cfgOf(id),bp=SkillCore.bonusPct(D,id);return `(${q(id)}, ${c.maxStars}, ${o&&o.starCosts?arr(o.starCosts):'null'}, ${bp.some(Boolean)?arr(bp):'null'})`});
+ return `-- รันใน Supabase SQL Editor (รันซ้ำได้)\ninsert into public.character_defs(id, max_stars, star_costs, bonus_pct) values\n${rows.join(',\n')}\non conflict (id) do update set max_stars = excluded.max_stars, star_costs = excluded.star_costs, bonus_pct = excluded.bonus_pct;\n`}
+function out(){return JSON.stringify(D,null,2)}
+function save(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+function dl(){save('skills.json',out(),'application/json')}function dlSql(){save('character_defs.sql',genSql(),'text/plain')}
+function cp(){navigator.clipboard&&navigator.clipboard.writeText(out()).then(()=>alert('คัดลอก JSON แล้ว'))}function cpSql(){navigator.clipboard&&navigator.clipboard.writeText(genSql()).then(()=>alert('คัดลอก SQL แล้ว — ไปวางใน Supabase SQL Editor'))}
+function test(){localStorage.setItem('dummySkillsOverride',out());alert('บันทึกสำหรับทดสอบในเครื่องนี้แล้ว — เปิดเกม (เว็บเดียวกัน) แล้วรีเฟรช ตัวละครจะใช้ค่าใหม่ทันที')}
+function clr(){localStorage.removeItem('dummySkillsOverride');alert('ล้างแล้ว เกมจะกลับไปใช้ไฟล์จริง')}
+function set(j){if(!j||!Array.isArray(j.skills)||!Array.isArray(j.stats))return alert('ไฟล์ไม่ถูกต้อง');D=j;D.characters=D.characters||{};D.stats.forEach(s=>{delete s.cost});D.version=2;render()}
+function imp(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{set(JSON.parse(r.result))}catch(e){alert('อ่านไฟล์ไม่ได้')}};r.readAsText(f)}
+function loadRemote(){Promise.all([fetch('./skins.json',{cache:'no-cache'}).then(r=>r.json()).catch(()=>({})),fetch('./skills.json',{cache:'no-cache'}).then(r=>r.json())]).then(([sk,j])=>{SKINS=(sk.characters||[]);set(j)}).catch(()=>alert('โหลดไม่ได้ — ลองนำเข้าไฟล์แทน'))}
+loadRemote();
+</script></body></html>

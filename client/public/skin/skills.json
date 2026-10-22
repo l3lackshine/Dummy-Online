@@ -1,29 +1,334 @@
 {
-  "version": 1,
-  "note": "ไฟล์นี้แก้ได้ด้วย skill-editor.html (หรือแก้มือ) · effect ต้องเป็นชนิดที่เกมรองรับ: hawkeye, cardcount, coinbonus, scramble · สกิลไม่แตะกติกา/การแจกไพ่",
+  "version": 2,
+  "note": "ไฟล์นี้แก้ได้ด้วย skill-studio.html (หรือแก้มือ) · ค่าความสามารถผูกกับตัวละคร: ค่า = base + perStar × (ดาว-1) · อัพดาวแทนการอัพค่าความสามารถ · effect ที่เกมรองรับ: hawkeye, cardcount, coinbonus, scramble",
   "stats": [
-    { "id": "insight", "name": "ไหวพริบ", "icon": "🧠", "desc": "สกิลช่วยคิดใช้ได้บ่อยและนานขึ้น", "max": 10, "cost": { "base": 100, "step": 80 } },
-    { "id": "luck",    "name": "โชคลาภ", "icon": "🍀", "desc": "โบนัสเหรียญเมื่อชนะ (ไม่มีผลกับไพ่ที่จั่ว)", "max": 10, "cost": { "base": 120, "step": 90 } },
-    { "id": "focus",   "name": "สมาธิ",  "icon": "🎯", "desc": "ลดเวลาที่โดนสกิลป่วนสายตา", "max": 10, "cost": { "base": 100, "step": 80 } },
-    { "id": "charm",   "name": "เสน่ห์",  "icon": "💖", "desc": "ปลดล็อกอิโมจิ/บทพูด/เอฟเฟกต์ (เร็ว ๆ นี้)", "max": 10, "cost": { "base": 80, "step": 60 } }
+    {
+      "id": "insight",
+      "name": "ไหวพริบ",
+      "icon": "🧠",
+      "desc": "สกิลช่วยคิดใช้ได้บ่อยและนานขึ้น",
+      "max": 10
+    },
+    {
+      "id": "luck",
+      "name": "โชคลาภ",
+      "icon": "🍀",
+      "desc": "โบนัสเหรียญเมื่อชนะ (ไม่มีผลกับไพ่ที่จั่ว)",
+      "max": 10
+    },
+    {
+      "id": "focus",
+      "name": "สมาธิ",
+      "icon": "🎯",
+      "desc": "ลดเวลาที่โดนสกิลป่วนสายตา",
+      "max": 10
+    },
+    {
+      "id": "charm",
+      "name": "เสน่ห์",
+      "icon": "💖",
+      "desc": "ปลดล็อกอิโมจิ/บทพูด/เอฟเฟกต์ (เร็ว ๆ นี้)",
+      "max": 10
+    }
   ],
   "skills": [
-    { "id": "hawkeye", "name": "สายตาเหยี่ยว", "icon": "🔍", "type": "active", "effect": "hawkeye", "enabled": true,
+    {
+      "id": "hawkeye",
+      "name": "สายตาเหยี่ยว",
+      "icon": "🔍",
+      "type": "active",
+      "effect": "hawkeye",
+      "enabled": true,
       "desc": "ไฮไลต์ไพ่ในกองทิ้งที่เก็บแล้ว 'เกิดได้จริง' กับมือคุณ (คำนวณจากไพ่ที่เห็นอยู่แล้ว)",
-      "params": { "uses": 2, "cooldown": 20, "duration": 6 },
-      "scale": { "uses": { "stat": "insight", "per": 0.2 }, "cooldown": { "stat": "insight", "per": -1 }, "duration": { "stat": "insight", "per": 0.3 } },
-      "limit": { "uses": [1, 4], "cooldown": [8, 60], "duration": [3, 10] } },
-    { "id": "cardcount", "name": "นักจำไพ่", "icon": "📊", "type": "passive", "effect": "cardcount", "enabled": true,
+      "params": {
+        "uses": 2,
+        "cooldown": 20,
+        "duration": 6
+      },
+      "scale": {
+        "uses": {
+          "stat": "insight",
+          "per": 0.2
+        },
+        "cooldown": {
+          "stat": "insight",
+          "per": -1
+        },
+        "duration": {
+          "stat": "insight",
+          "per": 0.3
+        }
+      },
+      "limit": {
+        "uses": [
+          1,
+          4
+        ],
+        "cooldown": [
+          8,
+          60
+        ],
+        "duration": [
+          3,
+          10
+        ]
+      }
+    },
+    {
+      "id": "cardcount",
+      "name": "นักจำไพ่",
+      "icon": "📊",
+      "type": "passive",
+      "effect": "cardcount",
+      "enabled": true,
       "desc": "แสดงว่าไพ่แต้มเดียวกับที่คุณถือ เหลือที่ยังไม่เห็นกี่ใบ",
-      "params": { "ranks": 3 }, "scale": { "ranks": { "stat": "insight", "per": 0.5 } }, "limit": { "ranks": [2, 8] } },
-    { "id": "coinbonus", "name": "นักล่าโชค", "icon": "🪙", "type": "passive", "effect": "coinbonus", "enabled": true,
+      "params": {
+        "ranks": 3
+      },
+      "scale": {
+        "ranks": {
+          "stat": "insight",
+          "per": 0.5
+        }
+      },
+      "limit": {
+        "ranks": [
+          2,
+          8
+        ]
+      }
+    },
+    {
+      "id": "coinbonus",
+      "name": "นักล่าโชค",
+      "icon": "🪙",
+      "type": "passive",
+      "effect": "coinbonus",
+      "enabled": true,
       "desc": "ได้โบนัสเหรียญเป็น % ของเหรียญที่ชนะ",
-      "params": { "pct": 3 }, "scale": { "pct": { "stat": "luck", "per": 1.5 } }, "limit": { "pct": [0, 20] } },
-    { "id": "scramble", "name": "ป่วนสายตา", "icon": "🎭", "type": "active", "effect": "scramble", "enabled": true,
+      "params": {
+        "pct": 3
+      },
+      "scale": {
+        "pct": {
+          "stat": "luck",
+          "per": 1.5
+        }
+      },
+      "limit": {
+        "pct": [
+          0,
+          20
+        ]
+      }
+    },
+    {
+      "id": "scramble",
+      "name": "ป่วนสายตา",
+      "icon": "🎭",
+      "type": "active",
+      "effect": "scramble",
+      "enabled": true,
       "desc": "ไพ่ในมือเป้าหมายสลับตำแหน่งและมีหมอกบาง ๆ ไพ่ยังเห็นครบ กดเรียงไพ่แก้ได้ ใช้ซ้ำกับคนเดิมติดกันไม่ได้",
-      "params": { "uses": 1, "cooldown": 25, "duration": 5 },
-      "scale": { "uses": { "stat": "insight", "per": 0.1 }, "duration": { "stat": "insight", "per": 0.1 } },
-      "limit": { "uses": [1, 2], "cooldown": [20, 60], "duration": [3, 6] } }
+      "params": {
+        "uses": 1,
+        "cooldown": 25,
+        "duration": 5
+      },
+      "scale": {
+        "uses": {
+          "stat": "insight",
+          "per": 0.1
+        },
+        "duration": {
+          "stat": "insight",
+          "per": 0.1
+        }
+      },
+      "limit": {
+        "uses": [
+          1,
+          2
+        ],
+        "cooldown": [
+          20,
+          60
+        ],
+        "duration": [
+          3,
+          6
+        ]
+      }
+    }
   ],
-  "characters": {}
+  "characters": {
+    "boy": {
+      "maxStars": 5,
+      "stats": {
+        "insight": {
+          "base": 2,
+          "perStar": 1
+        },
+        "luck": {
+          "base": 1,
+          "perStar": 0.5
+        },
+        "focus": {
+          "base": 2,
+          "perStar": 1
+        },
+        "charm": {
+          "base": 1,
+          "perStar": 0.5
+        }
+      },
+      "skills": [
+        "cardcount"
+      ]
+    },
+    "girl": {
+      "maxStars": 5,
+      "stats": {
+        "insight": {
+          "base": 1,
+          "perStar": 0.5
+        },
+        "luck": {
+          "base": 3,
+          "perStar": 1.5
+        },
+        "focus": {
+          "base": 1,
+          "perStar": 0.5
+        },
+        "charm": {
+          "base": 2,
+          "perStar": 1
+        }
+      },
+      "skills": [
+        "coinbonus"
+      ]
+    },
+    "rina-01": {
+      "maxStars": 5,
+      "starCosts": [
+        800,
+        1600,
+        3200,
+        6400
+      ],
+      "stats": {
+        "insight": {
+          "base": 3,
+          "perStar": 1.5
+        },
+        "luck": {
+          "base": 1,
+          "perStar": 0.5
+        },
+        "focus": {
+          "base": 2,
+          "perStar": 1
+        },
+        "charm": {
+          "base": 3,
+          "perStar": 1
+        }
+      },
+      "skills": [
+        "hawkeye",
+        "cardcount"
+      ]
+    },
+    "arya-01": {
+      "maxStars": 5,
+      "starCosts": [
+        800,
+        1600,
+        3200,
+        6400
+      ],
+      "stats": {
+        "insight": {
+          "base": 2,
+          "perStar": 1
+        },
+        "luck": {
+          "base": 4,
+          "perStar": 1.5
+        },
+        "focus": {
+          "base": 3,
+          "perStar": 1
+        },
+        "charm": {
+          "base": 2,
+          "perStar": 1
+        }
+      },
+      "skills": [
+        "coinbonus",
+        "scramble"
+      ]
+    },
+    "rena-01": {
+      "maxStars": 5,
+      "starCosts": [
+        800,
+        1600,
+        3200,
+        6400
+      ],
+      "stats": {
+        "insight": {
+          "base": 3,
+          "perStar": 1
+        },
+        "luck": {
+          "base": 3,
+          "perStar": 1
+        },
+        "focus": {
+          "base": 3,
+          "perStar": 1
+        },
+        "charm": {
+          "base": 3,
+          "perStar": 1
+        }
+      },
+      "skills": [
+        "hawkeye",
+        "coinbonus"
+      ]
+    }
+  },
+  "defaults": {
+    "maxStars": 5,
+    "starCosts": [
+      500,
+      1000,
+      2000,
+      4000
+    ],
+    "stats": {
+      "insight": {
+        "base": 0,
+        "perStar": 0.5
+      },
+      "luck": {
+        "base": 0,
+        "perStar": 0.5
+      },
+      "focus": {
+        "base": 0,
+        "perStar": 0.5
+      },
+      "charm": {
+        "base": 0,
+        "perStar": 0.5
+      }
+    }
+  }
 }

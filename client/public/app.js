@@ -10,7 +10,7 @@ let sv = { name: localStorage.getItem('dummyName') || 'ผู้เล่น', c
 let shufAnim = null, shufTimer = null;
 const APP_VER = String(window.DUMMY_VERSION || ''); // เลขเวอร์ชันของ client (ตั้งที่ client/public/version.js)
 let RULES = [], SRV_VER = '', createMode = 'room', createSel = loadCreateSel(), deal = null, dealtGid = null;
-let authed = true, aerr = '', S = null, lob = null, tok = null, code = '', isHost = false, sock = null, noio = false, soloPending = false, soloRoom = false;
+let authed = !(window.DB && DB.enabled), aerr = '', S = null, lob = null, tok = null, code = '', isHost = false, sock = null, noio = false, soloPending = false, soloRoom = false;
 const DEFAULT_SKINS={themes:[
 {id:'classic',n:'คลาสสิก (เขียว)',price:0,card:'#fbf7ec',blk:'#1b1b1b',red:'#c0282d',edge:'#cfc7b0',b1:'#7a1f2b',b2:'#5d1520',bg:'#0f3d2a',bg2:'#0b2e20'},
 {id:'midnight',n:'มิดไนท์',price:200,card:'#243153',blk:'#e6ebfa',red:'#ff8a98',edge:'#4a5c92',b1:'#4057a3',b2:'#2b3b72',bg:'#0c1226',bg2:'#080c1a'},
@@ -24,7 +24,7 @@ cards:[{id:'classic-card',name:'ไพ่คลาสสิก',asset:'',card:'#
 let SKIN_REGISTRY=DEFAULT_SKINS, TH=DEFAULT_SKINS.themes;
 fetch('./skin/skins.json').then(r=>r.ok?r.json():DEFAULT_SKINS).then(v=>{SKIN_REGISTRY=v;TH=Array.isArray(v.themes)&&v.themes.length?v.themes:DEFAULT_SKINS.themes;applyTheme();render()}).catch(()=>{});
 const save=()=>{localStorage.setItem('dummyCoins',sv.coins);localStorage.setItem('dummyOwned',JSON.stringify(sv.own));localStorage.setItem('dummySkin',sv.eq);localStorage.setItem('dummyName',sv.name||nick)};
-function setNick(v){nick=String(v||'').trim().slice(0,14)||'ผู้เล่น';sv.name=nick;save()}
+function setNick(v){nick=String(v||'').trim().slice(0,14)||'ผู้เล่น';sv.name=nick;save();if(window.DB&&DB.enabled&&String(v||'').trim())DB.setName(nick)}
 function applyTheme(){const t=TH.find(x=>x.id==sv.eq)||TH[0],s=document.documentElement.style;for(const k of['card','blk','red','edge','b1','b2','bg','bg2'])if(t&&t[k])s.setProperty('--'+k,t[k]);const pk=(kind,store)=>{const l=SKIN_REGISTRY[kind]||[];return l.find(x=>x.id===localStorage.getItem(store))||l[0]};const table=pk('tables','dummyTableSkin'),dock=pk('docks','dummyDockSkin'),cards=pk('cards','dummyCardSkin'),back=pk('backs','dummyBackSkin'),room=pk('backgrounds','dummyBackgroundSkin');if(table){if(table.bg)s.setProperty('--bg',table.bg);if(table.bg2)s.setProperty('--bg2',table.bg2);table.asset?s.setProperty('--table-image',`url('${table.asset}')`):s.removeProperty('--table-image')}if(dock){s.setProperty('--dock-bg',dock.panelAsset?`url('${dock.panelAsset}') center/100% 100% no-repeat`:(dock.panel||'none'));s.setProperty('--dock-border',dock.border||'transparent');s.setProperty('--btn-img',dock.buttonAsset?`url('${dock.buttonAsset}')`:'none');const b=dock.buttons||{};for(const k of['blue','org','grn','g','tool'])(b[k]||[]).forEach((v,i)=>s.setProperty(`--b-${k}-${i+1}`,v))}if(cards){for(const k of['card','blk','red','edge'])if(cards[k])s.setProperty('--'+k,cards[k]);cards.asset?s.setProperty('--card-image',`url('${cards.asset}')`):s.removeProperty('--card-image')}if(back)s.setProperty('--back-img',back.asset?`url('${back.asset}')`:`repeating-linear-gradient(45deg,${back.b1||'#7a1f2b'},${back.b1||'#7a1f2b'} 4px,${back.b2||'#5d1520'} 4px,${back.b2||'#5d1520'} 8px)`);if(room){s.setProperty('--page-background',room.asset?`url('${room.asset}') center/cover no-repeat`:(room.css||'#2a1a10'));s.setProperty('--page-wide',room.asset?`url('${room.asset}') center 58%/cover no-repeat`:(room.css||'#2a1a10'))}document.documentElement.dataset.characterSkin=myChar()||'emoji'}
 const go=s=>{screen=s;shopNote='';render()};
 const wrap=b=>{$('app').innerHTML=`<div class=page><div class=box>${b}</div></div>`};
@@ -41,10 +41,12 @@ let shopNote = '', joinOpen = false, joinCode = '', shopCat = 'all';
 function setShopCat(k) { shopCat = k; render(); }
 const KINDS = [['characters', 'ตัวละคร', 'dummyCharacterSkin', '🧑'], ['backs', 'หลังไพ่', 'dummyBackSkin', '🂠'], ['tables', 'สกินโต๊ะ', 'dummyTableSkin', '🎴'], ['backgrounds', 'พื้นหลัง', 'dummyBackgroundSkin', '🖼️']];
 const price = x => Number(x && x.price) || 0;
-const owned = (kind, x) => price(x) <= 0 || sv.own.includes(kind + ':' + x.id);
+const mprice = x => Number(x && x.mcash) || 0; // ราคา MCash (ไม่ใส่ = ไม่ขายด้วย MCash)
+const owned = (kind, x) => (price(x) <= 0 && mprice(x) <= 0) || sv.own.includes(kind + ':' + x.id);
 function equipped(kind) { const k = KINDS.find(z => z[0] === kind), l = SKIN_REGISTRY[kind] || [], c = localStorage.getItem(k[2]); const x = l.find(y => y.id === c && owned(kind, y)) || l.find(y => owned(kind, y)) || l[0]; return x ? x.id : null; }
-function equip(kind, id) { const k = KINDS.find(z => z[0] === kind), x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!k || !x || !owned(kind, x)) return; localStorage.setItem(k[2], id); applyTheme(); render(); }
-function buyItem(kind, id) { const x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!x || owned(kind, x)) return; if (sv.coins < price(x)) { shopNote = 'เหรียญไม่พอ'; return render(); } sv.coins -= price(x); sv.own.push(kind + ':' + id); save(); shopNote = 'ซื้อ “' + (x.name || id) + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }
+function equip(kind, id) { const k = KINDS.find(z => z[0] === kind), x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!k || !x || !owned(kind, x)) return; localStorage.setItem(k[2], id); if (window.DB && DB.enabled) DB.equip(kind, id); applyTheme(); render(); }
+function buyItem(kind, id, cur) { const x = (SKIN_REGISTRY[kind] || []).find(y => y.id === id); if (!x || owned(kind, x)) return;
+  if (window.DB && DB.enabled) { const nm = x.name || x.n || id; DB.buy(kind, id, cur || 'coins').then(() => { shopNote = 'ซื้อ “' + nm + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }).catch(e => { shopNote = e.message; render(); }); return; } if (sv.coins < price(x)) { shopNote = 'เหรียญไม่พอ'; return render(); } sv.coins -= price(x); sv.own.push(kind + ':' + id); save(); shopNote = 'ซื้อ “' + (x.name || id) + '” แล้ว ไปเลือกใช้ที่โปรไฟล์ได้เลย'; render(); }
 const backCss = x => x.asset ? `url('${x.asset}') center/cover no-repeat` : `repeating-linear-gradient(45deg,${x.b1 || '#7a1f2b'},${x.b1 || '#7a1f2b'} 4px,${x.b2 || '#5d1520'} 4px,${x.b2 || '#5d1520'} 8px)`;
 function prevBox(kind, x) {
   if (kind === 'characters') return `<span class=pv-ch><img src="${esc(x.asset || '')}" alt=""></span>`;
@@ -52,7 +54,7 @@ function prevBox(kind, x) {
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
-const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<button class=hud-sk onclick=openSkills() aria-label="ความสามารถ">⚡</button><span class=coin-pill>🪙 ${sv.coins}</span></div>`;
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<button class=hud-sk onclick=openSkills() aria-label="ความสามารถ">⚡</button><span class=coin-pill>🪙 ${sv.coins}</span>${window.DB && DB.enabled ? `<span class="coin-pill mc-pill" title="MCash">💎 ${sv.mcash || 0}</span>` : ''}</div>`;
 const pgKind = b => (b.includes('class=plank') ? 'play' : b.includes('gtiles') ? 'games' : b.includes('scoreSum') ? 'create' : b.includes('class=ksec') ? (b.includes('namebox') ? 'profile' : 'shop') : '');
 const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app').innerHTML = `<div class=pg data-pg="${pgKind(body)}">${hud(back)}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
 function homeView() {
@@ -126,8 +128,8 @@ function shopView() {
   if (shopCat !== 'all' && !KINDS.some(([k]) => k === shopCat)) shopCat = 'all';
   const tabs = [['all', 'ทั้งหมด', '', '🛍️'], ...KINDS].map(([kind, label, , ic]) => `<button class="catbtn${shopCat === kind ? ' on' : ''}" onclick="setShopCat('${kind}')">${ic || ''} ${label}</button>`).join('');
   const secs = KINDS.filter(([kind]) => shopCat === 'all' || shopCat === kind).map(([kind, label, , ic]) => {
-    const items = (SKIN_REGISTRY[kind] || []).filter(x => price(x) > 0); if (!items.length) return '';
-    return `<section class=ksec>${shopCat === 'all' ? `<h3 class=sec>${ic} ${label}</h3>` : ''}<div class="grid big">${items.map(x => { const own = owned(kind, x), no = !own && sv.coins < price(x); return `<div class=item2>${prevBox(kind, x)}<b>${esc(x.name || x.n || x.id)}</b>${own ? '<button class=wbtn disabled>ซื้อแล้ว ✓</button>' : `<button class="wbtn go" ${no ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}')">🪙 ${price(x)}</button>`}</div>`; }).join('')}</div></section>`;
+    const items = (SKIN_REGISTRY[kind] || []).filter(x => price(x) > 0 || (window.DB && DB.enabled && mprice(x) > 0)); if (!items.length) return '';
+    return `<section class=ksec>${shopCat === 'all' ? `<h3 class=sec>${ic} ${label}</h3>` : ''}<div class="grid big">${items.map(x => { const own = owned(kind, x), no = !own && sv.coins < price(x), mc = window.DB && DB.enabled && mprice(x) > 0, noM = !own && (sv.mcash || 0) < mprice(x); return `<div class=item2>${prevBox(kind, x)}<b>${esc(x.name || x.n || x.id)}</b>${own ? '<button class=wbtn disabled>ซื้อแล้ว ✓</button>' : `${price(x) > 0 ? `<button class="wbtn go" ${no ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}')">🪙 ${price(x)}</button>` : ''}${mc ? `<button class="wbtn mc" ${noM ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}','mcash')">💎 ${mprice(x)}</button>` : ''}`}</div>`; }).join('')}</div></section>`;
   }).join('') || '<p class=note>ยังไม่มีของในหมวดนี้</p>';
   page2('ร้านค้า', `<div class=cattabs>${tabs}</div><p class=note>${esc(shopNote || 'เลือกซื้อของตกแต่ง แล้วไปเลือกใช้ที่หน้าโปรไฟล์')}</p><div class=panel>${secs}</div>`);
 }
@@ -141,11 +143,13 @@ function profileView() {
 function conn() {
   if (sock || noio) return;
   if (!window.io) { noio = true; lerr = 'โหลด Socket.IO ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'; return; }
-  sock = io(CFG.BACKEND_URL || undefined, { transports: ['websocket', 'polling'] });
+  const ioOpt = { transports: ['websocket', 'polling'] }; if (window.DB && DB.enabled) ioOpt.auth = cb => { DB.token().then(t => cb({ token: t || '' })); }; // ส่ง access token ให้เซิร์ฟเวอร์ตรวจตัวตนทุกครั้งที่เชื่อมต่อ
+  sock = io(CFG.BACKEND_URL || undefined, ioOpt);
   sock.on('connect', () => { lerr = ''; authed = true; const ss = getSess(); if (ss && !code && !soloPending) sock.emit('room:rejoin', ss); else if (soloPending && !code) mk(); if (!RULES.length) sock.emit('rules:get'); render(); });
   sock.on('room:rejoin-failed', () => { setSess(null); if (soloPending && !code) mk(); render(); });
   sock.on('rules:list', d => { if (d && Array.isArray(d.rules)) { RULES = d.rules; SRV_VER = String(d.version || ''); render(); } });
-  sock.on('connect_error', () => { lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
+  sock.on('connect_error', e => { if (e && e.message === 'unauthorized' && window.DB && DB.enabled) { lerr = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'; if (window.DB.signOut) DB.signOut(); return; } lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
+  sock.on('wallet:update', d => { if (window.DB && DB.enabled) DB.onWallet(d); });
   sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
   sock.on('game:action-result', d => { if (d && d.ok) { hint = ''; } else { hint = 'จั่ว/เก็บไพ่ไม่สำเร็จ: ' + ((d && d.error) || 'ไม่ทราบสาเหตุ'); render(); } });
   sock.on('me', m => { sv = m; applyTheme(); render(); });
@@ -155,8 +159,8 @@ function conn() {
   sock.on('room:lobby', l => { lob = l; if (typeof l.youHost === 'boolean') isHost = l.youHost; render(); });
   sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); if (s.rule && s.rule !== 'dummy') clearDeal(); screen = 'game'; if (!s.over) { paid = false; coinDelta = 0; }
     if (!s.over && (!s.rule || s.rule === 'dummy') && s.v <= 1 && s.gid && s.gid !== dealtGid) { dealtGid = s.gid; startDeal(s); } // ตาใหม่ (ยังไม่มีใครเดิน) → แจกไพ่ทีละใบ
-    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; if (coinDelta > 0 && window.skCoinBonus) coinDelta += skCoinBonus(coinDelta); // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
-      if (!paid) { paid = true; if (localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
+    if (s.over) { const c = s.res && s.res.coin; coinDelta = c ? c.delta[s.my] || 0 : 0; if (!(window.DB && DB.enabled) && coinDelta > 0 && window.skCoinBonus) coinDelta += skCoinBonus(coinDelta); // ผลเหรียญตามกฎของเกม (น็อก/ตีปี้/อมสเปโต) จ่ายครั้งเดียวต่อเกม
+      if (!paid) { paid = true; if (!(window.DB && DB.enabled) && localStorage.getItem('dummyPaid') !== s.gid) { localStorage.setItem('dummyPaid', s.gid || ''); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
     sel = new Set([...sel].filter(i => s.hand.includes(i))); if (s.rule && s.rule !== 'dummy') closeRules(); render(); });
 }
 function onAuth(r) {}
@@ -240,7 +244,7 @@ function render() {
   renderGame();
 }
 function renderGame() {
-  if (!authed) { conn(); return authView(); }
+  if (!authed) return authView();
   if (screen !== 'game' || !S) return lobbyView();
   if (S.rule && S.rule !== 'dummy' && window.renderOther) return renderOther();
   const gx = isWide(); $('app').className = gx ? 'gx' : '';

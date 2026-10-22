@@ -12,7 +12,7 @@ function prepWww() {
   const index = path.join(WWW, 'index.html'); if (!fs.existsSync(index)) die('ไม่พบ client/public/index.html');
   // 1) ที่อยู่เซิร์ฟเวอร์ — ตั้งผ่าน env BACKEND_URL (เช่น repo variable) ถ้าไม่ตั้งใช้ค่าใน client/public/config.js
   const be = (process.env.BACKEND_URL || '').trim().replace(/\/+$/, '');
-  if (be) { if (!/^https?:\/\//.test(be)) die('BACKEND_URL ต้องขึ้นต้นด้วย http:// หรือ https://'); fs.writeFileSync(path.join(WWW, 'config.js'), `window.DUMMY_CONFIG = {\n  BACKEND_URL: '${be}'\n};\n`); console.log('• BACKEND_URL =', be); }
+  if (be) { /* แก้เฉพาะ BACKEND_URL คงค่า Supabase ไว้ */ if (!/^https?:\/\//.test(be)) die('BACKEND_URL ต้องขึ้นต้นด้วย http:// หรือ https://'); { const cf = path.join(WWW, 'config.js'), cur = read(cf), nx = cur.replace(/BACKEND_URL:\s*'[^']*'/, `BACKEND_URL: '${be}'`); fs.writeFileSync(cf, nx !== cur || /BACKEND_URL/.test(cur) ? nx : `window.DUMMY_CONFIG = {\n  BACKEND_URL: '${be}'\n};\n`); } console.log('• BACKEND_URL =', be); }
   else console.log('• BACKEND_URL ใช้ค่าจาก client/public/config.js:', (read(path.join(WWW, 'config.js')).match(/BACKEND_URL:\s*'([^']*)'/) || [])[1] || '(ว่าง)');
   // 2) ใช้ socket.io-client ที่แพ็กมากับแอป (ไม่พึ่ง CDN)
   const sio = path.join(__dirname, 'node_modules/socket.io-client/dist/socket.io.min.js');

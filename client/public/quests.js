@@ -5,6 +5,7 @@
    - ปรับรางวัล/เป้าหมายได้ที่ตาราง DAILY / WEEKLY ด้านล่าง */
 (function () {
   'use strict';
+  if (window.DB && DB.enabled) return; // โหมดบัญชี: เควสอยู่ในฐานข้อมูล ดู account.js
   const LS = window.localStorage, KEY = 'dummyQuests', GKEY = 'dummyQuestGid';
   const DAILY_BONUS = 100, WEEKLY_BONUS = 500;
 

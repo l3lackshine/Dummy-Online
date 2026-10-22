@@ -1,25 +1,30 @@
 /* skills.js — ระบบสกิล/ค่าความสามารถ (ไม่แตะกติกา · คำนวณจากไพ่ที่ผู้เล่นเห็นอยู่แล้วเท่านั้น)
-   ข้อมูลสกิลอยู่ที่ ./skin/skills.json (แก้ด้วย skill-editor.html) · ยังไม่ผูกกับตัวละคร จนกว่าจะใส่ใน "characters" */
+   ค่าความสามารถ "ผูกกับตัวละคร": ค่า = base + perStar × (ดาว−1) ตามที่ตั้งใน ./skin/skills.json (แก้ด้วย skill-studio.html)
+   การอัพค่าความสามารถ = อัพดาวตัวละคร (เสียเหรียญ) — ไม่มีปุ่มอัพ stat รายตัวอีกแล้ว */
 (function () {
   const EMPTY = { version: 1, stats: [], skills: [], characters: {} };
   let SK = EMPTY; const LS = window.localStorage;
   const jget = (k, d) => { try { const v = JSON.parse(LS.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
-  let prog = jget('dummySkillProg', { lv: {} }); if (!prog.lv) prog.lv = {};
-  const saveProg = () => LS.setItem('dummySkillProg', JSON.stringify(prog));
+  const dbOn = () => !!(window.DB && DB.enabled);
+  const stars0 = jget('dummyStars', {});
+  const charId = () => (typeof myChar === 'function' ? myChar() : '') || '';
+  // ดาวของตัวละคร: โหมดบัญชี = จากฐานข้อมูล · โหมดเดิม = เก็บในเครื่อง
+  const starsOf = id => Math.min(maxStars(id), Math.max(1, dbOn() ? DB.stars(id) : (Number(stars0[id]) || 1)));
+  const maxStars = id => window.SkillCore ? SkillCore.charCfg(SK, id).maxStars : 5;
+  const starCost = (id, st) => { const c = SkillCore.charCfg(SK, id).starCosts; return Number(c[Math.min(st, c.length) - 1]) || 1000; }; // ราคาอัพจากดาว st → st+1
   const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])));
   function load() {
-    const ov = jget('dummySkillsOverride', null); // จาก skill-editor (ทดสอบในเครื่องนี้)
+    const ov = jget('dummySkillsOverride', null); // จาก skill-studio (ทดสอบในเครื่องนี้)
     if (ov && Array.isArray(ov.skills)) { SK = ov; return; }
     fetch('./skin/skills.json', { cache: 'no-cache' }).then(r => (r.ok ? r.json() : EMPTY)).then(j => { SK = j && Array.isArray(j.skills) ? j : EMPTY; if (typeof render === 'function') render(); }).catch(() => {});
   }
   const SAFE = ['hawkeye', 'cardcount', 'coinbonus', 'scramble'];
-  const slv = id => Math.max(0, Math.min((SK.stats.find(s => s.id === id) || { max: 10 }).max || 10, prog.lv[id] | 0));
+  const slv = statId => SkillCore.statValue(SK, statId, charId(), starsOf(charId()));
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-  function val(s, k) { const base = Number((s.params || {})[k]) || 0, sc = (s.scale || {})[k], lim = (s.limit || {})[k];
-    let v = base + (sc ? slv(sc.stat) * (Number(sc.per) || 0) : 0); if (lim && lim.length === 2) v = clamp(v, lim[0], lim[1]); return k === 'uses' || k === 'ranks' ? Math.floor(v + 1e-9) : Math.round(v * 10) / 10; }
+  const val = (s, k) => SkillCore.skillVal(s, k, slv);
   const testMode = () => LS.getItem('dummySkillTest') === '1';
   function mySkills() { const all = (SK.skills || []).filter(s => s.enabled !== false && SAFE.includes(s.effect));
-    if (testMode()) return all; const ids = (SK.characters || {})[typeof myChar === 'function' ? myChar() : ''] || []; return all.filter(s => ids.includes(s.id)); }
+    if (testMode()) return all; const ids = SkillCore.charCfg(SK, charId()).skills; return all.filter(s => ids.includes(s.id)); }
   const has = eff => mySkills().find(s => s.effect === eff);
   // ---- ค่าที่รันระหว่างเกม ----
   let RT = { gid: null, used: {}, last: {} };
@@ -68,20 +73,35 @@
       document.body.classList.add('sk-mist'); toast('🎭 ' + E(f.from) + ' ป่วนสายตาคุณ! กด "เรียงไพ่" แก้ได้'); render(); setTimeout(() => document.body.classList.remove('sk-mist'), ms); }); }
   setInterval(hook, 700);
   window.skCoinBonus = function (delta) { const s = has('coinbonus'); return s && delta > 0 ? Math.floor(delta * val(s, 'pct') / 100) : 0; };
-  // ---- หน้าความสามารถ ----
+  // ---- การ์ดตัวละคร: ดาว + ค่าความสามารถ + สกิล (ใช้ทั้งหน้า ⚡ และแท็บตัวละครในโปรไฟล์) · ไม่มีปุ่มอัพ stat — อัพดาวเท่านั้น ----
+  const starsHtml = (n, max) => Array.from({ length: max }, (_, i) => `<i class="${i < n ? 'on' : ''}">★</i>`).join('');
+  window.skCharCard = function (id, opt) {
+    opt = opt || {}; const ch = (typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY.characters || [] : []).find(x => x.id === id), cfg = SkillCore.charCfg(SK, id);
+    const st = starsOf(id), max = cfg.maxStars, full = st >= max, cost = full ? 0 : starCost(id, st), can = !full && sv.coins >= cost;
+    const stats = (SK.stats || []).map(s => { const v = SkillCore.statValue(SK, s.id, id, st), nx = full ? v : SkillCore.statValue(SK, s.id, id, st + 1), mx = s.max || 10;
+      return `<div class=ck-st><span>${E(s.icon)} ${E(s.name)}</span><div class=ck-bar><i style="width:${Math.min(100, v / mx * 100)}%"></i>${nx > v ? `<u style="left:${Math.min(100, v / mx * 100)}%;width:${Math.min(100, (nx - v) / mx * 100)}%"></u>` : ''}</div><b>${v}${nx > v ? `<em>+${Math.round((nx - v) * 100) / 100}</em>` : ''}</b></div>`; }).join('');
+    const sks = (SK.skills || []).filter(s => cfg.skills.includes(s.id) && s.enabled !== false && SAFE.includes(s.effect)).map(s =>
+      `<div class=ck-sk><span>${E(s.icon)}</span><div><b>${E(s.name)}</b> <em>${s.type === 'active' ? 'กดใช้' : 'ติดตัว'}</em><small>${E(s.desc || '')}</small><small class=sk-v>${Object.keys(s.params || {}).map(k => k + ': ' + val2(s, k, id, st)).join(' · ')}</small></div></div>`).join('');
+    const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · 🪙 ${cost}</button>`;
+    return `<div class="ck${opt.compact ? ' compact' : ''}"><div class=ck-h>${ch && ch.asset ? `<img src="${E(ch.asset)}" alt="">` : ''}<div><b>${E((ch && ch.name) || id || 'ตัวละคร')}</b><div class=ck-stars>${starsHtml(st, max)}</div>${full ? '' : `<small>อัพดาวเพื่อเพิ่มค่าความสามารถ</small>`}</div></div>${stats}${sks ? `<h4>สกิลของตัวละคร</h4>${sks}` : '<small class=ck-none>ตัวละครนี้ยังไม่มีสกิล</small>'}<div class=ck-up>${up}</div></div>`;
+  };
+  const val2 = (s, k, id, st) => SkillCore.skillVal(s, k, sid => SkillCore.statValue(SK, sid, id, st));
+  window.skUpStar = async function (id) {
+    const st = starsOf(id); if (st >= maxStars(id)) return; const cost = starCost(id, st);
+    if (dbOn()) { try { const r = await DB.upStar(id); if (window.dbToast) dbToast('⭐ ' + r.stars + ' ดาว!'); } catch (e) { if (window.dbToast) dbToast(e.message); } }
+    else { if (sv.coins < cost) return; sv.coins -= cost; stars0[id] = st + 1; try { LS.setItem('dummyStars', JSON.stringify(stars0)); } catch (e) {} save(); }
+    refreshOpen(); render();
+  };
+  function refreshOpen() { const m = document.querySelector('.sk-modal.sk-main'); if (m) fillSkills(m); }
+  function fillSkills(m) {
+    const id = charId(), others = (SK.skills || []).filter(s => SAFE.includes(s.effect));
+    m.innerHTML = `<div class=sk-box><button class=sk-x onclick="this.closest('.sk-modal').remove()">✕</button><h3>⚡ ความสามารถตัวละคร <span class=sk-coin>🪙 ${sv.coins}</span></h3>${id ? skCharCard(id) : '<small>ยังไม่ได้เลือกตัวละคร</small>'}
+      <label class=sk-test><input type=checkbox ${testMode() ? 'checked' : ''} onchange="skTest(this.checked)"> โหมดทดสอบ: ให้ตัวละครมีทุกสกิลตอนนี้</label><small>สกิลไม่เปลี่ยนกติกา ไม่เห็นไพ่คนอื่น และไม่มีผลกับการแจกไพ่ · ค่าความสามารถเพิ่มตามดาวของตัวละคร (อัพดาวได้ที่นี่หรือหน้าโปรไฟล์)</small></div>`;
+  }
   window.openSkills = function () {
-    document.querySelectorAll('.sk-modal').forEach(n => n.remove());
-    const m = document.createElement('div'); m.className = 'sk-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
-    const st = SK.stats.map(s => { const lv = slv(s.id), max = s.max || 10, cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
-      return `<div class=sk-row><div><b>${E(s.icon)} ${E(s.name)}</b> <em>Lv ${lv}/${max}</em><small>${E(s.desc || '')}</small><div class=sk-pips>${Array.from({ length: max }, (_, i) => `<i class="${i < lv ? 'on' : ''}"></i>`).join('')}</div></div>
-      <button class=sk-up ${lv >= max || sv.coins < cost ? 'disabled' : ''} onclick="skUp('${E(s.id)}')">${lv >= max ? 'เต็ม' : '⬆ 🪙' + cost}</button></div>`; }).join('');
-    const mine = mySkills().map(s => s.id), sl = (SK.skills || []).filter(s => SAFE.includes(s.effect)).map(s => `<div class=sk-row><div><b>${E(s.icon)} ${E(s.name)}</b> <em>${s.type === 'active' ? 'กดใช้' : 'ติดตัว'}</em>${s.enabled === false ? ' <em>ปิดอยู่</em>' : ''}<small>${E(s.desc || '')}</small>
-      <small class=sk-v>${Object.keys(s.params || {}).map(k => k + ': ' + val(s, k)).join(' · ')}</small></div><span class=sk-tag>${mine.includes(s.id) ? '✔ ใช้งานอยู่' : 'ยังไม่ผูกตัวละคร'}</span></div>`).join('');
-    m.innerHTML = `<div class=sk-box><button class=sk-x onclick="this.closest('.sk-modal').remove()">✕</button><h3>⚡ ความสามารถ <span class=sk-coin>🪙 ${sv.coins}</span></h3><h4>ค่าความสามารถ</h4>${st || '<small>ยังไม่มีข้อมูลสกิล</small>'}<h4>สกิลทั้งหมด</h4>${sl}
-      <label class=sk-test><input type=checkbox ${testMode() ? 'checked' : ''} onchange="skTest(this.checked)"> โหมดทดสอบ: ให้ตัวละครมีทุกสกิลตอนนี้</label><small>สกิลไม่เปลี่ยนกติกา ไม่เห็นไพ่คนอื่น และไม่มีผลกับการแจกไพ่</small></div>`;
-    document.body.appendChild(m); };
-  window.skUp = function (id) { const s = SK.stats.find(x => x.id === id); if (!s) return; const lv = slv(id), cost = (s.cost && s.cost.base || 100) + (s.cost && s.cost.step || 80) * lv;
-    if (lv >= (s.max || 10) || sv.coins < cost) return; sv.coins -= cost; prog.lv[id] = lv + 1; saveProg(); save(); openSkills(); render(); };
+    document.querySelectorAll('.sk-modal.sk-main').forEach(n => n.remove());
+    const m = document.createElement('div'); m.className = 'sk-modal sk-main'; m.onclick = e => { if (e.target === m) m.remove(); };
+    fillSkills(m); document.body.appendChild(m); };
   window.skTest = on => { LS.setItem('dummySkillTest', on ? '1' : '0'); render(); };
   if (typeof render === 'function') { const _r = render; window.render = render = function () { const r = _r.apply(this, arguments); try { paint(); } catch (e) {} return r; }; }
   load();
