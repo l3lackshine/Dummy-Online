@@ -1,6 +1,6 @@
 /* skills.js — ระบบสกิล/ค่าความสามารถ (ไม่แตะกติกา · คำนวณจากไพ่ที่ผู้เล่นเห็นอยู่แล้วเท่านั้น)
    ค่าความสามารถ "ผูกกับตัวละคร": ค่า = base + perStar × (ดาว−1) ตามที่ตั้งใน ./skin/skills.json (แก้ด้วย skill-studio.html)
-   การอัพค่าความสามารถ = อัพดาวตัวละคร (เสียเหรียญ) — ไม่มีปุ่มอัพ stat รายตัวอีกแล้ว */
+   การอัพค่าความสามารถ = อัพดาวตัวละคร (ใช้ตัวละครตัวเดิมที่สุ่มได้ซ้ำ) — ไม่มีปุ่มอัพ stat รายตัวอีกแล้ว */
 (function () {
   const EMPTY = { version: 1, stats: [], skills: [], characters: {} };
   let SK = EMPTY; const LS = window.localStorage;
@@ -11,7 +11,9 @@
   // ดาวของตัวละคร: โหมดบัญชี = จากฐานข้อมูล · โหมดเดิม = เก็บในเครื่อง
   const starsOf = id => Math.min(maxStars(id), Math.max(1, dbOn() ? DB.stars(id) : (Number(stars0[id]) || 1)));
   const maxStars = id => window.SkillCore ? SkillCore.charCfg(SK, id).maxStars : 5;
-  const starCost = (id, st) => { const c = SkillCore.charCfg(SK, id).starCosts; return Number(c[Math.min(st, c.length) - 1]) || 1000; }; // ราคาอัพจากดาว st → st+1
+  const starCost = (id, st) => { const c = SkillCore.charCfg(SK, id).starCosts; return Math.max(1, Number(c[Math.min(st, c.length) - 1]) || 1); }; // จำนวนตัวซ้ำที่ใช้อัพจากดาว st → st+1
+  const dupesOf = id => (dbOn() ? Math.max(0, DB.qty('characters', id) - 1) : Math.max(0, Number(dupes0[id]) || 0));
+  const dupes0 = jget('dummyDupes', {});
   const E = s => (typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])));
   function load() {
     const ov = jget('dummySkillsOverride', null); // จาก skill-studio (ทดสอบในเครื่องนี้)
@@ -77,19 +79,19 @@
   const starsHtml = (n, max) => Array.from({ length: max }, (_, i) => `<i class="${i < n ? 'on' : ''}">★</i>`).join('');
   window.skCharCard = function (id, opt) {
     opt = opt || {}; const ch = (typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY.characters || [] : []).find(x => x.id === id), cfg = SkillCore.charCfg(SK, id);
-    const st = starsOf(id), max = cfg.maxStars, full = st >= max, cost = full ? 0 : starCost(id, st), can = !full && sv.coins >= cost;
+    const st = starsOf(id), max = cfg.maxStars, full = st >= max, cost = full ? 0 : starCost(id, st), have = dupesOf(id), can = !full && have >= cost;
     const stats = (SK.stats || []).map(s => { const v = SkillCore.statValue(SK, s.id, id, st), nx = full ? v : SkillCore.statValue(SK, s.id, id, st + 1), mx = s.max || 10;
       return `<div class=ck-st><span>${E(s.icon)} ${E(s.name)}</span><div class=ck-bar><i style="width:${Math.min(100, v / mx * 100)}%"></i>${nx > v ? `<u style="left:${Math.min(100, v / mx * 100)}%;width:${Math.min(100, (nx - v) / mx * 100)}%"></u>` : ''}</div><b>${v}${nx > v ? `<em>+${Math.round((nx - v) * 100) / 100}</em>` : ''}</b></div>`; }).join('');
     const sks = (SK.skills || []).filter(s => cfg.skills.includes(s.id) && s.enabled !== false && SAFE.includes(s.effect)).map(s =>
       `<div class=ck-sk><span>${E(s.icon)}</span><div><b>${E(s.name)}</b> <em>${s.type === 'active' ? 'กดใช้' : 'ติดตัว'}</em><small>${E(s.desc || '')}</small><small class=sk-v>${Object.keys(s.params || {}).map(k => k + ': ' + val2(s, k, id, st)).join(' · ')}</small></div></div>`).join('');
-    const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · 🪙 ${cost}</button>`;
+    const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : !can && dbOn() ? `<button class="sk-up" disabled>⭐ อัพเป็น ${st + 1} ดาว · ต้องใช้ตัวซ้ำ ${cost} (มี ${have})</button><button class="sk-up" onclick="document.querySelectorAll('.sk-modal').forEach(n=>n.remove());go('shop')">🎰 ไปสุ่มกาชาเพื่อหาตัวซ้ำ</button>` : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · ใช้ตัวซ้ำ ${cost} (มี ${have})</button>`;
     return `<div class="ck${opt.compact ? ' compact' : ''}"><div class=ck-h>${ch && ch.asset ? `<img src="${E(ch.asset)}" alt="">` : ''}<div><b>${E((ch && ch.name) || id || 'ตัวละคร')}</b><div class=ck-stars>${starsHtml(st, max)}</div>${full ? '' : `<small>อัพดาวเพื่อเพิ่มค่าความสามารถ</small>`}</div></div>${stats}${sks ? `<h4>สกิลของตัวละคร</h4>${sks}` : '<small class=ck-none>ตัวละครนี้ยังไม่มีสกิล</small>'}<div class=ck-up>${up}</div></div>`;
   };
   const val2 = (s, k, id, st) => SkillCore.skillVal(s, k, sid => SkillCore.statValue(SK, sid, id, st));
   window.skUpStar = async function (id) {
     const st = starsOf(id); if (st >= maxStars(id)) return; const cost = starCost(id, st);
     if (dbOn()) { try { const r = await DB.upStar(id); if (window.dbToast) dbToast('⭐ ' + r.stars + ' ดาว!'); } catch (e) { if (window.dbToast) dbToast(e.message); } }
-    else { if (sv.coins < cost) return; sv.coins -= cost; stars0[id] = st + 1; try { LS.setItem('dummyStars', JSON.stringify(stars0)); } catch (e) {} save(); }
+    else { if (dupesOf(id) < cost) return; dupes0[id] = dupesOf(id) - cost; try { LS.setItem('dummyDupes', JSON.stringify(dupes0)); } catch (e) {} stars0[id] = st + 1; try { LS.setItem('dummyStars', JSON.stringify(stars0)); } catch (e) {} save(); }
     refreshOpen(); render();
   };
   function refreshOpen() { const m = document.querySelector('.sk-modal.sk-main'); if (m) fillSkills(m); }

@@ -212,12 +212,6 @@
     },
     "rina-01": {
       "maxStars": 5,
-      "starCosts": [
-        800,
-        1600,
-        3200,
-        6400
-      ],
       "stats": {
         "insight": {
           "base": 3,
@@ -243,12 +237,6 @@
     },
     "arya-01": {
       "maxStars": 5,
-      "starCosts": [
-        800,
-        1600,
-        3200,
-        6400
-      ],
       "stats": {
         "insight": {
           "base": 2,
@@ -274,12 +262,6 @@
     },
     "rena-01": {
       "maxStars": 5,
-      "starCosts": [
-        800,
-        1600,
-        3200,
-        6400
-      ],
       "stats": {
         "insight": {
           "base": 3,
@@ -307,10 +289,10 @@
   "defaults": {
     "maxStars": 5,
     "starCosts": [
-      500,
-      1000,
-      2000,
-      4000
+      1,
+      2,
+      3,
+      4
     ],
     "stats": {
       "insight": {

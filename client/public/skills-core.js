@@ -4,7 +4,7 @@
 (function (root, factory) { if (typeof module === 'object' && module.exports) module.exports = factory(); else root.SkillCore = factory(); })(typeof self !== 'undefined' ? self : this, function () {
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const num = (v, d) => { v = Number(v); return Number.isFinite(v) ? v : d; };
-  const DEF_COSTS = [500, 1000, 2000, 4000];
+  const DEF_COSTS = [1, 2, 3, 4];
 
   // ค่าตั้งของตัวละคร (รวมกับ defaults) — รองรับรูปแบบเก่า characters[id] = [skillIds]
   function charCfg(data, charId) {

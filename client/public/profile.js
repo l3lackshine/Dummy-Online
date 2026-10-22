@@ -41,12 +41,12 @@
     return `<table class=pf-tb><thead><tr><th>เกม</th><th>เล่น</th><th>ชนะ</th><th>แพ้</th><th>เสมอ</th><th>%ชนะ</th><th>🪙สุทธิ</th></tr></thead><tbody>${st.map(g => row(E(ruleName(g.game_id)), { p: g.plays, w: g.wins, l: g.losses, d: g.draws, n: g.coins_won - g.coins_lost })).join('')}${row('รวม', tot, 'tot')}</tbody></table>`;
   }
   function itemsPanel() {
-    const inv = DB.P.inventory || [];
-    if (!inv.length) return '<p class=pf-empty>ยังไม่เคยซื้อของจากร้านค้า</p>';
-    return inv.map(i => `<div class=pf-it><b>${E(itemName(i.kind, i.item_id))}</b><small>${E(KIND_TH[i.kind] || i.kind)} · ${i.currency === 'mcash' ? '💎' : '🪙'} ${N(i.price_paid)} · ${E(fmtDateTime(i.acquired_at))}</small></div>`).join('');
+    const inv = (DB.P.inventory || []).filter(i => (Number(i.qty) || 0) > 0);
+    if (!inv.length) return '<p class=pf-empty>ยังไม่มีของ — ไปสุ่มกาชาได้เลย 🎰</p><button class="wbtn go" onclick="go(\'shop\')">🎰 ไปกาชา</button>';
+    return inv.map(i => `<div class=pf-it><b>${E(itemName(i.kind, i.item_id))}${i.qty > 1 ? ' ×' + i.qty : ''}</b><small>${E(KIND_TH[i.kind] || i.kind)}${i.qty > 1 ? ' · ตัวซ้ำ ' + (i.qty - 1) : ''} · ${E(fmtDateTime(i.acquired_at))}</small></div>`).join('') + '<button class="wbtn go" onclick="go(\'shop\')">🎰 กาชา / ขายตัวซ้ำ</button>';
   }
   function rightPanel() {
-    const tabs = DBON() ? [['chars', '⭐ ตัวละคร'], ['stats', '📊 สถิติเกม'], ['items', '🛍️ ของที่ซื้อ']] : [['chars', '⭐ ตัวละคร']];
+    const tabs = DBON() ? [['chars', '⭐ ตัวละคร'], ['stats', '📊 สถิติเกม'], ['items', '🎒 ของที่มี']] : [['chars', '⭐ ตัวละคร']];
     if (!tabs.some(t => t[0] === tab)) tab = 'chars';
     const body = tab === 'stats' ? statsPanel() : tab === 'items' ? itemsPanel() : charsPanel();
     return `<div class=pf-tabs>${tabs.map(([k, l]) => `<button class="${tab === k ? 'on' : ''}" onclick="pfTab('${k}')">${l}</button>`).join('')}</div><div class=pf-scroll>${body}</div>`;

@@ -22,7 +22,7 @@ insert into public.game_config(key, value) values
   ('weekly_quest_picks', '4'),
   ('daily_bonus_coins',  '100'),    -- โบนัสเมื่อรับครบทุกเควสของวัน
   ('weekly_bonus_coins', '500'),
-  ('star_costs',      '[500,1000,2000,4000]'),  -- ราคาอัพดาว 1→2, 2→3, ... (ตัวละครกำหนดเองได้ใน character_defs)
+  ('star_copies',     '[1,2,3,4]'),   -- จำนวนตัวซ้ำที่ใช้อัพดาว 1→2, 2→3, ... (ตัวละครกำหนดเองได้ใน character_defs)
   ('max_stars',       '5')
 on conflict (key) do nothing;
 
@@ -104,32 +104,78 @@ create table if not exists public.wallet_ledger (
 create index if not exists wallet_ledger_user on public.wallet_ledger(user_id, created_at desc);
 create unique index if not exists wallet_ledger_topup_ref on public.wallet_ledger(ref) where reason = 'topup';
 
--- ---------- ร้านค้า / ของที่ซื้อ ----------
-create table if not exists public.shop_items (
-  kind         text not null,                 -- characters | backs | tables | backgrounds | ...
-  item_id      text not null,
-  name         text not null default '',
-  price_coins  int  not null default 0 check (price_coins >= 0),
-  price_mcash  int  not null default 0 check (price_mcash >= 0),
-  active       boolean not null default true,
+-- ---------- แคตตาล็อกของ / คลัง / กาชา ----------
+-- ไม่มีร้านค้าแล้ว: ของทุกชิ้นได้จากการสุ่มกาชา · ของซ้ำ = ขายเป็นเหรียญ หรือ (ตัวละคร) เอาไปอัพดาว
+drop table if exists public.shop_items cascade;         -- ของระบบเก่า (ร้านค้า) ถูกยกเลิก
+drop function if exists public.buy_item(text, text, text);
+create table if not exists public.catalog_items (
+  kind        text not null,                  -- characters | backs | tables | backgrounds
+  item_id     text not null,
+  name        text not null default '',
+  rarity      text not null default 'common' check (rarity in ('common','rare','epic','legendary')),
+  is_default  boolean not null default false, -- ของเริ่มต้น: ทุกคนมีตั้งแต่แรก
+  sell_coins  int,                            -- ราคารับซื้อตัวซ้ำ (ว่าง = ตามระดับความหายาก)
+  active      boolean not null default true,
   primary key (kind, item_id)
 );
+create table if not exists public.rarity_config (
+  rarity     text primary key,
+  name       text not null,
+  sell_coins int  not null default 0,
+  sort       int  not null default 0
+);
+-- คลังของผู้เล่น: qty = จำนวนที่มี (ตัวแรก 1 + ตัวซ้ำ) — ตัวซ้ำ = qty − 1
 create table if not exists public.inventory (
   user_id     uuid not null references public.profiles(id) on delete cascade,
   kind        text not null,
   item_id     text not null,
-  currency    text not null default 'coins',
-  price_paid  int  not null default 0,
+  qty         int  not null default 1 check (qty >= 0),
   acquired_at timestamptz not null default now(),
   primary key (user_id, kind, item_id)
 );
+alter table public.inventory add column if not exists qty int not null default 1;   -- รองรับฐานข้อมูลที่สร้างจากเวอร์ชันเก่า
+create table if not exists public.gacha_banners (
+  id           text primary key,
+  name         text not null,
+  description  text not null default '',
+  single_coins int, single_mcash int,         -- ราคาสุ่ม 1 ครั้ง (ว่าง = ไม่รับสกุลนั้น)
+  ten_coins    int, ten_mcash    int,         -- ราคาสุ่ม 10 ครั้ง (การันตีระดับ rare ขึ้นไปอย่างน้อย 1 ชิ้น)
+  pity         int not null default 0,        -- สุ่มไม่ได้ legendary ครบกี่ครั้งแล้วการันตี (0 = ปิด)
+  sort         int not null default 0,
+  active       boolean not null default true
+);
+create table if not exists public.gacha_pool (
+  banner_id text not null references public.gacha_banners(id) on delete cascade,
+  kind      text not null,
+  item_id   text not null,
+  weight    int  not null default 1 check (weight >= 0),   -- น้ำหนักโอกาส (โอกาส = weight ÷ ผลรวมทั้งตู้)
+  primary key (banner_id, kind, item_id),
+  foreign key (kind, item_id) references public.catalog_items(kind, item_id) on delete cascade
+);
+create table if not exists public.gacha_pity (
+  user_id   uuid not null references public.profiles(id) on delete cascade,
+  banner_id text not null references public.gacha_banners(id) on delete cascade,
+  since_top int  not null default 0,
+  primary key (user_id, banner_id)
+);
+create table if not exists public.gacha_log (
+  id        bigserial primary key,
+  user_id   uuid not null references public.profiles(id) on delete cascade,
+  banner_id text not null,
+  pulls     int  not null,
+  currency  text not null,
+  cost      int  not null,
+  results   jsonb not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists gacha_log_user on public.gacha_log(user_id, created_at desc);
 
 -- ---------- ตัวละคร + ดาว ----------
--- character_defs: ราคาอัพดาว/จำนวนดาวสูงสุด/โบนัสเหรียญต่อดาว (สร้างจาก Skill Studio → character_defs.sql)
+-- character_defs: จำนวนตัวซ้ำที่ใช้อัพดาว/จำนวนดาวสูงสุด/โบนัสเหรียญต่อดาว (สร้างจาก Skill Studio → character_defs.sql)
 create table if not exists public.character_defs (
   id         text primary key,
   max_stars  int  not null default 5 check (max_stars between 1 and 10),
-  star_costs int[],                 -- ว่าง = ใช้ค่ากลาง game_config.star_costs
+  star_costs int[],                 -- จำนวน "ตัวซ้ำ" ที่ใช้อัพดาว 1→2, 2→3, ... (ว่าง = ใช้ค่ากลาง game_config.star_copies)
   bonus_pct  int[]                  -- โบนัสเหรียญเมื่อชนะ (%) ตามดาว: index 1 = ดาว 1
 );
 create table if not exists public.user_characters (
@@ -246,11 +292,13 @@ create or replace function public._uid() returns uuid language plpgsql stable as
 declare v uuid := auth.uid();
 begin if v is null then raise exception 'กรุณาเข้าสู่ระบบ'; end if; return v; end $$;
 
--- เป็นเจ้าของของชิ้นนี้ไหม: ของราคา 0 ในตาราง shop_items = ของฟรี (ทุกคนมี) · นอกนั้นต้องมีใน inventory
-create or replace function public._owns(p_user uuid, p_kind text, p_id text) returns boolean
+-- จำนวนที่ผู้เล่นมีของชิ้นนี้: ของเริ่มต้นนับเป็น 1 เสมอ
+create or replace function public._qty(p_user uuid, p_kind text, p_id text) returns int
 language sql stable security definer set search_path = public as $$
-  select coalesce((select s.price_coins = 0 and s.price_mcash = 0 from public.shop_items s where s.kind = p_kind and s.item_id = p_id), false)
-      or exists (select 1 from public.inventory i where i.user_id = p_user and i.kind = p_kind and i.item_id = p_id) $$;
+  select coalesce((select i.qty from public.inventory i where i.user_id = p_user and i.kind = p_kind and i.item_id = p_id),
+                  case when exists (select 1 from public.catalog_items c where c.kind = p_kind and c.item_id = p_id and c.is_default) then 1 else 0 end) $$;
+create or replace function public._owns(p_user uuid, p_kind text, p_id text) returns boolean
+language sql stable security definer set search_path = public as $$ select public._qty(p_user, p_kind, p_id) >= 1 $$;
 
 -- ---------- ล็อกอิน / streak ----------
 -- เรียกทุกครั้งที่เปิดเกม: อัปเดตเวลาล็อกอินล่าสุด + จำนวนวันติดต่อกัน (วันละ 1 ครั้ง นับตามเวลาไทย)
@@ -395,27 +443,6 @@ begin
 end $$;
 
 -- ---------- ร้านค้า / โปรไฟล์ / ตัวละคร ----------
-create or replace function public.buy_item(p_kind text, p_id text, p_currency text default 'coins') returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare u uuid := public._uid(); s public.shop_items; v_price int; v_bal bigint;
-begin
-  select * into s from public.shop_items where kind = p_kind and item_id = p_id and active;
-  if not found then raise exception 'ไม่มีสินค้านี้ในร้าน'; end if;
-  if p_currency not in ('coins','mcash') then raise exception 'สกุลเงินไม่ถูกต้อง'; end if;
-  v_price := case p_currency when 'coins' then s.price_coins else s.price_mcash end;
-  if v_price <= 0 then raise exception 'สินค้านี้ไม่ได้ขายด้วย %', case p_currency when 'coins' then 'เหรียญ' else 'MCash' end; end if;
-  perform 1 from public.profiles where id = u for update;
-  if public._owns(u, p_kind, p_id) then raise exception 'คุณมีของชิ้นนี้แล้ว'; end if;
-  select case p_currency when 'coins' then coins else mcash end into v_bal from public.profiles where id = u;
-  if v_bal < v_price then raise exception '% ไม่พอ', case p_currency when 'coins' then 'เหรียญ' else 'MCash' end; end if;
-  perform public._wallet_add(u, p_currency, -v_price, 'shop', p_kind || ':' || p_id);
-  insert into public.inventory(user_id, kind, item_id, currency, price_paid) values (u, p_kind, p_id, p_currency, v_price);
-  if p_kind = 'characters' then
-    insert into public.user_characters(user_id, character_id) values (u, p_id) on conflict do nothing;
-  end if;
-  return jsonb_build_object('kind', p_kind, 'item_id', p_id, 'paid', v_price, 'currency', p_currency);
-end $$;
-
 create or replace function public.set_equipped(p_kind text, p_id text) returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare u uuid := public._uid();
@@ -442,30 +469,127 @@ begin
   return (select jsonb_build_object('display_name', display_name, 'title', title) from public.profiles where id = u);
 end $$;
 
--- อัพดาวตัวละคร (แทนการอัพค่าความสามารถ): ค่าความสามารถของตัวละครเพิ่มตามดาว (กำหนดใน skills.json ผ่าน Skill Studio)
+-- อัพดาวตัวละคร: ใช้ "ตัวซ้ำ" ของตัวละครตัวเดิม (ได้จากกาชา) — ไม่ใช้เหรียญ · ค่าความสามารถเพิ่มตามดาว (ตั้งใน skills.json ผ่าน Skill Studio)
 create or replace function public.upgrade_star(p_char text) returns jsonb
 language plpgsql security definer set search_path = public as $$
-declare u uuid := public._uid(); d public.character_defs; v_stars int; v_max int; v_cost int; v_costs jsonb; v_bal bigint;
+declare u uuid := public._uid(); d public.character_defs; v_stars int; v_max int; v_need int; v_costs jsonb; v_qty int;
 begin
   if p_char !~ '^[A-Za-z0-9_.-]{1,60}$' then raise exception 'ตัวละครไม่ถูกต้อง'; end if;
   perform 1 from public.profiles where id = u for update;
-  if not public._owns(u, 'characters', p_char) then raise exception 'คุณยังไม่มีตัวละครนี้'; end if;
+  v_qty := public._qty(u, 'characters', p_char);
+  if v_qty < 1 then raise exception 'คุณยังไม่มีตัวละครนี้'; end if;
   select * into d from public.character_defs where id = p_char;
   v_max := coalesce(d.max_stars, (public._cfg('max_stars') #>> '{}')::int, 5);
   select stars into v_stars from public.user_characters where user_id = u and character_id = p_char;
   v_stars := coalesce(v_stars, 1);
   if v_stars >= v_max then raise exception 'ตัวละครนี้ดาวเต็มแล้ว'; end if;
-  if d.star_costs is not null and array_length(d.star_costs, 1) >= v_stars then v_cost := d.star_costs[v_stars];
+  if d.star_costs is not null and array_length(d.star_costs, 1) >= v_stars then v_need := d.star_costs[v_stars];
   else
-    v_costs := public._cfg('star_costs');
-    v_cost := coalesce((v_costs ->> (v_stars - 1))::int, (v_costs ->> (jsonb_array_length(v_costs) - 1))::int, 1000);
+    v_costs := public._cfg('star_copies');
+    v_need := coalesce((v_costs ->> (v_stars - 1))::int, (v_costs ->> (jsonb_array_length(v_costs) - 1))::int, 1);
   end if;
-  select coins into v_bal from public.profiles where id = u;
-  if v_bal < v_cost then raise exception 'เหรียญไม่พอ (ต้องใช้ % เหรียญ)', v_cost; end if;
-  perform public._wallet_add(u, 'coins', -v_cost, 'star', p_char || ':' || (v_stars + 1));
+  v_need := greatest(1, v_need);
+  if v_qty - 1 < v_need then raise exception 'ต้องมีตัวซ้ำอีก % ตัว (มี % / ต้องใช้ %) — สุ่มกาชาเพื่อหาตัวซ้ำ', v_need - (v_qty - 1), v_qty - 1, v_need; end if;
+  update public.inventory set qty = qty - v_need where user_id = u and kind = 'characters' and item_id = p_char;
   insert into public.user_characters(user_id, character_id, stars) values (u, p_char, v_stars + 1)
   on conflict (user_id, character_id) do update set stars = excluded.stars, updated_at = now();
-  return jsonb_build_object('character', p_char, 'stars', v_stars + 1, 'cost', v_cost);
+  return jsonb_build_object('character', p_char, 'stars', v_stars + 1, 'used', v_need);
+end $$;
+
+-- ---------- กาชา ----------
+create or replace function public._gacha_pick(p_banner text, p_force text[]) returns table(kind text, item_id text, rarity text, name text)
+language plpgsql volatile security definer set search_path = public as $$
+declare v_tot bigint; v_r double precision;
+begin
+  select coalesce(sum(gp.weight), 0) into v_tot from public.gacha_pool gp join public.catalog_items ci on ci.kind = gp.kind and ci.item_id = gp.item_id
+   where gp.banner_id = p_banner and ci.active and gp.weight > 0 and (p_force is null or ci.rarity = any(p_force));
+  if v_tot = 0 then return; end if;
+  v_r := random() * v_tot;
+  return query select t.kind, t.item_id, t.rarity, t.name from (
+    select gp.kind, gp.item_id, ci.rarity, ci.name, sum(gp.weight) over (order by gp.kind, gp.item_id) as cum
+    from public.gacha_pool gp join public.catalog_items ci on ci.kind = gp.kind and ci.item_id = gp.item_id
+    where gp.banner_id = p_banner and ci.active and gp.weight > 0 and (p_force is null or ci.rarity = any(p_force))) t
+  where t.cum > v_r order by t.cum limit 1;
+end $$;
+
+create or replace function public.gacha_pull(p_banner text, p_count int, p_currency text default 'coins') returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare u uuid := public._uid(); b public.gacha_banners; v_cost int; v_bal bigint; v_since int; v_i int; v_force text[];
+        pk record; v_have int; v_good boolean := false; v_res jsonb := '[]'::jsonb; v_coins bigint; v_mcash bigint; v_cur text;
+begin
+  if p_count not in (1, 10) then raise exception 'สุ่มได้ครั้งละ 1 หรือ 10 ครั้ง'; end if;
+  if p_currency not in ('coins', 'mcash') then raise exception 'สกุลเงินไม่ถูกต้อง'; end if;
+  v_cur := case p_currency when 'coins' then 'เหรียญ' else 'MCash' end;
+  select * into b from public.gacha_banners where id = p_banner and active;
+  if not found then raise exception 'ไม่พบตู้กาชานี้'; end if;
+  v_cost := case when p_count = 1 then (case p_currency when 'coins' then b.single_coins else b.single_mcash end)
+                 else (case p_currency when 'coins' then b.ten_coins else b.ten_mcash end) end;
+  if v_cost is null or v_cost <= 0 then raise exception 'ตู้นี้ไม่รับชำระด้วย %', v_cur; end if;
+  perform 1 from public.profiles where id = u for update;
+  select case p_currency when 'coins' then coins else mcash end into v_bal from public.profiles where id = u;
+  if v_bal < v_cost then raise exception '% ไม่พอ (ต้องใช้ %)', v_cur, v_cost; end if;
+  if not exists (select 1 from public.gacha_pool gp join public.catalog_items ci using (kind, item_id) where gp.banner_id = p_banner and ci.active and gp.weight > 0) then
+    raise exception 'ตู้กาชานี้ยังไม่มีของ'; end if;
+  perform public._wallet_add(u, p_currency, -v_cost, 'gacha', p_banner || ':' || p_count);
+  insert into public.gacha_pity(user_id, banner_id) values (u, p_banner) on conflict do nothing;
+  select since_top into v_since from public.gacha_pity where user_id = u and banner_id = p_banner;
+  for v_i in 1..p_count loop
+    v_force := null;
+    if b.pity > 0 and v_since + 1 >= b.pity and exists (select 1 from public._gacha_pick(p_banner, array['legendary'])) then v_force := array['legendary'];
+    elsif p_count = 10 and v_i = 10 and not v_good and exists (select 1 from public._gacha_pick(p_banner, array['rare','epic','legendary'])) then v_force := array['rare','epic','legendary'];
+    end if;
+    select * into pk from public._gacha_pick(p_banner, v_force);
+    v_have := public._qty(u, pk.kind, pk.item_id);
+    insert into public.inventory(user_id, kind, item_id, qty) values (u, pk.kind, pk.item_id, v_have + 1)
+    on conflict (user_id, kind, item_id) do update set qty = excluded.qty;
+    if v_have = 0 and pk.kind = 'characters' then
+      insert into public.user_characters(user_id, character_id) values (u, pk.item_id) on conflict do nothing;
+    end if;
+    if pk.rarity in ('rare', 'epic', 'legendary') then v_good := true; end if;
+    v_since := case when pk.rarity = 'legendary' then 0 else v_since + 1 end;
+    v_res := v_res || jsonb_build_array(jsonb_build_object('kind', pk.kind, 'item_id', pk.item_id, 'name', pk.name, 'rarity', pk.rarity, 'new', v_have = 0, 'qty', v_have + 1));
+  end loop;
+  update public.gacha_pity set since_top = v_since where user_id = u and banner_id = p_banner;
+  insert into public.gacha_log(user_id, banner_id, pulls, currency, cost, results) values (u, p_banner, p_count, p_currency, v_cost, v_res);
+  select coins, mcash into v_coins, v_mcash from public.profiles where id = u;
+  return jsonb_build_object('results', v_res, 'coins', v_coins, 'mcash', v_mcash, 'since_top', v_since, 'cost', v_cost, 'currency', p_currency);
+end $$;
+
+-- ขายตัวซ้ำเป็นเหรียญ (เก็บไว้อย่างน้อย 1 ชิ้นเสมอ)
+create or replace function public.sell_dupes(p_kind text, p_id text, p_qty int) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare u uuid := public._uid(); c public.catalog_items; v_have int; v_unit int; v_total bigint; v_coins bigint;
+begin
+  if p_qty is null or p_qty < 1 or p_qty > 1000 then raise exception 'จำนวนไม่ถูกต้อง'; end if;
+  perform 1 from public.profiles where id = u for update;
+  select * into c from public.catalog_items where kind = p_kind and item_id = p_id;
+  if not found then raise exception 'ไม่พบของชิ้นนี้'; end if;
+  v_have := public._qty(u, p_kind, p_id);
+  if v_have - 1 < p_qty then raise exception 'ตัวซ้ำไม่พอ (มีตัวซ้ำ % ชิ้น)', greatest(v_have - 1, 0); end if;
+  v_unit := coalesce(c.sell_coins, (select sell_coins from public.rarity_config where rarity = c.rarity), 0);
+  v_total := v_unit::bigint * p_qty;
+  update public.inventory set qty = qty - p_qty where user_id = u and kind = p_kind and item_id = p_id;
+  v_coins := public._wallet_add(u, 'coins', v_total, 'sell', p_kind || ':' || p_id || 'x' || p_qty);
+  return jsonb_build_object('sold', p_qty, 'coins_gained', v_total, 'coins', v_coins);
+end $$;
+
+-- ข้อมูลหน้ากาชา: ตู้ทั้งหมด ราคา อัตราการออก (โปร่งใส) และตัวนับการันตีของผู้เล่น
+create or replace function public.get_gacha() returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare u uuid := public._uid();
+begin
+  return jsonb_build_object(
+    'rarities', coalesce((select jsonb_object_agg(r.rarity, jsonb_build_object('name', r.name, 'sell_coins', r.sell_coins, 'sort', r.sort)) from public.rarity_config r), '{}'),
+    'banners', coalesce((select jsonb_agg(jsonb_build_object(
+        'id', b.id, 'name', b.name, 'description', b.description, 'pity', b.pity,
+        'single', jsonb_build_object('coins', b.single_coins, 'mcash', b.single_mcash),
+        'ten', jsonb_build_object('coins', b.ten_coins, 'mcash', b.ten_mcash),
+        'since_top', coalesce((select since_top from public.gacha_pity p where p.user_id = u and p.banner_id = b.id), 0),
+        'items', coalesce((select jsonb_agg(jsonb_build_object('kind', x.kind, 'item_id', x.item_id, 'name', x.name, 'rarity', x.rarity,
+                   'pct', round(x.weight * 100.0 / nullif(x.tot, 0), 3)) order by x.weight desc, x.name)
+                 from (select gp.kind, gp.item_id, ci.name, ci.rarity, gp.weight, sum(gp.weight) over () tot
+                       from public.gacha_pool gp join public.catalog_items ci using (kind, item_id) where gp.banner_id = b.id and ci.active and gp.weight > 0) x), '[]'))
+      order by b.sort, b.id) from public.gacha_banners b where b.active), '[]'));
 end $$;
 
 -- ---------- ข้อมูลทั้งหมดของผู้เล่น (ครั้งเดียวจบ) ----------
@@ -482,7 +606,7 @@ begin
     'last_login_at', p.last_login_at, 'login_streak', p.login_streak, 'best_streak', p.best_streak, 'total_login_days', p.total_login_days,
     'last_game', p.last_game, 'last_game_at', p.last_game_at, 'created_at', p.created_at,
     'stats', coalesce((select jsonb_agg(to_jsonb(g) - 'user_id' order by g.plays desc) from public.game_stats g where g.user_id = u), '[]'),
-    'inventory', coalesce((select jsonb_agg(jsonb_build_object('kind', i.kind, 'item_id', i.item_id, 'currency', i.currency, 'price_paid', i.price_paid, 'acquired_at', i.acquired_at) order by i.acquired_at desc) from public.inventory i where i.user_id = u), '[]'),
+    'inventory', coalesce((select jsonb_agg(jsonb_build_object('kind', i.kind, 'item_id', i.item_id, 'qty', i.qty, 'acquired_at', i.acquired_at) order by i.acquired_at desc) from public.inventory i where i.user_id = u and i.qty >= 1), '[]'),
     'characters', coalesce((select jsonb_object_agg(c.character_id, c.stars) from public.user_characters c where c.user_id = u), '{}'),
     'login', jsonb_build_object(
       'today', v_today, 'streak', p.login_streak, 'claimed', coalesce(ld.claimed_at is not null, false),
@@ -556,7 +680,12 @@ alter table public.profiles         enable row level security;
 alter table public.game_stats       enable row level security;
 alter table public.game_log         enable row level security;
 alter table public.wallet_ledger    enable row level security;
-alter table public.shop_items       enable row level security;
+alter table public.catalog_items    enable row level security;
+alter table public.rarity_config    enable row level security;
+alter table public.gacha_banners    enable row level security;
+alter table public.gacha_pool       enable row level security;
+alter table public.gacha_pity       enable row level security;
+alter table public.gacha_log        enable row level security;
 alter table public.inventory        enable row level security;
 alter table public.character_defs   enable row level security;
 alter table public.user_characters  enable row level security;
@@ -569,12 +698,12 @@ alter table public.quest_bonus      enable row level security;
 
 do $$ declare t text; begin
   -- ตารางของผู้เล่น: อ่านได้เฉพาะแถวตัวเอง
-  foreach t in array array['game_stats','game_log','wallet_ledger','inventory','user_characters','login_days','user_quests','quest_bonus'] loop
+  foreach t in array array['game_stats','game_log','wallet_ledger','inventory','user_characters','login_days','user_quests','quest_bonus','gacha_pity','gacha_log'] loop
     execute format('drop policy if exists "own read" on public.%I', t);
     execute format('create policy "own read" on public.%I for select to authenticated using (user_id = auth.uid())', t);
   end loop;
   -- ตารางตั้งค่า: อ่านได้ทุกคน
-  foreach t in array array['game_config','shop_items','character_defs','login_rewards','login_milestones','quest_defs'] loop
+  foreach t in array array['game_config','catalog_items','rarity_config','gacha_banners','gacha_pool','character_defs','login_rewards','login_milestones','quest_defs'] loop
     execute format('drop policy if exists "public read" on public.%I', t);
     execute format('create policy "public read" on public.%I for select to anon, authenticated using (true)', t);
   end loop;
@@ -584,17 +713,18 @@ create policy "own read" on public.profiles for select to authenticated using (i
 
 -- ห้ามเขียนตรงทุกตาราง (เขียนผ่านฟังก์ชันเท่านั้น)
 revoke insert, update, delete, truncate on
-  public.game_config, public.profiles, public.game_stats, public.game_log, public.wallet_ledger, public.shop_items, public.inventory,
-  public.character_defs, public.user_characters, public.login_rewards, public.login_milestones, public.login_days,
+  public.game_config, public.profiles, public.game_stats, public.game_log, public.wallet_ledger, public.catalog_items, public.rarity_config,
+  public.gacha_banners, public.gacha_pool, public.gacha_pity, public.gacha_log, public.inventory, public.character_defs, public.user_characters, public.login_rewards, public.login_milestones, public.login_days,
   public.quest_defs, public.user_quests, public.quest_bonus from anon, authenticated;
-revoke all on public.wallet_ledger, public.game_log from anon;
+revoke all on public.wallet_ledger, public.game_log, public.gacha_log, public.gacha_pity, public.inventory from anon;
 
 -- ฟังก์ชัน: ปิดทั้งหมดก่อน แล้วเปิดเฉพาะที่จำเป็น
 revoke all on all functions in schema public from public, anon, authenticated;
 grant execute on function public.game_day(timestamptz), public.game_week(timestamptz) to anon, authenticated;
 grant execute on function
   public.record_login(), public.claim_login_reward(), public.get_quests(), public.claim_quest(text), public.claim_quest_bonus(text),
-  public.buy_item(text, text, text), public.set_equipped(text, text), public.update_profile(text, text), public.upgrade_star(text),
+  public.gacha_pull(text, int, text), public.sell_dupes(text, text, int), public.get_gacha(),
+  public.set_equipped(text, text), public.update_profile(text, text), public.upgrade_star(text),
   public.get_profile() to authenticated;
 grant execute on function
   public.record_game_result(uuid, text, text, int, boolean, int, boolean, text),
@@ -627,3 +757,14 @@ insert into public.quest_defs(id, period, metric, target, reward_coins, name, de
   ('w_melds40', 'weekly', 'melds', 40,  300, 'เซียนเกิดไพ่', 'เกิดไพ่ 40 ชุด (ดัมมี่)', '🃏', 'dummy', false),
   ('w_knock3',  'weekly', 'knock', 3,   400, 'จอมน็อก', 'น็อกให้สำเร็จ 3 ครั้ง (ดัมมี่)', '👊', 'dummy', false)
 on conflict (id) do nothing;
+insert into public.rarity_config(rarity, name, sell_coins, sort) values
+  ('common', 'ธรรมดา', 20, 1), ('rare', 'หายาก', 80, 2), ('epic', 'หายากมาก', 300, 3), ('legendary', 'ตำนาน', 1000, 4)
+on conflict (rarity) do nothing;
+
+-- ผู้ใช้ที่สมัครไว้ก่อนมีตารางนี้ (ไม่มี profile) → สร้างให้
+insert into public.profiles(id, username, display_name, coins, mcash)
+select u.id, 'u' || substr(replace(u.id::text, '-', ''), 1, 10),
+       left(coalesce(nullif(trim(u.raw_user_meta_data->>'display_name'), ''), 'ผู้เล่น'), 14),
+       coalesce((public._cfg('start_coins') #>> '{}')::bigint, 5000), 0
+from auth.users u where not exists (select 1 from public.profiles p where p.id = u.id)
+on conflict do nothing;

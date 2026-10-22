@@ -32,17 +32,29 @@ let passed = 0; const ok = (c, m) => { if (!c) throw new Error('FAIL: ' + m); pa
   ok(await page.$('.hud-sk[onclick*=openSkills]') !== null || true, 'หน้าโปรไฟล์แสดง');
   ok(!(await page.content()).includes('อัปเกรดความสามารถ'), 'ไม่มีปุ่มอัปเกรดความสามารถแล้ว');
   await page.click('.pf-tabs button:nth-child(2)'); await shot('08-stats'); await page.click('.pf-tabs button:nth-child(3)');
-  await page.evaluate(() => go('shop')); await page.waitForSelector('.item2'); await shot('09-shop');
-  // ซื้อของ → หักเหรียญ → อยู่ในแท็บ "ของที่ซื้อ"
-  await page.evaluate(() => buyItem('tables', 'wood')); await page.waitForFunction(() => sv.coins === 4700);
-  ok(true, 'ซื้อโต๊ะไม้ 400 → เหรียญเหลือ 4700');
-  await page.evaluate(() => buyItem('tables', 'wood')); await page.waitForTimeout(200); ok(await page.evaluate(() => sv.coins) === 4700, 'ซื้อซ้ำไม่หักเหรียญ');
-  // อัพดาวตัวละคร
+  await page.evaluate(() => go('shop')); await page.waitForSelector('.gc-hero'); await shot('09-gacha');
+  ok(!(await page.content()).includes('buyItem('), 'หน้านี้ไม่มีปุ่มซื้อของแล้ว (เป็นกาชา)');
+  // ยังไม่มีตัวซ้ำ → อัพดาวไม่ได้
+  ok(await page.evaluate(() => { openSkills(); const b = document.querySelector('.sk-main .sk-up'); const d = b && b.disabled; document.querySelectorAll('.sk-modal').forEach(n => n.remove()); return d; }), 'ไม่มีตัวซ้ำ → ปุ่มอัพดาวกดไม่ได้');
+  // สุ่ม 1 ครั้ง ได้ boy ซ้ำ → หัก 300
+  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .wbtn:nth-child(1)'); await page.waitForSelector('.gc-card');
+  ok(await page.evaluate(() => sv.coins) === 4800 && (await page.textContent('.gc-card')).includes('ซ้ำ'), 'สุ่ม 1 ครั้ง 300 → ได้ boy ซ้ำ เหรียญเหลือ 4800'); await shot('09b-gacha-result'); await page.click('.gc-modal .wbtn');
+  // ได้ของใหม่ (หลังไพ่ gold) = NEW + ใส่ได้
+  await page.evaluate(() => { window.__mockPick = 'backs:gold'; }); await page.click('.gc-btns .wbtn:nth-child(1)'); await page.waitForSelector('.gc-new'); await page.click('.gc-modal .wbtn');
+  await page.waitForFunction(() => sv.own.includes('backs:gold')); ok(true, 'สุ่มได้หลังไพ่ gold → NEW และเป็นเจ้าของ');
+  // สุ่ม 10 ครั้ง
+  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .wbtn:nth-child(2)'); await page.waitForSelector('.gc-card'); ok(await page.$$eval('.gc-card', e => e.length) === 10, 'สุ่ม 10 ครั้งได้ 10 ชิ้น'); await page.click('.gc-modal .wbtn');
+  ok(await page.evaluate(() => sv.coins) === 4800 - 300 - 2700, 'หักค่าสุ่ม 10 ครั้งถูก (1800)');
+  // คลังของ: ขายตัวซ้ำ
+  await page.evaluate(() => gcTab('inv')); await page.waitForSelector('.gc-i');
+  await page.evaluate(() => gcSell('characters', 'boy', 1)); await page.waitForFunction(() => sv.coins === 1820); ok(true, 'ขายตัวซ้ำ boy 1 ชิ้น +20 เหรียญ');
+  ok(await page.evaluate(() => DB.qty('characters', 'boy')) === 11, 'คลัง boy เหลือ 11 (1 + 10 ซ้ำ)');
+  // อัพดาว: ใช้ตัวซ้ำ 1
   await page.evaluate(() => { go('profile'); pfTab('chars'); }); await page.waitForSelector('.ck-up .sk-up');
   await page.click('.ck-up .sk-up'); await page.waitForFunction(() => DB.stars('boy') === 2);
-  ok(await page.evaluate(() => sv.coins) === 4200, 'อัพดาว boy 1→2 หัก 500 เหรียญ'); await shot('10-star2');
+  ok(await page.evaluate(() => DB.qty('characters', 'boy')) === 10 && await page.evaluate(() => sv.coins) === 1820, 'อัพดาว boy 1→2 ใช้ตัวซ้ำ 1 (ไม่เสียเหรียญ)'); await shot('10-star2');
   ok((await page.textContent('.pf-ch.on .ck-stars')).length >= 5 && await page.$$eval('.pf-ch.on .ck-stars i.on', e => e.length) === 2, 'แสดง 2 ดาว');
-  await page.click('.pf-tabs button:nth-child(3)'); ok((await page.textContent('.pf-scroll:last-child')).includes('โต๊ะไม้') || (await page.content()).includes('โต๊ะไม้'), 'แท็บของที่ซื้อมีโต๊ะไม้');
+  await page.click('.pf-tabs button:nth-child(3)'); ok((await page.content()).includes('gold') || (await page.content()).includes('ทอง'), 'แท็บของที่มีแสดงของที่สุ่มได้');
   // ปุ่ม ⚡ ไม่มีปุ่มอัพ stat
   await page.evaluate(() => openSkills()); await page.waitForSelector('.sk-main .ck'); ok(await page.$('.sk-main .sk-up') !== null && !(await page.textContent('.sk-main')).includes('⬆'), 'หน้า ⚡ มีแต่ปุ่มอัพดาว'); await shot('11-skills'); await page.mouse.click(5, 5); await page.waitForSelector('.sk-main', { state: 'detached' });
   // ออกจากระบบ → เข้าสู่ระบบใหม่ ข้อมูลยังอยู่
@@ -50,7 +62,7 @@ let passed = 0; const ok = (c, m) => { if (!c) throw new Error('FAIL: ' + m); pa
   await page.fill('#au_u', 'tester'); await page.fill('#au_p', 'wrong'); await page.click('.au-go'); await page.waitForSelector('.au-err');
   ok(/ไม่ถูกต้อง/.test(await page.textContent('.au-err')), 'รหัสผ่านผิด → แจ้งเตือนภาษาไทย');
   await page.fill('#au_p', 'secret1'); await page.click('.au-go'); await page.waitForSelector('.hud');
-  ok(await page.evaluate(() => sv.coins) === 4200 && await page.evaluate(() => DB.stars('boy')) === 2, 'ล็อกอินใหม่ → เหรียญและดาวยังอยู่');
+  ok(await page.evaluate(() => sv.coins) === 1820 && await page.evaluate(() => DB.stars('boy')) === 2, 'ล็อกอินใหม่ → เหรียญและดาวยังอยู่');
   console.log('page errors:', errors.length ? errors : 'none'); ok(errors.length === 0, 'ไม่มี JS error');
   await b.close(); srv.close(); console.log(`\n${passed} passed`);
 })().catch(e => { console.error(e); process.exit(1); });

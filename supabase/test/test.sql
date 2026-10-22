@@ -17,11 +17,17 @@ select pg_temp.ok((select coins from public.profiles where username='alice') = 5
 select pg_temp.ok((select display_name from public.profiles where username='alice') = 'อลิซ', 'display_name จาก metadata');
 select pg_temp.ok((select username from public.profiles where id='00000000-0000-0000-0000-0000000000c3') like 'u%', 'username ผิดรูปแบบ → สำรอง');
 
-insert into public.shop_items(kind,item_id,name,price_coins,price_mcash) values
-  ('characters','boy','boy',0,0), ('characters','rina','rina',1500,0), ('characters','vip','vip',0,50),
-  ('backs','gold','gold',700,0)
-  on conflict (kind,item_id) do update set price_coins=excluded.price_coins, price_mcash=excluded.price_mcash;
-insert into public.character_defs(id,max_stars,star_costs,bonus_pct) values ('rina',3,'{100,200}','{0,10,20}') on conflict (id) do update set max_stars=3, star_costs='{100,200}', bonus_pct='{0,10,20}';
+insert into public.catalog_items(kind,item_id,name,rarity,is_default) values
+  ('characters','boy','boy','common',true), ('characters','rina','rina','legendary',false),
+  ('backs','gold','gold','epic',false), ('backs','plain','plain','common',true)
+  on conflict (kind,item_id) do update set rarity=excluded.rarity, is_default=excluded.is_default, active=true;
+insert into public.character_defs(id,max_stars,star_costs,bonus_pct) values ('rina',3,'{1,2}','{0,10,20}') on conflict (id) do update set max_stars=3, star_costs='{1,2}', bonus_pct='{0,10,20}';
+-- ตู้ทดสอบ: t1 = rina ล้วน, t2 = pity 3 (boy ธรรมดาเกือบทั้งหมด + rina นิดเดียว), t3 = สำหรับเช็คการันตี 10 ครั้ง (boy + gold)
+insert into public.gacha_banners(id,name,single_coins,ten_coins,pity) values ('t1','t1',100,900,0), ('t2','t2',10,90,3), ('t3','t3',10,90,0)
+  on conflict (id) do update set single_coins=excluded.single_coins, ten_coins=excluded.ten_coins, pity=excluded.pity, single_mcash=null, ten_mcash=null, active=true;
+insert into public.gacha_pool(banner_id,kind,item_id,weight) values
+  ('t1','characters','rina',1), ('t2','characters','boy',1000000), ('t2','characters','rina',1), ('t3','characters','boy',1000000), ('t3','backs','gold',1)
+  on conflict (banner_id,kind,item_id) do update set weight=excluded.weight;
 
 -- ===== ผู้เล่น alice =====
 select pg_temp.as_user('00000000-0000-0000-0000-0000000000a1');
@@ -41,24 +47,65 @@ select pg_temp.ok((public.claim_login_reward()->>'coins')::int = 100, 'รับ
 select pg_temp.fails($$select public.claim_login_reward()$$, 'รับรางวัลล็อกอินซ้ำในวันเดียวกันไม่ได้');
 select pg_temp.ok((select coins from public.profiles) = 5100, 'เหรียญเพิ่มจากรางวัลล็อกอิน');
 
--- ซื้อของ
-select pg_temp.ok((public.buy_item('backs','gold')->>'paid')::int = 700, 'ซื้อหลังไพ่ 700');
-select pg_temp.fails($$select public.buy_item('backs','gold')$$, 'ซื้อซ้ำไม่ได้');
-select pg_temp.fails($$select public.buy_item('characters','vip','mcash')$$, 'MCash ไม่พอ');
-select pg_temp.fails($$select public.buy_item('characters','vip','coins')$$, 'ไอเท็ม MCash อย่างเดียวซื้อด้วยเหรียญไม่ได้');
-select pg_temp.fails($$select public.buy_item('characters','nope')$$, 'ไม่มีสินค้า');
+-- ไม่มีร้านค้าแล้ว
+select pg_temp.fails($$select public.buy_item('backs','gold')$$, 'ไม่มี buy_item แล้ว');
+select pg_temp.ok(to_regclass('public.shop_items') is null, 'ตาราง shop_items ถูกลบ');
+select pg_temp.fails($$update public.inventory set qty = 99$$, 'แก้จำนวนของเองไม่ได้');
 select pg_temp.fails($$select public.set_equipped('backs','nothave')$$, 'ใส่ของที่ไม่มีไม่ได้');
+select pg_temp.ok((public.set_equipped('backs','plain')->>'backs') = 'plain', 'ใส่ของเริ่มต้นได้');
+select pg_temp.fails($$select public.set_equipped('characters','rina')$$, 'ใส่ตัวละครที่ยังไม่ได้สุ่มไม่ได้');
 
-select pg_temp.ok((public.set_equipped('backs','gold')->>'backs') = 'gold', 'ใส่หลังไพ่ที่ซื้อแล้ว');
-select pg_temp.ok((public.set_equipped('characters','boy')->>'characters') = 'boy', 'ใส่ตัวละครฟรี');
-select pg_temp.fails($$select public.set_equipped('characters','rina')$$, 'ใส่ตัวละครที่ยังไม่ซื้อไม่ได้');
-
--- อัพดาว
+-- กาชา
+select pg_temp.fails($$select public.gacha_pull('t1',3)$$, 'สุ่มได้แค่ 1 หรือ 10');
+select pg_temp.fails($$select public.gacha_pull('nope',1)$$, 'ไม่มีตู้');
+select pg_temp.fails($$select public.gacha_pull('t1',1,'mcash')$$, 'ตู้ไม่รับ MCash');
+select pg_temp.fails($$select public.gacha_pull('t1',1,'gems')$$, 'สกุลเงินผิด');
 select pg_temp.fails($$select public.upgrade_star('rina')$$, 'อัพดาวตัวละครที่ไม่มีไม่ได้');
-select pg_temp.ok((public.upgrade_star('boy')->>'cost')::int = 500, 'อัพดาว boy 1→2 ใช้ค่ากลาง 500');
-select pg_temp.ok((public.upgrade_star('boy')->>'cost')::int = 1000, 'อัพดาว boy 2→3 = 1000');
-select pg_temp.ok((public.get_profile()->'characters'->>'boy')::int = 3, 'ดาว boy = 3');
-select pg_temp.ok((select coins from public.profiles) = 5100-700-1500, 'หักเหรียญค่าดาวถูก');
+do $t$ declare j jsonb; begin
+  j := public.gacha_pull('t1',1);
+  perform pg_temp.ok((j->'results'->0->>'item_id') = 'rina' and (j->'results'->0->>'new')::boolean, 'สุ่มได้ rina ครั้งแรก = NEW');
+  perform pg_temp.ok((j->>'coins')::int = 5000, 'หักเหรียญค่าสุ่ม 100');
+  perform pg_temp.ok((select qty from public.inventory where kind='characters' and item_id='rina') = 1, 'มี rina 1 ชิ้น');
+  perform pg_temp.fails($$select public.sell_dupes('characters','rina',1)$$, 'ขายตัวเดียวที่มีไม่ได้ (ต้องเก็บไว้ 1)');
+  perform pg_temp.fails($$select public.upgrade_star('rina')$$, 'ไม่มีตัวซ้ำ อัพดาวไม่ได้');
+  j := public.gacha_pull('t1',1);
+  perform pg_temp.ok(not (j->'results'->0->>'new')::boolean and (j->'results'->0->>'qty')::int = 2, 'ได้ซ้ำ → qty 2');
+  j := public.upgrade_star('rina');
+  perform pg_temp.ok((j->>'stars')::int = 2 and (j->>'cost')::int = 1, 'อัพดาว 1→2 ใช้ตัวซ้ำ 1');
+  perform pg_temp.ok((select qty from public.inventory where item_id='rina') = 1, 'ตัวซ้ำถูกใช้แล้ว เหลือ 1');
+  perform pg_temp.fails($$select public.upgrade_star('rina')$$, 'ดาว 2→3 ต้อง 2 ตัวซ้ำ แต่ยังไม่มี');
+  perform public.gacha_pull('t1',10);   -- +10 → qty 11
+  perform pg_temp.ok((select qty from public.inventory where item_id='rina') = 11, 'สุ่ม 10 ครั้ง → qty 11');
+  j := public.upgrade_star('rina');
+  perform pg_temp.ok((j->>'stars')::int = 3, 'อัพดาว 2→3');
+  perform pg_temp.fails($$select public.upgrade_star('rina')$$, 'ดาวเต็มแล้ว');
+  perform pg_temp.ok((select qty from public.inventory where item_id='rina') = 9, 'ใช้ตัวซ้ำ 2 เหลือ 9');
+  perform pg_temp.ok((public.get_profile()->'characters'->>'rina')::int = 3, 'ดาว rina = 3');
+  j := public.sell_dupes('characters','rina',8);
+  perform pg_temp.ok((j->>'coins_gained')::int = 8000, 'ขายตัวซ้ำ 8 ชิ้น legendary = 8000');
+  perform pg_temp.fails($$select public.sell_dupes('characters','rina',1)$$, 'เหลือ 1 ขายไม่ได้');
+  perform pg_temp.fails($$select public.sell_dupes('characters','nope',1)$$, 'ขายของที่ไม่มี');
+  perform pg_temp.fails($$select public.sell_dupes('characters','rina',0)$$, 'จำนวนต้อง ≥ 1');
+  perform pg_temp.ok((select coins from public.profiles) = 5100 - 100 - 100 - 900 + 8000, 'เหรียญหลังสุ่ม/ขายถูก');
+  perform pg_temp.ok((public.set_equipped('characters','rina')->>'characters') = 'rina', 'ใส่ตัวละครที่สุ่มได้');
+  perform pg_temp.ok((select count(*) from public.gacha_log) = 3, 'บันทึกประวัติสุ่ม');
+  perform pg_temp.ok(jsonb_array_length(public.get_gacha()->'banners') >= 3, 'get_gacha คืนตู้');
+  perform pg_temp.ok((select sum((i->>'pct')::numeric) from jsonb_array_elements((select b->'items' from jsonb_array_elements(public.get_gacha()->'banners') b where b->>'id'='t2')) i) between 99.9 and 100.1, 'อัตราการออกรวม 100%');
+end $t$;
+select set_config('t.coins', (select coins::text from public.profiles), false);
+
+-- การันตี: pity 3 → ครั้งที่ 3 ต้องได้ legendary (ตั้งตัวนับเป็น 2 แล้วสุ่มครั้งต่อไป)
+reset role;
+insert into public.gacha_pity(user_id,banner_id,since_top) values ('00000000-0000-0000-0000-0000000000a1','t2',2) on conflict (user_id,banner_id) do update set since_top=2;
+set role authenticated;
+do $t$ declare j jsonb; begin
+  j := public.gacha_pull('t2',1);
+  perform pg_temp.ok((j->'results'->0->>'rarity') = 'legendary' and (j->>'since_top')::int = 0, 'pity: ได้ legendary แน่นอน และรีเซ็ตตัวนับ');
+  j := public.gacha_pull('t3',10);
+  perform pg_temp.ok(exists (select 1 from jsonb_array_elements(j->'results') r where r->>'rarity' in ('rare','epic','legendary')), 'สุ่ม 10 ครั้งการันตี rare ขึ้นไป');
+  perform pg_temp.ok(jsonb_array_length(j->'results') = 10, 'ได้ 10 ชิ้น');
+end $t$;
+select set_config('t.coins', (select coins::text from public.profiles), false);
 
 reset role;
 -- ===== เซิร์ฟเวอร์บันทึกผลเกม (service_role) =====
@@ -71,11 +118,10 @@ reset role;
 select pg_temp.ok((select plays||'/'||wins||'/'||losses from public.game_stats where game_id='dummy') = '2/1/1', 'สถิติดัมมี่ 2 เล่น 1 ชนะ 1 แพ้');
 select pg_temp.ok((select draws from public.game_stats where game_id='pokdeng') = 1, 'เสมอนับ draw');
 select pg_temp.ok((select last_game from public.profiles where username='alice') = 'pokdeng', 'เกมล่าสุด');
-select pg_temp.ok((select coins from public.profiles where username='alice') = 5100-700-1500+200-50, 'เหรียญหลังผลเกมถูก');
+select pg_temp.ok((select coins from public.profiles where username='alice') = current_setting('t.coins')::bigint+200-50, 'เหรียญหลังผลเกมถูก');
 
 -- โบนัสเหรียญตามดาว: rina ดาว 1 → 0%, ดาว 2 → 10%
-insert into public.inventory(user_id,kind,item_id) values ('00000000-0000-0000-0000-0000000000a1','characters','rina');
-insert into public.user_characters(user_id,character_id,stars) values ('00000000-0000-0000-0000-0000000000a1','rina',2);
+update public.user_characters set stars=2 where user_id='00000000-0000-0000-0000-0000000000a1' and character_id='rina';
 set role service_role;
 select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000a1','g4','dummy',100,true,0,false,'rina')->>'bonus')::int = 10, 'โบนัสเหรียญ 10% ที่ดาว 2');
 select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000a1','g5','dummy',-100,false,0,false,'rina')->>'bonus')::int = 0, 'แพ้ไม่มีโบนัส');

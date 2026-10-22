@@ -34,7 +34,7 @@
     const P = DB.P; if (!P) return;
     try {
       sv.coins = Number(P.coins) || 0; sv.mcash = Number(P.mcash) || 0; sv.name = P.display_name; nick = P.display_name;
-      sv.own = (P.inventory || []).map(i => i.kind + ':' + i.item_id);
+      sv.own = (P.inventory || []).filter(i => (Number(i.qty) || 0) >= 1).map(i => i.kind + ':' + i.item_id);
       localStorage.setItem('dummyName', P.display_name);
       for (const [kind, , lsKey] of KINDS) { const id = (P.equipped || {})[kind]; if (id) localStorage.setItem(lsKey, id); }
       applyTheme();
@@ -85,7 +85,11 @@
   };
 
   // ---- การกระทำของผู้เล่น (ทุกอย่างตรวจและหักเหรียญที่ฝั่งฐานข้อมูล) ----
-  DB.buy = async (kind, id, cur) => { const r = await call('buy_item', { p_kind: kind, p_id: id, p_currency: cur || 'coins' }); await DB.refresh(); return r; };
+  // กาชา: สุ่ม/ขายตัวซ้ำ (ราคา โอกาส การันตี ตรวจที่ฐานข้อมูลทั้งหมด)
+  DB.gacha = async () => { DB.G = await call('get_gacha'); return DB.G; };
+  DB.pull = async (banner, n, cur) => { const r = await call('gacha_pull', { p_banner: banner, p_count: n, p_currency: cur || 'coins' }); await DB.refresh(); DB.gacha().then(repaint).catch(() => {}); return r; };
+  DB.sell = async (kind, id, qty) => { const r = await call('sell_dupes', { p_kind: kind, p_id: id, p_qty: qty }); await DB.refresh(); return r; };
+  DB.qty = (kind, id) => { const i = ((DB.P && DB.P.inventory) || []).find(x => x.kind === kind && x.item_id === id); return i ? Number(i.qty) || 0 : 0; };
   DB.equip = async (kind, id) => { try { await call('set_equipped', { p_kind: kind, p_id: id }); if (DB.P) DB.P.equipped = Object.assign({}, DB.P.equipped, { [kind]: id }); } catch (e) { /* ใส่ไม่ได้ → ซิงก์กลับ */ DB.refresh().catch(() => {}); } };
   DB.upStar = async id => { const r = await call('upgrade_star', { p_char: id }); await DB.refresh(); return r; };
   let nt = null, tt = null;

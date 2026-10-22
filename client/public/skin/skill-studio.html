@@ -16,7 +16,7 @@ table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:3px 4px;t
 </style></head><body>
 <h1>🛠 Skill Studio — ค่าความสามารถ · ดาว · สกิลของตัวละคร</h1>
 <div class="sub">ค่าความสามารถ <b>ผูกกับตัวละคร</b>: ค่า = <code>ค่าเริ่มต้น + เพิ่มต่อดาว × (ดาว − 1)</code> · ผู้เล่นอัพ "ดาวตัวละคร" (เสียเหรียญ) แล้วค่าเพิ่มตามนี้ ·
- แก้เสร็จกด <b>ดาวน์โหลด skills.json</b> วางที่ <code>client/public/skin/skills.json</code> และกด <b>คัดลอก SQL</b> ไปรันใน Supabase SQL Editor (ให้ฐานข้อมูลรู้ราคาอัพดาว/โบนัสเหรียญ — ไม่งั้นราคาจริงใช้ค่ากลาง)</div>
+ แก้เสร็จกด <b>ดาวน์โหลด skills.json</b> วางที่ <code>client/public/skin/skills.json</code> และกด <b>คัดลอก SQL</b> ไปรันใน Supabase SQL Editor (ให้ฐานข้อมูลรู้จำนวนตัวซ้ำที่ใช้อัพดาว/โบนัสเหรียญ — ไม่งั้นจำนวนจริงใช้ค่ากลาง)</div>
 <div class="row"><button onclick="loadRemote()">โหลดจากเซิร์ฟเวอร์</button><label>หรือนำเข้าไฟล์ <input type="file" id="f" accept=".json" onchange="imp(this)"></label></div>
 
 <h2>ค่าความสามารถ (Stats) — ชนิดของค่า</h2><div id="stats"></div><div class="row"><button class="g s" onclick="addStat()">＋ เพิ่มค่าความสามารถ</button></div>
@@ -30,17 +30,17 @@ table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:3px 4px;t
 <script>
 const EFF={hawkeye:{uses:2,cooldown:20,duration:6},cardcount:{ranks:3},coinbonus:{pct:3},scramble:{uses:1,cooldown:25,duration:5}};
 const LIM={uses:[1,4],cooldown:[8,60],duration:[3,10],ranks:[2,8],pct:[0,20]};
-let D={version:2,stats:[],skills:[],characters:{},defaults:{maxStars:5,starCosts:[500,1000,2000,4000],stats:{}}}, SKINS=[];
+let D={version:2,stats:[],skills:[],characters:{},defaults:{maxStars:5,starCosts:[1,2,3,4],stats:{}}}, SKINS=[];
 const $=i=>document.getElementById(i),N=v=>Number(v)||0,esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const costs=s=>String(s).split(',').map(x=>Math.max(0,Math.floor(N(x.trim())))).filter(x=>x>0);
 function cfgOf(id){D.characters=D.characters||{};let c=D.characters[id];if(Array.isArray(c))c=D.characters[id]={skills:c};return c||null}
 function own(id){let c=cfgOf(id);if(!c)c=D.characters[id]={skills:[]};return c}
 function render(){
- D.defaults=D.defaults||{maxStars:5,starCosts:[500,1000,2000,4000],stats:{}};D.defaults.stats=D.defaults.stats||{};
+ D.defaults=D.defaults||{maxStars:5,starCosts:[1,2,3,4],stats:{}};D.defaults.stats=D.defaults.stats||{};
  $('stats').innerHTML=D.stats.map((s,i)=>`<div class=card><div class=row><input class=w value="${esc(s.id)}" onchange="D.stats[${i}].id=this.value;render()" title="id"><input style="width:56px" value="${esc(s.icon||'')}" onchange="D.stats[${i}].icon=this.value"><input class=w value="${esc(s.name||'')}" onchange="D.stats[${i}].name=this.value;render()"><label>ค่าสูงสุด <input type=number value="${s.max||10}" onchange="D.stats[${i}].max=N(this.value);render()"></label><button class="r s" onclick="if(confirm('ลบค่านี้?')){D.stats.splice(${i},1);render()}">ลบ</button></div>
  <div class=row><input class=w value="${esc(s.desc||'')}" placeholder="คำอธิบาย" onchange="D.stats[${i}].desc=this.value"></div></div>`).join('');
  const dc=D.defaults;
- $('defs').innerHTML=`<div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${dc.maxStars||5}" onchange="D.defaults.maxStars=Math.min(10,Math.max(1,N(this.value)));render()"></label><label>ราคาอัพดาว (เหรียญ) ดาว1→2, 2→3, ... คั่นด้วยคอมมา <input class=w value="${(dc.starCosts||[]).join(', ')}" onchange="D.defaults.starCosts=costs(this.value);render()"></label></div>
+ $('defs').innerHTML=`<div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${dc.maxStars||5}" onchange="D.defaults.maxStars=Math.min(10,Math.max(1,N(this.value)));render()"></label><label>จำนวนตัวซ้ำที่ใช้อัพดาว ดาว1→2, 2→3, ... คั่นด้วยคอมมา <input class=w value="${(dc.starCosts||[]).join(', ')}" onchange="D.defaults.starCosts=costs(this.value);render()"></label></div>
  <table><tr><th>ค่า</th><th>เริ่มต้น</th><th>เพิ่มต่อดาว</th></tr>${D.stats.map(s=>{const o=dc.stats[s.id]||{base:0,perStar:0};return `<tr><td>${esc(s.icon||'')} ${esc(s.name)}</td><td><input type=number step=any value="${o.base||0}" onchange="dset('${esc(s.id)}','base',N(this.value))"></td><td><input type=number step=any value="${o.perStar||0}" onchange="dset('${esc(s.id)}','perStar',N(this.value))"></td></tr>`}).join('')}</table>`;
  const ids=[...new Set([...SKINS.map(c=>c.id),...Object.keys(D.characters||{})])];
  $('chars').innerHTML=ids.map(id=>{const sk=SKINS.find(c=>c.id==id),c=cfgOf(id),cc=SkillCore.charCfg(D,id),mx=cc.maxStars,cols=Array.from({length:mx},(_,i)=>i+1);
@@ -48,7 +48,7 @@ function render(){
    return `<tr><td>${esc(s.icon||'')} ${esc(s.name)}</td><td><input type=number step=any value="${o.base||0}" onchange="cset('${esc(id)}','${esc(s.id)}','base',N(this.value))"></td><td><input type=number step=any value="${o.perStar||0}" onchange="cset('${esc(id)}','${esc(s.id)}','perStar',N(this.value))"></td>${cols.map(k=>`<td class=pv>${SkillCore.statValue(D,s.id,id,k)}</td>`).join('')}</tr>`}).join('');
   const bp=SkillCore.bonusPct(D,id);
   return `<div class="card ch"><div class=ph>${sk&&sk.asset?`<img src="${esc(sk.asset.replace(/^\.\/skin\//,'./'))}" alt="">`:''}<div><h3>${esc((sk&&sk.name)||id)} <span class=tag>${esc(id)}</span>${c?'':' <span class=tag>ใช้ค่าเริ่มต้น</span>'}</h3>
-  <div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${c&&c.maxStars||''}" placeholder="${dc.maxStars||5}" onchange="own('${esc(id)}').maxStars=this.value===''?undefined:Math.min(10,Math.max(1,N(this.value)));render()"></label><label>ราคาอัพดาว (ว่าง = ค่าเริ่มต้น) <input class=w value="${c&&c.starCosts?c.starCosts.join(', '):''}" placeholder="${(dc.starCosts||[]).join(', ')}" onchange="own('${esc(id)}').starCosts=this.value.trim()?costs(this.value):undefined;render()"></label></div></div></div>
+  <div class=row><label>ดาวสูงสุด <input type=number min=1 max=10 value="${c&&c.maxStars||''}" placeholder="${dc.maxStars||5}" onchange="own('${esc(id)}').maxStars=this.value===''?undefined:Math.min(10,Math.max(1,N(this.value)));render()"></label><label>จำนวนตัวซ้ำที่ใช้อัพดาว (ว่าง = ค่าเริ่มต้น) <input class=w value="${c&&c.starCosts?c.starCosts.join(', '):''}" placeholder="${(dc.starCosts||[]).join(', ')}" onchange="own('${esc(id)}').starCosts=this.value.trim()?costs(this.value):undefined;render()"></label></div></div></div>
   <table><tr><th>ค่า</th><th>เริ่มต้น</th><th>+/ดาว</th>${cols.map(k=>`<th>★${k}</th>`).join('')}</tr>${st}</table>
   <div class=sks>${D.skills.map(s=>`<label><input type=checkbox ${cc.skills.includes(s.id)?'checked':''} onchange="tgl('${esc(id)}','${esc(s.id)}',this.checked)"> ${esc(s.icon||'')} ${esc(s.name)}</label>`).join('')||'<span class=sub>ยังไม่มีสกิล</span>'}</div>
   ${bp.some(Boolean)?`<div class=sub>โบนัสเหรียญเมื่อชนะ (ตามดาว): ${bp.map((p,i)=>'★'+(i+1)+' '+p+'%').join(' · ')}</div>`:''}
