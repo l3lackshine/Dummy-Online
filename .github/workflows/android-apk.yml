@@ -12,9 +12,12 @@ on:
         description: 'URL เซิร์ฟเวอร์เกม (เว้นว่าง = ใช้ค่าใน config.js / repo variable BACKEND_URL)'
         required: false
         default: ''
+      client_url:
+        description: 'URL เว็บเกมบน Render (เว้นว่าง = ใช้ repo variable CLIENT_URL) — ตั้งแล้วแอปจะโหลดเว็บสด ไม่ต้อง build APK ใหม่เมื่อแก้เกม'
+        required: false
+        default: ''
   push:
     paths:
-      - 'client/public/**'
       - 'mobile/**'
       - '.github/workflows/android-apk.yml'
 
@@ -56,6 +59,7 @@ jobs:
         run: node mobile/prepare.js www
         env:
           BACKEND_URL: ${{ inputs.backend_url || vars.BACKEND_URL }}
+          CLIENT_URL: ${{ inputs.client_url || vars.CLIENT_URL }}
 
       - name: สร้างโปรเจกต์ Android
         working-directory: mobile

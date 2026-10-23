@@ -9,9 +9,9 @@
   const RICON = { common: '⚪', rare: '🔵', epic: '🟣', legendary: '🟡' };
   const toast = t => { if (window.dbToast) dbToast(t); };
   let failed = false, tab = 'pull', bid = null, busy = false, loading = false, note = '', filt = 'all';
-  const regItem = (kind, id) => ((window.SKIN_REGISTRY || {})[kind] || []).find(x => x.id === id);
+  const regItem = (kind, id) => (((typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY : {})[kind]) || []).find(x => x.id === id);
   const thumb = (kind, id) => { const x = regItem(kind, id); try { return x && typeof prevBox === 'function' ? prevBox(kind, x) : '<div class=gc-ph>?</div>'; } catch (e) { return '<div class=gc-ph>?</div>'; } };
-  const kindLabel = k => { const z = (window.KINDS || []).find(a => a[0] === k); return z ? z[1] : k; };
+  const kindLabel = k => { const z = (typeof KINDS !== 'undefined' ? KINDS : []).find(a => a[0] === k); return z ? z[1] : k; };
 
   function ensure() {
     if (DB.G || loading || failed || !DB.P) return;
@@ -19,25 +19,36 @@
   }
   const banner = () => { const bs = (DB.G && DB.G.banners) || []; return bs.find(b => b.id === bid) || bs[0]; };
 
+  const STARS = { common: 2, rare: 3, epic: 4, legendary: 5 };
   function pullPanel() {
     const b = banner(); if (!b) return '<p class=note>ยังไม่มีตู้กาชาเปิดอยู่ (ผู้ดูแลต้องรัน supabase/seed_catalog.sql)</p>';
-    const bs = DB.G.banners, R = DB.G.rarities || {};
+    const bs = DB.G.banners, R = DB.G.rarities || {}, rk = r => (R[r] || {}).sort || 0;
     const price = (n, cur) => (b[n === 1 ? 'single' : 'ten'] || {})[cur];
+    const items = (b.items || []).slice().sort((x, y) => rk(y.rarity) - rk(x.rarity) || (x.kind === 'characters' ? -1 : 1));
+    const feat = [...items.filter(i => i.kind === 'characters'), ...items.filter(i => i.kind !== 'characters')].sort((x, y) => rk(y.rarity) - rk(x.rarity)).slice(0, 3);
+    const card = (i, k) => { const x = regItem(i.kind, i.item_id) || {}, own = DB.qty(i.kind, i.item_id);
+      return `<div class="gc-f ${i.rarity}" style="--k:${k}"><div class=gc-fi>${i.kind === 'characters' && x.asset ? `<img src="${E(x.asset)}" alt="">` : thumb(i.kind, i.item_id)}</div>
+        <div class=gc-fn><b>${E(i.name)}</b><span class=gc-st>${'★'.repeat(STARS[i.rarity] || 1)}</span><small>${E((R[i.rarity] || {}).name || '')} · ${i.pct}%${own ? ' · มี ×' + own : ''}</small></div></div>`; };
     const btn = (n, cur) => { const p = price(n, cur); if (!p) return ''; const have = cur === 'coins' ? sv.coins : (sv.mcash || 0), no = busy || have < p;
-      return `<button class="wbtn ${cur === 'mcash' ? 'mc' : 'go'}" ${no ? 'disabled' : ''} onclick="gcPull('${E(b.id)}',${n},'${cur}')">สุ่ม ${n} ครั้ง · ${cur === 'coins' ? '🪙' : '💎'} ${N(p)}</button>`; };
-    const pity = b.pity ? `<div class=gc-pity><span>การันตี ${RICON.legendary} ${E((R.legendary || {}).name || 'ตำนาน')} ใน ${b.pity} ครั้ง</span><div class=gc-bar><i style="width:${Math.min(100, b.since_top / b.pity * 100)}%"></i></div><small>สะสมแล้ว ${b.since_top}/${b.pity}</small></div>` : '';
-    const order = Object.keys(R).sort((x, y) => (R[y].sort || 0) - (R[x].sort || 0));
-    const tot = {}; (b.items || []).forEach(i => { tot[i.rarity] = (tot[i.rarity] || 0) + Number(i.pct); });
-    const rates = `<div class=gc-rates>${order.map(r => `<span class="gc-r ${r}">${RICON[r] || ''} ${E(R[r].name)} ${Math.round((tot[r] || 0) * 100) / 100}%</span>`).join('')}</div>`;
+      return `<button class="gc-go ${cur}" ${no ? 'disabled' : ''} onclick="gcPull('${E(b.id)}',${n},'${cur}')"><b>สุ่ม ${n} ครั้ง</b><span>${cur === 'coins' ? '🪙' : '💎'} ${N(p)}</span></button>`; };
+    const tot = {}; items.forEach(i => { tot[i.rarity] = (tot[i.rarity] || 0) + Number(i.pct); });
+    const rates = Object.keys(R).sort((x, y) => rk(y) - rk(x)).map(r => `<span class="gc-r ${r}">${RICON[r] || ''} ${E(R[r].name)} ${Math.round((tot[r] || 0) * 100) / 100}%</span>`).join('');
+    const pity = b.pity ? `<div class=gc-pity><span>การันตี ${RICON.legendary} ${E((R.legendary || {}).name || 'ตำนาน')} ใน ${b.pity} ครั้ง <b>(${b.since_top}/${b.pity})</b></span><div class=gc-bar><i style="width:${Math.min(100, b.since_top / b.pity * 100)}%"></i></div></div>` : '';
+    return `<div class=gc-stage><div class=gc-show><div class=gc-ban><b>${E(b.name)}</b><small>${E(b.description || '')}</small></div><div class=gc-feats>${feat.map(card).join('')}</div>
+        <div class=gc-sub>${bs.length > 1 ? bs.map(x => `<button class="gc-mini${x.id === b.id ? ' on' : ''}" onclick="gcBanner('${E(x.id)}')">${E(x.name)}</button>`).join('') : ''}<button class=gc-mini onclick="gcList()">📋 รายการและอัตราการออก</button></div></div>
+      <div class=gc-side><div class=gc-rates>${rates}</div>${pity}<small class=gc-tip>สุ่ม 10 ครั้งการันตี ${RICON.rare} หายากขึ้นไปอย่างน้อย 1 ชิ้น<br>ได้ตัวละครซ้ำ = นำไปอัพดาว · ของซ้ำขายเป็นเหรียญได้ที่ “คลังของ”</small>
+        <div class=gc-btns>${btn(1, 'coins')}${btn(10, 'coins')}${btn(1, 'mcash')}${btn(10, 'mcash')}</div></div></div>`;
+  }
+  window.gcList = () => {
+    const b = banner(); if (!b) return; const R = DB.G.rarities || {};
     const shown = (b.items || []).filter(i => filt === 'all' || i.kind === filt).sort((x, y) => ((R[y.rarity] || {}).sort || 0) - ((R[x.rarity] || {}).sort || 0));
     const kinds = ['all', ...new Set((b.items || []).map(i => i.kind))];
-    return `${bs.length > 1 ? `<div class=cattabs>${bs.map(x => `<button class="catbtn${x.id === b.id ? ' on' : ''}" onclick="gcBanner('${E(x.id)}')">${E(x.name)}</button>`).join('')}</div>` : ''}
-      <div class=gc-hero><b>${E(b.name)}</b><small>${E(b.description || '')}</small>${rates}${pity}
-      <div class=gc-btns>${btn(1, 'coins')}${btn(10, 'coins')}${btn(1, 'mcash')}${btn(10, 'mcash')}</div>
-      <small class=gc-tip>สุ่ม 10 ครั้งการันตี ${RICON.rare} หายากขึ้นไปอย่างน้อย 1 ชิ้น · ได้ตัวละครซ้ำ = นำไปอัพดาว · ของซ้ำขายเป็นเหรียญได้ที่แท็บ “คลังของ”</small></div>
-      <div class=cattabs>${kinds.map(k => `<button class="catbtn${filt === k ? ' on' : ''}" onclick="gcFilt('${k}')">${k === 'all' ? 'ของในตู้ทั้งหมด' : E(kindLabel(k))}</button>`).join('')}</div>
-      <div class="grid big gc-grid">${shown.map(i => `<div class="item2 gc-i ${i.rarity}">${thumb(i.kind, i.item_id)}<b>${E(i.name)}</b><small>${RICON[i.rarity] || ''} ${E((R[i.rarity] || {}).name || '')} · ${i.pct}%</small></div>`).join('')}</div>`;
-  }
+    document.querySelectorAll('.gc-modal').forEach(n => n.remove());
+    const m = document.createElement('div'); m.className = 'gc-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
+    m.innerHTML = `<div class=gc-box><h3>📋 ของในตู้ · อัตราการออก</h3><div class=cattabs>${kinds.map(k => `<button class="catbtn${filt === k ? ' on' : ''}" onclick="gcFilt('${k}');gcList()">${k === 'all' ? 'ทั้งหมด' : E(kindLabel(k))}</button>`).join('')}</div>
+      <div class="grid big gc-grid">${shown.map(i => `<div class="item2 gc-i ${i.rarity}">${thumb(i.kind, i.item_id)}<b>${E(i.name)}</b><small>${RICON[i.rarity] || ''} ${E((R[i.rarity] || {}).name || '')} · ${i.pct}%</small></div>`).join('')}</div><button class="wbtn go" onclick="this.closest('.gc-modal').remove()">ปิด</button></div>`;
+    document.body.appendChild(m);
+  };
 
   function invPanel() {
     const R = (DB.G && DB.G.rarities) || {}, cat = {};
@@ -54,13 +65,13 @@
     ensure();
     const body = !DB.G ? `<p class=note>${E(note || 'กำลังโหลดตู้กาชา…')}</p>` : tab === 'inv' ? invPanel() : pullPanel();
     const tabs = [['pull', '🎰 สุ่มกาชา'], ['inv', '🎒 คลังของ / ขายตัวซ้ำ']].map(([k, l]) => `<button class="catbtn${tab === k ? ' on' : ''}" onclick="gcTab('${k}')">${l}</button>`).join('');
-    page2('กาชา', `<div class=cattabs>${tabs}</div>${note && DB.G ? `<p class=note>${E(note)}</p>` : ''}<div class="panel gc-panel">${body}</div>`);
+    page2('กาชา', `<div class="gc-wrap"><div class="gc-tabs">${tabs}${note && DB.G ? `<span class=gc-note>${E(note)}</span>` : ''}</div><div class="gc-main${tab === 'inv' ? ' inv' : ''}">${body}</div></div>`);
   }
   const _shop = window.shopView;
   window.shopView = function () { return DB.P ? gachaView() : (_shop ? _shop() : undefined); };
   window.gcTab = t => { tab = t; note = ''; failed = false; render(); };
   window.gcBanner = id => { bid = id; render(); };
-  window.gcFilt = k => { filt = k; render(); };
+  window.gcFilt = k => { filt = k; };
 
   window.gcPull = async (id, n, cur) => {
     if (busy) return; busy = true; note = ''; render();

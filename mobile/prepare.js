@@ -21,6 +21,14 @@ function prepWww() {
     const n = h.replace(/src="https?:\/\/[^"]*socket\.io[^"]*\.js"/, 'src="./socket.io.min.js"');
     if (n === h) die('หา <script> ของ socket.io ใน index.html ไม่เจอ'); fs.writeFileSync(index, n); console.log('• ใช้ socket.io ที่แพ็กในแอป');
   } else console.log('• (ข้าม) ยังไม่ได้ npm install ใน mobile/ — ใช้ socket.io จาก CDN ตาม index.html');
+  // 3) โหมดโหลดหน้าเว็บสด: ตั้ง CLIENT_URL (ที่อยู่เว็บบน Render) → แอปเปิดเว็บจริงทุกครั้ง แก้เกม/Skill Studio แล้ว deploy ที่ Render ไม่ต้อง build APK ใหม่
+  const cu = (process.env.CLIENT_URL || '').trim().replace(/\/+$/, '');
+  if (cu) {
+    if (!/^https:\/\//.test(cu)) die('CLIENT_URL ต้องขึ้นต้นด้วย https://');
+    const cf = path.join(__dirname, 'capacitor.config.json'), c = JSON.parse(read(cf));
+    c.server = Object.assign({}, c.server, { url: cu, cleartext: false }); fs.writeFileSync(cf, JSON.stringify(c, null, 2));
+    console.log('• โหลดหน้าเว็บสดจาก', cu, '(แก้เว็บแล้วไม่ต้อง build APK ใหม่)');
+  } else console.log('• ไม่ได้ตั้ง CLIENT_URL — แพ็กหน้าเว็บไว้ในแอป (แก้เว็บต้อง build APK ใหม่)');
   console.log('✓ เตรียม mobile/www แล้ว');
 }
 function prepAndroid() {

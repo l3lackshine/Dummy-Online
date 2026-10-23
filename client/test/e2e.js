@@ -32,18 +32,18 @@ let passed = 0; const ok = (c, m) => { if (!c) throw new Error('FAIL: ' + m); pa
   ok(await page.$('.hud-sk[onclick*=openSkills]') !== null || true, 'หน้าโปรไฟล์แสดง');
   ok(!(await page.content()).includes('อัปเกรดความสามารถ'), 'ไม่มีปุ่มอัปเกรดความสามารถแล้ว');
   await page.click('.pf-tabs button:nth-child(2)'); await shot('08-stats'); await page.click('.pf-tabs button:nth-child(3)');
-  await page.evaluate(() => go('shop')); await page.waitForSelector('.gc-hero'); await shot('09-gacha');
+  await page.evaluate(() => go('shop')); await page.waitForSelector('.gc-stage'); await shot('09-gacha');
   ok(!(await page.content()).includes('buyItem('), 'หน้านี้ไม่มีปุ่มซื้อของแล้ว (เป็นกาชา)');
   // ยังไม่มีตัวซ้ำ → อัพดาวไม่ได้
   ok(await page.evaluate(() => { openSkills(); const b = document.querySelector('.sk-main .sk-up'); const d = b && b.disabled; document.querySelectorAll('.sk-modal').forEach(n => n.remove()); return d; }), 'ไม่มีตัวซ้ำ → ปุ่มอัพดาวกดไม่ได้');
   // สุ่ม 1 ครั้ง ได้ boy ซ้ำ → หัก 300
-  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .wbtn:nth-child(1)'); await page.waitForSelector('.gc-card');
+  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .gc-go:nth-child(1)'); await page.waitForSelector('.gc-card');
   ok(await page.evaluate(() => sv.coins) === 4800 && (await page.textContent('.gc-card')).includes('ซ้ำ'), 'สุ่ม 1 ครั้ง 300 → ได้ boy ซ้ำ เหรียญเหลือ 4800'); await shot('09b-gacha-result'); await page.click('.gc-modal .wbtn');
   // ได้ของใหม่ (หลังไพ่ gold) = NEW + ใส่ได้
-  await page.evaluate(() => { window.__mockPick = 'backs:gold'; }); await page.click('.gc-btns .wbtn:nth-child(1)'); await page.waitForSelector('.gc-new'); await page.click('.gc-modal .wbtn');
+  await page.evaluate(() => { window.__mockPick = 'backs:gold'; }); await page.click('.gc-btns .gc-go:nth-child(1)'); await page.waitForSelector('.gc-new'); await page.click('.gc-modal .wbtn');
   await page.waitForFunction(() => sv.own.includes('backs:gold')); ok(true, 'สุ่มได้หลังไพ่ gold → NEW และเป็นเจ้าของ');
   // สุ่ม 10 ครั้ง
-  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .wbtn:nth-child(2)'); await page.waitForSelector('.gc-card'); ok(await page.$$eval('.gc-card', e => e.length) === 10, 'สุ่ม 10 ครั้งได้ 10 ชิ้น'); await page.click('.gc-modal .wbtn');
+  await page.evaluate(() => { window.__mockPick = 'characters:boy'; }); await page.click('.gc-btns .gc-go:nth-child(2)'); await page.waitForSelector('.gc-card'); ok(await page.$$eval('.gc-card', e => e.length) === 10, 'สุ่ม 10 ครั้งได้ 10 ชิ้น'); await page.click('.gc-modal .wbtn');
   ok(await page.evaluate(() => sv.coins) === 4800 - 300 - 2700, 'หักค่าสุ่ม 10 ครั้งถูก (1800)');
   // คลังของ: ขายตัวซ้ำ
   await page.evaluate(() => gcTab('inv')); await page.waitForSelector('.gc-i');
