@@ -37,10 +37,28 @@ const gxLeaveBtn = '<button class="g sm" onclick="gxLeave()">ออก</button>'
 
 // หน้าสรุปตา (ใช้ร่วมกันทุกเกม): ผลเหรียญ + ไพ่ที่เปิด + รายการจ่าย + สับไพ่/เล่นอีกตา
 function gxOver() {
-  const r = S.res, rows = r.rows.map(x => { const d = r.coin.delta[x.i], cards = x.cards ? `<div class=gcards>${x.cards.map(id => gxc(id)).join('')}</div>` : '';
-    return `<div class=row><span>${gxName(x.i)}${x.dealer ? ' 👑' : ''}<small>${esc(x.name || '')}</small>${cards}</span><b><small class="cd ${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">🪙 ${sgn(d)}</small></b></div>`; }).join('');
+  if (resGid !== S.gid) { resGid = S.gid; resTab = 0; }
+  const r = S.res, c = r.coin || { delta: [], lines: [], stake: S.stake }, my = S.my, md = (c.delta && c.delta[my]) || 0, win = md > 0, lose = md < 0;
+  const medal = ['🥇', '🥈', '🥉', '4️⃣'], nm = i => (i === my ? 'คุณ' : esc(S.P[i].n));
+  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${h}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
+  // ข้อความผลของแต่ละคน (ใช้ร่วมกันทุกเกม — ดูจากฟิลด์ที่เกมนั้นส่งมา)
+  const label = x => x.dealer ? '👑 เจ้ามือ' : x.result === 'win' ? '✅ ชนะ' + (x.mult > 1 ? ' ×' + x.mult : '') : x.result === 'lose' ? '❌ แพ้' + (x.mult > 1 ? ' ×' + x.mult : '') : x.result === 'tie' ? '🤝 เสมอ' : x.loser ? '💀 แพ้' : x.folded ? '🏳️ หมอบ' : x.win ? '🏆 ชนะ' : x.order ? 'รอดที่ ' + x.order : '';
+  const rows = (r.rows || []).map(x => ({ x, cd: (c.delta && c.delta[x.i]) || 0 })).sort((a, b) => b.cd - a.cd);
+  const rank = rows.findIndex(o => o.x.i === my) + 1;
+  const board = rows.map(({ x, cd }, k) => { const p = S.P[x.i], lb = label(x);
+    return `<div class="rs-row${x.i === my ? ' me' : ''}${x.win || x.result === 'win' ? ' knk' : ''}"><b class=rs-rk>${medal[k] || k + 1}</b>${ava(p)}<div class=rs-who><b>${nm(x.i)}${x.dealer ? ' 👑' : ''}</b>${x.name ? `<span class=rs-chips><i>${esc(x.name)}</i></span>` : ''}${x.cards && x.cards.length ? `<div class="gcards rs-cards">${x.cards.map(id => gxc(id)).join('')}</div>` : ''}</div><div class=rs-pt><small>${lb}</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)} 🪙</div></div>`; }).join('');
   const pairs = r.pairs ? `<div class=gpairs>${r.pairs.map(pr => `<span class=gpair>${pr.map(id => gxc(id)).join('')}</span>`).join('')}</div>` : '';
-  return `<div class=ov><div class=box><h2>${esc(r.title)}</h2>${r.pot ? `<p>กองกลาง ${r.pot} 🪙</p>` : ''}<p style="color:var(--gold)">ผลเหรียญตานี้ ${sgn(coinDelta)} 🪙 (รวม ${sv.coins})</p>${pairs}${rows}${coinLines()}${shufflePanel()}${startBtn('เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`;
+  const pay = c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ตัวละ ${esc(c.stake)} 🪙</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>🪙 ${l.a}</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการจ่ายเหรียญตานี้</p>';
+  const shuf = shufflePanel(), sh = lob && lob.shuffle, need = !!(sh && sh.needed && !sh.ready);
+  const tabs = [['📊 สรุปผล', pairs + board], ['🪙 รายการจ่าย', pay]]; if (shuf) tabs.push([(need ? '❗' : '🔀') + ' สับไพ่', `<div class=rs-shuf>${shuf}</div>`]);
+  if (resTab >= tabs.length) resTab = 0;
+  return `<div class="ov rsv"><div class="rs ${win ? 'win' : lose ? 'lose' : 'even'}">
+  <div class=rs-head><div class=rs-ttl><small>${win ? '🏆 คุณชนะตานี้' : lose ? 'แพ้ตานี้ สู้ใหม่!' : 'เสมอ'}</small><h2>${esc(r.title || 'จบตา')}</h2></div></div>
+  <div class=rs-body>
+    <aside class=rs-me><div class=rs-big><small>เหรียญตานี้</small><b class="${win ? 'pos' : lose ? 'neg' : ''}">${sgn(md)} 🪙</b></div><div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${sv.coins}</b></div>${rank ? `<div class=rs-kv><span>อันดับ</span><b>${medal[rank - 1] || rank} ที่ ${rank}</b></div>` : ''}${r.pot ? `<div class=rs-kv><span>กองกลาง</span><b>🪙 ${r.pot}</b></div>` : ''}</aside>
+    <section class=rs-main><nav class=rs-tabs>${tabs.map((x, i) => `<button class="${i === resTab ? 'on' : ''}" onclick="setResTab(${i})">${x[0]}</button>`).join('')}</nav><div class=rs-pane>${tabs[resTab][1]}</div></section>
+  </div>
+  <div class=rs-foot>${startBtn('▶ เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div></div>`;
 }
 function renderOther() { const f = GX[S.rule]; if (!f) { $('app').className = ''; $('app').innerHTML = '<div class=pg><div class=pg-body><p class=note>ยังไม่รองรับเกมนี้ใน client เวอร์ชันนี้ กรุณารีเฟรชหน้า</p><button class=wbtn onclick=leave()>ออก</button></div></div>'; return; } f(); }
 
