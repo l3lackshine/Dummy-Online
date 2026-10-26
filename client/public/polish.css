@@ -1,0 +1,133 @@
+/* polish.css — ชั้นตกแต่งภาพ (ไม่แตะกติกา/ตำแหน่ง) โหลดหลังสุด
+   ปิดทั้งหมดได้โดยลบ <link> นี้ใน index.html */
+:root{--gl:#ffe9a8;--gl2:#f2b84b;--glass:linear-gradient(160deg,#2a1d5acc,#120b32dd)}
+
+/* ===== ไพ่: กระดาษมีมิติ + แสงเงา ===== */
+.c{position:relative;border-color:#b9ae8f;box-shadow:0 1px 0 #fff9 inset,0 -2px 3px #0002 inset,0 3px 6px #0006,0 1px 0 #0005}
+.c::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(130deg,#ffffff8c 0%,#ffffff00 38%,#0000 62%,#00000014 100%)}
+.c>span{font-size:1.28em;line-height:1;filter:drop-shadow(0 1px 0 #0002)}
+.c.r{color:#c3182a}
+.c.sp{outline-color:#ffd25a;box-shadow:0 0 8px #ffd25a99,0 3px 6px #0006}
+.back{border-color:#fff;box-shadow:0 0 0 1px #0004,0 3px 6px #0007,0 -2px 4px #0003 inset}
+
+/* ===== หน้าโต๊ะ ===== */
+#app.gx .gx-stage::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 55%,#0000 45%,#0009 100%),linear-gradient(#0000 60%,#0006)}
+#app.gx .gx-q{stroke:#ffffff40}
+#app.gx .gx-q.on{animation:pl-glow 1.6s ease-in-out infinite}
+@keyframes pl-glow{50%{filter:drop-shadow(0 0 14px #2ff3ff);fill-opacity:.7}}
+#app.gx .gx-art.on{filter:drop-shadow(0 0 14px #ffe9a8aa)}
+#app.gx .gx-art.on .gx-chr,#app.gx .gx-art.on .gx-emo{animation:pl-breathe 2.4s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes pl-breathe{50%{transform:scale(1.025) translateY(-1%)}}
+
+/* ป้ายชื่อผู้เล่น */
+#app.gx .gx-name{background:linear-gradient(#fff3c9,#f2b84b);color:#3b2410;border:2px solid #fff8;border-radius:99px;
+  box-shadow:0 2px 0 #7a4a12,0 4px 8px #0006;text-shadow:0 1px 0 #fff8}
+#app.gx .gx-pts{background:#120b32cc;border:1px solid #ffe9a855;color:#ffe9a8;border-radius:99px;padding:0 .6em;box-shadow:0 2px 5px #0006}
+#app.gx .gx-stack i{background:linear-gradient(#8c7bff,#4b3aa8);box-shadow:0 1px 3px #0007}
+#app.gx .gx-stack b{background:linear-gradient(#fff,#e8e2ff);color:#2a1d5a;box-shadow:0 2px 6px #0008,0 0 0 2px #fff8}
+#app.gx .active .gx-name{background:linear-gradient(#e8ffff,#2ff3ff);color:#06343a;box-shadow:0 0 0 2px #fff,0 0 16px #2ff3ffcc,0 3px 6px #0006}
+#app.gx .gx-turn{background:#2ff3ff;color:#06343a;border-radius:99px;padding:0 .7em;font-style:normal;font-weight:800;
+  box-shadow:0 0 12px #2ff3ff;animation:pl-bob .9s ease-in-out infinite}
+@keyframes pl-bob{50%{transform:translateY(-3px)}}
+
+/* ป้ายสถานะมุมบน */
+#app.gx .gx-hud .pill,#app.gx .gx-gear{background:var(--glass);border:1.5px solid #ffe9a8aa;color:#fff;
+  box-shadow:0 3px 8px #0007,inset 0 1px 0 #fff3;backdrop-filter:blur(3px)}
+
+/* ===== กลางโต๊ะ: กองจั่ว/กองทิ้ง ===== */
+#app.gx .gx-hub{border:3px solid transparent;
+  background-image:linear-gradient(#0a0720b8,#0a0720b8),var(--table-image,linear-gradient(#171233,#0d0a22)),linear-gradient(135deg,#fff3b0,#f2b84b 40%,#fff3b0 60%,#c98a1c);
+  background-origin:border-box;background-clip:padding-box,padding-box,border-box;
+  box-shadow:0 0 22px #ffd25a66,0 8px 22px #000a,inset 0 0 26px #000b}
+#app.gx .gx-hub .back{animation:pl-float 3.2s ease-in-out infinite}
+@keyframes pl-float{50%{transform:translateY(-3px)}}
+#app.gx .gx-hub .lab,#app.gx .gx-hub .piles>div>.lab{color:#ffe9a8;text-shadow:0 1px 3px #000}
+#app.gx .gx-hint{background:var(--glass);border:1.5px solid #ffe9a877;color:#ffe9a8;box-shadow:0 2px 8px #0008,inset 0 1px 0 #fff2}
+#app.gx .gx-hub .c.d.ok{box-shadow:0 0 0 2px #7dffa8,0 0 14px #7dffa8}
+
+/* ===== ไพ่ในมือ ===== */
+#app.gx .gx-dock .hand .c{transition:transform .16s cubic-bezier(.2,.9,.3,1.3),box-shadow .16s,filter .16s}
+#app.gx .gx-dock .hand .c:hover{filter:brightness(1.05)}
+#app.gx .gx-dock .hand .c.s{box-shadow:0 0 0 3px #ffd25a,0 0 18px #ffd25acc,0 10px 14px #0008}
+.c.new,.m.new{animation:pl-deal .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes pl-deal{from{opacity:0;transform:translate(40px,-60px) rotate(18deg) scale(.7)}to{opacity:1}}
+
+/* ===== ปุ่มกระทำ: เงาแก้วสามมิติ ===== */
+#app.gx .gx-acts button{position:relative;overflow:hidden;border:2px solid #fff9;color:#fff;font-weight:800;letter-spacing:.02em;
+  text-shadow:0 2px 2px #0006;box-shadow:0 4px 0 #0005,0 8px 14px #0007,inset 0 2px 0 #fff6;transition:transform .08s,box-shadow .08s,filter .15s}
+#app.gx .gx-acts button::before{content:"";position:absolute;left:6%;right:6%;top:3%;height:44%;border-radius:99px;background:linear-gradient(#ffffff77,#fff0);pointer-events:none}
+#app.gx .gx-acts button:active{transform:translateY(3px);box-shadow:0 1px 0 #0005,0 3px 6px #0007,inset 0 2px 0 #fff4}
+#app.gx .gx-acts .blue{background:linear-gradient(#6fc2ff,#1f6fe0)}
+#app.gx .gx-acts .grn{background:linear-gradient(#78e08f,#1f9a4a)}
+#app.gx .gx-acts .org{background:linear-gradient(#ffb15c,#e8590c)}
+#app.gx .gx-acts button:disabled{filter:grayscale(.7) brightness(.8)}
+#app.gx .gx-tools button{background:var(--glass);border:1.5px solid #ffe9a877;color:#ffe9a8;box-shadow:0 2px 6px #0007}
+
+/* ===== ไพ่ที่เกิดแล้ว ===== */
+#app.gx .zone .m{background:#0000;filter:drop-shadow(0 3px 3px #0008)}
+
+/* ===== กลีบซากุระลอย + พลุเมื่อชนะ ===== */
+#pl-fx{position:fixed;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+#pl-fx i{position:absolute;top:-6vh;width:1.4vmin;height:1vmin;border-radius:80% 0 80% 0;background:linear-gradient(135deg,#ffd6e3,#ff9fbd);
+  opacity:.75;animation:pl-fall linear infinite}
+@keyframes pl-fall{to{transform:translate(var(--dx),112vh) rotate(var(--rot))}}
+#pl-win{position:fixed;inset:0;z-index:60;pointer-events:none;overflow:hidden}
+#pl-win b{position:absolute;top:-4vh;width:1vmin;height:1.8vmin;animation:pl-conf linear forwards}
+@keyframes pl-conf{to{transform:translate(var(--dx),110vh) rotate(var(--rot));opacity:.9}}
+@media (prefers-reduced-motion:reduce){#pl-fx,#pl-win{display:none}#app.gx .gx-q.on,#app.gx .gx-hub .back,#app.gx .gx-turn,#app.gx .gx-art.on .gx-chr,#app.gx .gx-art.on .gx-emo,.c.new,.m.new{animation:none}}
+
+/* ===== หน้าสรุปผลจบตา (รวมในหน้าจอเดียว) ===== */
+.ov.rsv{z-index:50;overflow:hidden;padding:max(8px,1.5dvh) max(8px,2vw);background:radial-gradient(ellipse at 50% 40%,#1b1048cc,#05030fe6);backdrop-filter:blur(3px)}
+.rs{width:min(100%,780px);max-height:calc(100dvh - 16px);display:flex;flex-direction:column;gap:1.2dvh;padding:1.6dvh 1.6vw;border-radius:20px;color:#fff;
+  background:linear-gradient(170deg,#2c1f66f2,#120b32f7);border:2.5px solid #ffe9a8;box-shadow:0 0 30px #ffd25a55,0 14px 40px #000c;animation:rs-in .45s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes rs-in{from{opacity:0;transform:scale(.88) translateY(20px)}}
+.rs.lose{border-color:#9aa6d8;box-shadow:0 0 24px #6f7fd055,0 14px 40px #000c}
+.rs-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rs-ttl small{display:block;font-weight:700;font-size:max(11px,2.2dvh);color:#ffe9a8}
+.rs.lose .rs-ttl small{color:#c7d0ff}
+.rs-ttl h2{margin:0;font-size:max(20px,5.2dvh);line-height:1.1;font-weight:800;background:linear-gradient(#fff,#ffd25a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 3px #0008)}
+.rs-down{display:flex;align-items:center;gap:6px;font-size:max(10px,2dvh);color:#d6deef}
+.rs-down .c{width:max(26px,6dvh);height:max(36px,8.4dvh);font-size:max(12px,2.6dvh);cursor:default}
+.rs-body{display:grid;grid-template-columns:minmax(120px,28%) 1fr;gap:1.4vw;min-height:0}
+.rs-me{display:flex;flex-direction:column;gap:max(4px,.9dvh);padding:max(6px,1.2dvh) 10px;border-radius:14px;background:#ffffff12;border:1.5px solid #ffffff2a}
+.rs-big small{display:block;font-size:max(10px,2dvh);color:#d6deef}
+.rs-big b{display:block;font-size:max(22px,6dvh);line-height:1.1;font-weight:800;color:#ffe9a8;text-shadow:0 2px 6px #0008}
+.rs-big b.pos{color:#7dffa8}.rs-big b.neg{color:#ff9a9a}
+.rs-kv{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:max(11px,2.3dvh);border-top:1px solid #ffffff22;padding-top:max(3px,.7dvh)}
+.rs-kv span{color:#d6deef}.rs-kv b{color:#fff}
+.rs-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.rs-tabs{display:flex;gap:6px;margin-bottom:max(4px,.8dvh)}
+.rs-tabs button{flex:1;border:1.5px solid #ffffff33;border-radius:99px;background:#ffffff10;color:#d6deef;font:700 max(11px,2.3dvh)/1.2 Sarabun,sans-serif;padding:max(4px,.8dvh) 6px;cursor:pointer;margin:0;width:auto;box-shadow:none}
+.rs-tabs button.on{background:linear-gradient(#fff3c9,#f2b84b);color:#3b2410;border-color:#fff;box-shadow:0 2px 8px #0006}
+.rs-pane{overflow:auto;min-height:0;max-height:calc(100dvh - 31dvh);scrollbar-width:thin}
+.rs-row{display:grid;grid-template-columns:auto auto 1fr auto auto;align-items:center;gap:8px;padding:max(3px,.7dvh) 8px;margin-bottom:max(3px,.6dvh);border-radius:12px;background:#ffffff0d;border:1.5px solid transparent}
+.rs-row.me{background:#ffe9a826;border-color:#ffe9a8aa}
+.rs-row.knk{box-shadow:inset 3px 0 0 #ffd25a}
+.rs-rk{font-size:max(15px,3.4dvh);min-width:1.4em;text-align:center}
+.rs-av{width:max(28px,6.4dvh);height:max(28px,6.4dvh);border-radius:50%;overflow:hidden;background:linear-gradient(#ffe3a3,#f2a93b);border:2px solid #fff;display:flex;align-items:center;justify-content:center;flex:none}
+.rs-av img,.rs-av .avatar-img{width:100%;height:100%;object-fit:cover;object-position:top}
+.rs-emo{font-size:max(15px,3.4dvh)}
+.rs-who{min-width:0}
+.rs-who>b{display:block;font-size:max(12px,2.7dvh);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-chips{display:flex;flex-wrap:wrap;gap:3px}
+.rs-chips i{font-style:normal;font-size:max(9px,1.8dvh);background:#ffffff1c;color:#e8e2ff;border-radius:99px;padding:0 6px;white-space:nowrap}
+.rs-pt{font-size:max(15px,3.4dvh);font-weight:800;text-align:right;line-height:1}
+.rs-pt small{display:block;font-size:max(8px,1.6dvh);font-weight:600;color:#aebbd8}
+.rs-cd{min-width:4.6em;text-align:center;font-weight:800;font-size:max(11px,2.4dvh);padding:max(2px,.5dvh) 8px;border-radius:99px;background:#ffffff18}
+.rs-cd.pos{background:#1f9a4a;color:#eaffef}.rs-cd.neg{background:#a8322d;color:#ffecec}
+.rs-pay>div{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:max(3px,.7dvh) 8px;margin-bottom:3px;border-radius:10px;background:#ffffff0d;font-size:max(11px,2.3dvh)}
+.rs-pay em{font-style:normal;color:#ffe9a8;font-size:max(10px,2dvh)}.rs-sub,.rs-none{margin:0 0 4px;color:#d6deef;font-size:max(10px,2dvh)}
+.rs-shuf{font-size:max(11px,2.3dvh)}.rs-shuf p{margin:2px 0}
+.rs-foot{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.rs-foot p{margin:0;width:100%;text-align:center;font-size:max(10px,2dvh);color:#ffd978}
+.rs-foot button{flex:1;max-width:260px;margin:0;border:2px solid #fff9;border-radius:14px;padding:max(6px,1.3dvh) 10px;font:800 max(13px,3dvh)/1.1 Sarabun,sans-serif;color:#fff;cursor:pointer;
+  background:linear-gradient(#78e08f,#1f9a4a);text-shadow:0 2px 2px #0006;box-shadow:0 4px 0 #0005,0 8px 14px #0007,inset 0 2px 0 #fff6}
+.rs-foot button.g{background:linear-gradient(#5a6aa8,#2b3568);flex:0 1 150px}
+.rs-foot button:active{transform:translateY(3px);box-shadow:0 1px 0 #0005}
+.rs-foot button:disabled{filter:grayscale(.7) brightness(.8)}
+@media (max-aspect-ratio:1/1){.rs-body{grid-template-columns:1fr}.rs-me{flex-direction:row;flex-wrap:wrap;justify-content:space-between}.rs-pane{max-height:46dvh}}
+@media (prefers-reduced-motion:reduce){.rs{animation:none}}
+/* แจ้งเควสไม่บังหน้าสรุปผล */
+body:has(.rsv) .q-toast{top:4px!important;font-size:max(10px,2.2dvh)!important;padding:3px 12px!important;z-index:70}

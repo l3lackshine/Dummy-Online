@@ -264,7 +264,7 @@ function renderGame() {
   const plMe = `<div class="pl pl-bottom${meOn ? ' active' : ''}" data-seat=${S.my}><div class=pl-info><b>คุณ</b><small><span data-pc=${S.my}>${me.n_cards}</span> ใบ · ${me.pts} แต้ม</small>${meOn ? '<i class=tm>▶ ตา</i>' : ''}</div><span class="${meA.startsWith('<img') ? 'chr' : 'av'}">${meA}</span></div>`;
   // พื้นหลังของแต่ละที่นั่งเป็นกรอบรูปล้อมโต๊ะ 4 ชิ้น ตัดทแยงที่มุมโต๊ะ (ขนาดคำนวณใน fitFrame)
   const frame = ''; // ทุกห้องใช้พื้นหลังเดียวกัน (พื้นหลังหน้าเว็บ) ไม่มีกรอบพื้นหลังรายที่นั่งแล้ว
-  const ovl = S.over ? (`<div class=ov><div class=box><h2>${S.res.k == null ? 'ไพ่หมดกอง' : esc(S.P[S.res.k].n) + ' น็อก!'}</h2>${S.down != null ? `<p>ใบที่คว่ำเพื่อน็อก: ${mini(S.down)}</p>` : ''}<p style="color:var(--gold)">ผลเหรียญตานี้ ${sgn(coinDelta)} 🪙 (รวม ${sv.coins})</p>${S.P.map(p => ({ p, pt: S.res.pts[p.i], cd: S.res.coin ? S.res.coin.delta[p.i] : 0 })).sort((a, b) => b.pt - a.pt).map(({ p, pt, cd }) => `<div class=row><span>${esc(p.n)}<small>${S.res.nt[p.i].join(' · ')}</small></span><b>${pt}<small class="cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">🪙 ${sgn(cd)}</small></b></div>`).join('')}${coinLines()}${shufflePanel()}${startBtn('เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div>`) : '';
+  const ovl = S.over ? resultOverlay() : '';
   const oldHtml = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span></div>
  <div class=arena>${frame}${pl(top, 'top')}${pl(left, 'left')}<div class=felt>
  <div class="zone zone-top">${ms(top)}</div><div class="zone zone-left">${ms(left)}</div><div class="zone zone-right">${ms(right)}</div><div class="zone zone-bottom">${ms(S.my)}</div>
@@ -280,6 +280,32 @@ function renderGame() {
   requestAnimationFrame(fitFrame);
 }
 const sgn = n => (n > 0 ? '+' + n : String(n));
+
+// ===== หน้าสรุปผลจบตา: ดูครบในหน้าจอเดียว แบ่งแท็บเมื่อข้อมูลเยอะ (สรุปแต้ม / รายการจ่ายเหรียญ / สับไพ่) =====
+let resTab = 0, resGid = null;
+function setResTab(n) { resTab = n; render(); }
+function resultOverlay() {
+  if (resGid !== S.gid) { resGid = S.gid; resTab = 0; }
+  const R = S.res, c = R.coin, my = S.my, md = c && c.delta ? (c.delta[my] || 0) : (typeof coinDelta !== 'undefined' ? coinDelta : 0);
+  const win = md > 0, lose = md < 0, knk = R.k == null ? null : S.P[R.k];
+  const rows = S.P.map(p => ({ p, pt: R.pts[p.i], cd: c && c.delta ? c.delta[p.i] : 0 })).sort((x, y) => y.pt - x.pt);
+  const rank = rows.findIndex(r => r.p.i === my) + 1, medal = ['🥇', '🥈', '🥉', '4️⃣'];
+  const nm = i => (i === my ? 'คุณ' : esc(S.P[i].n));
+  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${h}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
+  const board = rows.map(({ p, pt, cd }, i) => `<div class="rs-row${p.i === my ? ' me' : ''}${R.k === p.i ? ' knk' : ''}"><b class=rs-rk>${medal[i] || i + 1}</b>${ava(p)}<div class=rs-who><b>${nm(p.i)}${R.k === p.i ? ' 👑' : ''}</b><span class=rs-chips>${(R.nt[p.i] || []).map(x => `<i>${esc(x)}</i>`).join('')}</span></div><div class=rs-pt>${pt}<small>แต้ม</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">🪙 ${sgn(cd)}</div></div>`).join('');
+  const pay = c && c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ตัวละ ${esc(c.stake)} 🪙</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>🪙 ${l.a}</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการจ่ายเหรียญตานี้</p>';
+  const shuf = shufflePanel(), sh = lob && lob.shuffle, need = !!(sh && sh.needed && !sh.ready);
+  const tabs = [['📊 สรุปแต้ม', board], ['🪙 รายการจ่าย', pay]]; if (shuf) tabs.push([(need ? '❗' : '🔀') + ' สับไพ่', `<div class=rs-shuf>${shuf}</div>`]);
+  if (resTab >= tabs.length) resTab = 0;
+  const title = R.k == null ? 'ไพ่หมดกอง' : (R.k === my ? 'คุณน็อก!' : esc(knk.n) + ' น็อก!');
+  return `<div class="ov rsv"><div class="rs ${win ? 'win' : lose ? 'lose' : 'even'}">
+  <div class=rs-head><div class=rs-ttl><small>${win ? '🏆 คุณชนะตานี้' : lose ? 'แพ้ตานี้ สู้ใหม่!' : 'เสมอ'}</small><h2>${title}</h2></div>${S.down != null ? `<div class=rs-down><small>ใบที่คว่ำ</small>${mini(S.down)}</div>` : ''}</div>
+  <div class=rs-body>
+    <aside class=rs-me><div class=rs-big><small>เหรียญตานี้</small><b class="${win ? 'pos' : lose ? 'neg' : ''}">${sgn(md)} 🪙</b></div><div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${sv.coins}</b></div><div class=rs-kv><span>อันดับ</span><b>${medal[rank - 1] || rank} ที่ ${rank}</b></div><div class=rs-kv><span>แต้มของคุณ</span><b>${R.pts[my]}</b></div></aside>
+    <section class=rs-main><nav class=rs-tabs>${tabs.map((x, i) => `<button class="${i === resTab ? 'on' : ''}" onclick="setResTab(${i})">${x[0]}</button>`).join('')}</nav><div class=rs-pane>${tabs[resTab][1]}</div></section>
+  </div>
+  <div class=rs-foot>${startBtn('▶ เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div></div>`;
+}
 // รายการจ่ายเหรียญของตานี้ (ใครจ่ายใคร เท่าไร เพราะอะไร)
 function coinLines() { const c = S && S.res && S.res.coin; if (!c || !c.lines.length) return ''; const nm = i => (i === S.my ? 'คุณ' : esc(S.P[i].n));
   return `<details class=clines><summary>🪙 รายการจ่ายเหรียญ (ตัวละ ${esc(c.stake)})</summary>${c.lines.map(l => `<div>${nm(l.f)} → ${nm(l.t)} <b>${l.a}</b> · ${esc(l.w)}</div>`).join('')}</details>`; }
