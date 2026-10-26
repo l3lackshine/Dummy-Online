@@ -47,9 +47,19 @@ function build(skins, skills, gacha) {
       'on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true;', '');
     out.push(`update public.gacha_banners set active = false where id not in (${banners.map(b => q(b.id)).join(', ')});`, '');
     // น้ำหนักต่อชิ้น = น้ำหนักของระดับ ÷ จำนวนชิ้นในระดับนั้น (โอกาสรวมของระดับคงที่ไม่ว่าจะมีของกี่ชิ้น)
-    const inPool = items.filter(i => i.inPool), cnt = {};
-    inPool.forEach(i => { cnt[i.rarity] = (cnt[i.rarity] || 0) + 1; });
-    for (const b of banners) for (const i of inPool) pool.push(`(${q(b.id)}, ${q(i.kind)}, ${q(i.id)}, ${Math.max(1, Math.round(int((R[i.rarity] || {}).weight || 1) * 100 / cnt[i.rarity]))})`);
+    // ต่อกาชา: b.pool (จำกัดไอเทม) · b.rarityWeights (เรทต่อระดับ, 0 = ไม่ออก) · b.rateUp {multiplier, items} (คูณเรทไอเทมที่เลือก)
+    const inPool = items.filter(i => i.inPool), key = p => (typeof p === 'string' ? p : p.id), hit = (i, k) => i.id === k || i.kind + ':' + i.id === k;
+    for (const b of banners) {
+      const only = Array.isArray(b.pool) && b.pool.length ? b.pool : null, RW = b.rarityWeights || {}, up = (b.rateUp && b.rateUp.items) || [], mult = Number(b.rateUp && b.rateUp.multiplier) || 1;
+      const list = inPool.filter(i => (!only || only.some(p => hit(i, key(p)))) && RW[i.rarity] !== 0), cnt = {};
+      list.forEach(i => { cnt[i.rarity] = (cnt[i.rarity] || 0) + 1; });
+      for (const i of list) {
+        const own = only && only.find(p => typeof p === 'object' && hit(i, p.id) && p.weight != null);
+        let w = own ? int(own.weight) : Math.max(1, Math.round(int((RW[i.rarity] != null ? RW[i.rarity] : (R[i.rarity] || {}).weight) || 1) * 100 / cnt[i.rarity]));
+        if (!own && up.some(k => hit(i, k))) w = Math.max(1, Math.round(w * mult));
+        pool.push(`(${q(b.id)}, ${q(i.kind)}, ${q(i.id)}, ${w})`);
+      }
+    }
     if (pool.length) {
       out.push('insert into public.gacha_pool(banner_id, kind, item_id, weight) values', pool.join(',\n'),
         'on conflict (banner_id, kind, item_id) do update set weight = excluded.weight;', '');

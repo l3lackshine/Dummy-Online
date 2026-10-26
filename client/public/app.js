@@ -60,7 +60,7 @@ const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app'
 function homeView() {
   const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
   $('app').className = 'home';
-  $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./ui/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./ui/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./ui/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
+  $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./UI/Assets/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./UI/Assets/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./UI/Assets/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
 }
 function goPlay() { joinOpen = false; conn(); if (sock && sock.connected && !RULES.length) sock.emit('rules:get'); go('games'); }
 // ===== หน้าเลือกเกม (หลังกดเล่นเกม): รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา เพิ่มกฎใหม่แล้วโผล่เองโดยไม่ต้องแก้ client =====
@@ -124,14 +124,15 @@ function startCreate() {
   else { soloRoom = false; conn(); if (sock && sock.connected) mk(); else { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); } }
 }
 function shopView() {
+  const SK = window.Assets ? Assets.shopKinds() : KINDS; // ลำดับ/ชื่อแท็บตาม Shop/Shopsetting.config
   // แท็บหมวดหมู่: "ทั้งหมด" + หมวดตาม KINDS — กดเลือกเพื่อกรองดูทีละหมวด ไม่ต้องเลื่อนผ่านของที่ไม่สนใจ
-  if (shopCat !== 'all' && !KINDS.some(([k]) => k === shopCat)) shopCat = 'all';
-  const tabs = [['all', 'ทั้งหมด', '', '🛍️'], ...KINDS].map(([kind, label, , ic]) => `<button class="catbtn${shopCat === kind ? ' on' : ''}" onclick="setShopCat('${kind}')">${ic || ''} ${label}</button>`).join('');
-  const secs = KINDS.filter(([kind]) => shopCat === 'all' || shopCat === kind).map(([kind, label, , ic]) => {
+  if (shopCat !== 'all' && !SK.some(([k]) => k === shopCat)) shopCat = 'all';
+  const tabs = [window.Assets ? Assets.allTab() : ['all', 'ทั้งหมด', '', '🛍️'], ...SK].map(([kind, label, , ic]) => `<button class="catbtn${shopCat === kind ? ' on' : ''}" onclick="setShopCat('${kind}')">${ic || ''} ${label}</button>`).join('');
+  const secs = SK.filter(([kind]) => shopCat === 'all' || shopCat === kind).map(([kind, label, , ic]) => {
     const items = (SKIN_REGISTRY[kind] || []).filter(x => price(x) > 0 || (window.DB && DB.enabled && mprice(x) > 0)); if (!items.length) return '';
     return `<section class=ksec>${shopCat === 'all' ? `<h3 class=sec>${ic} ${label}</h3>` : ''}<div class="grid big">${items.map(x => { const own = owned(kind, x), no = !own && sv.coins < price(x), mc = window.DB && DB.enabled && mprice(x) > 0, noM = !own && (sv.mcash || 0) < mprice(x); return `<div class=item2>${prevBox(kind, x)}<b>${esc(x.name || x.n || x.id)}</b>${own ? '<button class=wbtn disabled>ซื้อแล้ว ✓</button>' : `${price(x) > 0 ? `<button class="wbtn go" ${no ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}')">🪙 ${price(x)}</button>` : ''}${mc ? `<button class="wbtn mc" ${noM ? 'disabled' : ''} onclick="buyItem('${kind}','${esc(x.id)}','mcash')">💎 ${mprice(x)}</button>` : ''}`}</div>`; }).join('')}</div></section>`;
   }).join('') || '<p class=note>ยังไม่มีของในหมวดนี้</p>';
-  page2('ร้านค้า', `<div class=cattabs>${tabs}</div><p class=note>${esc(shopNote || 'เลือกซื้อของตกแต่ง แล้วไปเลือกใช้ที่หน้าโปรไฟล์')}</p><div class=panel>${secs}</div>`);
+  page2((window.Assets && Assets.shopTitle()) || 'ร้านค้า', `<div class=cattabs>${tabs}</div><p class=note>${esc(shopNote || 'เลือกซื้อของตกแต่ง แล้วไปเลือกใช้ที่หน้าโปรไฟล์')}</p><div class=panel>${secs}</div>`);
 }
 function profileView() {
   const secs = KINDS.map(([kind, label, , ic]) => {

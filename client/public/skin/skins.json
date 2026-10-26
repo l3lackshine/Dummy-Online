@@ -11,7 +11,8 @@
    "b1": "#7a1f2b",
    "b2": "#5d1520",
    "bg": "#0f3d2a",
-   "bg2": "#0b2e20"
+   "bg2": "#0b2e20",
+   "src": "folder"
   },
   {
    "id": "midnight",
@@ -24,7 +25,8 @@
    "b1": "#4057a3",
    "b2": "#2b3b72",
    "bg": "#0c1226",
-   "bg2": "#080c1a"
+   "bg2": "#080c1a",
+   "src": "folder"
   },
   {
    "id": "sakura",
@@ -37,7 +39,8 @@
    "b1": "#f06595",
    "b2": "#c2255c",
    "bg": "#4a1f3a",
-   "bg2": "#35142a"
+   "bg2": "#35142a",
+   "src": "folder"
   },
   {
    "id": "gold",
@@ -50,39 +53,45 @@
    "b1": "#c9971c",
    "b2": "#8a6508",
    "bg": "#2e2410",
-   "bg2": "#1f180a"
+   "bg2": "#1f180a",
+   "src": "folder"
   }
  ],
  "characters": [
   {
    "id": "boy",
    "name": "หนุ่มน้อยซากุระ",
-   "asset": "./skin/characters/boy.webp",
-   "price": 0
+   "price": 0,
+   "asset": "./Character/boy/Character.webp",
+   "src": "folder"
   },
   {
    "id": "girl",
    "name": "สาวน้อยหางม้า",
-   "asset": "./skin/characters/girl.webp",
-   "price": 0
+   "price": 0,
+   "asset": "./Character/girl/Character.webp",
+   "src": "folder"
   },
   {
    "id": "rina-01",
    "name": "รินะ",
-   "asset": "./skin/characters/rina-01.webp",
-   "price": 1500
+   "price": 1500,
+   "asset": "./Character/rina-01/Character.webp",
+   "src": "folder"
   },
   {
    "id": "arya-01",
    "name": "อายะ",
-   "asset": "./skin/characters/arya-01.webp",
-   "price": 1500
+   "price": 1500,
+   "asset": "./Character/arya-01/Character.webp",
+   "src": "folder"
   },
   {
    "id": "rena-01",
    "name": "เรนะ",
-   "asset": "./skin/characters/rena-01.png",
-   "price": 1500
+   "price": 1500,
+   "asset": "./Character/rena-01/Character.png",
+   "src": "folder"
   }
  ],
  "tables": [
@@ -92,7 +101,8 @@
    "price": 0,
    "asset": "",
    "bg": "#0f3d2a",
-   "bg2": "#0b2e20"
+   "bg2": "#0b2e20",
+   "src": "folder"
   },
   {
    "id": "sakura-felt",
@@ -100,7 +110,8 @@
    "price": 250,
    "asset": "",
    "bg": "#8a3a5c",
-   "bg2": "#5a2340"
+   "bg2": "#5a2340",
+   "src": "folder"
   },
   {
    "id": "navy-felt",
@@ -108,7 +119,8 @@
    "price": 250,
    "asset": "",
    "bg": "#1f3a6e",
-   "bg2": "#142650"
+   "bg2": "#142650",
+   "src": "folder"
   },
   {
    "id": "wood",
@@ -116,23 +128,26 @@
    "price": 400,
    "asset": "",
    "bg": "#8a5a2e",
-   "bg2": "#5a3718"
+   "bg2": "#5a3718",
+   "src": "folder"
   },
   {
    "id": "table-sakura02",
    "name": "Sakura Table",
    "price": 100,
-   "asset": "./skin/tables/table-sakura02.webp",
    "bg": "#ffffff",
-   "bg2": "#ffffff"
+   "bg2": "#ffffff",
+   "asset": "./Item/Table/table-sakura02.webp",
+   "src": "folder"
   },
   {
    "id": "table-sakura01",
    "name": "Sakura Table",
    "price": 100,
-   "asset": "./skin/tables/table-sakura01.webp",
    "bg": "#ffffff",
-   "bg2": "#ffffff"
+   "bg2": "#ffffff",
+   "asset": "./Item/Table/table-sakura01.webp",
+   "src": "folder"
   }
  ],
  "backgrounds": [
@@ -140,33 +155,37 @@
    "id": "sakura-house",
    "name": "ห้องญี่ปุ่นซากุระ",
    "price": 0,
-   "asset": "./skin/backgrounds/sakura-house.webp",
    "css": "",
-   "ink": "#ffffff"
+   "ink": "#ffffff",
+   "asset": "./Item/Background/sakura-house.webp",
+   "src": "folder"
   },
   {
    "id": "room-night",
    "name": "ห้องไม้ยามค่ำ (ซากุระ)",
-   "asset": "./skin/backgrounds/room-night.svg",
    "css": "",
    "ink": "#ffffff",
-   "price": 250
+   "price": 250,
+   "asset": "./Item/Background/room-night.svg",
+   "src": "folder"
   },
   {
    "id": "room-day",
    "name": "ห้องไม้ยามเช้า",
-   "asset": "./skin/backgrounds/room-day.svg",
    "css": "",
    "ink": "#ffffff",
-   "price": 250
+   "price": 250,
+   "asset": "./Item/Background/room-day.svg",
+   "src": "folder"
   },
   {
    "id": "room-sakura",
    "name": "ห้องไม้โทนชมพู",
-   "asset": "./skin/backgrounds/room-sakura.svg",
    "css": "",
    "ink": "#ffffff",
-   "price": 250
+   "price": 250,
+   "asset": "./Item/Background/room-sakura.svg",
+   "src": "folder"
   },
   {
    "id": "sunset",
@@ -174,7 +193,8 @@
    "asset": "",
    "css": "linear-gradient(160deg,#2b2160 0%,#7a3b78 55%,#d9774f 100%)",
    "ink": "#ffffff",
-   "price": 150
+   "price": 150,
+   "src": "folder"
   },
   {
    "id": "sakura",
@@ -182,7 +202,8 @@
    "asset": "",
    "css": "linear-gradient(160deg,#ffd1e3,#f06595)",
    "ink": "#3a1020",
-   "price": 150
+   "price": 150,
+   "src": "folder"
   },
   {
    "id": "night",
@@ -190,7 +211,8 @@
    "asset": "",
    "css": "radial-gradient(circle at 22% 24%,#ffffffaa 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 38%,#ffffff88 0 1px,transparent 2px),radial-gradient(circle at 48% 70%,#ffffff77 0 1px,transparent 2px),linear-gradient(160deg,#0c1226,#3b4a7a)",
    "ink": "#ffffff",
-   "price": 150
+   "price": 150,
+   "src": "folder"
   },
   {
    "id": "forest",
@@ -198,7 +220,8 @@
    "asset": "",
    "css": "linear-gradient(160deg,#2f9e63,#0b3d2a)",
    "ink": "#ffffff",
-   "price": 150
+   "price": 150,
+   "src": "folder"
   },
   {
    "id": "gold",
@@ -206,7 +229,8 @@
    "asset": "",
    "css": "linear-gradient(160deg,#ffe29a,#c9971c)",
    "ink": "#33250a",
-   "price": 300
+   "price": 300,
+   "src": "folder"
   }
  ],
  "cards": [
@@ -217,7 +241,8 @@
    "card": "#fbf7ec",
    "blk": "#1b1b1b",
    "red": "#c0282d",
-   "edge": "#cfc7b0"
+   "edge": "#cfc7b0",
+   "src": "folder"
   }
  ],
  "docks": [
@@ -254,7 +279,8 @@
      "#0006",
      "#0000"
     ]
-   }
+   },
+   "src": "folder"
   },
   {
    "id": "sakura",
@@ -289,7 +315,8 @@
      "#8a3f6288",
      "#0000"
     ]
-   }
+   },
+   "src": "folder"
   },
   {
    "id": "night",
@@ -324,7 +351,8 @@
      "#0c122699",
      "#0000"
     ]
-   }
+   },
+   "src": "folder"
   }
  ],
  "backs": [
@@ -332,49 +360,55 @@
    "id": "sakura-navy",
    "name": "ซากุระกรมท่า",
    "price": 0,
-   "asset": "./skin/cards/backs/sakura-navy.svg",
    "b1": "#1d2650",
-   "b2": "#141b3a"
+   "b2": "#141b3a",
+   "asset": "./Item/CardBack/sakura-navy.svg",
+   "src": "folder"
   },
   {
    "id": "classic-red",
    "name": "คลาสสิกแดง",
    "price": 100,
-   "asset": "./skin/cards/backs/classic-red.svg",
    "b1": "#7a1f2b",
-   "b2": "#5d1520"
+   "b2": "#5d1520",
+   "asset": "./Item/CardBack/classic-red.svg",
+   "src": "folder"
   },
   {
    "id": "midnight",
    "name": "มิดไนท์",
    "price": 200,
-   "asset": "./skin/cards/backs/midnight.svg",
    "b1": "#4057a3",
-   "b2": "#2b3b72"
+   "b2": "#2b3b72",
+   "asset": "./Item/CardBack/midnight.svg",
+   "src": "folder"
   },
   {
    "id": "paw-pink",
    "name": "รอยเท้าแมว",
    "price": 300,
-   "asset": "./skin/cards/backs/paw-pink.svg",
    "b1": "#f06595",
-   "b2": "#c2255c"
+   "b2": "#c2255c",
+   "asset": "./Item/CardBack/paw-pink.svg",
+   "src": "folder"
   },
   {
    "id": "gold",
    "name": "ทองคำ",
    "price": 700,
-   "asset": "./skin/cards/backs/gold.svg",
    "b1": "#c9971c",
-   "b2": "#8a6508"
+   "b2": "#8a6508",
+   "asset": "./Item/CardBack/gold.svg",
+   "src": "folder"
   },
   {
    "id": "sakura-01",
    "name": "Sakura",
    "price": 700,
-   "asset": "./skin/cards/backs/sakura-01.webp",
    "b1": "#a58fff",
-   "b2": "#5d1520"
+   "b2": "#5d1520",
+   "asset": "./Item/CardBack/sakura-01.webp",
+   "src": "folder"
   }
  ]
 }

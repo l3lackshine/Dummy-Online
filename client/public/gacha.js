@@ -22,6 +22,7 @@
   const STARS = { common: 2, rare: 3, epic: 4, legendary: 5 };
   function pullPanel() {
     const b = banner(); if (!b) return '<p class=note>ยังไม่มีตู้กาชาเปิดอยู่ (ผู้ดูแลต้องรัน supabase/seed_catalog.sql)</p>';
+    const bimg = window.Assets && Assets.bannerImage(b.id);
     const bs = DB.G.banners, R = DB.G.rarities || {}, rk = r => (R[r] || {}).sort || 0;
     const price = (n, cur) => (b[n === 1 ? 'single' : 'ten'] || {})[cur];
     const items = (b.items || []).slice().sort((x, y) => rk(y.rarity) - rk(x.rarity) || (x.kind === 'characters' ? -1 : 1));
@@ -34,8 +35,8 @@
     const tot = {}; items.forEach(i => { tot[i.rarity] = (tot[i.rarity] || 0) + Number(i.pct); });
     const rates = Object.keys(R).sort((x, y) => rk(y) - rk(x)).map(r => `<span class="gc-r ${r}">${RICON[r] || ''} ${E(R[r].name)} ${Math.round((tot[r] || 0) * 100) / 100}%</span>`).join('');
     const pity = b.pity ? `<div class=gc-pity><span>การันตี ${RICON.legendary} ${E((R.legendary || {}).name || 'ตำนาน')} ใน ${b.pity} ครั้ง <b>(${b.since_top}/${b.pity})</b></span><div class=gc-bar><i style="width:${Math.min(100, b.since_top / b.pity * 100)}%"></i></div></div>` : '';
-    return `<div class=gc-stage><div class=gc-show><div class=gc-ban><b>${E(b.name)}</b><small>${E(b.description || '')}</small></div><div class=gc-feats>${feat.map(card).join('')}</div>
-        <div class=gc-sub>${bs.length > 1 ? bs.map(x => `<button class="gc-mini${x.id === b.id ? ' on' : ''}" onclick="gcBanner('${E(x.id)}')">${E(x.name)}</button>`).join('') : ''}<button class=gc-mini onclick="gcList()">📋 รายการและอัตราการออก</button></div></div>
+    return `<div class=gc-stage><div class=gc-show><div class=gc-ban><b>${E(b.name)}</b><small>${E(b.description || '')}</small></div>${bimg ? `<div class=gc-bimg><img src="${E(bimg)}" alt="${E(b.name)}"></div>` : `<div class=gc-feats>${feat.map(card).join('')}</div>`}
+        <div class=gc-sub>${bs.length > 1 ? bs.map(x => `<button class="gc-mini${x.id === b.id ? ' on' : ''}" onclick="gcBanner('${E(x.id)}')">${E(x.name)}</button>`).join('') : ''}${window.Assets && !Assets.showListButton() ? '' : `<button class=gc-mini onclick="gcList()">📋 รายการและอัตราการออก</button>`}</div></div>
       <div class=gc-side><div class=gc-rates>${rates}</div>${pity}<small class=gc-tip>สุ่ม 10 ครั้งการันตี ${RICON.rare} หายากขึ้นไปอย่างน้อย 1 ชิ้น<br>ได้ตัวละครซ้ำ = นำไปอัพดาว · ของซ้ำขายเป็นเหรียญได้ที่ “คลังของ”</small>
         <div class=gc-btns>${btn(1, 'coins')}${btn(10, 'coins')}${btn(1, 'mcash')}${btn(10, 'mcash')}</div></div></div>`;
   }
@@ -64,8 +65,8 @@
   function gachaView() {
     ensure();
     const body = !DB.G ? `<p class=note>${E(note || 'กำลังโหลดตู้กาชา…')}</p>` : tab === 'inv' ? invPanel() : pullPanel();
-    const tabs = [['pull', '🎰 สุ่มกาชา'], ['inv', '🎒 คลังของ / ขายตัวซ้ำ']].map(([k, l]) => `<button class="catbtn${tab === k ? ' on' : ''}" onclick="gcTab('${k}')">${l}</button>`).join('');
-    page2('กาชา', `<div class="gc-wrap"><div class="gc-tabs">${tabs}${note && DB.G ? `<span class=gc-note>${E(note)}</span>` : ''}</div><div class="gc-main${tab === 'inv' ? ' inv' : ''}">${body}</div></div>`);
+    const tabs = [['pull', window.Assets ? Assets.gachaLabel('pull', '🎰 สุ่มกาชา') : '🎰 สุ่มกาชา'], ['inv', window.Assets ? Assets.gachaLabel('inv', '🎒 คลังของ / ขายตัวซ้ำ') : '🎒 คลังของ / ขายตัวซ้ำ']].map(([k, l]) => `<button class="catbtn${tab === k ? ' on' : ''}" onclick="gcTab('${k}')">${l}</button>`).join('');
+    page2((window.Assets && Assets.shopTitle()) || 'กาชา', `<div class="gc-wrap"><div class="gc-tabs">${tabs}${note && DB.G ? `<span class=gc-note>${E(note)}</span>` : ''}</div><div class="gc-main${tab === 'inv' ? ' inv' : ''}">${body}</div></div>`);
   }
   const _shop = window.shopView;
   window.shopView = function () { return DB.P ? gachaView() : (_shop ? _shop() : undefined); };

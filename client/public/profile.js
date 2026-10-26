@@ -2,7 +2,7 @@
    ซ้าย: ตัวละคร + ชื่อ / ฉายา · กลาง: สกิน (ตัวละคร/หลังไพ่/โต๊ะ/พื้นหลัง) · ขวา: ความสามารถ
    ล่าง: ปุ่มไปร้านค้า
    - ไม่แก้ app.js / skills.js: เขียนทับฟังก์ชัน profileView() ที่ app.js เรียกอยู่แล้ว
-   - ใช้ป้ายไม้ ui/sign-blank.webp เดิมทำหัวข้อ · ฉายาเก็บในเครื่อง (localStorage: dummyTitle) */
+   - ใช้ป้ายไม้ UI/Assets/sign-blank.webp เดิมทำหัวข้อ · ฉายาเก็บในเครื่อง (localStorage: dummyTitle) */
 (function () {
   'use strict';
   const LS = window.localStorage, TK = 'dummyTitle';
@@ -86,7 +86,7 @@
 .pf-fields{display:flex;flex-direction:column;gap:calc(var(--u)*1.6);min-width:0}
 .pf-f{display:flex;flex-direction:column;align-items:stretch;gap:calc(var(--u)*.5);min-width:0}
 .pf-f .pf-tag{align-self:center}
-.pf-tag{display:inline-block;box-sizing:border-box;border-style:solid;border-width:calc(var(--u)*2.2) calc(var(--u)*3);border-image:url(./ui/sign-blank.webp) 70 fill/calc(var(--u)*2.2) calc(var(--u)*3) stretch;background:#a4682f;
+.pf-tag{display:inline-block;box-sizing:border-box;border-style:solid;border-width:calc(var(--u)*2.2) calc(var(--u)*3);border-image:url(./UI/Assets/sign-blank.webp) 70 fill/calc(var(--u)*2.2) calc(var(--u)*3) stretch;background:#a4682f;
   font:700 max(12px,calc(var(--u)*3.4))/1 Mali,Sarabun,'Noto Sans Thai',sans-serif;color:var(--cream,#fff4dc);text-shadow:0 1px 0 #6b3a18,0 0 4px #3b1d0a;text-align:center;padding:0 calc(var(--u)*2);filter:drop-shadow(0 3px 3px #0007)}
 .pf-pn{display:flex;flex-direction:column;align-items:stretch;gap:calc(var(--u)*1);overflow:hidden}
 .pf-pn>.pf-tag{align-self:center;min-width:56%;flex:none}
