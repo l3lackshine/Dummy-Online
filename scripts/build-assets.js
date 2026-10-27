@@ -26,7 +26,8 @@ function readJson(p, fallback) {
 const byOrder = (a, b) => (Number(a.order) || 1e6) - (Number(b.order) || 1e6) || String(a.id).localeCompare(String(b.id));
 const url = (...parts) => './' + parts.join('/');
 const resolveMap = (m, base) => Object.fromEntries(Object.entries(m || {}).filter(([, v]) => v).map(([k, v]) => [k, url(base, v)]));
-function needFile(p, what) { if (!exists(p)) warns.push(`ไม่พบไฟล์ ${what}: ${rel(p)}`); }
+function needFile(p, what) { // ไฟล์ต้องอยู่ในโฟลเดอร์ที่เว็บเสิร์ฟ หรือในต้นฉบับ assets-src/ (หลังแพ็กด้วย pack-assets.js --strip)
+  const alt = path.join(ROOT, 'assets-src', path.relative(PUB, p)); if (!exists(p) && !exists(alt)) warns.push(`ไม่พบไฟล์ ${what}: ${rel(p)}`); }
 
 function loadCharacters() {
   const out = [];
