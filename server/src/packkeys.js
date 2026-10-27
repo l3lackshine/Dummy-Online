@@ -1,7 +1,7 @@
 'use strict';
 /* packkeys.js — ส่งกุญแจถอดรหัสแพ็กแอสเซ็ตให้เกมตามสิทธิ์ผู้เล่น
    กุญแจไม่ถูกเก็บที่ไหนเลย: คำนวณจาก PACK_MASTER (ความลับเดียว ตั้งใน Render + GitHub Secrets) + ชื่อแพ็ก ด้วย HKDF
-   แพ็กชื่อ 'base'      = ฟรี ทุกคนขอได้ (ตัวละครฟรี + ภาพตัวอย่างลายน้ำ)
+   แพ็กชื่อ 'base'      = ฟรี ทุกคนขอได้ (ตัวละครฟรี + ภาพตัวอย่างขนาดเล็ก)
    แพ็กชื่อ 'char-<id>' = ต้องล็อกอินและมีตัวละครนั้นในคลัง (inventory) จึงจะได้กุญแจ
    Public: deriveKey(master, packId) · route({ master, verifyToken, ownsItem }) → handler แบบ express (req, res)
    Extend: เพิ่มชนิดแพ็กใหม่ที่ policy() */

@@ -1,6 +1,6 @@
 /* pack-loader.js (ก้อนที่ 2) — หน้าโหลดก่อนเข้าเกม + โหลด/ถอดรหัสแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น
    Flow: อ่าน pack/manifest.json → แพ็กฟรี (base) ขอกุญแจจากเซิร์ฟเวอร์ → แพ็กตัวละครที่ซื้อแล้ว ขอกุญแจพร้อม token ล็อกอิน
-         (ไม่มีสิทธิ์ = เซิร์ฟเวอร์ตอบ 403 → ข้าม ใช้ภาพตัวอย่างลายน้ำแทน) → ดาวน์โหลด/ใช้แคชในเครื่อง → ถอดรหัสในหน่วยความจำ
+         (ไม่มีสิทธิ์ = เซิร์ฟเวอร์ตอบ 403 → ข้าม ใช้ภาพตัวอย่างขนาดเล็กแทน) → ดาวน์โหลด/ใช้แคชในเครื่อง → ถอดรหัสในหน่วยความจำ
          → แทนที่รูปในทะเบียนสกิน (SKIN_REGISTRY) → ปิดหน้าโหลด
    ไม่มี manifest (โหมดพัฒนา/ยังไม่แพ็ก) = ข้ามเงียบ ๆ เกมใช้ไฟล์ตรงตามเดิม
    Public: PackLoader.url(path) · PackLoader.ready (Promise) · PackLoader.refresh() — เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ เพื่อปลดล็อกภาพเต็ม */
@@ -77,7 +77,7 @@
     for (const name of names) { const f = index.files[name], plain = await dec(b64(f.iv), buf.slice(base + f.o, base + f.o + f.l), name); urls.set(name, URL.createObjectURL(new Blob([plain], { type: f.t }))); }
     return names;
   }
-  // ---------- ทะเบียนสกิน: ภาพเต็ม (ถ้าปลดล็อก) → ภาพตัวอย่างลายน้ำ → รูปล็อก ----------
+  // ---------- ทะเบียนสกิน: ภาพเต็ม (ถ้าปลดล็อก) → ภาพตัวอย่างขนาดเล็ก → รูปล็อก ----------
   const swapDeep = v => { if (typeof v === 'string') return L.url(v) || v; if (Array.isArray(v)) return v.map(swapDeep); if (v && typeof v === 'object') for (const k of Object.keys(v)) v[k] = swapDeep(v[k]); return v; };
   function patchRegistry() {
     try {
