@@ -35,4 +35,10 @@ async function rpcRetry(fn, args, tries = 4) {
   let last; for (let i = 0; i < tries; i++) { try { return await rpc(fn, args); } catch (e) { last = e; if (e.status && e.status < 500 && e.status !== 429) break; await new Promise(r => setTimeout(r, 400 * 2 ** i)); } }
   throw last;
 }
-module.exports = { enabled, verifyToken, rpc, rpcRetry };
+// ตรวจว่าผู้เล่นมีไอเทม (ในคลัง) หรือไม่ — ใช้กับการส่งกุญแจแพ็กตัวละคร
+async function ownsItem(userId, kind, itemId) {
+  const c = cfg(), q = encodeURIComponent;
+  const rows = await fetchJson(`${c.url}/rest/v1/inventory?user_id=eq.${q(userId)}&kind=eq.${q(kind)}&item_id=eq.${q(itemId)}&qty=gte.1&select=item_id&limit=1`, { headers: { apikey: c.secret } });
+  return Array.isArray(rows) && rows.length > 0;
+}
+module.exports = { enabled, verifyToken, rpc, rpcRetry, ownsItem };

@@ -181,6 +181,8 @@ function cleanAction(a) {
 // exception ใน handler ของ socket.io ที่ไม่ถูกดักจะทำให้โปรเซสล้มทั้งตัว (payload จาก client เชื่อถือไม่ได้) จึงห่อทุก handler
 const on = (socket, ev, fn) => socket.on(ev, (...a) => { try { fn(...a); } catch (e) { console.error('handler error:', ev, e && e.message); } });
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
+// ส่งกุญแจแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น (ดู src/packkeys.js) — ต้องตั้ง PACK_MASTER ใน Environment
+app.get('/pack-key', require('./packkeys').route({ master: process.env.PACK_MASTER, verifyToken: SB.verifyToken, ownsItem: SB.ownsItem }));
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size }));
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 

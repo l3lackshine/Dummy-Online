@@ -1,14 +1,14 @@
-/* pack-loader.js — หน้าโหลดก่อนเข้าเกม + โหลด/ถอดรหัสแพ็กแอสเซ็ต (pack/characters.pak) เก็บในเครื่อง
-   Flow: อ่าน manifest → ใช้แพ็กจากแคชในเครื่อง (ถ้าเวอร์ชันตรง) หรือดาวน์โหลดพร้อมแถบความคืบหน้า → ถอดรหัสในหน่วยความจำ
-         → แทนที่ path ของรูปในทะเบียนสกิน (SKIN_REGISTRY) ด้วย blob URL → ปิดหน้าโหลด
+/* pack-loader.js (ก้อนที่ 2) — หน้าโหลดก่อนเข้าเกม + โหลด/ถอดรหัสแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น
+   Flow: อ่าน pack/manifest.json → แพ็กฟรี (base) ขอกุญแจจากเซิร์ฟเวอร์ → แพ็กตัวละครที่ซื้อแล้ว ขอกุญแจพร้อม token ล็อกอิน
+         (ไม่มีสิทธิ์ = เซิร์ฟเวอร์ตอบ 403 → ข้าม ใช้ภาพตัวอย่างลายน้ำแทน) → ดาวน์โหลด/ใช้แคชในเครื่อง → ถอดรหัสในหน่วยความจำ
+         → แทนที่รูปในทะเบียนสกิน (SKIN_REGISTRY) → ปิดหน้าโหลด
    ไม่มี manifest (โหมดพัฒนา/ยังไม่แพ็ก) = ข้ามเงียบ ๆ เกมใช้ไฟล์ตรงตามเดิม
-   Public: PackLoader.url(path) · PackLoader.ready (Promise)
-   Extend: เปลี่ยนที่มาของกุญแจที่ getKey() (ก้อนที่ 2: ขอจากเซิร์ฟเวอร์) · เพิ่มแพ็กใหม่ที่ PACKS */
+   Public: PackLoader.url(path) · PackLoader.ready (Promise) · PackLoader.refresh() — เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ เพื่อปลดล็อกภาพเต็ม */
 (function () {
   'use strict';
-  const PACKS = ['characters']; // EXTEND: เพิ่มชื่อแพ็กที่นี่ (ต้องมี pack/manifest ตรงกัน — ตอนนี้ 1 แพ็ก)
-  const urls = new Map(), L = window.PackLoader = { url: p => urls.get(String(p).replace(/^\.\//, '')) || null, ready: null };
+  const urls = new Map(), loaded = new Set(), L = window.PackLoader = { url: p => urls.get(String(p).replace(/^\.\//, '')) || null, ready: null, refresh: null, packs: [] };
   const T = { title: 'กำลังเตรียมเกม', s1: 'ตรวจเวอร์ชันไฟล์', s2: 'ดาวน์โหลดทรัพยากร', s3: 'ถอดรหัสไฟล์', s4: 'เตรียมภาพ', tip: 'ครั้งแรกอาจใช้เวลาสักครู่ ครั้งต่อไปจะเร็วขึ้นมาก', fail: 'โหลดไม่สำเร็จ', retry: 'ลองอีกครั้ง' };
+  const LOCKED = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420"><rect width="300" height="420" rx="24" fill="#2a1230"/><circle cx="150" cy="170" r="52" fill="#4a2a55"/><rect x="70" y="240" width="160" height="120" rx="60" fill="#4a2a55"/><text x="150" y="388" text-anchor="middle" font-size="30" fill="#ffd978">🔒</text></svg>');
   // ---------- หน้าโหลด ----------
   const css = `#pkov{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;box-sizing:border-box;color:#fff;text-align:center;font-family:Sarabun,system-ui,sans-serif;
     background:radial-gradient(ellipse at 50% 40%,#4a1f3a 0,#2a1230 55%,#150a22 100%);transition:opacity .3s}
@@ -34,59 +34,98 @@
   }
   const prog = (p, s) => { if (!ov) return; bar.style.width = Math.round(Math.min(1, Math.max(0, p)) * 100) + '%'; if (s) step.textContent = s + '…'; };
   const hide = () => { if (!ov) return; ov.classList.add('out'); setTimeout(() => { ov && ov.remove(); ov = null; }, 350); };
-  const fail = e => { if (!ov) return; ov.classList.add('bad'); ov.querySelector('.pk-msg').textContent = T.fail + ' — ' + (e && e.message ? e.message : e); ov.querySelector('button').onclick = () => location.reload(); };
-  // ---------- กุญแจ ----------
-  // EXTEND(ก้อนที่ 2): ขอกุญแจจากเซิร์ฟเวอร์หลังล็อกอิน แล้วคืน Uint8Array 32 ไบต์
-  async function getKey(id) {
-    const k = (window.__PK || {})[id]; if (!k) throw new Error('ไม่พบกุญแจแพ็ก ' + id);
-    const a = b64(k[0]), m = b64(k[1]); return a.map((x, i) => x ^ m[i]);
+  const fail = e => { if (!ov) mount(); ov.classList.add('bad'); ov.querySelector('.pk-msg').textContent = T.fail + ' — ' + (e && e.message ? e.message : e); ov.querySelector('button').onclick = () => location.reload(); };
+  // ---------- กุญแจ (ขอจากเซิร์ฟเวอร์ตามสิทธิ์ · เก็บแคชในเครื่องเพื่อไม่ต้องรอเซิร์ฟเวอร์ทุกครั้ง) ----------
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)), ls = (k, v) => { try { return v === undefined ? localStorage.getItem(k) : localStorage.setItem(k, v); } catch (e) { return null; } };
+  let uid = '';
+  async function token() { // รอระบบบัญชีพร้อมสั้น ๆ แล้วดึง access token (ผู้เล่นที่ยังไม่ล็อกอิน = ไม่มี token)
+    for (let i = 0; i < 30 && !(window.DB && DB.enabled); i++) await new Promise(r => setTimeout(r, 100));
+    try { if (window.DB && DB.enabled && DB.client) { const { data } = await DB.client.auth.getSession(); uid = data && data.session && data.session.user ? data.session.user.id : ''; return data && data.session ? data.session.access_token : null; } } catch (e) {} return null;
   }
-  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const kname = p => 'dummyPK:' + (p.tier === 'owner' ? uid + ':' : '') + p.id; // กุญแจแพ็กตัวละครผูกกับบัญชี (เครื่องเดียวหลายบัญชีไม่ใช้กุญแจร่วมกัน)
+  // คืน { key } | { denied: true } (ไม่มีสิทธิ์) | โยน error (เซิร์ฟเวอร์ไม่ตอบ)
+  async function getKey(pack, tk) {
+    if (pack.tier === 'owner' && !tk) return { denied: true };
+    const cached = ls(kname(pack)); if (cached) return { key: b64(cached) };
+    const base = String((window.DUMMY_CONFIG || {}).BACKEND_URL || '').replace(/\/+$/, ''), ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 20000);
+    try {
+      const r = await fetch(base + '/pack-key?pack=' + encodeURIComponent(pack.id), { headers: tk ? { Authorization: 'Bearer ' + tk } : {}, signal: ctl.signal });
+      if (r.status === 401 || r.status === 403) return { denied: true };
+      if (!r.ok) throw new Error('เซิร์ฟเวอร์ตอบ ' + r.status); const j = await r.json(); ls(kname(pack), j.key); return { key: b64(j.key) };
+    } catch (e) { if (e.name === 'AbortError') throw new Error('เซิร์ฟเวอร์ไม่ตอบสนอง (อาจกำลังตื่น ลองอีกครั้งใน 1 นาที)'); throw e; } finally { clearTimeout(t); }
+  }
   // ---------- ดาวน์โหลด (พร้อมแคชในเครื่อง) ----------
-  async function loadPak(man, onProg) {
-    const url = './pack/' + man.file + '?v=' + man.version;
+  async function loadPak(pack, onProg) {
+    const url = './pack/' + pack.file + '?v=' + pack.version;
     try { if (window.caches) { const c = await caches.open('dummy-pack'), hit = await c.match(url); if (hit) { onProg(1); return new Uint8Array(await hit.arrayBuffer()); } } } catch (e) {}
-    const r = await fetch(url); if (!r.ok) throw new Error('ดาวน์โหลดไม่ได้ (' + r.status + ')');
-    const total = Number(r.headers.get('content-length')) || man.bytes, chunks = []; let got = 0;
+    const r = await fetch(url); if (!r.ok) throw new Error('ดาวน์โหลด ' + pack.file + ' ไม่ได้ (' + r.status + ')');
+    const total = Number(r.headers.get('content-length')) || pack.bytes, chunks = []; let got = 0;
     if (r.body && r.body.getReader) { const rd = r.body.getReader(); for (;;) { const { done, value } = await rd.read(); if (done) break; chunks.push(value); got += value.length; onProg(got / total); } }
     else { chunks.push(new Uint8Array(await r.arrayBuffer())); onProg(1); }
     const buf = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0)); let o = 0; for (const c of chunks) { buf.set(c, o); o += c.length; }
-    try { if (window.caches) { const c = await caches.open('dummy-pack'); for (const k of await c.keys()) await c.delete(k); await c.put(url, new Response(buf)); } } catch (e) {}
+    try { if (window.caches) { const c = await caches.open('dummy-pack'); for (const k of await c.keys()) if (k.url.includes('/' + pack.file + '?')) await c.delete(k); await c.put(url, new Response(buf)); } } catch (e) {}
     return buf;
   }
   // ---------- ถอดรหัส ----------
-  async function openPak(buf, keyBytes, onProg) {
+  async function openPak(buf, keyBytes) {
     if (!(window.crypto && crypto.subtle)) throw new Error('เบราว์เซอร์นี้ไม่รองรับการถอดรหัส (ต้องเปิดผ่าน https)');
     if (String.fromCharCode(...buf.slice(0, 4)) !== 'DMP1') throw new Error('ไฟล์แพ็กไม่ถูกต้อง');
     const key = await crypto.subtle.importKey('raw', keyBytes, 'AES-GCM', false, ['decrypt']), dec = (iv, data, aad) => crypto.subtle.decrypt({ name: 'AES-GCM', iv, additionalData: new TextEncoder().encode(aad) }, key, data);
     const idxLen = new DataView(buf.buffer, buf.byteOffset + 16, 4).getUint32(0, true), base = 20 + idxLen;
     let index; try { index = JSON.parse(new TextDecoder().decode(await dec(buf.slice(4, 16), buf.slice(20, base), 'index'))); } catch (e) { throw new Error('กุญแจไม่ตรงกับไฟล์แพ็ก'); }
-    const names = Object.keys(index.files); let n = 0;
-    for (const name of names) {
-      const f = index.files[name], plain = await dec(b64(f.iv), buf.slice(base + f.o, base + f.o + f.l), name);
-      urls.set(name, URL.createObjectURL(new Blob([plain], { type: f.t }))); onProg(++n / names.length);
-    }
+    const names = Object.keys(index.files);
+    for (const name of names) { const f = index.files[name], plain = await dec(b64(f.iv), buf.slice(base + f.o, base + f.o + f.l), name); urls.set(name, URL.createObjectURL(new Blob([plain], { type: f.t }))); }
     return names;
   }
-  // ---------- แทนที่ path ในทะเบียนสกิน ----------
-  const swap = v => { if (typeof v === 'string') { const u = L.url(v); return u || v; } if (Array.isArray(v)) return v.map(swap); if (v && typeof v === 'object') { for (const k of Object.keys(v)) v[k] = swap(v[k]); } return v; };
-  // รอจนทะเบียนสกินเป็นตัวที่โหลดจาก skins.json แล้ว (มี path ของไฟล์ในแพ็ก) — app.js สลับตัวแปรนี้ตอน fetch เสร็จ
-  async function whenRegistry(names) { for (let i = 0; i < 100; i++) { try { const j = JSON.stringify(SKIN_REGISTRY); if (names.some(n => j.includes(n))) return true; } catch (e) {} await new Promise(r => setTimeout(r, 100)); } return false; }
-  function patchRegistry() { try { if (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY && !SKIN_REGISTRY.__pk) { swap(SKIN_REGISTRY); Object.defineProperty(SKIN_REGISTRY, '__pk', { value: 1, enumerable: false }); return true; } } catch (e) {} return false; }
-  const preload = urlsList => Promise.all(urlsList.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = () => r(); im.src = u; })));
+  // ---------- ทะเบียนสกิน: ภาพเต็ม (ถ้าปลดล็อก) → ภาพตัวอย่างลายน้ำ → รูปล็อก ----------
+  const swapDeep = v => { if (typeof v === 'string') return L.url(v) || v; if (Array.isArray(v)) return v.map(swapDeep); if (v && typeof v === 'object') for (const k of Object.keys(v)) v[k] = swapDeep(v[k]); return v; };
+  function patchRegistry() {
+    try {
+      const R = typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY : null; if (!R || !R.characters) return false; let changed = false;
+      for (const c of R.characters) {
+        if (!c._a0) { if (!c.asset || !/^\.?\/?Character\//.test(c.asset)) continue; Object.defineProperty(c, '_a0', { value: c.asset.replace(/^\.\//, ''), enumerable: false }); }
+        const full = L.url(c._a0), prev = L.url('Preview/' + c.id + '.webp'), want = full || prev || LOCKED;
+        if (c.asset !== want) { c.asset = want; changed = true; }
+        Object.defineProperty(c, '_locked', { value: !full, enumerable: false, configurable: true });
+        for (const f of ['effects', 'sounds']) if (c[f]) { if (!c['_' + f]) Object.defineProperty(c, '_' + f, { value: JSON.parse(JSON.stringify(c[f])), enumerable: false }); c[f] = swapDeep(JSON.parse(JSON.stringify(c['_' + f]))); }
+      }
+      return changed;
+    } catch (e) { return false; }
+  }
+  async function whenRegistry() { for (let i = 0; i < 100; i++) { try { if (SKIN_REGISTRY.characters.some(c => c._a0 || /Character\//.test(c.asset || ''))) return true; } catch (e) {} await new Promise(r => setTimeout(r, 100)); } return false; }
+  const preload = list => Promise.all(list.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = () => r(); im.src = u; })));
   // ---------- main ----------
+  let manifest = null;
+  async function loadPacks(packs, onProg) { // คืนจำนวนแพ็กที่โหลดสำเร็จใหม่
+    const tk = await token(), todo = [];
+    await Promise.all(packs.map(async p => { if (loaded.has(p.id)) return; try { const k = await getKey(p, tk); if (k.key) todo.push({ p, key: k.key }); } catch (e) { if (p.tier === 'public') throw e; } })); // แพ็กที่ซื้อไว้: ถ้าเซิร์ฟเวอร์ไม่ตอบ ข้ามไปก่อน (ใช้ภาพตัวอย่าง) · แพ็กฟรี: ต้องได้
+    const total = todo.reduce((n, t) => n + t.p.bytes, 0) || 1; let done = 0;
+    for (const { p, key } of todo) {
+      const base = done; const buf = await loadPak(p, f => onProg(0.05 + 0.55 * (base + f * p.bytes) / total, T.s2)); done += p.bytes;
+      try { await openPak(buf, key); } catch (e) { try { localStorage.removeItem(kname(p)); } catch (x) {} throw e; } // กุญแจแคชเก่า/ผิด → ล้างให้ลองใหม่รอบหน้า
+      loaded.add(p.id); onProg(0.6 + 0.3 * done / total, T.s3);
+    }
+    return todo.length;
+  }
   async function run() {
-    let man; try { const r = await fetch('./pack/manifest.json', { cache: 'no-cache' }); if (!r.ok) return false; man = await r.json(); } catch (e) { return false; }
-    mount();
-    prog(0.04, T.s1); const keyP = getKey(man.id);
-    const buf = await loadPak(man, p => prog(0.05 + p * 0.55, T.s2)), key = await keyP;
-    const names = await openPak(buf, key, p => prog(0.6 + p * 0.3, T.s3));
-    prog(0.92, T.s4); await whenRegistry(names); patchRegistry();
+    try { const r = await fetch('./pack/manifest.json', { cache: 'no-cache' }); if (!r.ok) return false; manifest = await r.json(); } catch (e) { return false; }
+    if (!manifest || !Array.isArray(manifest.packs)) return false; L.packs = manifest.packs;
+    mount(); prog(0.04, T.s1);
+    await loadPacks(manifest.packs, prog);
+    prog(0.92, T.s4); await whenRegistry(); patchRegistry();
     let t = 0; const iv = setInterval(() => { if (patchRegistry() && typeof render === 'function') try { render(); } catch (e) {} if (++t > 40) clearInterval(iv); }, 500); // ถ้า app.js โหลดทะเบียนใหม่ภายหลัง ให้แทนที่ซ้ำ
-    await preload(names.filter(n => /\.(png|webp|jpe?g|gif|svg)$/i.test(n)).map(n => L.url(n)));
+    await preload([...urls.entries()].filter(([n]) => /\.(png|webp|jpe?g|gif|svg)$/i.test(n)).map(([, u]) => u));
     prog(1, T.s4); return true;
   }
-  // กันบันทึกภาพ: ห้ามลาก/เมนูคลิกขวาบนรูป (ช่วยกันคนทั่วไป ไม่ใช่การป้องกันสมบูรณ์)
+  // เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ → ขอกุญแจแพ็กที่ยังไม่ปลดล็อกอีกครั้ง (ไม่มีผลถ้าไม่มีแพ็กใหม่)
+  L.refresh = async function () {
+    if (!manifest) return false; const left = manifest.packs.filter(p => !loaded.has(p.id) && p.tier === 'owner'); if (!left.length) return false;
+    try { if (await loadPacks(left, () => {})) { patchRegistry(); if (typeof render === 'function') render(); return true; } } catch (e) {} return false;
+  };
+  // ผูกการปลดล็อกอัตโนมัติ: หลังซื้อไอเทม/เปิดผลสุ่มกาชา
+  const wrap = name => { const f = window[name]; if (typeof f !== 'function' || f._pk) return; const g = function () { const r = f.apply(this, arguments); setTimeout(() => L.refresh && L.refresh(), 800); return r; }; g._pk = 1; window[name] = g; };
+  let tries = 0, lastInv = -1; const hook = setInterval(() => { ['gcShow', 'buyItem'].forEach(wrap); if (++tries > 60) tries = 60; // คลังของผู้เล่นเปลี่ยน (ซื้อ/สุ่มได้/ล็อกอินใหม่) → ลองปลดล็อกภาพเต็ม
+    try { const n = window.DB && DB.P && DB.P.inventory ? DB.P.inventory.length : 0; if (lastInv >= 0 && n !== lastInv) L.refresh(); lastInv = n; } catch (e) {} }, 2000);
   document.addEventListener('contextmenu', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); });
   document.addEventListener('dragstart', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); });
   L.ready = run().then(ok => { if (ok) { try { if (typeof render === 'function') render(); } catch (e) {} setTimeout(hide, 250); } return ok; }).catch(e => { fail(e); return false; });

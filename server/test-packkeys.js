@@ -1,0 +1,25 @@
+'use strict';
+const assert = require('assert');
+const { deriveKey, route, policy } = require('./src/packkeys');
+const master = 'm'.repeat(32);
+assert.equal(deriveKey(master, 'base').length, 32);
+assert.deepEqual(deriveKey(master, 'base'), deriveKey(master, 'base'), 'same input = same key');
+assert.notDeepEqual(deriveKey(master, 'base'), deriveKey(master, 'char-a'), 'each pack has its own key');
+assert.notDeepEqual(deriveKey(master, 'base'), deriveKey('n'.repeat(32), 'base'), 'different master = different key');
+assert.equal(policy('base'), null); assert.equal(policy('nope'), false); assert.equal(policy('char-../x'), false);
+assert.deepEqual(policy('char-rina-01'), { kind: 'characters', item: 'rina-01' });
+const calls = []; const users = { good: { id: 'u1' }, other: { id: 'u2' } }, owned = new Set(['u1|characters|rina-01']);
+const h = route({ master, verifyToken: async t => users[t] || null, ownsItem: async (u, k, i) => { calls.push([u, k, i]); return owned.has(`${u}|${k}|${i}`); }, perMinute: 5 });
+const run = async (pack, tok, ip = '1.1.1.1') => { let code = 200, body; const res = { set() {}, status(c) { code = c; return this; }, json(b) { body = b; return this; } }; await h({ query: { pack }, headers: tok ? { authorization: 'Bearer ' + tok, 'x-forwarded-for': ip } : { 'x-forwarded-for': ip } }, res); return { code, body }; };
+(async () => {
+  assert.equal((await run('base')).code, 200, 'base pack is public');
+  assert.equal((await run('base')).body.key, deriveKey(master, 'base').toString('base64'));
+  assert.equal((await run('char-rina-01')).code, 401, 'premium pack needs login');
+  assert.equal((await run('char-rina-01', 'bad')).code, 401, 'invalid token rejected');
+  assert.equal((await run('char-rina-01', 'other', '2.2.2.2')).code, 403, 'logged in but not owner -> 403');
+  const ok = await run('char-rina-01', 'good', '3.3.3.3'); assert.equal(ok.code, 200); assert.equal(ok.body.key, deriveKey(master, 'char-rina-01').toString('base64'));
+  assert.equal((await run('char-evil/../x', 'good', '4.4.4.4')).code, 404, 'bad pack id rejected');
+  for (let i = 0; i < 6; i++) await run('base', null, '9.9.9.9'); assert.equal((await run('base', null, '9.9.9.9')).code, 429, 'rate limited');
+  const off = route({ master: '', verifyToken: async () => null, ownsItem: async () => false }); let c; await off({ query: { pack: 'base' }, headers: {} }, { set() {}, status(x) { c = x; return this; }, json() {} }); assert.equal(c, 503, 'no master = not configured');
+  console.log('packkeys tests passed');
+})().catch(e => { console.error(e); process.exit(1); });

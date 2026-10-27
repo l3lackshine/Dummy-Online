@@ -1,0 +1,45 @@
+# สร้างแพ็กแอสเซ็ตเข้ารหัสอัตโนมัติเมื่อแก้ไฟล์ใน assets-src/ หรือตั้งค่าตัวละคร แล้ว commit ผลลัพธ์กลับเข้า client/public/pack
+# ต้องตั้ง Secret ชื่อ PACK_MASTER (GitHub: Settings > Secrets and variables > Actions) ให้ตรงกับ PACK_MASTER ของ server บน Render
+name: pack-assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets-src/**'
+      - 'client/public/Character/**'
+      - 'scripts/pack-assets.js'
+      - 'scripts/make-previews.js'
+      - '.github/workflows/pack-assets.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pack-assets
+  cancel-in-progress: false
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: ตรวจว่าตั้ง PACK_MASTER แล้ว
+        env:
+          PACK_MASTER: ${{ secrets.PACK_MASTER }}
+        run: |
+          if [ -z "$PACK_MASTER" ]; then echo "::error::ยังไม่ได้ตั้ง Secret ชื่อ PACK_MASTER"; exit 1; fi
+      - name: ติดตั้ง sharp (สร้างภาพตัวอย่างลายน้ำ)
+        run: npm install --no-save --prefix /tmp/sharp sharp
+      - name: สร้างภาพตัวอย่าง (เฉพาะตัวที่ยังไม่มี)
+        run: NODE_PATH=/tmp/sharp/node_modules node scripts/make-previews.js
+      - name: แพ็กและเข้ารหัส
+        env:
+          PACK_MASTER: ${{ secrets.PACK_MASTER }}
+        run: node scripts/pack-assets.js
+      - name: Commit ผลลัพธ์ (ถ้ามีการเปลี่ยน)
+        run: |
+          git config user.name "pack-bot"
+          git config user.email "pack-bot@users.noreply.github.com"
+          git add client/public/pack assets-src
+          if git diff --cached --quiet; then echo "ไม่มีการเปลี่ยนแปลง"; else git commit -m "chore: rebuild asset packs [skip ci]" && git push; fi
