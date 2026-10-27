@@ -21,6 +21,7 @@ const io = new Server(server, { cors: { origin: ALLOWED_ORIGIN === '*' ? '*' : O
 const rooms = new Map();
 const MAX_PLAYERS = 4;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
+const OPENING_MS = Number(process.env.OPENING_MS != null ? process.env.OPENING_MS : 5000); // เวลาให้แอนิเมชันสับ+แจกไพ่ก่อนบอทเดินตาแรก
 const BOT_DELAY = Number(process.env.BOT_DELAY_MS || 650);        // ปรับได้เพื่อทดสอบ
 const EMPTY_ROOM_TTL = Number(process.env.EMPTY_ROOM_TTL_MS || 120000); // ห้องที่ไม่มีคนจริงเหลือ จะถูกลบหลังเวลานี้ (เผื่อเชื่อมต่อกลับ)
 const RATE_PER_SEC = Number(process.env.RATE_PER_SEC || 20);
@@ -42,10 +43,11 @@ function shufflerOf(room) {
   return connectedPlayers(room)[0] || null;
 }
 // ทุกห้อง (รวมห้องเล่นกับบอทคนเดียว) ต้องกดสับไพ่ก่อนเริ่มทุกตา
-const needShuffle = () => true;
+const needShuffle = () => false;   // เซิร์ฟเวอร์สับให้เองตอนเริ่มเกม (ผู้เล่นไม่ต้องกดสับ) — คงฟังก์ชันไว้ให้ไคลเอนต์รุ่นเก่า
 function publicLobby(room, forPlayer) {
   settle(room);                                // idempotent: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
   const host = connectedPlayers(room)[0], sh = shufflerOf(room);
+  const others = connectedPlayers(room).filter(p => p !== host), allReady = others.every(p => p.ready); // เจ้าของห้องถือว่าพร้อมเสมอ
   return {
     code: room.code, started: active(room), maxPlayers: MAX_PLAYERS,
     rule: { id: ruleOf(room).meta.id, name: ruleOf(room).meta.name }, options: room.options,
@@ -53,7 +55,8 @@ function publicLobby(room, forPlayer) {
     // ไม่ส่งลำดับไพ่ที่สับแล้วออกไปเด็ดขาด — ส่งแค่ว่าสับแล้วหรือยัง
     shuffle: { ready: !!room.deck, needed: needShuffle(room), by: room.shuffledBy || null, shuffler: sh ? sh.name : null, youShuffler: !!forPlayer && forPlayer === sh, round: room.round || 0, seq: room.shuffleSeq || 0 },
     allowBots: room.allowBots !== false, // ห้องนี้เติมบอทในที่นั่งว่างหรือไม่ (ตั้งตอนสร้างห้อง เปลี่ยนไม่ได้ระหว่างเล่น)
-    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
+    allReady, waitingFor: others.filter(p => !p.ready).map(p => p.name),
+    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, ready: p === host || !!p.ready, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
   };
 }
 // จบตาแล้วจดผู้ชนะไว้ (ครั้งเดียวต่อเกม) เพื่อมอบสิทธิ์สับไพ่ตาถัดไป
@@ -88,7 +91,7 @@ function scheduleBots(room) {
     room.game.v++;
     emitStates(room);
     scheduleBots(room);
-  }, BOT_DELAY);
+  }, Math.max(BOT_DELAY, (room.openingUntil || 0) - Date.now()));
 }
 // ห้องที่ไม่มีคนจริงเชื่อมต่ออยู่ → รอ EMPTY_ROOM_TTL แล้วลบ (กันหน่วยความจำรั่ว) ถ้ามีคนกลับมาก่อนก็ยกเลิก
 function checkEmpty(room) {
@@ -107,10 +110,11 @@ function startGame(room) {
   if (room.botTimer) { clearTimeout(room.botTimer); room.botTimer = null; }
   room.players = humans;                       // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
   room.players.forEach((p, i) => { p.seat = i; });
-  const deck = room.deck; room.deck = null; room.shuffledBy = null;   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
+  const sh = room.deck ? null : Shuffle.shuffle(), deck = room.deck || sh.ids; room.deck = null; room.shuffledBy = null; room.shuffleSeq = (room.shuffleSeq || 0) + 1; // สับใหม่ทุกตาโดยเซิร์ฟเวอร์
+  room.players.forEach(p => { p.ready = false; });   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
   const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
   room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
-  room.game.v++;
+  room.game.v++; room.openingUntil = Date.now() + OPENING_MS;
   if (SB.enabled()) room.players.forEach(p => { if (p.uid) SB.rpc('touch_last_game', { p_user: p.uid, p_game: room.rule }).catch(() => {}); });
   emitStates(room);
   scheduleBots(room);
@@ -118,7 +122,7 @@ function startGame(room) {
 }
 const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
 function joinRoom(socket, room, name, ch, bg) {
-  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null };
+  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, connected: true, token: newToken(), seat: null, ready: false };
   room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
@@ -244,7 +248,7 @@ io.on('connection', socket => {
     if (connectedPlayers(room)[0]?.id !== socket.id) return socket.emit('system:error', 'เฉพาะเจ้าของห้องเริ่มเกมได้');
     if (active(room)) return socket.emit('system:error', 'เกมกำลังเล่นอยู่');
     if (room.allowBots === false && connectedPlayers(room).length < 2) return socket.emit('system:error', 'ห้องนี้ปิดบอทไว้ ต้องมีผู้เล่นจริงอย่างน้อย 2 คนก่อนเริ่มเกม');
-    if (!room.deck && needShuffle(room)) { const sh = shufflerOf(room); return socket.emit('system:error', 'ต้องให้ ' + (sh ? sh.name : 'ผู้สับไพ่') + ' กดสับไพ่ก่อนเริ่มเกม'); }
+    { const others = connectedPlayers(room).filter(p => p.id !== socket.id), wait = others.filter(p => !p.ready); if (wait.length) return socket.emit('system:error', 'ยังมีผู้เล่นที่ยังไม่พร้อม: ' + wait.map(p => p.name).join(', ')); }
     if (!startGame(room)) return socket.emit('system:error', 'เริ่มเกมไม่ได้');
     io.to(room.code).emit('system:notice', 'เริ่มเกมแล้ว!');
   });
@@ -260,6 +264,18 @@ io.on('connection', socket => {
     room.deck = r.ids; room.shuffledBy = sh.name; room.shuffleSeq = (room.shuffleSeq || 0) + 1;
     io.to(room.code).emit('room:shuffled', { by: sh.name, seq: room.shuffleSeq, steps: r.steps.map(x => x.t) }); // ส่งแค่ชนิดท่าสับสำหรับแอนิเมชัน ไม่ส่งลำดับไพ่
     emitLobby(room);
+  });
+  // ผู้เล่น (ไม่ใช่เจ้าของห้อง) กดพร้อม/ยกเลิกพร้อม ในล็อบบี้
+  on(socket, 'game:ready', raw => {
+    if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode); if (!room || active(room)) return;
+    const p = findPlayer(room, socket.id); if (!p) return; p.ready = !!obj(raw).ready; emitLobby(room);
+  });
+  // อีโมจิสั้น ๆ ในล็อบบี้ (รายการตายตัว ส่งต่อให้ทุกคนในห้อง)
+  const EMOTES = ['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'];
+  on(socket, 'room:emote', raw => {
+    if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode); if (!room) return;
+    const p = findPlayer(room, socket.id), e = String(obj(raw).e || ''); if (!p || !EMOTES.includes(e)) return;
+    io.to(room.code).emit('room:emote', { from: p.name, e });
   });
   on(socket, 'game:act', raw => {
     if (!allow(socket)) return;

@@ -14,7 +14,7 @@ global.fetch = async (url, opt = {}) => {
 };
 const M = require('./test-mock-sio');
 (async () => {
-  const srv = M.load({ SUPABASE_URL: 'https://x.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test', SUPABASE_SECRET_KEY: 'sb_secret_test', BOT_DELAY_MS: '5' });
+  const srv = M.load({ OPENING_MS: 0, SUPABASE_URL: 'https://x.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test', SUPABASE_SECRET_KEY: 'sb_secret_test', BOT_DELAY_MS: '5' });
   const { rooms } = require('./src/index.js');
   console.log('Supabase server integration');
   const bad = srv.connect({ token: 'nope' }); await sleep(30);

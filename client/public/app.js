@@ -206,22 +206,22 @@ function lobbyView() {
 const botChar = i => { const l = (SKIN_REGISTRY.characters || []).filter(c => c.asset); return l.length ? l[i % l.length].id : null; }; // ภาพตัวแทนบอทที่นั่งว่างก่อนเริ่มเกม
 function tableView() {
   const L = lob || { players: [], shuffle: {}, options: {}, rule: {} }, ps = L.players.filter(p => p.connected), noBots = L.allowBots === false, total = noBots ? Math.max(1, ps.length) : Math.max(4, ps.length), sh = L.shuffle || {};
-  const myi = Math.max(0, ps.findIndex(p => p.you)), seatOf = k => (myi + k) % total, youSh = !!sh.youShuffler, blocked = !!(sh.needed && !sh.ready);
+  const myi = Math.max(0, ps.findIndex(p => p.you)), seatOf = k => (myi + k) % total, youSh = false, blocked = !!(isHost && L.allReady === false), meP = ps.find(p => p.you) || {};   // ก้อนล็อบบี้ใหม่: ไม่ต้องสับไพ่เอง · เจ้าของเริ่มได้เมื่อทุกคนพร้อม
   const pl = (si, pos) => { const p = ps[si], bot = !p, nm = bot ? 'บอท' : p.you ? 'คุณ' : p.name, a = bot ? av('บอท' + si, botChar(si)) : av(p.name, p.ch), cls = a.startsWith('<img') ? 'chr' : 'av';
-    const info = `<div class=pl-info><b>${esc(nm)}${p && p.host ? ' 👑' : ''}</b><small>${bot ? 'บอทเล่นแทน' : p.shuffler ? '🔀 ผู้สับไพ่' : 'พร้อม'}</small></div>`, ico = `<span class="${cls}">${a}</span>`;
-    return `<div class="pl pl-${pos}${p && p.you ? ' me' : ''}${p && p.shuffler ? ' active' : ''}" data-seat=${si}>${pos === 'bottom' ? info + ico : ico + info}</div>`; };
-  const deck = `<div class="deckbox${shufAnim ? ' go' : ''}" aria-hidden=true>${Array.from({ length: 12 }, (_, i) => `<i style="--i:${i};--s:${i % 2 ? 1 : -1}"></i>`).join('')}</div><div class=lab>${sh.ready ? '✅ สับไพ่แล้ว' : '⏳ ยังไม่ได้สับ'}</div>`;
+    const info = `<div class=pl-info><b>${esc(nm)}${p && p.host ? ' 👑' : ''}</b><small>${bot ? 'บอทเล่นแทน' : p.host ? '👑 เจ้าของห้อง' : p.ready ? '✅ พร้อม' : '⏳ รอ'}</small></div>`, ico = `<span class="${cls}">${a}</span>`;
+    return `<div class="pl pl-${pos}${p && p.you ? ' me' : ''}${p && (p.host || p.ready) ? ' active' : ''}" data-seat=${si}>${pos === 'bottom' ? info + ico : ico + info}</div>`; };
+  const deck = `<div class="deckbox${shufAnim ? ' go' : ''}" aria-hidden=true>${Array.from({ length: 12 }, (_, i) => `<i style="--i:${i};--s:${i % 2 ? 1 : -1}"></i>`).join('')}</div><div class=lab>${L.allReady === false ? '⏳ รอ ' + esc((L.waitingFor || []).join(', ')) + ' กดพร้อม' : '✅ พร้อมเริ่ม · สับไพ่ใหม่ทุกตา'}</div>`;
   const stake = L.options && L.options.stake != null ? L.options.stake : null, lbl = { cut: 'ตัดไพ่', riffle: 'รีฟเฟิล', overhand: 'โอเวอร์แฮนด์' }, cnt = {};
   if (shufAnim) shufAnim.steps.forEach(t => { cnt[t] = (cnt[t] || 0) + 1; });
-  const h = lerr ? '⚠️ ' + lerr : shufAnim ? esc(shufAnim.by) + ' สับไพ่: ' + Object.keys(cnt).map(t => (lbl[t] || t) + ' ×' + cnt[t]).join(' · ') : soloRoom ? 'เล่นกับบอท — กดสับไพ่ แล้วกดเริ่มเกม' : noBots ? 'รอผู้เล่น ' + ps.length + '/4 · ปิดบอทไว้ ต้องมีผู้เล่นจริงอย่างน้อย 2 คน' : 'รอผู้เล่น ' + ps.length + '/4 · ที่ว่างบอทจะเล่นแทน';
+  const h = lerr ? '⚠️ ' + lerr : shufAnim ? esc(shufAnim.by) + ' สับไพ่: ' + Object.keys(cnt).map(t => (lbl[t] || t) + ' ×' + cnt[t]).join(' · ') : soloRoom ? 'ห้องเล่นกับบอท — กดเริ่มเกมได้เลย' : noBots ? 'รอผู้เล่น ' + ps.length + '/4 · ปิดบอทไว้ ต้องมีผู้เล่นจริงอย่างน้อย 2 คน' : 'รอผู้เล่น ' + ps.length + '/4 · ที่ว่างบอทจะเล่นแทน';
   const who = youSh ? 'คุณ' : esc(sh.shuffler || '-');
-  const gx = isWide(); $('app').className = gx ? 'gx' : '';
-  if (gx) { $('app').innerHTML = gxLobby({ ps, total, seatOf, L, sh, h, deck, stake, youSh, blocked, who }); return; }
+  const gx = isWide(); $('app').className = gx ? 'rmv' : '';   // ห้องล็อบบี้แยกจากหน้าโต๊ะ (gamegx.js → gxRoom)
+  if (gx) { $('app').innerHTML = gxRoom({ ps, total, L, h, stake, blocked, meP }); return; }
   $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${stake != null ? ' · ตัวละ ' + esc(stake) + ' 🪙' : ''}</span>${L.rule && L.rule.id ? `<button class="pill rl" onclick="showRules('${esc(L.rule.id)}')">📖 กติกา</button>` : ''}</div>
  <div class=arena>${pl(seatOf(2), 'top')}${pl(seatOf(1), 'left')}<div class=felt><div class=piles>${deck}</div></div>${pl(seatOf(3), 'right')}${pl(seatOf(0), 'bottom')}</div></div>
  <div class=colR><div class=logs></div><div class=hint>${h}<small>${L.rule && L.rule.name ? '🎴 ' + esc(L.rule.name) + ' · ' : ''}ผู้สับไพ่: ${who} ${sh.round ? '🏆 ผู้ชนะตาก่อน' : '👑 เจ้าของห้อง'}</small></div>
- <div class=dock-wrap><div class=dock><div class=pre>${soloRoom ? '' : `<p>รหัสห้อง <b class=pre-code>${esc(code)}</b> — ส่งให้เพื่อน (สูงสุด 4 คน)</p>`}${!isHost ? '<p>รอเจ้าของห้องกดเริ่มเกม...</p>' : blocked ? `<p>ต้องให้ ${who} กดสับไพ่ก่อนเริ่มเกม</p>` : ''}</div>
- <div class=acts>${youSh ? `<button class=org onclick=doShuffle() ${shufAnim ? 'disabled' : ''}>🔀 ${sh.ready ? 'สับอีกครั้ง' : 'สับไพ่'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}<button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div></div></div>`;
+ <div class=dock-wrap><div class=dock><div class=pre>${soloRoom ? '' : `<p>รหัสห้อง <b class=pre-code>${esc(code)}</b> — ส่งให้เพื่อน (สูงสุด 4 คน)</p>`}${!isHost ? '<p>รอเจ้าของห้องกดเริ่มเกม...</p>' : blocked ? `<p>รอ ${esc((L.waitingFor || []).join(', '))} กดพร้อม</p>` : ''}</div>
+ <div class=acts>${!isHost && !soloRoom ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (กดยกเลิก)' : '✋ พร้อม'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}<button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div></div></div>`;
 }
 const face = (id, cls = '', x = '') => { const c = ALL[id]; return `<button ${x} class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}${cls}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; };
 const mini = id => { const c = ALL[id]; return `<span class="c${c.s === 1 || c.s === 2 ? ' r' : ''}${sp(c) ? ' sp' : ''}">${RK[c.r]}<span>${SU[c.s]}</span></span>`; };
@@ -248,7 +248,7 @@ function renderGame() {
   if (!authed) return authView();
   if (screen !== 'game' || !S) return lobbyView();
   if (S.rule && S.rule !== 'dummy' && window.renderOther) return renderOther();
-  const gx = isWide(); $('app').className = gx ? 'gx' : '';
+  const gx = isWide(); $('app').className = gx ? 'gxl' : '';
   const me = S.P[S.my], ids = S.hand, fresh = new Set(ids.filter(i => !ho.includes(i)));
   ho = ho.filter(i => ids.includes(i)); const miss = ids.filter(i => !ho.includes(i)).map(i => ALL[i]);
   if (!ho.length) miss.sort((a, b) => a.s - b.s || a.r - b.r); ho.push(...miss.map(c => c.id));

@@ -33,23 +33,35 @@ function gxView(c) {
 </div>`;
 }
 
-/* หน้าสับไพ่/รอเริ่มเกม (ล็อบบี้โต๊ะ) ใช้เลย์เอาต์เดียวกับหน้าเล่น */
-function gxLobby(c) {
-  const { ps, total, seatOf, L, sh, h, deck, stake, youSh, blocked, who } = c;
-  const info = si => { const p = ps[si], bot = !p; const nm = bot ? 'บอท' : p.you ? 'คุณ' : p.name, a = bot ? av('บอท' + si, botChar(si)) : av(p.name, p.ch);
-    return { nm: nm + (p && p.host ? ' 👑' : ''), role: bot ? 'บอทเล่นแทน' : p.shuffler ? '🔀 ผู้สับไพ่' : 'พร้อม', on: !!(p && p.shuffler), art: a.startsWith('<img') ? `<span class=gx-chr>${a}</span>` : `<span class=gx-emo>${a}</span>` }; };
-  const seat = (k, pos) => { const si = seatOf(k), o = info(si), cls = pos === 'bottom' ? 'gx-me' : 'gx-seat gx-' + pos;
-    return `<div class="gx-art gx-art-${pos}${o.on ? ' on' : ''}">${o.art}</div><div class="${cls}${o.on ? ' active' : ''}" data-seat=${si}><div class=gx-name>${esc(o.nm)}</div><small class=gx-pts>${o.role}</small></div>`; };
-  const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
-  const on = k => { const p = ps[seatOf(k)]; return !!(p && p.shuffler); };
-  const pre = (soloRoom ? '' : `รหัสห้อง ${esc(code)} · ชวนเพื่อนได้สูงสุด 4 คน`) + (!isHost ? ' รอเจ้าของห้องเริ่มเกม...' : blocked ? ` ต้องให้ ${who} สับไพ่ก่อนเริ่มเกม` : '');
-  return `<div class=gx-stage>
-  <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(2))}${q('left', on(1))}${q('right', on(3))}${q('bottom', on(0))}</svg>
-  ${seat(2, 'top')}${seat(1, 'left')}${seat(3, 'right')}${seat(0, 'bottom')}
-  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${stake != null ? ' · ตัวละ ' + esc(stake) + ' 🪙' : ''}</span>${L.rule && L.rule.id ? `<button class="pill rl" onclick="showRules('${esc(L.rule.id)}')">📖 กติกา</button>` : ''}</div>
-  <button class=gx-gear onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">⚙</button>
-  <div class="felt gx-hub"><div class="piles gx-lobbypile">${deck}</div><div class=gx-hint>${h}</div>${pre ? `<div class=gx-pre>${pre}</div>` : ''}</div>
-  <div class="acts gx-acts">${youSh ? `<button class=org onclick=doShuffle() ${shufAnim ? 'disabled' : ''}>🔀 ${sh.ready ? 'สับอีกครั้ง' : 'สับไพ่'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}<button class=g onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div>
+/* ห้องล็อบบี้ (แยกจากหน้าโต๊ะเล่น) — การ์ดตัวละครของผู้เล่นเรียงกัน + แผงข้อมูลห้อง แบบห้องกำหนดเองของเกม MOBA
+   รับข้อมูลจาก tableView(): { ps (ผู้เล่นที่ออนไลน์), total (จำนวนที่นั่ง), L (lobby), h (ข้อความแนะนำ), stake, blocked, meP }
+   Extend: เพิ่มแผงใหม่ใน .rm-panel · เพิ่มสถานะที่นั่งที่ roleOf() */
+function gxRoom(c) {
+  const { ps, total, L, h, stake, blocked, meP } = c, rule = L.rule || {}, noBots = L.allowBots === false;
+  const artOf = a => (a.startsWith('<img') ? `<span class=rm-chr>${a}</span>` : `<span class=rm-emo>${a}</span>`);
+  const roleOf = p => (p.host ? '👑 เจ้าของห้อง' : p.ready ? '✅ พร้อม' : '⏳ รอ');
+  const mine = ps.find(p => p.you), people = mine ? [mine, ...ps.filter(p => p !== mine)] : ps.slice();
+  const human = p => { const on = p.host || p.ready;
+    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"><div class=rm-art>${artOf(av(p.name, p.ch))}</div><em class=rm-chip>${roleOf(p)}</em>
+      <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`; };
+  const bot = i => `<div class="rm-slot bot on"><div class=rm-art>${artOf(av('บอท' + i, botChar(i)))}</div><em class=rm-chip>🤖 บอท</em><div class=rm-plate><b>บอท</b><small>เล่นแทน</small></div></div>`;
+  const empty = () => `<button class="rm-slot empty" onclick=copyInvite()><div class=rm-plus>＋</div><div class=rm-plate><b>ว่าง</b><small>${noBots ? 'รอเพื่อน' : 'บอทจะเล่นแทน'}</small></div></button>`;
+  const slots = Array.from({ length: total }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty())).join('');
+  const wait = esc((L.waitingFor || []).join(', ')), isMe = !!mine;
+  const status = soloRoom ? 'เล่นกับบอท — กดเริ่มเกมได้เลย' : !isHost ? (meP.ready ? 'รอเจ้าของห้องเริ่มเกม…' : 'กด “พร้อม” เมื่อพร้อมเล่น') : blocked ? `รอ ${wait} กดพร้อม` : 'ทุกคนพร้อมแล้ว — กดเริ่มเกมได้เลย';
+  const row = (k, v) => `<div class=rm-row><span>${k}</span><b>${v}</b></div>`;
+  return `<div class=rm-stage>
+  <div class=rm-top><button class=rm-back onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">‹</button>
+    <div class=rm-title><b>${soloRoom ? '🤖 ห้องเล่นกับบอท' : 'ห้อง ' + esc(code)}</b><small>${esc(rule.name || 'ดัมมี่')}</small></div>
+    <span class=pill>🪙 ${sv.coins}</span><button class="pill gx-sk" onclick=openSkills()>⚡ ความสามารถ</button>${rule.id ? `<button class="pill rl" onclick="showRules('${esc(rule.id)}')">📖 กติกา</button>` : ''}</div>
+  <div class=rm-slots>${slots}</div>
+  <div class=rm-hint>${esc(h && !/^รอผู้เล่น|^ห้องเล่นกับบอท/.test(h) ? h : status)}</div>
+  <aside class=rm-panel>
+    <div class=rm-card>${soloRoom ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
+      ${row('กติกา', esc(rule.name || 'ดัมมี่'))}${stake != null ? row('เดิมพัน', '🪙 ' + esc(stake) + ' ต่อคน') : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
+    ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}</div>`}
+    <div class=rm-acts>${!isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom ? '' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}</div>
+  </aside>
 </div>`;
 }
-let _gxW = null; window.addEventListener('resize', () => { const w = isWide(); if (_gxW !== null && w !== _gxW && typeof S !== 'undefined' && S && screen === 'game') render(); _gxW = w; });
+let _gxW = null; if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('resize', () => { const w = isWide(); if (_gxW !== null && w !== _gxW && typeof S !== 'undefined' && S && screen === 'game') render(); _gxW = w; });
