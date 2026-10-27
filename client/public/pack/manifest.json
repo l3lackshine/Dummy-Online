@@ -1,0 +1,43 @@
+{
+ "v": 2,
+ "packs": [
+  {
+   "id": "base",
+   "file": "base.pak",
+   "tier": "public",
+   "version": "52444a63f86127c4",
+   "bytes": 297499,
+   "files": 5
+  },
+  {
+   "id": "char-arya-01",
+   "file": "char-arya-01.pak",
+   "tier": "owner",
+   "version": "1c667de33e775d6e",
+   "bytes": 201259,
+   "files": 1,
+   "kind": "characters",
+   "item": "arya-01"
+  },
+  {
+   "id": "char-rena-01",
+   "file": "char-rena-01.pak",
+   "tier": "owner",
+   "version": "39d42795f13f39f6",
+   "bytes": 2955101,
+   "files": 1,
+   "kind": "characters",
+   "item": "rena-01"
+  },
+  {
+   "id": "char-rina-01",
+   "file": "char-rina-01.pak",
+   "tier": "owner",
+   "version": "9d8db9f58a626847",
+   "bytes": 150709,
+   "files": 1,
+   "kind": "characters",
+   "item": "rina-01"
+  }
+ ]
+}
