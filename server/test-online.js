@@ -34,10 +34,10 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
 
 (async () => {
   // A: เล่นจริง (rate สูง) / B: ทดสอบ rate limit (ค่าเริ่มต้น 20/วินาที)
-  const A = M.load({ OPENING_MS: 0, BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 });
+  const A = M.load({ NEXT_MS: 0, OPENING_MS: 0, BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 });
   const roomsA = require.cache[require.resolve('./src/index.js')].exports.rooms; // เข้าไปตรวจสถานะห้องฝั่งเซิร์ฟเวอร์ (สำรับที่สับ ฯลฯ)
   const health = async srv => M.callRoute(srv, '/health');
-  const B = M.load({ OPENING_MS: 0, BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 500, RATE_PER_SEC: 20 });
+  const B = M.load({ NEXT_MS: 0, OPENING_MS: 0, BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 500, RATE_PER_SEC: 20 });
   try {
     console.log('\n[1] เล่นคนเดียวกับบอท 5 เกมติด (ผ่าน Socket.IO จริง)');
     for (let g = 0; g < 5; g++) {
@@ -150,6 +150,30 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
       ok(H.S.hand.join() !== h1, 'ตาที่ 2 สับใหม่ (ไพ่ในมือต่างจากตาแรก)');
       let em = null; W.sock.on('room:emote', d => { em = d; }); H.emit('room:emote', { e: '😎' }); await until(() => em, 2000, 'emote'); ok(em.from === 'H' && em.e === '😎', 'อีโมจิในห้องส่งถึงทุกคน');
       em = null; H.emit('room:emote', { e: '<script>' }); await sleep(80); ok(em === null, 'อีโมจิที่ไม่อยู่ในรายการถูกทิ้ง'); H.sock.close(); W.sock.close(); J.sock.close(); }
+    console.log('\n[8] หน้าสรุป: ทุกคนกด "เล่นต่อ" / คนออก → ที่เหลือกลับล็อบบี้ / หมดเวลา');
+    { const C = M.load({ NEXT_MS: 700, OPENING_MS: 0, BOT_DELAY_MS: 15, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 }), roomsC = require.cache[require.resolve('./src/index.js')].exports.rooms;
+      const open = async nm => { const H = mk(C, 'H' + nm, { auto: false }), W = mk(C, 'W' + nm, { auto: false }); H.autoReady = W.autoReady = false; await Promise.all([H.connected, W.connected]);
+        H.emit('room:create', { name: 'H' + nm }); await until(() => H.joined); const rc = H.joined.code; W.emit('room:join', { code: rc, name: 'W' + nm }); await until(() => W.joined && H.lob.players.length === 2);
+        W.emit('game:ready', { ready: true }); await until(() => H.lob.allReady); H.emit('game:start'); await until(() => H.S && W.S, 3000, 'start');
+        const R = roomsC.get(rc); R.game.over = true; R.game.res = { k: 1, nt: [[], [], [], []], pts: [0, 60, 0, 0] }; R.game.v++;
+        H.emit('game:ready', { ready: true }); await until(() => H.lob.next, 3000, 'next window'); return { H, W, R, rc }; };
+      // (1) ทุกคนกดเล่นต่อ → เริ่มตาใหม่เอง
+      { const { H, W, R, rc } = await open('a'); H.emit('game:again', { yes: true }); await sleep(60);
+        const g1 = R.game; ok(H.lob.next && H.lob.next.leftMs > 0 && H.lob.next.leftMs <= 700, 'หลังจบตา: เปิดหน้าต่างยืนยันเล่นต่อ (มีเวลานับถอยหลัง)');
+        W.S = H.S = null; W.emit('game:again', { yes: true }); await until(() => H.S && W.S && !H.S.over, 3000, 'next'); ok(R.game !== g1 && R.next === null, 'ทุกคนกดเล่นต่อ → เริ่มตาใหม่อัตโนมัติ');
+        H.sock.close(); W.sock.close(); }
+      // (2) คนหนึ่งกดออก → ที่เหลือกลับล็อบบี้ (ผู้ที่กดเล่นต่อไว้แล้วถือว่าพร้อม)
+      { const { H, W, R } = await open('b'); let back = null; H.sock.on('room:lobbyback', d => { back = d; }); H.emit('game:again', { yes: true }); await sleep(60);
+        W.emit('game:again', { yes: false }); await until(() => back, 2000, 'lobbyback'); await sleep(60);
+        ok(back.notice.length > 0 && H.lob.players.length === 1 && R.game === null && R.next === null, 'W กดออก → H กลับล็อบบี้ในห้องเดิม (ไม่มีเกมค้าง)'); ok(H.lob.players[0].ready === true, 'คนที่กดเล่นต่อไว้ ยังมีสถานะพร้อมในล็อบบี้'); H.sock.close(); W.sock.close(); }
+      // (3) หมดเวลา: คนที่ไม่กดถูกเชิญออก คนที่กดอยู่ต่อ
+      { const { H, W, R } = await open('c'); let kicked = null, back = null; W.sock.on('room:kicked', d => { kicked = d; }); H.sock.on('room:lobbyback', d => { back = d; });
+        H.emit('game:again', { yes: true }); await until(() => kicked && back, 3000, 'timeout'); await sleep(40);
+        ok(kicked.reason.length > 0 && H.lob.players.length === 1 && H.lob.players[0].name === 'Hc', 'หมดเวลา: W ถูกเชิญออก H อยู่ต่อในล็อบบี้'); ok(R.players.length === 1 && R.next === null, 'ห้องไม่ค้าง: เหลือแต่คนที่ยังอยู่'); H.sock.close(); W.sock.close(); }
+      // (4) เล่นคนเดียวกับบอท: ไม่มีเวลาหมด ต้องกดเล่นต่อเอง
+      { const S1 = mk(C, 'solo8'); await S1.connected; S1.emit('room:create', { name: 'solo8' }); await until(() => S1.joined); S1.emit('game:start'); await until(() => S1.S && S1.S.over, 20000, 'solo over'); await sleep(900);
+        ok(S1.lob.next && S1.lob.next.leftMs === null && S1.lob.players.length === 1, 'เล่นกับบอท: หน้าสรุปไม่มีนับถอยหลัง ไม่ถูกเตะออก'); S1.S = null; S1.emit('game:again', { yes: true }); await until(() => S1.S && !S1.S.over, 3000, 'solo next'); ok(true, 'กดเล่นต่อ → เริ่มตาใหม่ทันที'); S1.sock.close(); }
+    }
     console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`);
   } finally { setTimeout(() => process.exit(0), 50); }
 })().catch(e => { console.error('\n✗ ล้มเหลว:', e.message); process.exit(1); });

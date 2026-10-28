@@ -47,25 +47,24 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
   pg.socks.forEach(s => s.close()); // บอทเล่นแทนจนจบ
   for (let i = 0; i < 600; i++) { await sleep(20); const r = [...srv.sockets.sockets.values()].length; if (i > 5 && [...(require.cache[require.resolve('./src/index.js')].exports.rooms.values())].some(rm => rm.game && rm.game.over)) break; }
   pg = openPage(); for (let i = 0; i < 200 && !(pg.ev('S') && pg.ev('S.over')); i++) await sleep(10);
-  ok(pg.ev('S.over') && pg.appEl.innerHTML.includes('class=ov'), 'เกมจบ: แสดงหน้าสรุปผล');
+  ok(pg.ev('S.over') && pg.appEl.innerHTML.includes('class="ov rsv"') && !pg.appEl.innerHTML.includes('rs-shuf'), 'เกมจบ: แสดงหน้าสรุปผล (ไม่มีแท็บสับไพ่แล้ว)');
   const coin1 = Number(store.dummyCoins), dlt = pg.ev('S.res.coin.delta[S.my]'); ok(coin1 === Math.max(0, coin0 + dlt) && coin1 !== coin0 || dlt === 0, `เหรียญเปลี่ยนตามผลของกฎ (${coin0} ${dlt >= 0 ? '+' : ''}${dlt} → ${coin1})`);
-  ok(pg.appEl.innerHTML.includes('ผลเหรียญตานี้ ' + (dlt > 0 ? '+' + dlt : dlt)) && pg.appEl.innerHTML.includes('รายการจ่ายเหรียญ') || dlt === 0, 'หน้าสรุปแสดงผลเหรียญตรงกับที่คำนวณ + รายการจ่ายเหรียญ');
+  ok((pg.appEl.innerHTML.includes('เหรียญตานี้') && pg.appEl.innerHTML.includes((dlt > 0 ? '+' : '') + dlt + ' 🪙') && pg.appEl.innerHTML.includes('รายการจ่าย')) || dlt === 0, 'หน้าสรุปแสดงผลเหรียญตรงกับที่คำนวณ + รายการจ่ายเหรียญ');
   for (let k = 0; k < 3; k++) { pg.socks.forEach(s => s.close()); await sleep(40); pg = openPage(); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10); await sleep(30); }
   ok(Number(store.dummyCoins) === coin1, 'รีเฟรช 3 ครั้งหลังเกมจบ เหรียญไม่ถูกหัก/เพิ่มซ้ำ (จ่ายครั้งเดียวต่อเกม)');
   console.log('\n[D] กดออกจากห้อง → ล้าง session ไม่ย้อนกลับ');
   pg.ev('leave()'); await sleep(40); ok(!store.dummySession && pg.ev('screen') === 'home', 'ออกจากห้องแล้วกลับหน้าแรก ไม่มี session ค้าง');
   pg.socks.forEach(s => s.close()); pg = openPage(); await sleep(60); ok(pg.ev('S') === null && pg.appEl.innerHTML.includes('goPlay()'), 'เปิดหน้าใหม่หลังออกห้อง ไม่ถูกดึงกลับเข้าเกมเก่า');
-  console.log('\n[E] ห้องออนไลน์ 2 คน: ปุ่มสับไพ่ในล็อบบี้ (เจ้าของห้อง) → เริ่มเกมได้หลังสับ');
+  console.log('\n[E] ห้องออนไลน์ 2 คน: เพื่อนกดพร้อม → เจ้าของห้องเริ่มเกมได้ (ไม่มีขั้นตอนสับไพ่)');
   pg.socks.forEach(s => s.close()); pg = openPage(); pg.ev('goPlay()'); pg.ev("openCreate('room')"); await sleep(30); pg.ev("setOpt('stake', 30)"); pg.ev('startCreate()'); for (let i = 0; i < 200 && !pg.ev('code'); i++) await sleep(10);
   const rc = pg.ev('code'), guest = M.client(srv); let gl = null; guest.on('room:lobby', l => { gl = l; }); guest.emit('room:join', { code: rc, name: 'เพื่อน' });
   for (let i = 0; i < 200 && !(pg.ev('lob && lob.players.length === 2')); i++) await sleep(10);
-  ok(pg.appEl.innerHTML.includes('ผู้สับไพ่') && pg.appEl.innerHTML.includes('doShuffle()') && /<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML) && pg.appEl.innerHTML.includes('class=arena'), 'เจ้าของห้องอยู่ที่โต๊ะ เห็นปุ่มสับไพ่ และปุ่มเริ่มเกมถูกปิดไว้จนกว่าจะสับ');
+  ok(pg.appEl.innerHTML.includes('class="deckbox') && !pg.appEl.innerHTML.includes('doShuffle()') && /<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML) && pg.appEl.innerHTML.includes('class=arena'), 'เจ้าของห้องอยู่ที่โต๊ะ: ไม่มีปุ่มสับไพ่ และปุ่มเริ่มเกมถูกปิดไว้จนกว่าเพื่อนจะกดพร้อม');
   ok(gl && gl.options.stake === 30 && gl.rule.id === 'dummy', 'เพื่อนที่เข้าห้องได้เดิมพัน/กฎของห้องในล็อบบี้');
-  ok(gl && gl.shuffle.youShuffler === false && gl.shuffle.shuffler === pg.ev('nick'), 'ผู้เล่นคนอื่นไม่ได้รับสิทธิ์สับ');
-  pg.ev('doShuffle()'); for (let i = 0; i < 200 && !pg.ev('lob.shuffle.ready'); i++) await sleep(10);
-  ok(pg.appEl.innerHTML.includes('✅ สับไพ่แล้ว') && !/<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML) && pg.appEl.innerHTML.includes('สับอีกครั้ง') && pg.appEl.innerHTML.includes('class="deckbox go"'), 'สับแล้ว: กองกลางโต๊ะเล่นแอนิเมชัน ขึ้น ✅ สับไพ่แล้ว ปุ่มเริ่มเกมใช้ได้ และสับซ้ำได้');
-  await sleep(1500); ok(!pg.appEl.innerHTML.includes('class="deckbox go"'), 'แอนิเมชันสับไพ่หายไปเองหลังเล่นจบ');
-  pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10); ok(pg.ev('S && S.hand.length >= 7'), 'กดเริ่มเกมหลังสับ → เข้าเกม');
+  ok(gl && gl.shuffle.needed === false && gl.allReady === false && gl.waitingFor.join() === 'เพื่อน', 'ล็อบบี้บอกว่ารอ "เพื่อน" กดพร้อม');
+  guest.emit('game:ready', { ready: true }); for (let i = 0; i < 200 && !pg.ev('lob.allReady'); i++) await sleep(10);
+  ok(pg.appEl.innerHTML.includes('✅ พร้อมเริ่ม') && !/<button class=blue onclick=begin\(\) disabled>/.test(pg.appEl.innerHTML), 'เพื่อนกดพร้อม: ขึ้น ✅ พร้อมเริ่ม และปุ่มเริ่มเกมใช้ได้');
+  pg.ev('begin()'); for (let i = 0; i < 200 && !pg.ev('S'); i++) await sleep(10); ok(pg.ev('S && S.hand.length >= 7'), 'กดเริ่มเกม → เข้าเกม');
   console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`);
   process.exit(0);
 })().catch(e => { console.error('\n✗ ล้มเหลว:', e.message, e.stack.split('\n')[1] || ''); process.exit(1); });

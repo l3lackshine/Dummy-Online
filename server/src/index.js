@@ -22,6 +22,7 @@ const rooms = new Map();
 const MAX_PLAYERS = 4;
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 300);
 const OPENING_MS = Number(process.env.OPENING_MS != null ? process.env.OPENING_MS : 5000); // เวลาให้แอนิเมชันสับ+แจกไพ่ก่อนบอทเดินตาแรก
+const NEXT_MS = Number(process.env.NEXT_MS != null ? process.env.NEXT_MS : 20000); // เวลาให้ทุกคนกด 'เล่นต่อ' หลังจบตา (0 = ปิดระบบนี้)
 const BOT_DELAY = Number(process.env.BOT_DELAY_MS || 650);        // ปรับได้เพื่อทดสอบ
 const EMPTY_ROOM_TTL = Number(process.env.EMPTY_ROOM_TTL_MS || 120000); // ห้องที่ไม่มีคนจริงเหลือ จะถูกลบหลังเวลานี้ (เผื่อเชื่อมต่อกลับ)
 const RATE_PER_SEC = Number(process.env.RATE_PER_SEC || 20);
@@ -56,7 +57,8 @@ function publicLobby(room, forPlayer) {
     shuffle: { ready: !!room.deck, needed: needShuffle(room), by: room.shuffledBy || null, shuffler: sh ? sh.name : null, youShuffler: !!forPlayer && forPlayer === sh, round: room.round || 0, seq: room.shuffleSeq || 0 },
     allowBots: room.allowBots !== false, // ห้องนี้เติมบอทในที่นั่งว่างหรือไม่ (ตั้งตอนสร้างห้อง เปลี่ยนไม่ได้ระหว่างเล่น)
     allReady, waitingFor: others.filter(p => !p.ready).map(p => p.name),
-    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, ready: p === host || !!p.ready, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
+    next: room.next ? { leftMs: room.next.until ? Math.max(0, room.next.until - Date.now()) : null } : null,
+    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, connected: p.connected, host: p === host, ready: p === host || !!p.ready, again: !!p.again, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
   };
 }
 // จบตาแล้วจดผู้ชนะไว้ (ครั้งเดียวต่อเกม) เพื่อมอบสิทธิ์สับไพ่ตาถัดไป
@@ -69,7 +71,44 @@ function settle(room) {
   recordResults(room);
   room.lastWinner = w || null;                 // ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับแทน
   room.round = (room.round || 0) + 1;
+  openNext(room);
 }
+// ===== หลังจบตา: ทุกคนกด "เล่นต่อ" → เริ่มตาใหม่ · ใครกดออก/หมดเวลา → ที่เหลือกลับไปล็อบบี้ =====
+function openNext(room) {
+  if (NEXT_MS <= 0 || room.next) return;
+  const humans = connectedPlayers(room); if (!humans.length) return;
+  humans.forEach(p => { p.again = false; });
+  const n = { until: humans.length > 1 ? Date.now() + NEXT_MS : null, n0: humans.length, timer: null };   // คนเดียว (เล่นกับบอท) = ไม่มีเวลาหมด
+  if (n.until) { n.timer = setTimeout(() => expireNext(room), NEXT_MS); if (n.timer.unref) n.timer.unref(); }
+  room.next = n;
+}
+function closeNext(room) { if (room.next && room.next.timer) clearTimeout(room.next.timer); room.next = null; }
+// พากลุ่มที่เหลือกลับล็อบบี้ (คนที่เคยกดเล่นต่อไว้ถือว่าพร้อมแล้ว) — ใช้เมื่อมีคนออก/หมดเวลา
+function toLobby(room, notice) {
+  closeNext(room);
+  if (room.botTimer) { clearTimeout(room.botTimer); room.botTimer = null; }
+  room.players = connectedPlayers(room); room.game = null; room.deck = null;
+  room.players.forEach(p => { p.seat = null; p.ready = p.again === true; p.again = false; });
+  room.players.forEach(p => io.to(p.id).emit('room:lobbyback', { notice: notice || '' }));
+  if (notice) io.to(room.code).emit('system:notice', notice);
+  emitLobby(room);
+}
+function startNext(room) { closeNext(room); if (startGame(room)) io.to(room.code).emit('system:notice', 'เริ่มตาใหม่!'); }
+function checkNext(room) { // เรียกทุกครั้งที่สถานะเปลี่ยน: ทุกคนยืนยันแล้ว → เริ่ม
+  const n = room.next; if (!n || !room.game || !room.game.over) return;
+  const humans = connectedPlayers(room); if (!humans.length) return closeNext(room);
+  if (humans.length < n.n0) return toLobby(room, 'มีผู้เล่นออกจากห้อง — กลับสู่ล็อบบี้เพื่อหาผู้เล่นเพิ่ม');
+  if (humans.every(p => p.again)) startNext(room);
+  else emitLobby(room);
+}
+function expireNext(room) {
+  if (!alive(room) || !room.next) return; room.next.timer = null;
+  const late = connectedPlayers(room).filter(p => !p.again);
+  if (!late.length) return checkNext(room);
+  late.forEach(p => { const sk = io.sockets.sockets.get(p.id); io.to(p.id).emit('room:kicked', { reason: 'ไม่ได้กดเล่นต่อภายในเวลาที่กำหนด' }); p.connected = false; p.id = null; p.token = null; if (sk) { sk.leave(room.code); sk.data.roomCode = null; } });
+  if (connectedPlayers(room).length) toLobby(room, late.map(p => p.name).join(', ') + ' ไม่ได้กดเล่นต่อ — กลับสู่ล็อบบี้'); else { rooms.delete(room.code); }
+}
+
 function emitLobby(room) { connectedPlayers(room).forEach(p => io.to(p.id).emit('room:lobby', publicLobby(room, p))); }
 function emitStates(room) {
   if (!room.game) return;
@@ -114,7 +153,7 @@ function startGame(room) {
   room.players.forEach(p => { p.ready = false; });   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
   const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
   room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
-  room.game.v++; room.openingUntil = Date.now() + OPENING_MS;
+  closeNext(room); room.game.v++; room.openingUntil = Date.now() + OPENING_MS;
   if (SB.enabled()) room.players.forEach(p => { if (p.uid) SB.rpc('touch_last_game', { p_user: p.uid, p_game: room.rule }).catch(() => {}); });
   emitStates(room);
   scheduleBots(room);
@@ -149,8 +188,8 @@ function leaveRoom(socket, disconnected = false, forget = false) {
   }
   if (!disconnected) socket.leave(room.code);
   socket.data.roomCode = null;
-  if (!room.players.length) { if (room.botTimer) clearTimeout(room.botTimer); if (room.emptyTimer) clearTimeout(room.emptyTimer); rooms.delete(room.code); }
-  else checkEmpty(room);
+  if (!room.players.length) { closeNext(room); if (room.botTimer) clearTimeout(room.botTimer); if (room.emptyTimer) clearTimeout(room.emptyTimer); rooms.delete(room.code); }
+  else { checkEmpty(room); checkNext(room); }
 }
 // เชื่อมต่อกลับด้วย token (รีเฟรชหน้า/เน็ตหลุด) — ได้ที่นั่งเดิมคืน และบอทที่ครองที่นั่งอยู่ถูกปลดออก
 function rejoinRoom(socket, code, token) {
@@ -276,6 +315,13 @@ io.on('connection', socket => {
     if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode); if (!room) return;
     const p = findPlayer(room, socket.id), e = String(obj(raw).e || ''); if (!p || !EMOTES.includes(e)) return;
     io.to(room.code).emit('room:emote', { from: p.name, e });
+  });
+  // หน้าสรุป: กดเล่นต่อ (yes) หรือกดออก (no)
+  on(socket, 'game:again', raw => {
+    if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode); if (!room || !room.next || !room.game || !room.game.over) return;
+    const p = findPlayer(room, socket.id); if (!p) return;
+    if (obj(raw).yes === false) return leaveRoom(socket, false, true);
+    p.again = true; checkNext(room);
   });
   on(socket, 'game:act', raw => {
     if (!allow(socket)) return;

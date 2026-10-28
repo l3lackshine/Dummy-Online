@@ -50,7 +50,7 @@ function gxOver() {
   const pairs = r.pairs ? `<div class=gpairs>${r.pairs.map(pr => `<span class=gpair>${pr.map(id => gxc(id)).join('')}</span>`).join('')}</div>` : '';
   const pay = c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ตัวละ ${esc(c.stake)} 🪙</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>🪙 ${l.a}</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการจ่ายเหรียญตานี้</p>';
   const shuf = shufflePanel(), sh = lob && lob.shuffle, need = !!(sh && sh.needed && !sh.ready);
-  const tabs = [['📊 สรุปผล', pairs + board], ['🪙 รายการจ่าย', pay]]; if (shuf) tabs.push([(need ? '❗' : '🔀') + ' สับไพ่', `<div class=rs-shuf>${shuf}</div>`]);
+  const tabs = [['📊 สรุปผล', pairs + board], ['🪙 รายการจ่าย', pay]]; 
   if (resTab >= tabs.length) resTab = 0;
   return `<div class="ov rsv"><div class="rs ${win ? 'win' : lose ? 'lose' : 'even'}">
   <div class=rs-head><div class=rs-ttl><small>${win ? '🏆 คุณชนะตานี้' : lose ? 'แพ้ตานี้ สู้ใหม่!' : 'เสมอ'}</small><h2>${esc(r.title || 'จบตา')}</h2></div></div>
@@ -58,7 +58,7 @@ function gxOver() {
     <aside class=rs-me><div class=rs-big><small>เหรียญตานี้</small><b class="${win ? 'pos' : lose ? 'neg' : ''}">${sgn(md)} 🪙</b></div><div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${sv.coins}</b></div>${rank ? `<div class=rs-kv><span>อันดับ</span><b>${medal[rank - 1] || rank} ที่ ${rank}</b></div>` : ''}${r.pot ? `<div class=rs-kv><span>กองกลาง</span><b>🪙 ${r.pot}</b></div>` : ''}</aside>
     <section class=rs-main><nav class=rs-tabs>${tabs.map((x, i) => `<button class="${i === resTab ? 'on' : ''}" onclick="setResTab(${i})">${x[0]}</button>`).join('')}</nav><div class=rs-pane>${tabs[resTab][1]}</div></section>
   </div>
-  <div class=rs-foot>${startBtn('▶ เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div></div>`;
+  <div class=rs-foot>${typeof nextFoot === 'function' ? nextFoot() : startBtn('▶ เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div></div>`;
 }
 function renderOther() { const f = GX[S.rule]; if (!f) { $('app').className = ''; $('app').innerHTML = '<div class=pg><div class=pg-body><p class=note>ยังไม่รองรับเกมนี้ใน client เวอร์ชันนี้ กรุณารีเฟรชหน้า</p><button class=wbtn onclick=leave()>ออก</button></div></div>'; return; } f(); }
 

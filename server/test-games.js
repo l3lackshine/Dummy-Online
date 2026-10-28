@@ -131,15 +131,15 @@ async function playOut(pg, id) {
     ok(started && pg.ev('screen') === 'game' && pg.appEl.innerHTML.includes('class=gx') && pg.appEl.innerHTML.includes('class=arena'), 'เริ่มเกม: เข้าหน้าโต๊ะของ ' + NAMES[id]);
     ok(await playOut(pg, id), NAMES[id] + ': เล่นจนจบตา');
     const dlt = pg.ev('S.res.coin.delta[S.my]'), coin1 = Number(store.dummyCoins);
-    ok(coin1 === Math.max(0, coin0 + dlt) && pg.appEl.innerHTML.includes('class=ov') && pg.appEl.innerHTML.includes('ผลเหรียญตานี้ ' + (dlt > 0 ? '+' + dlt : dlt)), NAMES[id] + ': จ่ายเหรียญครั้งเดียวตรงผล (' + coin0 + ' ' + (dlt >= 0 ? '+' : '') + dlt + ' → ' + coin1 + ') และหน้าสรุปแสดงผล');
-    ok(pg.appEl.innerHTML.includes('เล่นอีกตา'), NAMES[id] + ': หน้าสรุปมีปุ่มเล่นอีกตา/สับไพ่');
+    ok(coin1 === Math.max(0, coin0 + dlt) && pg.appEl.innerHTML.includes('class="ov rsv"') && pg.appEl.innerHTML.includes('เหรียญตานี้') && pg.appEl.innerHTML.includes((dlt > 0 ? '+' : '') + dlt + ' 🪙'), NAMES[id] + ': จ่ายเหรียญครั้งเดียวตรงผล (' + coin0 + ' ' + (dlt >= 0 ? '+' : '') + dlt + ' → ' + coin1 + ') และหน้าสรุปแสดงผล');
+    ok(pg.appEl.innerHTML.includes('เล่นอีกตา') || pg.appEl.innerHTML.includes('เล่นต่อ'), NAMES[id] + ': หน้าสรุปมีปุ่มเล่นต่อ (ไม่มีขั้นตอนสับไพ่)');
     pg.ev('leave()'); await sleep(30);
   }
   console.log('\n  — ออนไลน์ 2 คน (ป๊อกเด้ง)');
   const guest = M.client(srv); let gst = null; guest.on('game:state', s => { if (!gst) gst = s; });   // เก็บเฉพาะสถานะแรกหลังแจกไพ่ (ก่อนบอทเล่นต่อ)
   pg.ev('goPlay()'); pg.ev("chooseGame('pokdeng')"); pg.ev("openCreate('room')"); pg.ev('startCreate()'); await waitFor(() => pg.ev('code'));
   guest.emit('room:join', { code: pg.ev('code'), name: 'เพื่อน' }); await waitFor(() => pg.ev('lob && lob.players.length === 2'));
-  await waitFor(() => !pg.ev('shufAnim'), 3000); pg.ev('doShuffle()'); await waitFor(() => pg.ev('lob.shuffle.ready')); pg.ev('begin()'); await waitFor(() => gst && pg.ev('S'));
+  guest.emit('game:ready', { ready: true }); await waitFor(() => pg.ev('lob.allReady')); pg.ev('begin()'); await waitFor(() => gst && pg.ev('S'));
   ok(gst.rule === 'pokdeng' && gst.my === 1 && gst.hand.length === 2 && !('h' in gst), 'ผู้เล่นคนที่ 2 เข้าห้องป๊อกเด้งและได้ไพ่ของตัวเอง');
   const other = gst.P.find(p => p.i === 0); ok(other.cards === null || other.pok === true || gst.over, 'ผู้เล่นคนที่ 2 มองไม่เห็นไพ่ของเจ้าของห้อง (ยกเว้นป๊อกที่เปิดแล้ว/ตาจบตั้งแต่แจก)');
   pg.socks.forEach(s => s.close()); guest.close();

@@ -177,3 +177,10 @@ body.sk-mist::after{content:"";position:fixed;inset:auto 0 0 0;height:45%;z-inde
 .rmv .rm-acts button{width:100%;padding:calc(var(--u)*1.5) 0;font-size:max(14px,calc(var(--u)*3.6));border-radius:calc(var(--u)*2)}
 .rmv .rm-acts button.gray{background:linear-gradient(#6b7bbf,#3d4a8a);box-shadow:0 3px 0 #252f66;color:#fff}
 }
+
+/* ===== หน้าสรุป: เล่นต่อ ===== */
+.po{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.po-go{border:0;border-radius:99px;padding:10px 28px;font:800 clamp(15px,2.6vw,19px) Sarabun,sans-serif;color:#fff;background:linear-gradient(#4cd36f,#1f9c4a);box-shadow:0 4px 0 #14703a;cursor:pointer}
+.po-go.done{background:#4a5886;box-shadow:none;opacity:.85;cursor:default}
+.po-cd{opacity:.9;font-weight:700}.po-cd.hot{color:#ffe66b;animation:gxp .6s ease-in-out infinite}
+.po-st{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.po-p{background:#0007;border:2px solid #ffffff33;border-radius:99px;padding:0 10px;font:700 12px Sarabun,sans-serif;color:#cfd3ff}.po-p.y{border-color:#2ff3ff;color:#bff9ff}
