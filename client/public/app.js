@@ -76,7 +76,7 @@ function playView() {
   conn();
   const plank = (fn, t, s) => `<button class=plank onclick="${fn}"><b>${t}</b><small>${s}</small></button>`;
   const gm = ruleMeta(createSel.rule), gh = gm ? `<button class=gcur onclick="go('games')"><span>${esc(gm.icon || '🂠')}</span><b>${esc(gm.name)}</b><small>เปลี่ยนเกม</small></button>` : '';
-  page2('เล่นเกม', `${gh}${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('openCreate(\'room\')', 'สร้างห้อง', 'เลือกไพ่ ตั้งเดิมพัน ชวนเพื่อน')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'games');
+  page2('เล่นเกม', `${gh}${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('openCreate(\'room\')', 'สร้างห้อง', 'เลือกไพ่ ตั้งเดิมพัน ชวนเพื่อน')}${plank('openCreate(\'match\')', '🔍 หาแมตช์', 'จับคู่ผู้เล่นออนไลน์อัตโนมัติ')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'games');
 }
 // ===== กฎเกม: รายการกฎ/ตัวเลือกมาจากเซิร์ฟเวอร์ (rules:list) หน้านี้สร้างจาก meta ล้วน ๆ — เพิ่มกฎใหม่ที่ server/src/rules ไม่ต้องแก้ client =====
 function loadCreateSel() { try { const v = JSON.parse(localStorage.getItem('dummyCreate') || 'null'); if (v && v.rule) return { rule: String(v.rule), options: v.options && typeof v.options === 'object' ? v.options : {} }; } catch (e) {} return { rule: 'dummy', options: {} }; }
@@ -105,8 +105,8 @@ function showRules(id) {
 }
 function closeRules() { const e = document.getElementById('ruleModal'); if (e) e.remove(); }
 function createView() {
-  const m = ruleMeta(createSel.rule), solo_ = createMode === 'solo';
-  if (!m) return page2(solo_ ? 'เล่นคนเดียว' : 'สร้างห้อง', `${connStatus()}<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดกฎเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`, 'play');
+  const m = ruleMeta(createSel.rule), solo_ = createMode === 'solo', match_ = createMode === 'match';
+  if (!m) return page2(solo_ ? 'เล่นคนเดียว' : match_ ? 'หาแมตช์' : 'สร้างห้อง', `${connStatus()}<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดกฎเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`, 'play');
   if (m.id !== createSel.rule) createSel = { rule: m.id, options: {} };
   const o = ruleOpts(m);
   const opts = (m.options || []).map(d => {
@@ -114,12 +114,13 @@ function createView() {
     if (d.type === 'select') return `<div class=opt><label>${esc(d.label)}</label><div class=chips>${(d.choices || []).map(c => `<button class="chip${o[d.key] === c.v ? ' on' : ''}" onclick="setOpt('${esc(d.key)}','${esc(c.v)}')">${esc(c.label)}</button>`).join('')}</div></div>`;
     return '';
   }).join('');
-  const botOpt = solo_ ? '' : `<h3 class=sec>🤖 บอท</h3><div class=opt><label>ที่นั่งว่างในห้อง</label><div class=chips><button class="chip${createBots ? ' on' : ''}" onclick="setBots(true)">เติมบอทให้เล่น</button><button class="chip${!createBots ? ' on' : ''}" onclick="setBots(false)">รอผู้เล่นจริงเท่านั้น</button></div><small class=hint>${createBots ? 'ที่นั่งที่ไม่มีคนเข้า บอทจะเล่นแทนให้ครบ 4 คน' : 'ไม่เติมบอท ต้องมีเพื่อนเข้าห้องจริงอย่างน้อย 2 คนถึงจะเริ่มเกมได้'}</small></div>`;
-  page2(solo_ ? 'เล่นคนเดียว' : 'สร้างห้อง', `${connStatus()}<div class=panel><h3 class=sec>🎴 เกมที่เลือก</h3><button class=gcur onclick="go('games')"><span>${esc(m.icon || '🂠')}</span><b>${esc(m.name)}</b><small>เปลี่ยนเกม</small></button><p class=rule-desc>${esc(m.desc || '')}</p>${howtoHtml(m)}<h3 class=sec>⚙️ ตั้งค่าห้อง</h3>${opts}${botOpt}<h3 class=sec>📋 การนับเหรียญ</h3><div id=scoreSum class=score-sum>${scoreHtml(m)}</div><button class="wbtn go" onclick="startCreate()">${solo_ ? '▶ เริ่มเล่นกับบอท' : '🏠 สร้างห้อง'}</button></div>`, 'play');
+  const botOpt = solo_ || match_ ? '' : `<h3 class=sec>🤖 บอท</h3><div class=opt><label>ที่นั่งว่างในห้อง</label><div class=chips><button class="chip${createBots ? ' on' : ''}" onclick="setBots(true)">เติมบอทให้เล่น</button><button class="chip${!createBots ? ' on' : ''}" onclick="setBots(false)">รอผู้เล่นจริงเท่านั้น</button></div><small class=hint>${createBots ? 'ที่นั่งที่ไม่มีคนเข้า บอทจะเล่นแทนให้ครบ 4 คน' : 'ไม่เติมบอท ต้องมีเพื่อนเข้าห้องจริงอย่างน้อย 2 คนถึงจะเริ่มเกมได้'}</small></div>`;
+  page2(solo_ ? 'เล่นคนเดียว' : match_ ? 'หาแมตช์' : 'สร้างห้อง', `${connStatus()}<div class=panel><h3 class=sec>🎴 เกมที่เลือก</h3><button class=gcur onclick="go('games')"><span>${esc(m.icon || '🂠')}</span><b>${esc(m.name)}</b><small>เปลี่ยนเกม</small></button><p class=rule-desc>${esc(m.desc || '')}</p>${howtoHtml(m)}<h3 class=sec>⚙️ ตั้งค่าห้อง</h3>${opts}${botOpt}<h3 class=sec>📋 การนับเหรียญ</h3><div id=scoreSum class=score-sum>${scoreHtml(m)}</div><button class="wbtn go" onclick="startCreate()">${solo_ ? '▶ เริ่มเล่นกับบอท' : match_ ? '🔍 ค้นหาแมตช์' : '🏠 สร้างห้อง'}</button></div>`, 'play');
 }
 // กดปุ่มยืนยันในหน้าสร้างห้อง: เล่นคนเดียว = สร้างห้องส่วนตัวเล่นกับบอท / สร้างห้อง = ห้องออนไลน์
 function startCreate() {
   if (!ruleMeta(createSel.rule)) return;
+  if (createMode === 'match') { soloRoom = false; conn(); if (sock && sock.connected && typeof matchFind === 'function') matchFind(); else { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); } return; }   // Find Match (ดู match-ui.js)
   if (createMode === 'solo') { setSess(null); soloPending = true; soloRoom = true; conn(); if (sock && sock.connected && !code) mk(); render(); }
   else { soloRoom = false; conn(); if (sock && sock.connected) mk(); else { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); } }
 }

@@ -37,7 +37,8 @@ function gxView(c) {
    รับข้อมูลจาก tableView(): { ps (ผู้เล่นที่ออนไลน์), total (จำนวนที่นั่ง), L (lobby), h (ข้อความแนะนำ), stake, blocked, meP }
    Extend: เพิ่มแผงใหม่ใน .rm-panel · เพิ่มสถานะที่นั่งที่ roleOf() */
 function gxRoom(c) {
-  const { ps, total, L, h, stake, blocked, meP } = c, rule = L.rule || {}, noBots = L.allowBots === false;
+  const { ps, total, L, h, stake, blocked, meP } = c, rule = L.rule || {}, noBots = L.allowBots === false, M = L.match || null;
+  if (M) L._t0 = L._t0 || Date.now();   // เวลารับข้อมูลจับคู่ (ใช้นับเวลาต่อใน match-ui.js)
   const artOf = a => (a.startsWith('<img') ? `<span class=rm-chr>${a}</span>` : `<span class=rm-emo>${a}</span>`);
   const roleOf = p => (p.host ? '👑 เจ้าของห้อง' : p.ready ? '✅ พร้อม' : '⏳ รอ');
   const mine = ps.find(p => p.you), people = mine ? [mine, ...ps.filter(p => p !== mine)] : ps.slice();
@@ -45,23 +46,26 @@ function gxRoom(c) {
     return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"><div class=rm-art>${artOf(av(p.name, p.ch))}</div><em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`; };
   const bot = i => `<div class="rm-slot bot on"><div class=rm-art>${artOf(av('บอท' + i, botChar(i)))}</div><em class=rm-chip>🤖 บอท</em><div class=rm-plate><b>บอท</b><small>เล่นแทน</small></div></div>`;
-  const empty = () => `<button class="rm-slot empty" onclick=copyInvite()><div class=rm-plus>＋</div><div class=rm-plate><b>ว่าง</b><small>${noBots ? 'รอเพื่อน' : 'บอทจะเล่นแทน'}</small></div></button>`;
-  const slots = Array.from({ length: total }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty())).join('');
+  const searching = k => `<div class="rm-slot empty searching"><div class=rm-plus><span class=mm-spin></span></div><div class=rm-plate><b>กำลังค้นหา…</b><small>ผู้เล่นคนที่ ${k + 1}</small></div></div>`;
+  const empty = k => M ? searching(k) : `<button class="rm-slot empty" onclick=copyInvite()><div class=rm-plus>＋</div><div class=rm-plate><b>ว่าง</b><small>${noBots ? 'รอเพื่อน' : 'บอทจะเล่นแทน'}</small></div></button>`;
+  const slots = Array.from({ length: total }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty(k))).join('');
   const wait = esc((L.waitingFor || []).join(', ')), isMe = !!mine;
-  const status = soloRoom ? 'เล่นกับบอท — กดเริ่มเกมได้เลย' : !isHost ? (meP.ready ? 'รอเจ้าของห้องเริ่มเกม…' : 'กด “พร้อม” เมื่อพร้อมเล่น') : blocked ? `รอ ${wait} กดพร้อม` : 'ทุกคนพร้อมแล้ว — กดเริ่มเกมได้เลย';
+  const status = M ? (M.state === 'countdown' ? 'พบผู้เล่นครบแล้ว — กำลังเริ่มเกม…' : `พบผู้เล่น ${M.humans}/${M.max} คน — กำลังหาเพิ่ม…`) : soloRoom ? 'เล่นกับบอท — กดเริ่มเกมได้เลย' : !isHost ? (meP.ready ? 'รอเจ้าของห้องเริ่มเกม…' : 'กด “พร้อม” เมื่อพร้อมเล่น') : blocked ? `รอ ${wait} กดพร้อม` : 'ทุกคนพร้อมแล้ว — กดเริ่มเกมได้เลย';
   const row = (k, v) => `<div class=rm-row><span>${k}</span><b>${v}</b></div>`;
   return `<div class=rm-stage>
   <div class=rm-top><button class=rm-back onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">‹</button>
-    <div class=rm-title><b>${soloRoom ? '🤖 ห้องเล่นกับบอท' : 'ห้อง ' + esc(code)}</b><small>${esc(rule.name || 'ดัมมี่')}</small></div>
+    <div class=rm-title><b>${M ? '🔍 กำลังหาแมตช์' : soloRoom ? '🤖 ห้องเล่นกับบอท' : 'ห้อง ' + esc(code)}</b><small>${esc(rule.name || 'ดัมมี่')}</small></div>
     <span class=pill>🪙 ${sv.coins}</span><button class="pill gx-sk" onclick=openSkills()>⚡ ความสามารถ</button>${rule.id ? `<button class="pill rl" onclick="showRules('${esc(rule.id)}')">📖 กติกา</button>` : ''}</div>
   <div class=rm-slots>${slots}</div>
-  <div class=rm-hint>${esc(h && !/^รอผู้เล่น|^ห้องเล่นกับบอท/.test(h) ? h : status)}</div>
+  <div class=rm-hint>${esc(M || !h || /^รอผู้เล่น|^ห้องเล่นกับบอท/.test(h) ? status : h)}</div>
   <aside class=rm-panel>
-    <div class=rm-card>${soloRoom ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
-      ${row('กติกา', esc(rule.name || 'ดัมมี่'))}${stake != null ? row('เดิมพัน', '🪙 ' + esc(stake) + ' ต่อคน') : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
+    <div class=rm-card>${soloRoom || M ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
+      ${M ? row('สถานะ', M.state === 'countdown' ? '⏱ นับถอยหลัง' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่'))}${stake != null ? row('เดิมพัน', '🪙 ' + esc(stake) + ' ต่อคน') : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
     ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}</div>`}
-    <div class=rm-acts>${!isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom ? '' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}</div>
+    <div class=rm-acts>${M ? '<button class=gray onclick=leave()>✖ ยกเลิกการค้นหา</button>' : ''}${!M && !isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${!M && isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom || M ? '' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}</div>
   </aside>
+  ${M && M.state === 'countdown' ? `<div class=mm-cd><small>พบผู้เล่นครบแล้ว</small><b class=mm-cdn>${Math.max(1, Math.ceil((M.cdLeftMs || 0) / 1000))}</b></div>` : ''}
+  ${M && M.prompt ? `<div class=mm-modal><div class=mm-box><h3>หาผู้เล่นได้ ${M.humans}/${M.max} คน</h3><p>จะรอผู้เล่นเพิ่ม หรือเติมบอทแล้วเริ่มเลย?</p><div class=mm-btns><button class="${M.prompt.voted === 'wait' ? 'on' : ''}" onclick="matchVote('wait')">⏳ รอต่อ</button><button class="${M.prompt.voted === 'bots' ? 'on' : ''}" onclick="matchVote('bots')">🤖 เติมบอทเล่นเลย</button></div><small>เหลือ <span class=mm-pl>${Math.ceil(M.prompt.leftMs / 1000)}</span> วินาที · เติมบอทเมื่อทุกคนเลือกเติม</small>${M.prompt.voted ? '<small>รอผู้เล่นอื่นเลือก…</small>' : ''}</div></div>` : ''}
 </div>`;
 }
 let _gxW = null; if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('resize', () => { const w = isWide(); if (_gxW !== null && w !== _gxW && typeof S !== 'undefined' && S && screen === 'game') render(); _gxW = w; });
