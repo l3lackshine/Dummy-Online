@@ -42,7 +42,7 @@ update public.catalog_items set active = false where (kind, item_id) not in (('c
 
 insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active) values
 ('standard', 'ตู้มาตรฐาน', 'สุ่มได้ทั้งตัวละคร ไพ่ โต๊ะ และพื้นหลัง · ได้ตัวละครซ้ำเอาไปอัพดาวได้', 300, 30, 2700, 270, 50, 1, true),
-('sakura-ace', 'SAKURA ACE', 'ตู้ลิมิเต็ด — ตัวละครระดับตำนานออกง่ายขึ้นช่วงเวลาจำกัด', 300, 30, 2700, 270, 50, 2, true)
+('sakura-ace', 'SAKURA ACE', 'ตู้ลิมิเต็ด — ตัวละคร SR (อายะ รินะ เรนะ) ออกง่ายขึ้นช่วงเวลาจำกัด', 300, 30, 2700, 270, 50, 2, true)
 on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true;
 
 update public.gacha_banners set active = false where id not in ('standard', 'sakura-ace');
