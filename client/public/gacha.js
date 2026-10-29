@@ -6,7 +6,8 @@
   if (!(window.DB && DB.enabled)) return;
   const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const N = n => Number(n || 0).toLocaleString('en-US');
-  const RICON = { common: '⚪', rare: '🔵', epic: '🟣', legendary: '🟡' };
+  const RICON = { common: '', rare: '', epic: '', legendary: '' }; // ระดับแสดงเป็นกรอบสีแทนอีโมจิ (theme2.css)
+  const RNAME = { common: 'Common', rare: 'Rare', epic: 'SR', legendary: 'SSR' }; // ชื่อระดับฝั่งหน้าจอ (ใช้แทนชื่อในฐานข้อมูลเดิม)
   const toast = t => { if (window.dbToast) dbToast(t); };
   let failed = false, tab = 'pull', bid = null, busy = false, loading = false, note = '', filt = 'all';
   const regItem = (kind, id) => (((typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY : {})[kind]) || []).find(x => x.id === id);
@@ -15,7 +16,7 @@
 
   function ensure() {
     if (DB.G || loading || failed || !DB.P) return;
-    loading = true; DB.gacha().catch(e => { note = e.message; failed = true; }).then(() => { loading = false; try { render(); } catch (e) {} });
+    loading = true; DB.gacha().then(() => { const R = (DB.G && DB.G.rarities) || {}; for (const k of Object.keys(R)) if (RNAME[k]) R[k].name = RNAME[k]; }).catch(e => { note = e.message; failed = true; }).then(() => { loading = false; try { render(); } catch (e) {} });
   }
   const banner = () => { const bs = (DB.G && DB.G.banners) || []; return bs.find(b => b.id === bid) || bs[0]; };
 
@@ -34,10 +35,10 @@
       return `<button class="gc-go ${cur}" ${no ? 'disabled' : ''} onclick="gcPull('${E(b.id)}',${n},'${cur}')"><b>สุ่ม ${n} ครั้ง</b><span>${cur === 'coins' ? '🪙' : '💎'} ${N(p)}</span></button>`; };
     const tot = {}; items.forEach(i => { tot[i.rarity] = (tot[i.rarity] || 0) + Number(i.pct); });
     const rates = Object.keys(R).sort((x, y) => rk(y) - rk(x)).map(r => `<span class="gc-r ${r}">${RICON[r] || ''} ${E(R[r].name)} ${Math.round((tot[r] || 0) * 100) / 100}%</span>`).join('');
-    const pity = b.pity ? `<div class=gc-pity><span>การันตี ${RICON.legendary} ${E((R.legendary || {}).name || 'ตำนาน')} ใน ${b.pity} ครั้ง <b>(${b.since_top}/${b.pity})</b></span><div class=gc-bar><i style="width:${Math.min(100, b.since_top / b.pity * 100)}%"></i></div></div>` : '';
+    const pity = b.pity && items.some(i => i.rarity === 'legendary') ? `<div class=gc-pity><span>การันตี ${RICON.legendary} ${E((R.legendary || {}).name || 'ตำนาน')} ใน ${b.pity} ครั้ง <b>(${b.since_top}/${b.pity})</b></span><div class=gc-bar><i style="width:${Math.min(100, b.since_top / b.pity * 100)}%"></i></div></div>` : '';
     return `<div class=gc-stage><div class=gc-show><div class=gc-ban><b>${E(b.name)}</b><small>${E(b.description || '')}</small></div>${bimg ? `<div class=gc-bimg><img src="${E(bimg)}" alt="${E(b.name)}"></div>` : `<div class=gc-feats>${feat.map(card).join('')}</div>`}
         <div class=gc-sub>${bs.length > 1 ? bs.map(x => `<button class="gc-mini${x.id === b.id ? ' on' : ''}" onclick="gcBanner('${E(x.id)}')">${E(x.name)}</button>`).join('') : ''}${window.Assets && !Assets.showListButton() ? '' : `<button class=gc-mini onclick="gcList()">📋 รายการและอัตราการออก</button>`}</div></div>
-      <div class=gc-side><div class=gc-rates>${rates}</div>${pity}<small class=gc-tip>สุ่ม 10 ครั้งการันตี ${RICON.rare} หายากขึ้นไปอย่างน้อย 1 ชิ้น<br>ได้ตัวละครซ้ำ = นำไปอัพดาว · ของซ้ำขายเป็นเหรียญได้ที่ “คลังของ”</small>
+      <div class=gc-side><div class=gc-rates>${rates}</div>${pity}<small class=gc-tip>สุ่ม 10 ครั้งการันตี Rare ขึ้นไปอย่างน้อย 1 ชิ้น<br>ได้ตัวละครซ้ำ = นำไปอัพดาว · ของซ้ำขายเป็นเหรียญได้ที่ “คลังของ”</small>
         <div class=gc-btns>${btn(1, 'coins')}${btn(10, 'coins')}${btn(1, 'mcash')}${btn(10, 'mcash')}</div></div></div>`;
   }
   window.gcList = () => {

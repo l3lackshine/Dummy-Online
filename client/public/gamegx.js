@@ -42,10 +42,17 @@ function gxRoom(c) {
   const artOf = a => (a.startsWith('<img') ? `<span class=rm-chr>${a}</span>` : `<span class=rm-emo>${a}</span>`);
   const roleOf = p => (p.host ? '👑 เจ้าของห้อง' : p.ready ? '✅ พร้อม' : '⏳ รอ');
   const mine = ps.find(p => p.you), people = mine ? [mine, ...ps.filter(p => p !== mine)] : ps.slice();
+  // ตำแหน่งตัวละครในการ์ด: Character.config "lobby": {"align": "left|center|right", "scale": 0.8}
+  const place = ch => { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch), l = (x && x.lobby) || {};
+    const al = { left: 'flex-start', right: 'flex-end' }[l.align] || 'center', sc = Number(l.scale) > 0 ? Math.min(1.5, Number(l.scale)) : 1;
+    return ` style="--chr-al:${al};--chr-h:${Math.round(sc * 100)}%"`; };
+  // กรอบการ์ดที่ผู้เล่นใส่ (Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
+  const deco = fr => { const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
+    return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(x.asset)}')"></i>` : ''; };
   const human = p => { const on = p.host || p.ready;
-    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"><div class=rm-art>${artOf(av(p.name, p.ch))}</div><em class=rm-chip>${roleOf(p)}</em>
+    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`; };
-  const bot = i => `<div class="rm-slot bot on"><div class=rm-art>${artOf(av('บอท' + i, botChar(i)))}</div><em class=rm-chip>🤖 บอท</em><div class=rm-plate><b>บอท</b><small>เล่นแทน</small></div></div>`;
+  const bot = i => `<div class="rm-slot bot on"${place(botChar(i))}><div class=rm-art>${artOf(av('บอท' + i, botChar(i)))}</div><em class=rm-chip>🤖 บอท</em><div class=rm-plate><b>บอท</b><small>เล่นแทน</small></div></div>`;
   const searching = k => `<div class="rm-slot empty searching"><div class=rm-plus><span class=mm-spin></span></div><div class=rm-plate><b>กำลังค้นหา…</b><small>ผู้เล่นคนที่ ${k + 1}</small></div></div>`;
   const empty = k => M ? searching(k) : `<button class="rm-slot empty" onclick=copyInvite()><div class=rm-plus>＋</div><div class=rm-plate><b>ว่าง</b><small>${noBots ? 'รอเพื่อน' : 'บอทจะเล่นแทน'}</small></div></button>`;
   const slots = Array.from({ length: total }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty(k))).join('');

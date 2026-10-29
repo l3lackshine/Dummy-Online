@@ -14,7 +14,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), PUB = path.join(ROOT, 'client/public'), SKIN = path.join(PUB, 'skin');
 const CHECK = process.argv.includes('--check');
-const KIND_DIR = { themes: 'Theme', characters: null, tables: 'Table', backgrounds: 'Background', cards: 'Card', docks: 'Dock', backs: 'CardBack' };
+const KIND_DIR = { themes: 'Theme', characters: null, tables: 'Table', backgrounds: 'Background', cards: 'Card', docks: 'Dock', backs: 'CardBack', frames: 'Frame' };
 const problems = [], warns = [];
 const rel = p => path.relative(ROOT, p);
 const exists = p => fs.existsSync(p);

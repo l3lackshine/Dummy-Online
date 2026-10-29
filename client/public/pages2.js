@@ -1,0 +1,105 @@
+/* pages2.js — หน้าโปรไฟล์ใหม่ (ตั้งค่าโปรไฟล์อย่างเดียว) + หน้าช่องเก็บของ (ตัวละคร หลังไพ่ โต๊ะ พื้นหลัง กรอบการ์ด ไอเทม)
+   เขียนทับ profileView() ของ profile.js และเพิ่มหน้าจอ screen === 'inv' (เปิดด้วย invOpen(kind)) — ไม่แก้ app.js */
+(function () {
+  'use strict';
+  const LS = window.localStorage;
+  const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+  const N = n => Number(n || 0).toLocaleString('en-US');
+  const DBON = () => !!(window.DB && DB.enabled && DB.P);
+  const get = (k, d) => { try { const v = LS.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+  const set = (k, v) => { try { LS.setItem(k, v); } catch (e) {} };
+  const ICON = {
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 4.5-6 8-6s6.5 1.5 8 6"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+    chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    bag: '<path d="M3 9h18v11H3zM3 9l2-5h14l2 5M10 13h4"/>',
+    sound: '<path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>',
+    music: '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+    vib: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M3 8v8M21 8v8"/>',
+    globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',
+    out: '<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11"/>',
+    gift: '<rect x="3" y="9" width="18" height="12" rx="1"/><path d="M12 9v12M3 13h18M12 9C9 9 7 4 9.5 4S12 9 12 9s.5-5 2.5-5S15 9 12 9"/>'
+  };
+  const ic = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
+
+  /* ---------------- PROFILE: ตั้งค่าโปรไฟล์อย่างเดียว ---------------- */
+  window.pvTog = k => { set(k, get(k, '1') === '1' ? '0' : '1'); render(); };
+  const tog = (k, label, icon, note) => `<div class=pv-set><i>${ic(icon)}</i><span><b>${label}</b>${note ? `<small>${note}</small>` : ''}</span><button class="pv-sw${get(k, '1') === '1' ? ' on' : ''}" onclick="pvTog('${k}')" aria-pressed="${get(k, '1') === '1'}"><em></em></button></div>`;
+  function statsBox() {
+    if (!DBON()) return `<div class=pv-stats><div><b>${N(sv.coins)}</b><small>เหรียญ</small></div><div><b>—</b><small>เล่นแล้ว</small></div><div><b>—</b><small>ชนะ</small></div><div><b>—</b><small>% ชนะ</small></div></div><p class=pv-mut>สถิติจะแสดงเมื่อเข้าสู่ระบบบัญชี</p>`;
+    const st = DB.P.stats || [], t = st.reduce((a, g) => ({ p: a.p + g.plays, w: a.w + g.wins }), { p: 0, w: 0 });
+    return `<div class=pv-stats><div><b>${N(DB.P.coins)}</b><small>เหรียญ</small></div><div><b>${t.p}</b><small>เล่นแล้ว</small></div><div><b>${t.w}</b><small>ชนะ</small></div><div><b>${t.p ? Math.round(t.w / t.p * 100) : 0}%</b><small>% ชนะ</small></div></div>`;
+  }
+  function profileView() {
+    const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
+    const title = (DBON() ? DB.P.title : get('dummyTitle', '')) || '';
+    const uname = DBON() ? '@' + E(DB.P.username) : 'เล่นแบบไม่ล็อกอิน';
+    const body = `<div class=pv>
+      <section class="pv-card pv-id">
+        <div class=pv-av><img src="${E(ch && ch.asset || '')}" alt=""><button class=pv-avbtn onclick="invOpen('characters')">เปลี่ยน</button></div>
+        <b class=pv-nm>${E(nick)}</b><span class=pv-tt>${title ? E(title) : 'ยังไม่ได้ตั้งฉายา'}</span><small class=pv-un>${uname}</small>
+        ${statsBox()}
+      </section>
+      <section class="pv-card pv-form">
+        <h3 class=pv-h><i>${ic('user')}</i>ข้อมูลโปรไฟล์</h3>
+        <label class=pv-f><span>ชื่อในเกม</span><input id=nickInput maxlength=14 value="${E(nick)}" oninput="setNick(this.value)"><small>ไม่เกิน 14 ตัวอักษร</small></label>
+        <label class=pv-f><span>ฉายา</span><input id=titleInput maxlength=16 value="${E(title)}" placeholder="เช่น ราชาน็อก" oninput="pfTitle(this.value)"><small>แสดงใต้ชื่อในห้องและหน้าสรุปผล</small></label>
+        <div class=pv-f><span>รูปโปรไฟล์</span><button class=pv-link onclick="invOpen('characters')"><i>${ic('bag')}</i>เลือกจากตัวละครในช่องเก็บของ</button></div>
+      </section>
+      <section class="pv-card pv-opts">
+        <h3 class=pv-h><i>${ic('gear')}</i>ตั้งค่า</h3>
+        ${tog('pvSfx', 'เสียงเอฟเฟกต์', 'sound', 'เสียงจั่ว ทิ้ง สับไพ่ และเอฟเฟกต์ตัวละคร')}
+        <div class=pv-set><i>${ic('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
+        <div class=pv-acts>${DBON() ? `<button class="pv-btn blue" onclick="openDaily()">${ic('gift')}ล็อกอินรายวัน</button><button class="pv-btn gray" onclick="DB.signOut()">${ic('out')}ออกจากระบบ</button>` : ''}</div>
+      </section></div>`;
+    page2('โปรไฟล์', body, 'home');
+    const pg = document.querySelector('.pg'); if (pg) pg.dataset.pg = 'pv';
+  }
+
+  /* ---------------- INVENTORY: ช่องเก็บของ ---------------- */
+  const TABS = [['characters', 'ตัวละคร'], ['frames', 'กรอบการ์ด'], ['backs', 'หลังไพ่'], ['tables', 'โต๊ะ'], ['backgrounds', 'พื้นหลัง'], ['items', 'ไอเทม']];
+  let invTab = 'characters'; const sel = {};
+  window.invOpen = k => { invTab = k || invTab; go('inv'); };
+  window.invTab = k => { invTab = k; render(); };
+  window.invSel = (k, id) => { sel[k] = id; render(); };
+  function cell(kind, x, cur, pick) {
+    return `<button class="iv-cell${x.id === pick ? ' sel' : ''}${x.id === cur ? ' eq' : ''}" onclick="invSel('${kind}','${E(x.id)}')">${x.id === cur ? '<em>ใช้อยู่</em>' : ''}<span class=iv-pv>${prevBox(kind, x)}</span><b>${E(x.name || x.n || x.id)}</b></button>`;
+  }
+  function detail(kind, x, cur) {
+    const big = kind === 'characters' && x.asset ? `<img class=iv-hero src="${E(x.asset)}" alt="">` : `<div class=iv-bigpv>${prevBox(kind, x)}</div>`;
+    const btn = x.id === cur ? `<button class="pv-btn gray" disabled>✓ ใช้อยู่</button>` : `<button class="pv-btn green" onclick="equip('${kind}','${E(x.id)}')">เลือกใช้</button>`;
+    const extra = kind === 'characters' && typeof skCharCard === 'function' ? `<div class=iv-sk>${skCharCard(x.id, { compact: true })}</div>` : '';
+    return `<div class=iv-det><div class=iv-stage>${big}</div><div class=iv-info><b>${E(x.name || x.n || x.id)}</b>${extra}${btn}</div></div>`;
+  }
+  function itemsTab() {
+    const inv = DBON() ? (DB.P.inventory || []).filter(i => (Number(i.qty) || 0) > 1) : [];
+    return `<div class=iv-empty><i>${ic('bag')}</i><b>${inv.length ? 'ตัวซ้ำจากกาชา' : 'ยังไม่มีไอเทม'}</b><small>${inv.length ? inv.map(i => E(i.item_id) + ' ×' + (i.qty - 1)).join(' · ') : 'ไอเทมและตัวซ้ำจากกาชาจะมาอยู่ที่นี่'}</small><button class="pv-btn blue" onclick="go('shop')">ไปร้านค้า / กาชา</button></div>`;
+  }
+  function invView() {
+    const tabs = `<nav class=iv-tabs>${TABS.map(([k, l]) => {
+      const n = k === 'items' ? '' : (SKIN_REGISTRY[k] || []).filter(x => owned(k, x)).length;
+      return `<button class="${invTab === k ? 'on' : ''}" onclick="invTab('${k}')">${l}${n !== '' ? `<small>${n}</small>` : ''}</button>`; }).join('')}</nav>`;
+    let main;
+    if (invTab === 'items') main = itemsTab();
+    else {
+      const list = (SKIN_REGISTRY[invTab] || []).filter(x => owned(invTab, x)), cur = equipped(invTab);
+      const pick = list.find(x => x.id === sel[invTab]) ? sel[invTab] : cur;
+      const x = list.find(y => y.id === pick) || list[0];
+      main = `<div class=iv-main><div class=iv-grid>${list.map(y => cell(invTab, y, cur, x && x.id)).join('')}<button class="iv-cell iv-more" onclick="go('shop')"><span class=iv-pv>+</span><b>หาเพิ่มที่ร้านค้า</b></button></div>${x ? detail(invTab, x, cur) : ''}</div>`;
+    }
+    page2('ช่องเก็บของ', `<div class=iv>${tabs}${main}</div>`, 'home');
+    const pg = document.querySelector('.pg'); if (pg) pg.dataset.pg = 'iv';
+  }
+
+  function install() {
+    if (typeof page2 !== 'function' || typeof render !== 'function') return setTimeout(install, 50);
+    window.profileView = profileView;
+    const _r = window.render;
+    window.render = function () { if (typeof screen !== 'undefined' && screen === 'inv') { invView(); return; } return _r.apply(this, arguments); };
+    // ปิดเสียงเอฟเฟกต์ตามตั้งค่า
+    if (window.Assets && Assets.play && !Assets._pv) { const p = Assets.play; Assets.play = function () { if (get('pvSfx', '1') === '0') return; return p.apply(this, arguments); }; Assets._pv = 1; }
+    // ข้อความในร้านค้าที่เคยบอกให้ไปหน้าโปรไฟล์
+    setInterval(() => { const n = document.querySelector('[data-pg=shop] .note'); if (n && /โปรไฟล์/.test(n.textContent)) n.textContent = 'ซื้อแล้วของจะเข้าช่องเก็บของ — เลือกใช้ได้ที่นั่น'; }, 200);
+  }
+  install();
+})();

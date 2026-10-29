@@ -62,6 +62,10 @@
    "id": "boy",
    "name": "หนุ่มน้อยซากุระ",
    "price": 0,
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
    "asset": "./Character/boy/Character.webp",
    "src": "folder"
   },
@@ -69,6 +73,9 @@
    "id": "girl",
    "name": "สาวน้อยหางม้า",
    "price": 0,
+   "lobby": {
+    "align": "left"
+   },
    "asset": "./Character/girl/Character.webp",
    "src": "folder"
   },
@@ -76,6 +83,10 @@
    "id": "rina-01",
    "name": "รินะ",
    "price": 1500,
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
    "asset": "./Character/rina-01/Character.webp",
    "src": "folder"
   },
@@ -83,6 +94,10 @@
    "id": "arya-01",
    "name": "อายะ",
    "price": 1500,
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
    "asset": "./Character/arya-01/Character.webp",
    "src": "folder"
   },
@@ -90,6 +105,10 @@
    "id": "rena-01",
    "name": "เรนะ",
    "price": 1500,
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
    "asset": "./Character/rena-01/Character.png",
    "src": "folder"
   }
@@ -408,6 +427,22 @@
    "b1": "#a58fff",
    "b2": "#5d1520",
    "asset": "./Item/CardBack/sakura-01.webp",
+   "src": "folder"
+  }
+ ],
+ "frames": [
+  {
+   "id": "none",
+   "name": "ไม่ใส่กรอบ",
+   "price": 0,
+   "gacha": false,
+   "src": "folder"
+  },
+  {
+   "id": "sakura-gem",
+   "name": "ซากุระอัญมณี",
+   "price": 700,
+   "asset": "./Item/Frame/sakura-gem.webp",
    "src": "folder"
   }
  ]

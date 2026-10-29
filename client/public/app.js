@@ -30,6 +30,7 @@ const go=s=>{screen=s;shopNote='';render()};
 const wrap=b=>{$('app').innerHTML=`<div class=page><div class=box>${b}</div></div>`};
 const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'];
 const myChar=()=>equipped('characters')||null;
+const myFrame=()=>{const f=equipped('frames');return f&&f!=='none'?f:null;}; // กรอบการ์ดที่ใส่อยู่ (ทุกคนในห้องเห็น)
 const av=(n,ch)=>{const skin=(SKIN_REGISTRY.characters||[]).find(x=>x.id===ch);if(skin&&skin.asset)return `<img class=avatar-img src="${esc(skin.asset)}" alt="${esc(skin.name||'ตัวละคร')}">`;let h=0;for(const k of String(n))h=(h*31+k.charCodeAt(0))|0;return AV[Math.abs(h)%AV.length]};
 const myBg=()=>equipped('backgrounds')||null;
 const bgCss=id=>{const b=(SKIN_REGISTRY.backgrounds||[]).find(x=>x.id===id);if(!b)return '';return `background:${b.asset?`url('${b.asset}') center/cover`:(b.css||'none')};--ink:${b.ink||'#fff'};`};
@@ -39,7 +40,7 @@ function srt(){sm^=1;ho.sort((a,b)=>sm?(ALL[a].s-ALL[b].s||ALL[a].r-ALL[b].r):(A
 // ===== UI v6: หน้าแรกใหม่ + หน้าเล่นเกม / ร้านค้า / โปรไฟล์ =====
 let shopNote = '', joinOpen = false, joinCode = '', shopCat = 'all';
 function setShopCat(k) { shopCat = k; render(); }
-const KINDS = [['characters', 'ตัวละคร', 'dummyCharacterSkin', '🧑'], ['backs', 'หลังไพ่', 'dummyBackSkin', '🂠'], ['tables', 'สกินโต๊ะ', 'dummyTableSkin', '🎴'], ['backgrounds', 'พื้นหลัง', 'dummyBackgroundSkin', '🖼️']];
+const KINDS = [['characters', 'ตัวละคร', 'dummyCharacterSkin', '🧑'], ['backs', 'หลังไพ่', 'dummyBackSkin', '🂠'], ['tables', 'สกินโต๊ะ', 'dummyTableSkin', '🎴'], ['backgrounds', 'พื้นหลัง', 'dummyBackgroundSkin', '🖼️'], ['frames', 'กรอบการ์ด', 'dummyFrameSkin', '🌸']];
 const price = x => Number(x && x.price) || 0;
 const mprice = x => Number(x && x.mcash) || 0; // ราคา MCash (ไม่ใส่ = ไม่ขายด้วย MCash)
 const owned = (kind, x) => (price(x) <= 0 && mprice(x) <= 0) || sv.own.includes(kind + ':' + x.id);
@@ -51,6 +52,7 @@ const backCss = x => x.asset ? `url('${x.asset}') center/cover no-repeat` : `rep
 function prevBox(kind, x) {
   if (kind === 'characters') return `<span class=pv-ch><img src="${esc(x.asset || '')}" alt=""></span>`;
   if (kind === 'backs') return `<span class=pv-back style="background:${esc(backCss(x))}"></span>`;
+  if (kind === 'frames') return x.asset ? `<span class=pv-frame style="background-image:url(${esc(x.asset)}),linear-gradient(#f7f1fb,#efe3f7)"></span>` : `<span class="pv-frame none"></span>`;
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
@@ -173,8 +175,8 @@ const getSess = () => { try { const v = JSON.parse(localStorage.getItem('dummySe
 const setSess = v => { try { v ? localStorage.setItem('dummySession', JSON.stringify(v)) : localStorage.removeItem('dummySession'); } catch (e) {} };
 const emit = a => { if (!sock || !sock.connected) { hint = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); return; } sock.emit('game:act', a); };
 const room = () => { conn(); if (!sock) return render(); };
-function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); const m = ruleMeta(createSel.rule); sock.emit('room:create', { name: nick, ch: myChar(), bg: myBg(), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {}, bots: createMode === 'solo' ? true : createBots }); }
-function jn() { const c = ($('cd').value || '').trim().toUpperCase(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, ch: myChar(), bg: myBg() }); } }
+function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; sv.name = nick; localStorage.setItem('dummyName', nick); const m = ruleMeta(createSel.rule); sock.emit('room:create', { name: nick, ch: myChar(), bg: myBg(), fr: myFrame(), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {}, bots: createMode === 'solo' ? true : createBots }); }
+function jn() { const c = ($('cd').value || '').trim().toUpperCase(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, ch: myChar(), bg: myBg(), fr: myFrame() }); } }
 const begin = () => sock.emit('game:start');
 const doShuffle = () => { if (!sock || !sock.connected) { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (shufAnim) return; sock.emit('game:shuffle'); };
 // ส่วนสับไพ่ (ล็อบบี้ + หน้าจบตา): ผู้สับ = เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป)

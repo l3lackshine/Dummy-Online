@@ -1,32 +1,28 @@
 {
- "note": "ตั้งค่ากาชา: ระดับความหายาก ราคา ตู้ และการันตี · แก้แล้วรัน node scripts/gen-catalog-sql.js แล้ววาง supabase/seed_catalog.sql ใน SQL Editor",
+ "note": "ตั้งค่ากาชา: ระดับความหายาก ราคา ตู้ และการันตี · แก้แล้วรัน node scripts/gen-catalog-sql.js แล้ววาง supabase/seed_catalog.sql ใน SQL Editor · ระดับ: common=Common (กรอบน้ำเงิน) rare=Rare (กรอบม่วง) epic=SR (กรอบทอง) legendary=SSR (กรอบพิเศษ ใส่ไฟล์ที่ UI/ui.config → rarity.ssr)",
  "rarities": {
   "common": {
-   "name": "ธรรมดา",
+   "name": "Common",
    "weight": 6000,
    "sell": 20
   },
   "rare": {
-   "name": "หายาก",
+   "name": "Rare",
    "weight": 2800,
    "sell": 80
   },
   "epic": {
-   "name": "หายากมาก",
+   "name": "SR",
    "weight": 900,
    "sell": 300
   },
   "legendary": {
-   "name": "ตำนาน",
+   "name": "SSR",
    "weight": 300,
    "sell": 1000
   }
  },
  "priceToRarity": [
-  {
-   "min": 1500,
-   "rarity": "legendary"
-  },
   {
    "min": 700,
    "rarity": "epic"

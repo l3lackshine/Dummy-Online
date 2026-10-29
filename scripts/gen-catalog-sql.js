@@ -8,7 +8,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), SKIN = path.join(ROOT, 'client/public/skin');
 const Core = require(path.join(ROOT, 'client/public/skills-core.js'));
-const KINDS = ['characters', 'backs', 'tables', 'backgrounds'];
+const KINDS = ['characters', 'backs', 'tables', 'backgrounds', 'frames'];
 const q = s => "'" + String(s == null ? '' : s).replace(/'/g, "''") + "'";
 const int = v => Math.max(0, Math.floor(Number(v) || 0));
 const arr = a => "'{" + a.map(int).join(',') + "}'";

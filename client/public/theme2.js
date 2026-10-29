@@ -1,0 +1,91 @@
+/* theme2.js — ส่วน JS ของธีมใหม่ (คู่กับ theme2.css)
+   1) หน้าแรกแบบ RoV: วางชั้น .rv ทับหน้าแรกเดิม (ปุ่มเดิมยังอยู่ แค่ซ่อนไว้ — ฟังก์ชันเดิมทำงานเหมือนเดิมทุกอย่าง)
+   2) เปลี่ยนอีโมจิเหรียญ 🪙 เป็นรูปเหรียญจากชุด UI
+   ไม่แก้ app.js: ทำงานหลัง render() ทุกครั้ง ผ่าน MutationObserver */
+(function () {
+  'use strict';
+  const KIT = './UI/Assets/kit2/';
+  const N = n => Number(n || 0).toLocaleString('en-US');
+  const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
+  const DBP = () => (window.DB && DB.enabled && DB.P) || null;
+
+  // ---------- ไอคอนเส้น (ใช้ในปุ่มกลม) ----------
+  const I = {
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    book: '<path d="M3 5c3-1.5 6-1.5 9 0v15c-3-1.5-6-1.5-9 0zM21 5c-3-1.5-6-1.5-9 0v15c3-1.5 6-1.5 9 0z"/>',
+    shop: '<path d="M4 8h16l-1.5 12h-13zM8 8a4 4 0 0 1 8 0"/>',
+    bag: '<path d="M3 9h18v11H3zM3 9l2-5h14l2 5M10 13h4"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 4.5-6 8-6s6.5 1.5 8 6"/>',
+    quest: '<path d="M6 3h10l3 3v15H6zM9 9h7M9 13h7M9 17h4"/>',
+    search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
+    users: '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>'
+  };
+  const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[n] + '</svg>';
+  window.thIcon = ic;
+
+  // ---------- 1) หน้าแรก ----------
+  const ruleName = () => { try { const m = ruleMeta(createSel.rule); return m ? m.name : 'ดัมมี่'; } catch (e) { return 'ดัมมี่'; } };
+  window.thMode = mode => { try { if (RULES.length) { chooseGame(createSel.rule || RULES[0].id); openCreate(mode); return; } } catch (e) {} goPlay(); };
+  function buildHome(app) {
+    const scene = app.querySelector('.scene'); if (!scene || scene.querySelector('.rv')) return;
+    const P = DBP(), name = (P && P.display_name) || (typeof sv !== 'undefined' && sv.name) || 'ผู้เล่น';
+    const coins = P ? P.coins : (typeof sv !== 'undefined' ? sv.coins : 0);
+    const av = (app.querySelector('.hud-av img') || {}).src || '';
+    const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
+    const d = document.createElement('div'); d.className = 'rv';
+    d.innerHTML = `
+      <button class="rv-me" onclick="go('profile')"><span class="rv-av">${av ? `<img src="${E(av)}" alt="">` : ''}</span><span class="rv-nm"><b>${E(name)}</b><small>แตะเพื่อดูโปรไฟล์</small></span></button>
+      <div class="rv-top">
+        <span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
+        ${P ? `<span class="rv-cur"><img src="${KIT}gem.webp" alt="">${N(P.mcash)}<i onclick="go('shop')">${ic('plus')}</i></span>` : ''}
+        ${typeof window.openDaily === 'function' && P ? `<button class="rv-rb" style="background-image:url(${KIT}rb-gift.webp)" onclick="openDaily()" aria-label="ล็อกอินรายวัน"></button>` : ''}
+        <button class="rv-rb" style="background-image:url(${KIT}rb-gear.webp)" onclick="go('profile')" aria-label="ตั้งค่า"></button>
+      </div>
+      <div class="rv-side">
+        <button class="rv-sb" onclick="openSkills()" aria-label="ความสามารถ">${ic('bolt')}</button>
+        <button class="rv-sb" onclick="showRules(createSel.rule||'dummy')" aria-label="กติกา">${ic('book')}</button>
+      </div>
+      <div class="rv-ev">
+        <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakura-ace/banner.webp" alt=""><span>กาชา SAKURA ACE<small>ตัวละครใหม่!</small></span></button>
+        <button class="rv-card" onclick="openQuests()"><i>${ic('quest')}</i><span>เควสประจำวัน<small>${nq ? nq + ' รายการรอรับ' : 'ทำเควสรับเหรียญ'}</small></span>${nq ? '<em>' + E(nq) + '</em>' : ''}</button>
+      </div>
+      <nav class="rv-nav">
+        <button onclick="go('shop')">${ic('shop')}<span>ร้านค้า</span></button>
+        <button onclick="invOpen('characters')">${ic('bag')}<span>ช่องเก็บของ</span></button>
+        <button onclick="go('profile')">${ic('user')}<span>โปรไฟล์</span></button>
+        <button onclick="openQuests()">${ic('quest')}<span>เควส</span></button>
+      </nav>
+      <div class="rv-play">
+        <button class="rv-mode" onclick="thMode('match')"><i>${ic('search')}</i><span>หาแมตช์</span></button>
+        <button class="rv-mode" onclick="thMode('room')"><i>${ic('users')}</i><span>สร้างห้อง</span></button>
+        <button class="rv-start" onclick="goPlay()"><b>เริ่มเล่น</b><small>${E(ruleName())}</small></button>
+      </div>`;
+    scene.appendChild(d);
+  }
+
+  // ---------- 2) 🪙 → รูปเหรียญ ----------
+  function swapCoin(root) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), hits = [];
+    while (w.nextNode()) if (w.currentNode.nodeValue.includes('🪙')) hits.push(w.currentNode);
+    hits.forEach(t => {
+      if (t.parentNode && /^(INPUT|TEXTAREA|OPTION|SCRIPT|STYLE)$/.test(t.parentNode.nodeName)) return;
+      const frag = document.createDocumentFragment();
+      t.nodeValue.split('🪙').forEach((p, i) => {
+        if (i) { const im = document.createElement('img'); im.className = 'kicon'; im.src = KIT + 'coin.webp'; im.alt = ''; frag.appendChild(im); }
+        if (p) frag.appendChild(document.createTextNode(p));
+      });
+      t.parentNode.replaceChild(frag, t);
+    });
+  }
+
+  function pass() {
+    const app = document.getElementById('app'); if (!app) return;
+    obs.disconnect();
+    try { if (app.classList.contains('home')) buildHome(app); swapCoin(app); } catch (e) { console.warn('theme2', e); }
+    obs.observe(app, { childList: true, subtree: true, characterData: true });
+  }
+  const obs = new MutationObserver(pass);
+  const start = () => { pass(); };
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
+})();
