@@ -5,16 +5,16 @@
    "id": "base",
    "file": "base.pak",
    "tier": "public",
-   "version": "6137cea27257255b",
-   "bytes": 326515,
+   "version": "5188677695441ecd",
+   "bytes": 337527,
    "files": 5
   },
   {
    "id": "char-arya-01",
    "file": "char-arya-01.pak",
    "tier": "owner",
-   "version": "1c667de33e775d6e",
-   "bytes": 201259,
+   "version": "e00cfff656865609",
+   "bytes": 215195,
    "files": 1,
    "kind": "characters",
    "item": "arya-01"
