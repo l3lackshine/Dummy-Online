@@ -2,11 +2,16 @@
    ยังคงของเดิมครบ: กองจั่ว · กองทิ้ง · ไพ่ที่เกิด (วางหน้าผู้เล่นแต่ละฝั่ง) · ไพ่ในมือ · ปุ่มเกิด/ฝาก/ทิ้ง */
 // รูปพื้นหลังที่นั่งของตัวละคร (ใช้ทั้งดัมมี่และเกมอื่น)
 function gxSeatImg(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch); return (x && x.seat) || ''; }
+// ครอปตัวละครบนโต๊ะให้เห็นครึ่งตัวและหัวขนาดใกล้กันทุกตัว: Character.config "table": {"top": 0, "show": 0.5, "x": 0.5}
+//   top = เริ่มตัดที่ความสูงเท่าไร (0–1) · show = แสดงกี่ส่วนของความสูงรูป · x = ตำแหน่งกลางหน้าแนวนอน (0–1)
+function gxCrop(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch), t = (x && x.table) || {};
+  const n = (v, d, a, b) => { v = Number(v); return Number.isFinite(v) ? Math.min(b, Math.max(a, v)) : d; };
+  return ` style="--tt:${n(t.top, 0, 0, .9)};--ts:${n(t.show, .5, .15, 1)};--tx:${n(t.x, .5, 0, 1)}"`; }
 const isWide = () => { try { return !!(window.matchMedia && window.matchMedia('(min-aspect-ratio:5/4)').matches); } catch (e) { return false; } };
 function gxView(c) {
   const { top, left, right, pm, pd, h, fresh } = c, me = S.P[S.my];
   const meOn = S.cur === S.my && !S.over;
-  const art = (p) => { const a = av(p.n, p.ch); return a.startsWith('<img') ? `<span class=gx-chr>${a}</span>` : `<span class=gx-emo>${a}</span>`; };
+  const art = (p) => { const a = av(p.n, p.ch); return a.startsWith('<img') ? `<span class=gx-chr${gxCrop(p.ch)}>${a}</span>` : `<span class=gx-emo>${a}</span>`; };
   const ms = pi => pi == null ? '' : S.melds.map((m, k) => ({ m, k })).filter(x => x.m.o === pi).map(({ m, k }) => `<div class="m${k >= pm ? ' new' : ''}" onclick="dep(${k})">${m.cs.map(mini).join('')}</div>`).join('');
   const badge = (pi, pos) => { if (pi == null) return ''; const p = S.P[pi], on = S.cur === pi && !S.over;
     return `<div class="gx-seat gx-${pos}${on ? ' active' : ''}" data-seat=${pi}><div class=gx-name>${esc(p.n)}</div><div class=gx-stack><i></i><i></i><b data-pc=${pi}>${p.n_cards}</b><i></i><i></i></div><small class=gx-pts>${p.pts} แต้ม</small>${on ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`; };

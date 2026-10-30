@@ -552,3 +552,28 @@
 #app.gxo .gxo-log{bottom:calc(33% - 4.4vh)!important}
 #app.gxl .sk-info{left:auto!important;right:2vh!important;top:9vh!important;bottom:auto!important;transform:none!important;max-width:min(30vw,380px)!important;text-align:left!important;font-size:max(11px,2vh)!important}
 @media (max-height:520px){#app.gxl .gx-tools{bottom:calc(2vh + 27vh)!important}}
+
+/* ===== Beta 0.5.2 · จัดโต๊ะใหม่ =====
+   ป้ายของเรา (คุณ/แต้ม/ตา) → มุมซ้ายล่าง · ปุ่มเรียงไพ่ → แถวล่างข้างไพ่ในมือ
+   ตัวละครเรา → ขวาล่าง ข้างปุ่มเกิด/ทิ้ง · คู่แข่งบน → ซ้ายบน
+   ตัวละครทุกตัวขนาดเท่ากัน ครอปครึ่งตัว (เห็นหน้าชัด) */
+#app.gxl{--chr-bw:min(25vh,15vw);--chr-bh:min(30vh,19vw)}
+#app.gxl .gx-art{width:var(--chr-bw)!important;height:var(--chr-bh)!important;overflow:visible;clip-path:inset(0 -60% 0 -60%);transform:none!important;opacity:.78;
+  -webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+#app.gxl .gx-art.on{opacity:1}
+#app.gxl .gx-art .gx-chr{position:relative}
+#app.gxl .gx-art .gx-chr .avatar-img{position:absolute;max-width:none;width:auto!important;height:calc(100% / var(--ts,.5))!important;object-fit:fill!important;
+  top:calc(-100% * var(--tt,0) / var(--ts,.5));left:50%;transform:translateX(calc(-100% * var(--tx,.5)))}
+#app.gxl .gx-art-top{left:auto!important;right:calc(50% + 9vh)!important;top:0!important}
+#app.gxl .gx-art-left{left:calc(var(--u)*2.5 + 15vh)!important;top:24%!important}
+#app.gxl .gx-art-right{right:calc(var(--u)*2.5 + 15vh)!important;left:auto!important;top:24%!important}
+#app.gxl .gx-art-bottom{left:auto!important;right:calc(2vh + 23vh + 1vh)!important;bottom:0!important;opacity:.9;
+  --chr-bw:min(34vh,21vw);--chr-bh:min(32vh,20vw);-webkit-mask-image:none;mask-image:none}
+#app.gxl .gx-art-bottom.on{opacity:1}
+#app.gxl .gx-me{left:2vh!important;bottom:2vh!important}
+#app.gxl .gx-tools{left:calc(2vh + 20vh)!important;bottom:2vh!important;flex-direction:row;gap:.6vh}
+#app.gxl .gx-dock{left:calc(2vh + 20vh + 27vh)!important;right:calc(2vh + 23vh + 2vh)!important}
+@media (max-height:520px){#app.gxl .gx-tools{bottom:2vh!important}}
+/* เกมอื่น: กลางโต๊ะกว้างกว่า → คู่แข่งบนไปอยู่มุมซ้ายบนนอกกลางโต๊ะ ซ้าย/ขวาเลื่อนลงใต้ป้ายชื่อ */
+#app.gxo .gx-art-top{right:calc(76% + 1vh)!important}
+#app.gxo .gx-art-left,#app.gxo .gx-art-right{top:33%!important}
