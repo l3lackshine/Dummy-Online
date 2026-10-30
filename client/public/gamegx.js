@@ -1,7 +1,11 @@
 /* gamegx.js — หน้าโต๊ะเล่นแนวนอนแบบ 4 ฝั่งทแยง (อ้างอิงภาพตัวอย่าง)
    ยังคงของเดิมครบ: กองจั่ว · กองทิ้ง · ไพ่ที่เกิด (วางหน้าผู้เล่นแต่ละฝั่ง) · ไพ่ในมือ · ปุ่มเกิด/ฝาก/ทิ้ง */
 // รูปพื้นหลังที่นั่งของตัวละคร (ใช้ทั้งดัมมี่และเกมอื่น)
-function gxSeatImg(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch); return (x && x.seat) || ''; }
+// ผู้เล่นคนนี้ปลด 5 ดาวตัวละครที่ใช้อยู่หรือไม่ (เซิร์ฟเวอร์ตรวจแล้วส่งมาในข้อมูลห้อง)
+function gxStar5(ch, name) { const l = (typeof lob !== 'undefined' && lob && lob.players) || []; const q = l.find(x => x.ch === ch && (name == null || x.name === name)); return !!(q && q.s5); }
+const gxChar = ch => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch);
+// พื้นหลังที่นั่งบนโต๊ะ: ฉาก 5 ดาว (ถ้าปลดแล้ว) → ฉากประจำตัว (seat) → ไม่มี
+function gxSeatImg(ch, name) { const x = gxChar(ch); if (!x) return ''; if (x.star5 && gxStar5(ch, name)) return x.star5; return x.seat || ''; }
 // ครอปตัวละครบนโต๊ะให้เห็นครึ่งตัวและหัวขนาดใกล้กันทุกตัว: Character.config "table": {"top": 0, "show": 0.5, "x": 0.5}
 //   top = เริ่มตัดที่ความสูงเท่าไร (0–1) · show = แสดงกี่ส่วนของความสูงรูป · x = ตำแหน่งกลางหน้าแนวนอน (0–1)
 function gxCrop(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch), t = (x && x.table) || {};
@@ -20,7 +24,7 @@ function gxView(c) {
   const meArt = `<div class="gx-art gx-art-bottom${meOn ? ' on' : ''}">${art(me)}</div>`;
   const meBadge = `<div class="gx-me${meOn ? ' active' : ''}" data-seat=${S.my}><div class=gx-name>คุณ</div><div class=gx-stack><i></i><i></i><b data-pc=${S.my}>${me.n_cards}</b><i></i><i></i></div><small class=gx-pts>${me.pts} แต้ม</small>${meOn ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`;
   // พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — วางเต็มช่องสามเหลี่ยมของที่นั่งนั้น · ไม่มีรูป = ใช้สีเดิม
-  const seatBg = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch); return u ? `<div class="gx-sb gx-sb-${pos}${S.cur === pi && !S.over ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
+  const seatBg = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch, S.P[pi].n); return u ? `<div class="gx-sb gx-sb-${pos}${S.cur === pi && !S.over ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
   const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
   const on = pi => pi != null && S.cur === pi && !S.over;
   const last = S.disc.length ? S.disc[S.disc.length - 1] : null;
@@ -56,11 +60,13 @@ function gxRoom(c) {
   const place = ch => { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch), l = (x && x.lobby) || {};
     const al = { left: 'flex-start', right: 'flex-end' }[l.align] || 'center', sc = Number(l.scale) > 0 ? Math.min(1.5, Number(l.scale)) : 1;
     return ` style="--chr-al:${al};--chr-h:${Math.round(sc * 100)}%"`; };
+  // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
+  const s5bg = p => { const x = p.s5 && gxChar(p.ch); return x && x.star5 ? ` style="background:url('${esc(x.star5)}') center/cover"` : ''; };
   // กรอบการ์ดที่ผู้เล่นใส่ (Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
   const deco = fr => { const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
     return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(x.asset)}')"></i>` : ''; };
   const human = p => { const on = p.host || p.ready;
-    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
+    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`; };
   const bot = i => `<div class="rm-slot bot on"${place(botChar(i))}><div class=rm-art>${artOf(av('บอท' + i, botChar(i)))}</div><em class=rm-chip>🤖 บอท</em><div class=rm-plate><b>บอท</b><small>เล่นแทน</small></div></div>`;
   const searching = k => `<div class="rm-slot empty searching"><div class=rm-plus><span class=mm-spin></span></div><div class=rm-plate><b>กำลังค้นหา…</b><small>ผู้เล่นคนที่ ${k + 1}</small></div></div>`;

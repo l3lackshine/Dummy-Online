@@ -574,6 +574,59 @@
 #app.gxl .gx-tools{left:calc(2vh + 20vh)!important;bottom:2vh!important;flex-direction:row;gap:.6vh}
 #app.gxl .gx-dock{left:calc(2vh + 20vh + 27vh)!important;right:calc(2vh + 23vh + 2vh)!important}
 @media (max-height:520px){#app.gxl .gx-tools{bottom:2vh!important}}
-/* เกมอื่น: กลางโต๊ะกว้างกว่า → คู่แข่งบนไปอยู่มุมซ้ายบนนอกกลางโต๊ะ ซ้าย/ขวาเลื่อนลงใต้ป้ายชื่อ */
-#app.gxo .gx-art-top{right:calc(76% + 1vh)!important}
-#app.gxo .gx-art-left,#app.gxo .gx-art-right{top:33%!important}
+/* เกมอื่น: กลางโต๊ะเลื่อนลง ให้ตัวละครบนอยู่ในเขตที่นั่งบนของตัวเอง (ไม่ล้นเข้าเขตพื้นหลังฝั่งซ้าย) */
+#app.gxo .gx-art-top{--chr-bh:min(23vh,15vw)}
+#app.gxo .gx-hub.gxo-hub{top:22%!important;bottom:25%!important;left:23%!important;right:23%!important;padding:1vh 1.2vh!important;gap:.6vh!important}
+#app.gxo .gx-hub .gx{gap:.6vh!important}
+#app.gxo .gxo-log{bottom:calc(25% - 3.6vh)!important}
+#app.gxo .gx .gcards .c{width:calc(var(--u)*4.4)!important;height:calc(var(--u)*6.2)!important;font-size:max(9px,calc(var(--u)*2.1))!important}
+#app.gxo .gs,#app.gxo .gpile{padding:.4vh .9vh!important;gap:.2vh!important}
+#app.gxo .gslots,#app.gxo .gpiles{gap:.6vh!important}
+/* จอเตี้ย (โทรศัพท์แนวนอน): ช่องผู้เล่น/กองทิ้งเรียงแถวเดียว 4 ช่อง ให้พอดีกลางโต๊ะ */
+@media (max-height:520px){
+  #app.gxo .gslots,#app.gxo .gpiles{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  #app.gxo .gs,#app.gxo .gpile{padding:.3vh .6vh!important}
+  #app.gxo .gs small,#app.gxo .gpile small{font-size:max(9px,1.6vh)!important}
+  #app.gxo .gx-hub.gxo-hub{padding:.6vh .8vh!important}
+}
+
+/* ===== SSR: กรอบรูป (UI/ui.config → rarity.ssr) + แสงรุ้งโฮโลวิ่งบนกรอบ =====
+   การ์ดใหญ่ (ตู้กาชา/ผลสุ่ม) ใช้รูปกรอบวางทับ · ช่องเล็กในรายการใช้ขอบรุ้งหมุนแบบเดิม */
+.gc-i.legendary{border-image:none!important}
+.gc-f.legendary,.gc-card.legendary{border:0!important;border-image:none!important;border-radius:0!important;overflow:visible!important;
+  background:radial-gradient(120% 80% at 50% 30%,#8a1430,#3a0a18 60%,#1A0F14)!important;box-shadow:0 0 2vh #ff7ab655,0 .6vh 1.4vh #0008!important;animation:none}
+.gc-card.legendary{animation:gcPop .45s ease-out forwards!important;padding:12% 10% 14%!important}
+.gc-f.legendary::after,.gc-card.legendary::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--ui-rarity-ssr,none) center/100% 100% no-repeat}
+.gc-f.legendary::before,.gc-card.legendary::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;mix-blend-mode:screen;opacity:.9;
+  background:linear-gradient(115deg,transparent 35%,#ff7ab6cc 44%,#ffd36bcc 50%,#7ce0ffcc 56%,#b48cffcc 62%,transparent 70%) 0 0/300% 100% no-repeat;
+  -webkit-mask:var(--ui-rarity-ssr,none) center/100% 100% no-repeat;mask:var(--ui-rarity-ssr,none) center/100% 100% no-repeat;animation:ssr-holo 3.6s ease-in-out infinite}
+@keyframes ssr-holo{0%{background-position:100% 0}60%,100%{background-position:0 0}}
+.gc-f.legendary .gc-fi{inset:9% 8% calc(34px + 9%) 8%}
+.gc-f.legendary .gc-fn{margin:0 9% 15%;z-index:5;background:#1A0F14cc;border-radius:6px}
+@media (prefers-reduced-motion:reduce){.gc-f.legendary::before,.gc-card.legendary::before{animation:none;opacity:0}}
+/* การ์ดตัวละครที่มีรูปการ์ดสำเร็จ (Character.config "card") — รูปมีกรอบในตัวแล้ว ไม่ต้องใส่กรอบซ้อน */
+.gc-f.has-card{border:0!important;border-image:none!important;background:#1B2050!important;box-shadow:0 .6vh 1.4vh #0008!important}
+.gc-f.has-card .gc-fi{inset:0!important;transform:skewX(3deg)}
+.gc-f.has-card .gc-fi img{width:100%;height:100%;max-width:none;max-height:none;object-fit:cover;filter:none}
+.gc-f.has-card .gc-fn{background:#141838cc}
+.gc-card.has-card{border-image:none!important;padding:0!important;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.gc-card.has-card .gc-cimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:11px}
+.gc-card.has-card b,.gc-card.has-card small{position:relative;z-index:1;background:#141838cc}
+.gc-card.has-card b{padding-top:4px;margin-top:0}.gc-card.has-card small{padding-bottom:5px}
+/* SR: กรอบรูป (UI/ui.config → rarity.sr) วางทับแบบเดียวกับ SSR + ประกายทองวิ่งช้าๆ (การ์ดที่มีรูปการ์ดสำเร็จไม่ใส่ซ้อน) */
+.gc-i.epic{border-image:none!important}
+.gc-f.epic:not(.has-card),.gc-card.epic:not(.has-card){border:0!important;border-image:none!important;border-radius:0!important;overflow:visible!important;
+  background:radial-gradient(120% 80% at 50% 30%,#2a3070,#141838 60%,#0c0f26)!important;box-shadow:0 0 1.6vh #e3b24c44,0 .6vh 1.4vh #0008!important}
+.gc-card.epic:not(.has-card){padding:12% 10% 20%!important}
+.gc-f.epic:not(.has-card)::after,.gc-card.epic:not(.has-card)::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--ui-rarity-sr,none) center/100% 100% no-repeat}
+.gc-f.epic:not(.has-card)::before,.gc-card.epic:not(.has-card)::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;mix-blend-mode:screen;opacity:.8;
+  background:linear-gradient(115deg,transparent 40%,#fff3c4cc 50%,transparent 60%) 0 0/300% 100% no-repeat;
+  -webkit-mask:var(--ui-rarity-sr,none) center/100% 100% no-repeat;mask:var(--ui-rarity-sr,none) center/100% 100% no-repeat;animation:ssr-holo 5s ease-in-out infinite}
+.gc-f.epic:not(.has-card) .gc-fi{inset:9% 8% calc(34px + 9%) 8%}
+.gc-f.epic:not(.has-card) .gc-fn{margin:0 9% 15%;z-index:5;background:#0c0f26cc;border-radius:6px}
+@media (prefers-reduced-motion:reduce){.gc-f.epic::before,.gc-card.epic::before{animation:none;opacity:0}}
+/* ผลสุ่ม: การ์ดทุกใบสูงเท่ากัน ไม่ว่ากรอบแบบไหน */
+.gc-res .gc-card{box-sizing:border-box;aspect-ratio:5/9;align-self:start;min-width:0;display:flex!important;flex-direction:column;justify-content:flex-end}
+.gc-res .gc-card>:first-child:not(b):not(small):not(em){flex:1;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+.gc-res .gc-card>:first-child img{max-height:100%;max-width:100%;object-fit:contain}
+.gc-res .gc-card.has-card>.gc-cimg{position:absolute}

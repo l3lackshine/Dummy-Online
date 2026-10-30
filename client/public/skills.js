@@ -16,6 +16,7 @@
   const stars0 = jget('dummyStars', {}), dupes0 = jget('dummyDupes', {});
   const cfgOf = id => SkillCore.charCfg(SK, id);
   const maxStars = id => cfgOf(id).maxStars;
+  window.skStar5 = id => !!id && starsOf(id) >= maxStars(id); // ปลดครบดาว → ใช้ฉาก 5 ดาวได้
   const starsOf = id => Math.min(maxStars(id), Math.max(1, dbOn() ? DB.stars(id) : (Number(stars0[id]) || 1)));
   const starCost = (id, st) => { const c = cfgOf(id).starCosts; return Math.max(1, Number(c[Math.min(st, c.length) - 1]) || 1); };
   const dupesOf = id => (dbOn() ? Math.max(0, DB.qty('characters', id) - 1) : Math.max(0, Number(dupes0[id]) || 0));

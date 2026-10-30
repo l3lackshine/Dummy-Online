@@ -41,4 +41,10 @@ async function ownsItem(userId, kind, itemId) {
   const rows = await fetchJson(`${c.url}/rest/v1/inventory?user_id=eq.${q(userId)}&kind=eq.${q(kind)}&item_id=eq.${q(itemId)}&qty=gte.1&select=item_id&limit=1`, { headers: { apikey: c.secret } });
   return Array.isArray(rows) && rows.length > 0;
 }
-module.exports = { enabled, verifyToken, rpc, rpcRetry, ownsItem };
+// จำนวนดาวของตัวละครที่ผู้เล่นมี (0 = ไม่มี) — ใช้ตรวจของแต่ง 5 ดาว
+async function charStars(userId, charId) {
+  const c = cfg(), q = encodeURIComponent;
+  const rows = await fetchJson(`${c.url}/rest/v1/user_characters?user_id=eq.${q(userId)}&character_id=eq.${q(charId)}&select=stars&limit=1`, { headers: { apikey: c.secret } });
+  return Array.isArray(rows) && rows[0] ? Number(rows[0].stars) || 0 : 0;
+}
+module.exports = { enabled, verifyToken, rpc, rpcRetry, ownsItem, charStars };

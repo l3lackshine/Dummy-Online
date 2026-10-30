@@ -2,80 +2,689 @@
   "version": 3,
   "note": "ระบบสกิล v3 · ตัวละคร 1 ตัว = สกิล 1 อย่าง · ระดับ (common/rare/sr/ssr) = งบพลัง: common ช่วย 1 อย่าง · rare 2 · sr 3 · ssr ครบชุด · หลักการ: ช่วยจำและช่วยดู ไม่ทำนาย ไม่ตัดสินใจแทน ใช้แค่ไพ่ในมือตัวเอง + สิ่งที่ทุกคนเห็นบนโต๊ะ · games.<เกม>.mods = รายการโมดูลที่เขียนไว้ในโค้ด (skills.js) ไฟล์นี้ใช้เลือก/จับคู่เท่านั้น · ดาวปลดของแต่ง ไม่เพิ่มพลัง",
   "tiers": {
-    "common": { "name": "Common", "budget": 1 },
-    "rare": { "name": "Rare", "budget": 2 },
-    "sr": { "name": "SR", "budget": 3 },
-    "ssr": { "name": "SSR", "budget": 99 }
+    "common": {
+      "name": "Common",
+      "budget": 1
+    },
+    "rare": {
+      "name": "Rare",
+      "budget": 2
+    },
+    "sr": {
+      "name": "SR",
+      "budget": 3
+    },
+    "ssr": {
+      "name": "SSR",
+      "budget": 99
+    }
   },
   "skills": [
     {
-      "id": "quickeye", "name": "ตาไว", "icon": "👁", "tier": "common",
+      "id": "quickeye",
+      "name": "ตาไว",
+      "icon": "👁",
+      "tier": "common",
       "desc": "ชี้ไพ่ที่ใช้ได้ตอนนี้",
       "games": {
-        "dummy": { "mods": ["takeable"], "desc": "ไฮไลต์ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้" },
-        "pokdeng": { "mods": ["pd-deng"], "desc": "บอกเด้งที่เป็นไปได้ถ้าจั่วเพิ่ม" },
-        "gaogae": { "mods": ["gg-ladder"], "desc": "บอกประเภทมือและลำดับในตารางมือ" },
-        "somsip": { "mods": ["ss-pairs"], "desc": "ไฮไลต์คู่ที่ได้ 10 ในมือ และบอกใบที่ขาด" },
-        "eekae": { "mods": ["ek-new"], "desc": "ไฮไลต์ไพ่ใบที่เพิ่งจั่วได้" }
+        "dummy": {
+          "mods": [
+            "takeable"
+          ],
+          "desc": "ไฮไลต์ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-deng"
+          ],
+          "desc": "บอกเด้งที่เป็นไปได้ถ้าจั่วเพิ่ม"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-ladder"
+          ],
+          "desc": "บอกประเภทมือและลำดับในตารางมือ"
+        },
+        "somsip": {
+          "mods": [
+            "ss-pairs"
+          ],
+          "desc": "ไฮไลต์คู่ที่ได้ 10 ในมือ และบอกใบที่ขาด"
+        },
+        "eekae": {
+          "mods": [
+            "ek-new"
+          ],
+          "desc": "ไฮไลต์ไพ่ใบที่เพิ่งจั่วได้"
+        }
       }
     },
     {
-      "id": "quickhand", "name": "มือไว", "icon": "✋", "tier": "common",
+      "id": "quickhand",
+      "name": "มือไว",
+      "icon": "✋",
+      "tier": "common",
       "desc": "กดครั้งเดียวทำให้หลายอย่าง",
       "games": {
-        "dummy": { "mods": ["autodep"], "desc": "ปุ่มฝากออโต้: ฝากทุกใบที่ฝากได้ในกดเดียว" },
-        "pokdeng": { "mods": ["pd-autodraw"], "desc": "จั่วให้อัตโนมัติถ้าแต้มต่ำกว่าที่ตั้งไว้ (ตั้งเองได้ ปิดได้)" },
-        "gaogae": { "mods": ["gg-autocall"], "desc": "ตามให้อัตโนมัติไม่เกินวงเงินที่ตั้งเอง (เริ่มต้นปิด)" },
-        "somsip": { "mods": ["ss-autowin"], "desc": "ประกาศชนะให้ทันทีเมื่อครบ" },
-        "eekae": { "mods": ["ek-autopick"], "desc": "จั่วไพ่ให้อัตโนมัติเมื่อถึงตา" }
+        "dummy": {
+          "mods": [
+            "autodep"
+          ],
+          "desc": "ปุ่มฝากออโต้: ฝากทุกใบที่ฝากได้ในกดเดียว"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-autodraw"
+          ],
+          "desc": "จั่วให้อัตโนมัติถ้าแต้มต่ำกว่าที่ตั้งไว้ (ตั้งเองได้ ปิดได้)"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-autocall"
+          ],
+          "desc": "ตามให้อัตโนมัติไม่เกินวงเงินที่ตั้งเอง (เริ่มต้นปิด)"
+        },
+        "somsip": {
+          "mods": [
+            "ss-autowin"
+          ],
+          "desc": "ประกาศชนะให้ทันทีเมื่อครบ"
+        },
+        "eekae": {
+          "mods": [
+            "ek-autopick"
+          ],
+          "desc": "จั่วไพ่ให้อัตโนมัติเมื่อถึงตา"
+        }
       }
     },
     {
-      "id": "notebook", "name": "สมุดจดไพ่", "icon": "📒", "tier": "sr",
+      "id": "watch",
+      "name": "จับตา",
+      "icon": "🎯",
+      "tier": "rare",
+      "desc": "ชี้ไพ่ที่ใช้ได้ + เตือนเมื่อคู่แข่งใกล้ชนะ",
+      "games": {
+        "dummy": {
+          "mods": [
+            "takeable",
+            "danger"
+          ],
+          "desc": "ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้ · คู่แข่งเหลือ ≤2 ใบ"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-deng",
+            "pd-danger"
+          ],
+          "desc": "เด้งที่เป็นไปได้ · เตือนเมื่อมีคนป๊อก"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-ladder",
+            "gg-danger"
+          ],
+          "desc": "ประเภทมือและลำดับ · เตือนเมื่อมีคนเกทับแรง"
+        },
+        "somsip": {
+          "mods": [
+            "ss-pairs",
+            "ss-danger"
+          ],
+          "desc": "คู่ที่ได้ 10 และใบที่ขาด · เตือนเมื่อกองจั่วใกล้หมด"
+        },
+        "eekae": {
+          "mods": [
+            "ek-new",
+            "ek-danger"
+          ],
+          "desc": "ไพ่ใบที่เพิ่งจั่วได้ · ใครใกล้หมดมือ"
+        }
+      }
+    },
+    {
+      "id": "brave",
+      "name": "ใจกล้า",
+      "icon": "🔥",
+      "tier": "rare",
+      "desc": "ทำแทนให้ในกดเดียว + บอกแต้มสด",
+      "games": {
+        "dummy": {
+          "mods": [
+            "autodep",
+            "score"
+          ],
+          "desc": "ปุ่มฝากออโต้ · ถ้าจบตอนนี้ค้างมือกี่แต้ม"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-autodraw",
+            "pd-score"
+          ],
+          "desc": "จั่วอัตโนมัติตามแต้มที่ตั้ง · แต้มและเหรียญถ้าจบตอนนี้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-autocall",
+            "gg-score"
+          ],
+          "desc": "ตามอัตโนมัติไม่เกินวงเงิน · กองกลางเทียบเงินที่ต้องตาม"
+        },
+        "somsip": {
+          "mods": [
+            "ss-autowin",
+            "ss-score"
+          ],
+          "desc": "ประกาศชนะอัตโนมัติ · ห่างจากชนะอีกกี่คู่"
+        },
+        "eekae": {
+          "mods": [
+            "ek-autopick",
+            "ek-score"
+          ],
+          "desc": "จั่วอัตโนมัติเมื่อถึงตา · ไพ่ในมือเหลือกี่ใบ"
+        }
+      }
+    },
+    {
+      "id": "counter",
+      "name": "เซียนนับ",
+      "icon": "🧮",
+      "tier": "rare",
+      "desc": "นับไพ่ที่เหลือ + ติดตามไพ่สำคัญ",
+      "games": {
+        "dummy": {
+          "mods": [
+            "count",
+            "speto"
+          ],
+          "desc": "ไพ่แต้มที่เหลือกี่ใบ · สเปโตออกแล้วหรือยัง"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-count",
+            "pd-key"
+          ],
+          "desc": "ไพ่ที่เปิดแล้วรอบนี้ · 8/9 ที่เปิดแล้ว"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-count",
+            "gg-key"
+          ],
+          "desc": "ไพ่ที่หงายแล้ว · ไพ่ภาพที่เปิดแล้ว"
+        },
+        "somsip": {
+          "mods": [
+            "ss-count",
+            "ss-key"
+          ],
+          "desc": "ไพ่ที่ต้องการเหลือกี่ใบ · ไวลด์ที่ออกแล้ว"
+        },
+        "eekae": {
+          "mods": [
+            "ek-count",
+            "ek-key"
+          ],
+          "desc": "แต้มที่ยังไม่ถูกจับคู่ · ควีนที่ถูกจับคู่แล้ว"
+        }
+      }
+    },
+    {
+      "id": "calm",
+      "name": "ใจเย็น",
+      "icon": "🍃",
+      "tier": "rare",
+      "desc": "จดว่าใครทำอะไร + บอกแต้มสด",
+      "games": {
+        "dummy": {
+          "mods": [
+            "log",
+            "score"
+          ],
+          "desc": "ใครเก็บอะไรจากกองทิ้ง · ถ้าจบตอนนี้ค้างมือกี่แต้ม"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-log",
+            "pd-score"
+          ],
+          "desc": "สถิติป๊อกในห้อง · แต้มและเหรียญถ้าจบตอนนี้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-log",
+            "gg-score"
+          ],
+          "desc": "สไตล์ตาม/หมอบของแต่ละคน · กองกลางเทียบเงินที่ต้องตาม"
+        },
+        "somsip": {
+          "mods": [
+            "ss-log",
+            "ss-score"
+          ],
+          "desc": "ใครทิ้งอะไร · ห่างจากชนะอีกกี่คู่"
+        },
+        "eekae": {
+          "mods": [
+            "ek-log",
+            "ek-score"
+          ],
+          "desc": "ใครจั่วจากใคร · ไพ่ในมือเหลือกี่ใบ"
+        }
+      }
+    },
+    {
+      "id": "peek",
+      "name": "แอบดู",
+      "icon": "👀",
+      "tier": "rare",
+      "desc": "ชี้ไพ่ที่ใช้ได้ + จดว่าใครทำอะไร",
+      "games": {
+        "dummy": {
+          "mods": [
+            "takeable",
+            "log"
+          ],
+          "desc": "ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้ · ใครเก็บอะไรจากกองทิ้ง"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-deng",
+            "pd-log"
+          ],
+          "desc": "เด้งที่เป็นไปได้ · สถิติป๊อกในห้อง"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-ladder",
+            "gg-log"
+          ],
+          "desc": "ประเภทมือและลำดับ · สไตล์ตาม/หมอบของแต่ละคน"
+        },
+        "somsip": {
+          "mods": [
+            "ss-pairs",
+            "ss-log"
+          ],
+          "desc": "คู่ที่ได้ 10 และใบที่ขาด · ใครทิ้งอะไร"
+        },
+        "eekae": {
+          "mods": [
+            "ek-new",
+            "ek-log"
+          ],
+          "desc": "ไพ่ใบที่เพิ่งจั่วได้ · ใครจั่วจากใคร"
+        }
+      }
+    },
+    {
+      "id": "helper",
+      "name": "ตัวช่วย",
+      "icon": "💝",
+      "tier": "rare",
+      "desc": "ทำแทนให้ในกดเดียว + ชี้ไพ่ที่ใช้ได้",
+      "games": {
+        "dummy": {
+          "mods": [
+            "autodep",
+            "takeable"
+          ],
+          "desc": "ปุ่มฝากออโต้ · ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-autodraw",
+            "pd-deng"
+          ],
+          "desc": "จั่วอัตโนมัติตามแต้มที่ตั้ง · เด้งที่เป็นไปได้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-autocall",
+            "gg-ladder"
+          ],
+          "desc": "ตามอัตโนมัติไม่เกินวงเงิน · ประเภทมือและลำดับ"
+        },
+        "somsip": {
+          "mods": [
+            "ss-autowin",
+            "ss-pairs"
+          ],
+          "desc": "ประกาศชนะอัตโนมัติ · คู่ที่ได้ 10 และใบที่ขาด"
+        },
+        "eekae": {
+          "mods": [
+            "ek-autopick",
+            "ek-new"
+          ],
+          "desc": "จั่วอัตโนมัติเมื่อถึงตา · ไพ่ใบที่เพิ่งจั่วได้"
+        }
+      }
+    },
+    {
+      "id": "notebook",
+      "name": "สมุดจดไพ่",
+      "icon": "📒",
+      "tier": "sr",
       "desc": "จดว่าแต่ละคนทำอะไรบนโต๊ะ + ติดตามไพ่สำคัญ + นับไพ่",
       "games": {
-        "dummy": { "mods": ["log", "speto", "count"], "desc": "ใครเก็บอะไรจากกองทิ้ง · สเปโตออกแล้วหรือยัง · ไพ่แต้มที่ถือเหลือกี่ใบ" },
-        "pokdeng": { "mods": ["pd-log", "pd-key", "pd-count"], "desc": "สถิติป๊อกในห้อง · 8/9 ที่เปิดแล้ว · ไพ่ที่เปิดแล้วรอบนี้" },
-        "gaogae": { "mods": ["gg-log", "gg-key", "gg-count"], "desc": "สไตล์ตาม/หมอบ/เกทับของแต่ละคนในห้อง · ไพ่ภาพที่เปิดแล้ว · ไพ่ที่หงายแล้ว" },
-        "somsip": { "mods": ["ss-log", "ss-key", "ss-count"], "desc": "ใครทิ้งอะไร · ไวลด์ที่ออกแล้ว · ไพ่ที่ต้องการเหลือกี่ใบ" },
-        "eekae": { "mods": ["ek-log", "ek-key", "ek-count"], "desc": "ใครจั่วจากใคร ทิ้งคู่อะไร · ควีนที่ถูกจับคู่แล้ว · แต้มที่ยังไม่ถูกจับคู่" }
+        "dummy": {
+          "mods": [
+            "log",
+            "speto",
+            "count"
+          ],
+          "desc": "ใครเก็บอะไรจากกองทิ้ง · สเปโตออกแล้วหรือยัง · ไพ่แต้มที่ถือเหลือกี่ใบ"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-log",
+            "pd-key",
+            "pd-count"
+          ],
+          "desc": "สถิติป๊อกในห้อง · 8/9 ที่เปิดแล้ว · ไพ่ที่เปิดแล้วรอบนี้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-log",
+            "gg-key",
+            "gg-count"
+          ],
+          "desc": "สไตล์ตาม/หมอบ/เกทับของแต่ละคนในห้อง · ไพ่ภาพที่เปิดแล้ว · ไพ่ที่หงายแล้ว"
+        },
+        "somsip": {
+          "mods": [
+            "ss-log",
+            "ss-key",
+            "ss-count"
+          ],
+          "desc": "ใครทิ้งอะไร · ไวลด์ที่ออกแล้ว · ไพ่ที่ต้องการเหลือกี่ใบ"
+        },
+        "eekae": {
+          "mods": [
+            "ek-log",
+            "ek-key",
+            "ek-count"
+          ],
+          "desc": "ใครจั่วจากใคร ทิ้งคู่อะไร · ควีนที่ถูกจับคู่แล้ว · แต้มที่ยังไม่ถูกจับคู่"
+        }
       }
     },
     {
-      "id": "danger", "name": "สัญญาณอันตราย", "icon": "🚨", "tier": "sr",
+      "id": "danger",
+      "name": "สัญญาณอันตราย",
+      "icon": "🚨",
+      "tier": "sr",
       "desc": "เตือนเมื่อคู่แข่งใกล้ชนะ + บอกสิ่งที่ควรรีบเคลียร์ + คำนวณแต้มสด",
       "games": {
-        "dummy": { "mods": ["danger", "clear", "score"], "desc": "คู่แข่งเหลือ ≤2 ใบ · ไฮไลต์ไพ่แต้มสูงในมือ · ถ้าจบตอนนี้ค้างมือกี่แต้ม" },
-        "pokdeng": { "mods": ["pd-danger", "pd-score"], "desc": "เตือนเมื่อมีคนป๊อก · แต้ม เด้ง และเหรียญถ้าชนะ/แพ้" },
-        "gaogae": { "mods": ["gg-danger", "gg-score"], "desc": "เตือนเมื่อมีคนเกทับแรง · กองกลางเทียบเงินที่ต้องตาม" },
-        "somsip": { "mods": ["ss-danger", "ss-score"], "desc": "เตือนเมื่อกองจั่วใกล้หมด · ห่างจากชนะอีกกี่คู่" },
-        "eekae": { "mods": ["ek-danger", "ek-score"], "desc": "ใครใกล้หมดมือ · ไพ่ในมือเหลือกี่ใบ" }
+        "dummy": {
+          "mods": [
+            "danger",
+            "clear",
+            "score"
+          ],
+          "desc": "คู่แข่งเหลือ ≤2 ใบ · ไฮไลต์ไพ่แต้มสูงในมือ · ถ้าจบตอนนี้ค้างมือกี่แต้ม"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-danger",
+            "pd-score"
+          ],
+          "desc": "เตือนเมื่อมีคนป๊อก · แต้ม เด้ง และเหรียญถ้าชนะ/แพ้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-danger",
+            "gg-score"
+          ],
+          "desc": "เตือนเมื่อมีคนเกทับแรง · กองกลางเทียบเงินที่ต้องตาม"
+        },
+        "somsip": {
+          "mods": [
+            "ss-danger",
+            "ss-score"
+          ],
+          "desc": "เตือนเมื่อกองจั่วใกล้หมด · ห่างจากชนะอีกกี่คู่"
+        },
+        "eekae": {
+          "mods": [
+            "ek-danger",
+            "ek-score"
+          ],
+          "desc": "ใครใกล้หมดมือ · ไพ่ในมือเหลือกี่ใบ"
+        }
       }
     },
     {
-      "id": "planner", "name": "นักวางแผน", "icon": "🧭", "tier": "sr",
+      "id": "planner",
+      "name": "นักวางแผน",
+      "icon": "🧭",
+      "tier": "sr",
       "desc": "ชี้ทุกอย่างที่ทำได้ในมือและบนโต๊ะ",
       "games": {
-        "dummy": { "mods": ["takeable", "melds", "deposit"], "desc": "ไพ่ในกองทิ้งที่เก็บได้ · ชุดที่เกิดได้ในมือ · ไพ่ที่ฝากได้" },
-        "pokdeng": { "mods": ["pd-deng", "pd-score"], "desc": "เด้งที่เป็นไปได้ · แต้มและเหรียญถ้าจบตอนนี้" },
-        "gaogae": { "mods": ["gg-ladder", "gg-score"], "desc": "ประเภทมือและลำดับ · กองกลางเทียบเงินที่ต้องตาม" },
-        "somsip": { "mods": ["ss-pairs", "ss-score"], "desc": "คู่ที่ได้ 10 และใบที่ขาด · ห่างจากชนะอีกกี่คู่" },
-        "eekae": { "mods": ["ek-new", "ek-score"], "desc": "ไพ่ที่เพิ่งจั่วได้ · ไพ่ในมือเหลือกี่ใบ" }
+        "dummy": {
+          "mods": [
+            "takeable",
+            "melds",
+            "deposit"
+          ],
+          "desc": "ไพ่ในกองทิ้งที่เก็บได้ · ชุดที่เกิดได้ในมือ · ไพ่ที่ฝากได้"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-deng",
+            "pd-score"
+          ],
+          "desc": "เด้งที่เป็นไปได้ · แต้มและเหรียญถ้าจบตอนนี้"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-ladder",
+            "gg-score"
+          ],
+          "desc": "ประเภทมือและลำดับ · กองกลางเทียบเงินที่ต้องตาม"
+        },
+        "somsip": {
+          "mods": [
+            "ss-pairs",
+            "ss-score"
+          ],
+          "desc": "คู่ที่ได้ 10 และใบที่ขาด · ห่างจากชนะอีกกี่คู่"
+        },
+        "eekae": {
+          "mods": [
+            "ek-new",
+            "ek-score"
+          ],
+          "desc": "ไพ่ที่เพิ่งจั่วได้ · ไพ่ในมือเหลือกี่ใบ"
+        }
+      }
+    },
+    {
+      "id": "queeneye",
+      "name": "เนตรราชินี",
+      "icon": "👑",
+      "tier": "ssr",
+      "desc": "ช่วยครบทุกอย่างที่สกิลอื่นมี ในทุกเกม",
+      "games": {
+        "dummy": {
+          "mods": [
+            "takeable",
+            "autodep",
+            "log",
+            "speto",
+            "count",
+            "danger",
+            "clear",
+            "score",
+            "melds",
+            "deposit"
+          ],
+          "desc": "ทุกอย่างของสกิลอื่นรวมกัน: ไพ่ที่เก็บได้ · ฝากออโต้ · สมุดจด · สัญญาณอันตราย · ชุดที่เกิด/ฝากได้"
+        },
+        "pokdeng": {
+          "mods": [
+            "pd-deng",
+            "pd-autodraw",
+            "pd-log",
+            "pd-key",
+            "pd-count",
+            "pd-danger",
+            "pd-score"
+          ],
+          "desc": "เด้ง · จั่วอัตโนมัติ · สถิติ · เตือนป๊อก · แต้มและเหรียญ"
+        },
+        "gaogae": {
+          "mods": [
+            "gg-ladder",
+            "gg-autocall",
+            "gg-log",
+            "gg-key",
+            "gg-count",
+            "gg-danger",
+            "gg-score"
+          ],
+          "desc": "ประเภทมือ · ตามอัตโนมัติ · สไตล์คู่แข่ง · เตือนเกทับ · กองกลาง"
+        },
+        "somsip": {
+          "mods": [
+            "ss-pairs",
+            "ss-autowin",
+            "ss-log",
+            "ss-key",
+            "ss-count",
+            "ss-danger",
+            "ss-score"
+          ],
+          "desc": "คู่ที่ได้ 10 · ชนะอัตโนมัติ · ใครทิ้งอะไร · เตือนกองจั่ว · ห่างจากชนะ"
+        },
+        "eekae": {
+          "mods": [
+            "ek-new",
+            "ek-autopick",
+            "ek-log",
+            "ek-key",
+            "ek-count",
+            "ek-danger",
+            "ek-score"
+          ],
+          "desc": "ไพ่ใหม่ · จั่วอัตโนมัติ · ใครจั่วจากใคร · ใครใกล้หมดมือ"
+        }
       }
     }
   ],
   "characters": {
-    "boy": { "skill": "quickeye", "maxStars": 4, "starCosts": [1] },
-    "girl": { "skill": "quickhand", "maxStars": 4, "starCosts": [1] },
-    "rina-01": { "skill": "notebook", "maxStars": 5, "starCosts": [1] },
-    "arya-01": { "skill": "danger", "maxStars": 5, "starCosts": [1] },
-    "rena-01": { "skill": "planner", "maxStars": 5, "starCosts": [1] }
+    "boy": {
+      "skill": "quickeye",
+      "maxStars": 4,
+      "starCosts": [
+        1
+      ]
+    },
+    "girl": {
+      "skill": "quickhand",
+      "maxStars": 4,
+      "starCosts": [
+        1
+      ]
+    },
+    "rina-01": {
+      "skill": "notebook",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "arya-01": {
+      "skill": "danger",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "rena-01": {
+      "skill": "planner",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "sakuya-ssr": {
+      "skill": "queeneye",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "rei-r": {
+      "skill": "watch",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "haru-r": {
+      "skill": "brave",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "ken-r": {
+      "skill": "counter",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "leo-r": {
+      "skill": "calm",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "yuna-r": {
+      "skill": "peek",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    },
+    "miyu-r": {
+      "skill": "helper",
+      "maxStars": 5,
+      "starCosts": [
+        1
+      ]
+    }
   },
   "starUnlocks": [
-    { "star": 2, "name": "อีโมตของตัวละคร" },
-    { "star": 3, "name": "เสียงพากย์" },
-    { "star": 4, "name": "กรอบการ์ดของตัวละคร" },
-    { "star": 5, "name": "ชุดใหม่ / ฉายา" }
+    {
+      "star": 2,
+      "name": "อีโมตของตัวละคร"
+    },
+    {
+      "star": 3,
+      "name": "เสียงพากย์"
+    },
+    {
+      "star": 4,
+      "name": "กรอบการ์ดของตัวละคร"
+    },
+    {
+      "star": 5,
+      "name": "ชุดใหม่ / ฉายา"
+    }
   ],
-  "defaults": { "maxStars": 5, "starCosts": [1, 2, 3, 4] }
+  "defaults": {
+    "maxStars": 5,
+    "starCosts": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
 }

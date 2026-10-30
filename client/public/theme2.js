@@ -47,7 +47,7 @@
         <button class="rv-sb" onclick="showRules(createSel.rule||'dummy')" aria-label="กติกา">${ic('book')}</button>
       </div>
       <div class="rv-ev">
-        <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakura-ace/banner.webp" alt=""><span>กาชา SAKURA ACE<small>ตัวละครใหม่!</small></span></button>
+        <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
         <button class="rv-card" onclick="openQuests()"><i>${ic('quest')}</i><span>เควสประจำวัน<small>${nq ? nq + ' รายการรอรับ' : 'ทำเควสรับเหรียญ'}</small></span>${nq ? '<em>' + E(nq) + '</em>' : ''}</button>
       </div>
       <nav class="rv-nav">

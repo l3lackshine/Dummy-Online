@@ -6,7 +6,7 @@
   window.matchFind = function () {
     conn(); if (!sock) return; nick = (($('au') && $('au').value) || nick || 'ผู้เล่น').trim().slice(0, 14) || 'ผู้เล่น'; sv.name = nick; try { localStorage.setItem('dummyName', nick); } catch (e) {}
     const m = ruleMeta(createSel.rule); soloRoom = false;
-    sock.emit('match:find', { name: nick, ch: myChar(), bg: myBg(), fr: (typeof myFrame === 'function' ? myFrame() : null), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {} });
+    sock.emit('match:find', { name: nick, s5: (typeof skStar5 === 'function' ? skStar5(myChar()) : false), ch: myChar(), bg: myBg(), fr: (typeof myFrame === 'function' ? myFrame() : null), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {} });
   };
   window.matchVote = function (c) { if (sock && sock.connected) sock.emit('match:choice', { c }); };
   const mmss = s => { s = Math.max(0, Math.floor(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };

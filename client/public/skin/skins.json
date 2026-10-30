@@ -72,6 +72,7 @@
     "x": 0.4
    },
    "asset": "./Character/boy/Character.webp",
+   "star5": "./Character/boy/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -87,6 +88,7 @@
     "x": 0.42
    },
    "asset": "./Character/girl/Character.webp",
+   "star5": "./Character/girl/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -103,6 +105,7 @@
     "x": 0.55
    },
    "asset": "./Character/rina-01/Character.webp",
+   "star5": "./Character/rina-01/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -119,6 +122,7 @@
     "x": 0.5
    },
    "asset": "./Character/arya-01/Character.webp",
+   "star5": "./Character/arya-01/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -135,6 +139,141 @@
     "x": 0.55
    },
    "asset": "./Character/rena-01/Character.png",
+   "star5": "./Character/rena-01/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "sakuya-ssr",
+   "name": "ซากุยะ",
+   "title": "ราชินีไพ่ซากุระ",
+   "price": 3000,
+   "rarity": "legendary",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.36,
+    "x": 0.46
+   },
+   "asset": "./Character/sakuya-ssr/Character.webp",
+   "seat": "./Character/sakuya-ssr/Background/seat.webp",
+   "star5": "./Character/sakuya-ssr/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "rei-r",
+   "name": "เรย์",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.34,
+    "x": 0.62
+   },
+   "asset": "./Character/rei-r/Character.webp",
+   "card": "./Character/rei-r/Card.webp",
+   "star5": "./Character/rei-r/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "haru-r",
+   "name": "ฮารุ",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.36,
+    "x": 0.6
+   },
+   "asset": "./Character/haru-r/Character.webp",
+   "card": "./Character/haru-r/Card.webp",
+   "star5": "./Character/haru-r/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "ken-r",
+   "name": "เคน",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.33,
+    "x": 0.38
+   },
+   "asset": "./Character/ken-r/Character.webp",
+   "card": "./Character/ken-r/Card.webp",
+   "star5": "./Character/ken-r/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "leo-r",
+   "name": "ลีโอ",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.33,
+    "x": 0.55
+   },
+   "asset": "./Character/leo-r/Character.webp",
+   "card": "./Character/leo-r/Card.webp",
+   "star5": "./Character/leo-r/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "yuna-r",
+   "name": "ยูนะ",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0,
+    "show": 0.34,
+    "x": 0.45
+   },
+   "asset": "./Character/yuna-r/Character.webp",
+   "card": "./Character/yuna-r/Card.webp",
+   "star5": "./Character/yuna-r/Background/star5.webp",
+   "src": "folder"
+  },
+  {
+   "id": "miyu-r",
+   "name": "มิยุ",
+   "price": 400,
+   "rarity": "rare",
+   "lobby": {
+    "align": "center",
+    "scale": 1
+   },
+   "table": {
+    "top": 0.12,
+    "show": 0.38,
+    "x": 0.45
+   },
+   "asset": "./Character/miyu-r/Character.webp",
+   "card": "./Character/miyu-r/Card.webp",
+   "star5": "./Character/miyu-r/Background/star5.webp",
    "src": "folder"
   }
  ],

@@ -4,14 +4,15 @@ const OWN = { u1: ['characters:arya-01', 'frames:sakura-gem'], u2: [] };
 SB.enabled = () => true;
 SB.verifyToken = async t => (OWN[t] ? { id: t, name: t } : null);
 SB.ownsItem = async (u, k, id) => (OWN[u] || []).includes(k + ':' + id);
+SB.charStars = async (u, ch) => (u === 'u1' && ch === 'arya-01' ? 5 : 2);
 SB.rpc = async () => ({}); SB.rpcRetry = async () => ({});
 let passed = 0; const ok = (c, m) => { assert(c, m); passed++; console.log('  ✓', m); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   const srv = M.load({ OPENING_MS: 0, BOT_DELAY_MS: 100000 }), rooms = () => [...require.cache[require.resolve('./src/index.js')].exports.rooms.values()];
-  async function join(uid, ch, fr) {
+  async function join(uid, ch, fr, s5) {
     const c = M.client(srv, { token: uid }); let lob = null; c.on('room:lobby', l => { lob = l; });
-    await sleep(20); c.emit('room:create', { name: uid, ch, fr, bots: true }); await sleep(60);
+    await sleep(20); c.emit('room:create', { name: uid, ch, fr, s5, bots: true }); await sleep(60);
     const me = lob && lob.players.find(p => p.you); return { c, me, room: rooms().find(r => r.players.some(p => p.id === c.id)) };
   }
   const a = await join('u1', 'arya-01', 'sakura-gem');
@@ -25,5 +26,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   b.c.emit('game:start'); await sleep(60); const G = b.room.game, p = b.room.players.find(x => x.id === b.c.id);
   G.cur = p.seat; G.phase = 'play'; G.P[p.seat].melded = true; b.c.emit('game:act', { t: 'autodep' }); await sleep(40);
   ok(res && !res.ok && /มือไว/.test(res.error), 'ตัวละครที่ไม่ผ่านการตรวจ → ใช้สกิลฝากออโต้ไม่ได้');
+  // ฉาก 5 ดาว: เซิร์ฟเวอร์เช็กดาวจริง ไม่เชื่อค่าที่ client ส่ง
+  const s5a = await join('u1', 'arya-01', null, true); ok(s5a.me && s5a.me.s5 === true, 'มีอายะ 5 ดาว → ได้ฉาก 5 ดาว');
+  const s5b = await join('u2', 'girl', null, true); ok(s5b.me && s5b.me.s5 === false, 'อ้างว่า 5 ดาวแต่จริงมี 2 ดาว → ไม่ได้ฉาก 5 ดาว');
   console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`); process.exit(0);
 })().catch(e => { console.error('\n✗ ล้มเหลว:', e.message); process.exit(1); });

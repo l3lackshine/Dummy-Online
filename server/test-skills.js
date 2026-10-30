@@ -7,6 +7,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 (async () => {
   for (const [ch, sid] of Object.entries(Sk.CHAR_SKILL)) assert.strictEqual(Core.charCfg(data, ch).skill, sid, 'skill ของ ' + ch);
   ok(Object.keys(data.characters).every(ch => Sk.CHAR_SKILL[ch] === data.characters[ch].skill), 'ตารางตัวละคร→สกิล ฝั่งเซิร์ฟเวอร์ตรงกับ skills.json');
+  ok(Object.keys(data.characters).every(ch => (Sk.MAX_STARS_OF[ch] || 5) === Core.charCfg(data, ch).maxStars), 'ดาวสูงสุดฝั่งเซิร์ฟเวอร์ (ใช้ตรวจฉาก 5 ดาว) ตรงกับ skills.json');
   for (const [rule, acts] of Object.entries(Sk.ACTION_SKILL)) for (const [t, sids] of Object.entries(acts))
     ok(sids.every(s => (data.skills.find(x => x.id === s).games[rule].mods || []).includes(t)), `คำสั่ง ${rule}/${t} ผูกกับสกิลที่มีโมดูล ${t} จริง`);
   ok(Object.keys(data.characters).every(ch => Core.bonusPct(data, ch).every(v => v === 0)), 'ไม่มีโบนัสเหรียญจากตัวละครแล้ว');

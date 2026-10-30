@@ -36,12 +36,14 @@ function loadCharacters() {
     if (!cfg) { warns.push(`โฟลเดอร์ตัวละคร ${d} ไม่มี Character.config — ข้าม`); continue; }
     if (!cfg.id) cfg.id = d;
     if (cfg.id !== d) problems.push(`Character/${d}: id "${cfg.id}" ต้องตรงกับชื่อโฟลเดอร์`);
-    const { image, effects, sounds, background, seat, ...rest } = cfg, e = { ...rest };
+    const { image, effects, sounds, background, seat, card, star5, ...rest } = cfg, e = { ...rest };
     if (image) { needFile(path.join(base, image), `รูปตัวละคร ${d}`); e.asset = url('Character', d, image); }
     const fx = resolveMap(effects, `Character/${d}`), sd = resolveMap(sounds, `Character/${d}`);
     if (Object.keys(fx).length) e.effects = fx; if (Object.keys(sd).length) e.sounds = sd;
     if (background) e.background = url('Character', d, background);
     if (seat) { needFile(path.join(base, seat), `พื้นหลังที่นั่ง ${d}`); e.seat = url('Character', d, seat); } // พื้นหลังที่นั่งบนโต๊ะเล่น
+    if (card) { needFile(path.join(base, card), `การ์ดตัวละคร ${d}`); e.card = url('Character', d, card); }      // รูปการ์ดสำเร็จ (ใช้ในตู้กาชา/ผลสุ่ม)
+    if (star5) { needFile(path.join(base, star5), `พื้นหลัง 5 ดาว ${d}`); e.star5 = url('Character', d, star5); } // ฉากพิเศษเมื่อปลด 5 ดาว (การ์ด + ที่นั่งบนโต๊ะ)
     e.src = 'folder'; out.push(e);
   }
   return out.sort(byOrder);

@@ -29,7 +29,8 @@
     const items = (b.items || []).slice().sort((x, y) => rk(y.rarity) - rk(x.rarity) || (x.kind === 'characters' ? -1 : 1));
     const feat = [...items.filter(i => i.kind === 'characters'), ...items.filter(i => i.kind !== 'characters')].sort((x, y) => rk(y.rarity) - rk(x.rarity)).slice(0, 3);
     const card = (i, k) => { const x = regItem(i.kind, i.item_id) || {}, own = DB.qty(i.kind, i.item_id);
-      return `<div class="gc-f ${i.rarity}" style="--k:${k}"><div class=gc-fi>${i.kind === 'characters' && x.asset ? `<img src="${E(x.asset)}" alt="">` : thumb(i.kind, i.item_id)}</div>
+      const cd = i.kind === 'characters' && x.card; // รูปการ์ดสำเร็จ (มีกรอบในรูปแล้ว)
+      return `<div class="gc-f ${i.rarity}${cd ? ' has-card' : ''}" style="--k:${k}"><div class=gc-fi>${cd ? `<img src="${E(x.card)}" alt="">` : i.kind === 'characters' && x.asset ? `<img src="${E(x.asset)}" alt="">` : thumb(i.kind, i.item_id)}</div>
         <div class=gc-fn><b>${E(i.name)}</b><span class=gc-st>${'★'.repeat(STARS[i.rarity] || 1)}</span><small>${E((R[i.rarity] || {}).name || '')} · ${i.pct}%${own ? ' · มี ×' + own : ''}</small></div></div>`; };
     const btn = (n, cur) => { const p = price(n, cur); if (!p) return ''; const have = cur === 'coins' ? sv.coins : (sv.mcash || 0), no = busy || have < p;
       return `<button class="gc-go ${cur}" ${no ? 'disabled' : ''} onclick="gcPull('${E(b.id)}',${n},'${cur}')"><b>สุ่ม ${n} ครั้ง</b><span>${cur === 'coins' ? '🪙' : '💎'} ${N(p)}</span></button>`; };
@@ -90,9 +91,10 @@
   function showResult(r) {
     document.querySelectorAll('.gc-modal').forEach(n => n.remove());
     const R = (DB.G && DB.G.rarities) || {}, res = r.results || [];
+    const cardOf = x => (x.kind === 'characters' && (regItem(x.kind, x.item_id) || {}).card) || '';
     const m = document.createElement('div'); m.className = 'gc-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
     const best = res.reduce((a, x) => Math.max(a, (R[x.rarity] || {}).sort || 0), 0);
-    m.innerHTML = `<div class="gc-box gc-top${best}"><h3>🎰 ผลการสุ่ม</h3><div class="gc-res n${res.length}">${res.map((x, i) => `<div class="gc-card ${x.rarity}" style="animation-delay:${i * 0.12}s">${thumb(x.kind, x.item_id)}<b>${E(x.name)}</b><small>${RICON[x.rarity] || ''} ${E((R[x.rarity] || {}).name || '')}</small>${x.new ? '<em class=gc-new>NEW</em>' : `<em class=gc-dup>ซ้ำ ×${x.qty}</em>`}</div>`).join('')}</div>
+    m.innerHTML = `<div class="gc-box gc-top${best}"><h3>🎰 ผลการสุ่ม</h3><div class="gc-res n${res.length}">${res.map((x, i) => `<div class="gc-card ${x.rarity}${cardOf(x) ? ' has-card' : ''}" style="animation-delay:${i * 0.12}s">${cardOf(x) ? `<img class=gc-cimg src="${E(cardOf(x))}" alt="">` : thumb(x.kind, x.item_id)}<b>${E(x.name)}</b><small>${RICON[x.rarity] || ''} ${E((R[x.rarity] || {}).name || '')}</small>${x.new ? '<em class=gc-new>NEW</em>' : `<em class=gc-dup>ซ้ำ ×${x.qty}</em>`}</div>`).join('')}</div>
       <p class=gc-sum>เหลือ 🪙 ${N(r.coins)} · 💎 ${N(r.mcash)}${res.some(x => !x.new && x.kind === 'characters') ? '<br>ได้ตัวละครซ้ำ — นำไปอัพดาวได้ที่ ⚡' : ''}</p><button class="wbtn go" onclick="this.closest('.gc-modal').remove()">ตกลง</button></div>`;
     document.body.appendChild(m);
   }
