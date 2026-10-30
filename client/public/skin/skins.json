@@ -294,6 +294,7 @@
    "asset": "",
    "bg": "#8a3a5c",
    "bg2": "#5a2340",
+   "gacha": false,
    "src": "folder"
   },
   {
@@ -590,6 +591,7 @@
    "price": 700,
    "b1": "#a58fff",
    "b2": "#5d1520",
+   "gacha": false,
    "asset": "./Item/CardBack/sakura-01.webp",
    "src": "folder"
   }
@@ -606,6 +608,7 @@
    "id": "sakura-gem",
    "name": "ซากุระอัญมณี",
    "price": 700,
+   "gacha": false,
    "asset": "./Item/Frame/sakura-gem.webp",
    "src": "folder"
   }

@@ -47,9 +47,17 @@
         }
       },
       "levels": {
+        "20": {
+          "item": "items:ticket-b",
+          "qty": 2
+        },
         "25": {
           "item": "tables:sakura-felt",
           "qty": 1
+        },
+        "40": {
+          "item": "items:ticket-b",
+          "qty": 2
         },
         "50": {
           "mcash": 30,
@@ -92,10 +100,18 @@
           "qty": 1,
           "mcash": 45
         },
+        "20": {
+          "item": "items:ticket-r",
+          "qty": 1
+        },
         "35": {
           "item": "backs:sakura-01",
           "qty": 1,
           "mcash": 45
+        },
+        "40": {
+          "item": "items:ticket-r",
+          "qty": 1
         },
         "50": {
           "mcash": 45,

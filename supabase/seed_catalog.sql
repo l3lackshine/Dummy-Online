@@ -47,85 +47,56 @@ on conflict (kind, item_id) do update set name = excluded.name, rarity = exclude
 
 update public.catalog_items set active = false where (kind, item_id) not in (('characters', 'boy'), ('characters', 'girl'), ('characters', 'rina-01'), ('characters', 'arya-01'), ('characters', 'rena-01'), ('characters', 'sakuya-ssr'), ('characters', 'rei-r'), ('characters', 'haru-r'), ('characters', 'ken-r'), ('characters', 'leo-r'), ('characters', 'yuna-r'), ('characters', 'miyu-r'), ('backs', 'sakura-navy'), ('backs', 'classic-red'), ('backs', 'midnight'), ('backs', 'paw-pink'), ('backs', 'gold'), ('backs', 'sakura-01'), ('tables', 'green-felt'), ('tables', 'sakura-felt'), ('tables', 'navy-felt'), ('tables', 'wood'), ('tables', 'table-sakura02'), ('tables', 'table-sakura01'), ('backgrounds', 'sakura-house'), ('backgrounds', 'room-night'), ('backgrounds', 'room-day'), ('backgrounds', 'room-sakura'), ('backgrounds', 'sunset'), ('backgrounds', 'sakura'), ('backgrounds', 'night'), ('backgrounds', 'forest'), ('backgrounds', 'gold'), ('frames', 'none'), ('frames', 'sakura-gem'));
 
-insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active) values
-('sakura-ace', 'ตู้ธรรมดา', 'สุ่มได้ทุกอย่าง: ตัวละคร หลังไพ่ โต๊ะ พื้นหลัง · ได้ตัวละครซ้ำเอาไปอัพดาวได้', 300, 30, 2700, 270, 0, 1, true),
-('sakuya-up', 'ราชินีไพ่ซากุยะ', 'ตู้เรทอัป — SSR ซากุยะ ออกง่ายขึ้น · การันตี SSR ใน 90 ครั้ง', 300, 30, 2700, 270, 90, 2, true)
-on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true;
+insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active, ticket, ticket_mcash, ticket_mcash10, grp) values
+('sakura-ace', 'ตู้ธรรมดา', 'ตู้ตัวละครธรรมดา · SSR 0.01% · SR 1% · ใช้ตั๋วสุ่มระดับ 1 (สีฟ้า) · ได้ตัวละครซ้ำเอาไปอัพดาวได้', null, null, null, null, 0, 1, true, 'ticket-b', 30, 270, 'char'),
+('sakuya-up', 'ราชินีไพ่ซากุยะ', 'ตู้เรทอัป — SSR ซากุยะ 1% · SR 3% · การันตี SSR ใน 90 ครั้ง · ใช้ตั๋วสุ่มระดับ 2 (สีแดง)', null, null, null, null, 90, 2, true, 'ticket-r', 30, 270, 'char'),
+('cosm-sakura', 'ตู้ของแต่งซากุระ', 'หลังไพ่ · ผ้าปูโต๊ะ · พื้นหลัง · กรอบการ์ด · สุ่มด้วยเหรียญ · ได้ของซ้ำแปลงเป็นเหรียญอัตโนมัติ', 500, null, 4500, null, 0, 3, true, null, null, null, 'cosm')
+on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true, ticket = excluded.ticket, ticket_mcash = excluded.ticket_mcash, ticket_mcash10 = excluded.ticket_mcash10, grp = excluded.grp;
 
-update public.gacha_banners set active = false where id not in ('sakura-ace', 'sakuya-up');
+insert into public.game_config(key, value) values ('weekly_shop', '{"banner":"cosm-sakura","slots":6,"price":{"common":800,"rare":2000,"epic":5000,"legendary":12000}}'::jsonb) on conflict (key) do update set value = excluded.value;
+
+update public.gacha_banners set active = false where id not in ('sakura-ace', 'sakuya-up', 'cosm-sakura');
 
 insert into public.gacha_pool(banner_id, kind, item_id, weight) values
-('sakura-ace', 'characters', 'boy', 53838),
-('sakura-ace', 'characters', 'girl', 53838),
-('sakura-ace', 'characters', 'rina-01', 1667),
-('sakura-ace', 'characters', 'arya-01', 1667),
-('sakura-ace', 'characters', 'rena-01', 1667),
+('sakura-ace', 'characters', 'rina-01', 3334),
+('sakura-ace', 'characters', 'arya-01', 3333),
+('sakura-ace', 'characters', 'rena-01', 3333),
 ('sakura-ace', 'characters', 'sakuya-ssr', 100),
-('sakura-ace', 'characters', 'rei-r', 20714),
-('sakura-ace', 'characters', 'haru-r', 20714),
-('sakura-ace', 'characters', 'ken-r', 20714),
-('sakura-ace', 'characters', 'leo-r', 20714),
-('sakura-ace', 'characters', 'yuna-r', 20714),
-('sakura-ace', 'characters', 'miyu-r', 20714),
-('sakura-ace', 'backs', 'sakura-navy', 53838),
-('sakura-ace', 'backs', 'classic-red', 53838),
-('sakura-ace', 'backs', 'midnight', 53838),
-('sakura-ace', 'backs', 'paw-pink', 20714),
-('sakura-ace', 'backs', 'gold', 1667),
-('sakura-ace', 'backs', 'sakura-01', 1667),
-('sakura-ace', 'tables', 'green-felt', 53838),
-('sakura-ace', 'tables', 'sakura-felt', 20714),
-('sakura-ace', 'tables', 'navy-felt', 20714),
-('sakura-ace', 'tables', 'wood', 20714),
-('sakura-ace', 'tables', 'table-sakura02', 53838),
-('sakura-ace', 'tables', 'table-sakura01', 53838),
-('sakura-ace', 'backgrounds', 'sakura-house', 53838),
-('sakura-ace', 'backgrounds', 'room-night', 20714),
-('sakura-ace', 'backgrounds', 'room-day', 20714),
-('sakura-ace', 'backgrounds', 'room-sakura', 20714),
-('sakura-ace', 'backgrounds', 'sunset', 53838),
-('sakura-ace', 'backgrounds', 'sakura', 53838),
-('sakura-ace', 'backgrounds', 'night', 53838),
-('sakura-ace', 'backgrounds', 'forest', 53838),
-('sakura-ace', 'backgrounds', 'gold', 20714),
-('sakura-ace', 'frames', 'sakura-gem', 1667),
-('sakuya-up', 'characters', 'boy', 51538),
-('sakuya-up', 'characters', 'girl', 51538),
-('sakuya-up', 'characters', 'rina-01', 5000),
-('sakuya-up', 'characters', 'arya-01', 5000),
-('sakuya-up', 'characters', 'rena-01', 5000),
+('sakura-ace', 'characters', 'rei-r', 164984),
+('sakura-ace', 'characters', 'haru-r', 164984),
+('sakura-ace', 'characters', 'ken-r', 164983),
+('sakura-ace', 'characters', 'leo-r', 164983),
+('sakura-ace', 'characters', 'yuna-r', 164983),
+('sakura-ace', 'characters', 'miyu-r', 164983),
+('sakuya-up', 'characters', 'rina-01', 10000),
+('sakuya-up', 'characters', 'arya-01', 10000),
+('sakuya-up', 'characters', 'rena-01', 10000),
 ('sakuya-up', 'characters', 'sakuya-ssr', 10000),
-('sakuya-up', 'characters', 'rei-r', 20714),
-('sakuya-up', 'characters', 'haru-r', 20714),
-('sakuya-up', 'characters', 'ken-r', 20714),
-('sakuya-up', 'characters', 'leo-r', 20714),
-('sakuya-up', 'characters', 'yuna-r', 20714),
-('sakuya-up', 'characters', 'miyu-r', 20714),
-('sakuya-up', 'backs', 'sakura-navy', 51538),
-('sakuya-up', 'backs', 'classic-red', 51538),
-('sakuya-up', 'backs', 'midnight', 51538),
-('sakuya-up', 'backs', 'paw-pink', 20714),
-('sakuya-up', 'backs', 'gold', 5000),
-('sakuya-up', 'backs', 'sakura-01', 5000),
-('sakuya-up', 'tables', 'green-felt', 51538),
-('sakuya-up', 'tables', 'sakura-felt', 20714),
-('sakuya-up', 'tables', 'navy-felt', 20714),
-('sakuya-up', 'tables', 'wood', 20714),
-('sakuya-up', 'tables', 'table-sakura02', 51538),
-('sakuya-up', 'tables', 'table-sakura01', 51538),
-('sakuya-up', 'backgrounds', 'sakura-house', 51538),
-('sakuya-up', 'backgrounds', 'room-night', 20714),
-('sakuya-up', 'backgrounds', 'room-day', 20714),
-('sakuya-up', 'backgrounds', 'room-sakura', 20714),
-('sakuya-up', 'backgrounds', 'sunset', 51538),
-('sakuya-up', 'backgrounds', 'sakura', 51538),
-('sakuya-up', 'backgrounds', 'night', 51538),
-('sakuya-up', 'backgrounds', 'forest', 51538),
-('sakuya-up', 'backgrounds', 'gold', 20714),
-('sakuya-up', 'frames', 'sakura-gem', 5000)
+('sakuya-up', 'characters', 'rei-r', 160000),
+('sakuya-up', 'characters', 'haru-r', 160000),
+('sakuya-up', 'characters', 'ken-r', 160000),
+('sakuya-up', 'characters', 'leo-r', 160000),
+('sakuya-up', 'characters', 'yuna-r', 160000),
+('sakuya-up', 'characters', 'miyu-r', 160000),
+('cosm-sakura', 'backs', 'classic-red', 81250),
+('cosm-sakura', 'backs', 'midnight', 81250),
+('cosm-sakura', 'backs', 'paw-pink', 40000),
+('cosm-sakura', 'backs', 'gold', 70000),
+('cosm-sakura', 'tables', 'navy-felt', 40000),
+('cosm-sakura', 'tables', 'wood', 40000),
+('cosm-sakura', 'tables', 'table-sakura02', 81250),
+('cosm-sakura', 'tables', 'table-sakura01', 81250),
+('cosm-sakura', 'backgrounds', 'room-night', 40000),
+('cosm-sakura', 'backgrounds', 'room-day', 40000),
+('cosm-sakura', 'backgrounds', 'room-sakura', 40000),
+('cosm-sakura', 'backgrounds', 'sunset', 81250),
+('cosm-sakura', 'backgrounds', 'sakura', 81250),
+('cosm-sakura', 'backgrounds', 'night', 81250),
+('cosm-sakura', 'backgrounds', 'forest', 81250),
+('cosm-sakura', 'backgrounds', 'gold', 40000)
 on conflict (banner_id, kind, item_id) do update set weight = excluded.weight;
 
-delete from public.gacha_pool where banner_id in ('sakura-ace', 'sakuya-up') and (banner_id, kind, item_id) not in (('sakura-ace', 'characters', 'boy'), ('sakura-ace', 'characters', 'girl'), ('sakura-ace', 'characters', 'rina-01'), ('sakura-ace', 'characters', 'arya-01'), ('sakura-ace', 'characters', 'rena-01'), ('sakura-ace', 'characters', 'sakuya-ssr'), ('sakura-ace', 'characters', 'rei-r'), ('sakura-ace', 'characters', 'haru-r'), ('sakura-ace', 'characters', 'ken-r'), ('sakura-ace', 'characters', 'leo-r'), ('sakura-ace', 'characters', 'yuna-r'), ('sakura-ace', 'characters', 'miyu-r'), ('sakura-ace', 'backs', 'sakura-navy'), ('sakura-ace', 'backs', 'classic-red'), ('sakura-ace', 'backs', 'midnight'), ('sakura-ace', 'backs', 'paw-pink'), ('sakura-ace', 'backs', 'gold'), ('sakura-ace', 'backs', 'sakura-01'), ('sakura-ace', 'tables', 'green-felt'), ('sakura-ace', 'tables', 'sakura-felt'), ('sakura-ace', 'tables', 'navy-felt'), ('sakura-ace', 'tables', 'wood'), ('sakura-ace', 'tables', 'table-sakura02'), ('sakura-ace', 'tables', 'table-sakura01'), ('sakura-ace', 'backgrounds', 'sakura-house'), ('sakura-ace', 'backgrounds', 'room-night'), ('sakura-ace', 'backgrounds', 'room-day'), ('sakura-ace', 'backgrounds', 'room-sakura'), ('sakura-ace', 'backgrounds', 'sunset'), ('sakura-ace', 'backgrounds', 'sakura'), ('sakura-ace', 'backgrounds', 'night'), ('sakura-ace', 'backgrounds', 'forest'), ('sakura-ace', 'backgrounds', 'gold'), ('sakura-ace', 'frames', 'sakura-gem'), ('sakuya-up', 'characters', 'boy'), ('sakuya-up', 'characters', 'girl'), ('sakuya-up', 'characters', 'rina-01'), ('sakuya-up', 'characters', 'arya-01'), ('sakuya-up', 'characters', 'rena-01'), ('sakuya-up', 'characters', 'sakuya-ssr'), ('sakuya-up', 'characters', 'rei-r'), ('sakuya-up', 'characters', 'haru-r'), ('sakuya-up', 'characters', 'ken-r'), ('sakuya-up', 'characters', 'leo-r'), ('sakuya-up', 'characters', 'yuna-r'), ('sakuya-up', 'characters', 'miyu-r'), ('sakuya-up', 'backs', 'sakura-navy'), ('sakuya-up', 'backs', 'classic-red'), ('sakuya-up', 'backs', 'midnight'), ('sakuya-up', 'backs', 'paw-pink'), ('sakuya-up', 'backs', 'gold'), ('sakuya-up', 'backs', 'sakura-01'), ('sakuya-up', 'tables', 'green-felt'), ('sakuya-up', 'tables', 'sakura-felt'), ('sakuya-up', 'tables', 'navy-felt'), ('sakuya-up', 'tables', 'wood'), ('sakuya-up', 'tables', 'table-sakura02'), ('sakuya-up', 'tables', 'table-sakura01'), ('sakuya-up', 'backgrounds', 'sakura-house'), ('sakuya-up', 'backgrounds', 'room-night'), ('sakuya-up', 'backgrounds', 'room-day'), ('sakuya-up', 'backgrounds', 'room-sakura'), ('sakuya-up', 'backgrounds', 'sunset'), ('sakuya-up', 'backgrounds', 'sakura'), ('sakuya-up', 'backgrounds', 'night'), ('sakuya-up', 'backgrounds', 'forest'), ('sakuya-up', 'backgrounds', 'gold'), ('sakuya-up', 'frames', 'sakura-gem'));
+update public.gacha_pool set weight = 0 where (banner_id, kind, item_id) not in (('sakura-ace', 'characters', 'rina-01'), ('sakura-ace', 'characters', 'arya-01'), ('sakura-ace', 'characters', 'rena-01'), ('sakura-ace', 'characters', 'sakuya-ssr'), ('sakura-ace', 'characters', 'rei-r'), ('sakura-ace', 'characters', 'haru-r'), ('sakura-ace', 'characters', 'ken-r'), ('sakura-ace', 'characters', 'leo-r'), ('sakura-ace', 'characters', 'yuna-r'), ('sakura-ace', 'characters', 'miyu-r'), ('sakuya-up', 'characters', 'rina-01'), ('sakuya-up', 'characters', 'arya-01'), ('sakuya-up', 'characters', 'rena-01'), ('sakuya-up', 'characters', 'sakuya-ssr'), ('sakuya-up', 'characters', 'rei-r'), ('sakuya-up', 'characters', 'haru-r'), ('sakuya-up', 'characters', 'ken-r'), ('sakuya-up', 'characters', 'leo-r'), ('sakuya-up', 'characters', 'yuna-r'), ('sakuya-up', 'characters', 'miyu-r'), ('cosm-sakura', 'backs', 'classic-red'), ('cosm-sakura', 'backs', 'midnight'), ('cosm-sakura', 'backs', 'paw-pink'), ('cosm-sakura', 'backs', 'gold'), ('cosm-sakura', 'tables', 'navy-felt'), ('cosm-sakura', 'tables', 'wood'), ('cosm-sakura', 'tables', 'table-sakura02'), ('cosm-sakura', 'tables', 'table-sakura01'), ('cosm-sakura', 'backgrounds', 'room-night'), ('cosm-sakura', 'backgrounds', 'room-day'), ('cosm-sakura', 'backgrounds', 'room-sakura'), ('cosm-sakura', 'backgrounds', 'sunset'), ('cosm-sakura', 'backgrounds', 'sakura'), ('cosm-sakura', 'backgrounds', 'night'), ('cosm-sakura', 'backgrounds', 'forest'), ('cosm-sakura', 'backgrounds', 'gold'));
 
 insert into public.character_defs(id, max_stars, star_costs, bonus_pct) values
 ('boy', 4, '{1}', null),

@@ -45,6 +45,8 @@
     'exp-s': { name: 'คัมภีร์ฝึกขั้นต้น', desc: 'EXP ตัวละคร 100', charExp: 100, rarity: 'common' },
     'exp-m': { name: 'คัมภีร์ฝึกขั้นกลาง', desc: 'EXP ตัวละคร 500', charExp: 500, rarity: 'rare' },
     'exp-l': { name: 'คัมภีร์ฝึกขั้นสูง', desc: 'EXP ตัวละคร 2,000', charExp: 2000, rarity: 'epic' },
+    'ticket-b': { name: 'ตั๋วสุ่มระดับ 1', desc: 'ใช้สุ่มตู้ธรรมดา 1 ครั้ง', ticket: 'sakura-ace', rarity: 'rare' },
+    'ticket-r': { name: 'ตั๋วสุ่มระดับ 2', desc: 'ใช้สุ่มตู้เรทอัป 1 ครั้ง', ticket: 'sakuya-up', rarity: 'epic' },
   };
   // ---------- ฟาร์มกับบอท: ของที่ได้ตามอันดับ (ชั้น 0 = ที่ 1 · ชั้น 3 = ที่สุดท้าย) ----------
   const FARM = {

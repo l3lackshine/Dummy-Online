@@ -92,3 +92,27 @@
 .gc-sum{font-size:13px;color:#cfd3ff}@keyframes gcPop{to{opacity:1;transform:none}}
 @media (max-width:520px){.gc-res{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:640px) and (orientation:portrait){.gc-stage{flex-direction:column}.gc-side{max-width:none}.gc-feats{min-height:150px}}
+/* ---- 0.7.0 ตั๋วสุ่ม · ตู้ของแต่ง · ร้านประจำสัปดาห์ ---- */
+.gc-tabs{flex-wrap:wrap;row-gap:4px}
+.gc-go.ticket{background:linear-gradient(#5fc8ff,#1f7fd0)}.gc-go.ticket.ticket-r{background:linear-gradient(#ff6a7a,#c3203a)}
+.gc-go.ask{background:linear-gradient(#ffd34d,#e08a00);animation:gcAsk .5s ease-in-out infinite alternate}
+@keyframes gcAsk{to{transform:scale(1.04)}}
+.gc-go span{display:flex;align-items:center;gap:3px;justify-content:center}.gc-go .gc-tki{width:20px;height:20px}
+.gc-tki{width:30px;height:30px;object-fit:contain;flex:none}
+.gc-tkrow{display:flex;align-items:center;gap:6px;background:#ffffff14;border-radius:10px;padding:4px 6px}
+.gc-tkrow span{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}.gc-tkrow b{font-size:13px}.gc-tkrow small{font-size:11px;opacity:.8}
+.gc-tkrow .gc-mini{flex:none;margin:0}
+.gc-tks{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.gc-tk{flex:1 1 220px;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px;border-radius:14px;color:#fff;text-align:center;background:linear-gradient(#1f5f9cdd,#0d2f55ee);border:2px solid #8fd6ff88}
+.gc-tk.ticket-r{background:linear-gradient(#9c1f35dd,#4f0d1aee);border-color:#ff9fae88}
+.gc-tkbig{width:84px;height:84px;object-fit:contain}.gc-tk small{opacity:.85}
+.gc-tkb{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:4px}.gc-tkb .wbtn{margin:0}
+.gc-wk-h b{color:#ffe08a}
+@media (max-height:500px){.gc-tkbig{width:56px;height:56px}.gc-tk{padding:8px}.gc-tki{width:24px;height:24px}.gc-tkrow small{font-size:10px}}
+.gc-wk-h{display:block;width:fit-content;max-width:100%}
+@media (max-height:500px) and (orientation:landscape){
+  .grid.gc-week{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px}
+  .gc-week .item2 b{font-size:11px}.gc-week .item2 small{font-size:9.5px}.gc-week .wbtn{font-size:11px;padding:3px 4px}
+  .gc-res.n10{grid-template-columns:repeat(10,minmax(0,1fr));gap:5px}.gc-box:has(.gc-res.n10){max-width:96vw;padding:8px 10px}
+  .gc-res.n10 .gc-card b{font-size:10px}.gc-res.n10 .gc-card small{font-size:9px}.gc-res.n10 em{font-size:9px}
+}

@@ -42,20 +42,25 @@ function build(skins, skills, gacha) {
   }
   const banners = gacha.banners || [];
   if (banners.length) {
-    out.push('insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active) values',
-      banners.map((b, i) => `(${q(b.id)}, ${q(b.name)}, ${q(b.description)}, ${nul(b.singleCoins)}, ${nul(b.singleMcash)}, ${nul(b.tenCoins)}, ${nul(b.tenMcash)}, ${int(b.pity)}, ${i + 1}, true)`).join(',\n'),
-      'on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true;', '');
+    // ticket/ticket_mcash/ticket_mcash10/grp ต้องมีคอลัมน์จาก supabase/v8_gacha.sql ก่อน
+    out.push('insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active, ticket, ticket_mcash, ticket_mcash10, grp) values',
+      banners.map((b, i) => `(${q(b.id)}, ${q(b.name)}, ${q(b.description)}, ${nul(b.singleCoins)}, ${nul(b.singleMcash)}, ${nul(b.tenCoins)}, ${nul(b.tenMcash)}, ${int(b.pity)}, ${i + 1}, true, ${b.ticket ? q(b.ticket) : 'null'}, ${nul(b.ticketMcash)}, ${nul(b.ticketMcash10)}, ${q(b.group || 'char')})`).join(',\n'),
+      'on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true, ticket = excluded.ticket, ticket_mcash = excluded.ticket_mcash, ticket_mcash10 = excluded.ticket_mcash10, grp = excluded.grp;', '');
+    if (gacha.weeklyShop) out.push(`insert into public.game_config(key, value) values ('weekly_shop', ${q(JSON.stringify(gacha.weeklyShop))}::jsonb) on conflict (key) do update set value = excluded.value;`, '');
     out.push(`update public.gacha_banners set active = false where id not in (${banners.map(b => q(b.id)).join(', ')});`, '');
     // น้ำหนักต่อชิ้น = น้ำหนักของระดับ ÷ จำนวนชิ้นในระดับนั้น (โอกาสรวมของระดับคงที่ไม่ว่าจะมีของกี่ชิ้น)
     // ต่อกาชา: b.pool (จำกัดไอเทม) · b.rarityWeights (เรทต่อระดับ, 0 = ไม่ออก) · b.rateUp {multiplier, items} (คูณเรทไอเทมที่เลือก)
     const inPool = items.filter(i => i.inPool), key = p => (typeof p === 'string' ? p : p.id), hit = (i, k) => i.id === k || i.kind + ':' + i.id === k;
     for (const b of banners) {
       const only = Array.isArray(b.pool) && b.pool.length ? b.pool : null, RW = b.rarityWeights || {}, up = (b.rateUp && b.rateUp.items) || [], mult = Number(b.rateUp && b.rateUp.multiplier) || 1;
-      const list = inPool.filter(i => (!only || only.some(p => hit(i, key(p)))) && RW[i.rarity] !== 0), cnt = {};
+      const kinds = Array.isArray(b.kinds) && b.kinds.length ? b.kinds : null;   // จำกัดชนิดของในตู้ (ตู้ตัวละคร / ตู้ของแต่ง)
+      const list = inPool.filter(i => (!only || only.some(p => hit(i, key(p)))) && (!kinds || kinds.includes(i.kind)) && !(b.noDefaults && i.def) && RW[i.rarity] !== 0), cnt = {};
       list.forEach(i => { cnt[i.rarity] = (cnt[i.rarity] || 0) + 1; });
+      const seen = {};   // แบ่งน้ำหนักของระดับให้ลงตัว: เศษไปอยู่ชิ้นแรก ๆ (รวมทั้งระดับ = น้ำหนักระดับ × 100 พอดี → เปอร์เซ็นต์ตรงกับที่ประกาศ)
       for (const i of list) {
         const own = only && only.find(p => typeof p === 'object' && hit(i, p.id) && p.weight != null);
-        let w = own ? int(own.weight) : Math.max(1, Math.round(int((RW[i.rarity] != null ? RW[i.rarity] : (R[i.rarity] || {}).weight) || 1) * 100 / cnt[i.rarity]));
+        const tierW = int((RW[i.rarity] != null ? RW[i.rarity] : (R[i.rarity] || {}).weight) || 1) * 100, k = seen[i.rarity] = (seen[i.rarity] || 0) + 1;
+        let w = own ? int(own.weight) : Math.max(1, Math.floor(tierW / cnt[i.rarity]) + (k <= tierW % cnt[i.rarity] ? 1 : 0));
         if (!own && up.some(k => hit(i, k))) w = Math.max(1, Math.round(w * mult));
         pool.push(`(${q(b.id)}, ${q(i.kind)}, ${q(i.id)}, ${w})`);
       }
@@ -63,7 +68,8 @@ function build(skins, skills, gacha) {
     if (pool.length) {
       out.push('insert into public.gacha_pool(banner_id, kind, item_id, weight) values', pool.join(',\n'),
         'on conflict (banner_id, kind, item_id) do update set weight = excluded.weight;', '');
-      out.push(`delete from public.gacha_pool where banner_id in (${banners.map(b => q(b.id)).join(', ')}) and (banner_id, kind, item_id) not in (${pool.map(s => s.slice(0, s.lastIndexOf(',')) + ')').join(', ')});`, '');
+      // ของที่ไม่อยู่ในตู้แล้ว: ตั้งน้ำหนัก 0 (ไม่ออก · ไม่แสดง) แทนการลบแถว — รันผ่านเครื่องมือที่ห้ามคำสั่งลบได้ และย้อนกลับง่าย
+      out.push(`update public.gacha_pool set weight = 0 where (banner_id, kind, item_id) not in (${pool.map(s => s.slice(0, s.lastIndexOf(',')) + ')').join(', ')});`, '');
     }
   }
   const ids = (skins.characters || []).map(c => c.id);

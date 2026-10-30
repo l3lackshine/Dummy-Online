@@ -96,6 +96,10 @@
   // กาชา: สุ่ม/ขายตัวซ้ำ (ราคา โอกาส การันตี ตรวจที่ฐานข้อมูลทั้งหมด)
   DB.gacha = async () => { DB.G = await call('get_gacha'); return DB.G; };
   DB.pull = async (banner, n, cur) => { const r = await call('gacha_pull', { p_banner: banner, p_count: n, p_currency: cur || 'coins' }); await DB.refresh(); DB.gacha().then(repaint).catch(() => {}); return r; };
+  // ตั๋วสุ่ม (แลกด้วยเพชร) · ร้านของแต่งรายสัปดาห์ (ซื้อด้วยเหรียญ)
+  DB.buyTicket = async (id, qty) => { const r = await call('buy_ticket', { p_id: id, p_qty: qty }); await DB.refresh(); await DB.gacha().catch(() => {}); repaint(); return r; };
+  DB.weekly = async () => { DB.W = await call('get_weekly_shop'); return DB.W; };
+  DB.buyWeekly = async (kind, id) => { const r = await call('buy_weekly', { p_kind: kind, p_id: id }); await DB.refresh(); await DB.weekly().catch(() => {}); repaint(); return r; };
   DB.sell = async (kind, id, qty) => { const r = await call('sell_dupes', { p_kind: kind, p_id: id, p_qty: qty }); await DB.refresh(); return r; };
   DB.qty = (kind, id) => { const i = ((DB.P && DB.P.inventory) || []).find(x => x.kind === kind && x.item_id === id); return i ? Number(i.qty) || 0 : 0; };
   DB.equip = async (kind, id) => { try { await call('set_equipped', { p_kind: kind, p_id: id }); if (DB.P) DB.P.equipped = Object.assign({}, DB.P.equipped, { [kind]: id }); } catch (e) { /* ใส่ไม่ได้ → ซิงก์กลับ */ DB.refresh().catch(() => {}); } };
