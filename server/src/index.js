@@ -274,7 +274,7 @@ function withOwned(socket, raw, fn) {
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
 // ส่งกุญแจแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น (ดู src/packkeys.js) — ต้องตั้ง PACK_MASTER ใน Environment
 app.get('/pack-key', require('./packkeys').route({ master: process.env.PACK_MASTER, verifyToken: SB.verifyToken, ownsItem: SB.ownsItem }));
-app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size }));
+app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: rooms.size, db: SB.enabled() }));   // db = ต่อฐานข้อมูลอยู่ไหม (ไม่บอกค่าคีย์)
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 
 // ===== ตรวจตัวตน: เมื่อเปิดใช้ Supabase ต้องแนบ access token ตอนเชื่อมต่อ (client ส่งใน auth.token) =====
