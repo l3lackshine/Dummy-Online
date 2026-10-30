@@ -892,7 +892,7 @@
 .rv-start b{font-size:5.6vh!important}
 .rv-start .rv-st{white-space:nowrap;display:flex;align-items:center;gap:.5vh;font-size:max(10px,2vh)!important;font-weight:800;opacity:1!important;color:#4a3410;text-shadow:none}
 .rv-start .rv-st .st-ic{width:2.8vh;height:2.8vh}.rv-start .rv-st b{font-size:inherit!important;letter-spacing:0;line-height:1}
-.rv-petal{position:fixed;z-index:9999;width:calc(max(16px,4.6vh)*var(--sz,1));height:calc(max(16px,4.6vh)*var(--sz,1));margin:calc(max(16px,4.6vh)*var(--sz,1)/-2) 0 0 calc(max(16px,4.6vh)*var(--sz,1)/-2);pointer-events:none;
+.rv-petal{position:fixed;z-index:9999;width:calc(max(10px,2.8vh)*var(--sz,1));height:calc(max(10px,2.8vh)*var(--sz,1));margin:calc(max(10px,2.8vh)*var(--sz,1)/-2) 0 0 calc(max(10px,2.8vh)*var(--sz,1)/-2);pointer-events:none;
   background:center/contain no-repeat;filter:drop-shadow(0 .2vh .4vh #c0607055);animation:rvPetal .9s cubic-bezier(.2,.7,.3,1) forwards}
 @keyframes rvPetal{0%{transform:translate(0,0) rotate(0) scale(.6);opacity:1}65%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1);opacity:0}}
 .rv-swap{display:inline-flex;align-items:center;gap:.8vh;height:4.6vh;padding:0 1.8vh;border-radius:99px;border:.25vh solid #e9cf86;background:linear-gradient(#3b4255ee,#2a3040ee);color:#fff;
