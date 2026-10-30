@@ -54,7 +54,6 @@
         <button onclick="go('shop')">${ic('shop')}<span>ร้านค้า</span></button>
         <button onclick="invOpen('characters')">${ic('bag')}<span>ช่องเก็บของ</span></button>
         <button onclick="go('profile')">${ic('user')}<span>โปรไฟล์</span></button>
-        <button onclick="openQuests()">${ic('quest')}<span>เควส</span></button>
       </nav>
       <div class="rv-play">
         <button class="rv-mode" onclick="thMode('match')"><i>${ic('search')}</i><span>หาแมตช์</span></button>

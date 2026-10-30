@@ -25,13 +25,29 @@ function gxPl(pi, pos, sub) {
   const info = `<div class=pl-info><b>${pi === S.my ? 'คุณ' : esc(p.n)}${S.dealer === pi ? ' 👑' : ''}</b>${sub ? sub(pi) : ''}${on ? '<i class=tm>▶ ตา</i>' : ''}</div>`, ico = `<span class="${cls}">${a}</span>`;
   return `<div class="pl pl-${pos}${pi === S.my ? ' me' : ''}${on ? ' active' : ''}" data-seat=${pi}>${pos === 'bottom' ? info + ico : ico + info}</div>`;
 }
+// โต๊ะของเกมอื่น ใช้หน้าตาเดียวกับดัมมี่ (ฉากทแยง 4 ฝั่ง · ตัวละครแต่ละฝั่ง · ป้ายกระจก · ปุ่มชุดเดียวกัน)
+// กลางโต๊ะ (o.center) / ข้อความ (o.hint) / ไพ่ในมือ+ปุ่ม (o.dock) มาจากแต่ละเกมเหมือนเดิม
 function gxFrame(o) {
   const n = S.P.length, opp = []; for (let k = 1; k < n; k++) opp.push((S.my + k) % n);
-  $('app').className = '';
-  $('app').innerHTML = `<div class=colL><div class=top><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span><button class="pill rl" onclick="showRules()">📖 กติกา</button></div>
- <div class=arena>${gxPl(opp[1], 'top', o.sub)}${gxPl(opp[0], 'left', o.sub)}<div class=felt><div class=gx>${o.center}</div></div>${gxPl(opp[2], 'right', o.sub)}${gxPl(S.my, 'bottom', o.sub)}</div></div>
- <div class=colR><div class=logs>${S.logs.slice(-1).map(esc).join('')}</div><div class=hint>${o.hint}<small>${o.small || ''}</small></div><div class=dock-wrap><div class=dock>${o.dock}</div></div></div>${S.over ? gxOver() : ''}`;
-  requestAnimationFrame(fitFrame);
+  const L = opp[0], T = opp[1], R = opp[2], on = pi => pi != null && S.cur === pi && !S.over;
+  const art = (pi, pos) => { if (pi == null) return ''; const a = av(S.P[pi].n, S.P[pi].ch); return `<div class="gx-art gx-art-${pos}${on(pi) ? ' on' : ''}">${a.startsWith('<img') ? `<span class=gx-chr>${a}</span>` : `<span class=gx-emo>${a}</span>`}</div>`; };
+  const sb = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch); return u ? `<div class="gx-sb gx-sb-${pos}${on(pi) ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
+  const seat = (pi, pos) => pi == null ? '' : `<div class="gx-seat gx-${pos}${on(pi) ? ' active' : ''}" data-seat=${pi}><div class=gx-name>${S.dealer === pi ? '👑 ' : ''}${esc(S.P[pi].n)}</div>${o.sub ? `<span class=gx-sub>${o.sub(pi)}</span>` : ''}${on(pi) ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`;
+  const q = (pos, pi) => `<polygon class="gx-q gx-q-${pos}${on(pi) ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
+  const dock = String(o.dock || '').replace('<div class=acts>', '<div class="acts gx-acts">');
+  $('app').className = 'gxl gxo';
+  $('app').innerHTML = `<div class="gx-stage gxo-stage" data-rule="${esc(S.rule || '')}">
+  <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', T)}${q('left', L)}${q('right', R)}${q('bottom', S.my)}</svg>
+  ${sb(T, 'top')}${sb(L, 'left')}${sb(R, 'right')}${sb(S.my, 'bottom')}
+  ${art(T, 'top')}${art(L, 'left')}${art(R, 'right')}${art(S.my, 'bottom')}
+  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span><button class="pill rl" onclick="showRules()">📖 กติกา</button></div>
+  <button class=gx-gear onclick="gxLeave()" aria-label="ออก">⚙</button>
+  ${seat(T, 'top')}${seat(L, 'left')}${seat(R, 'right')}
+  <div class="felt gx-hub gxo-hub"><div class=gx>${o.center}</div><div class=gx-hint>${o.hint}${o.small ? ` <small>${o.small}</small>` : ''}</div></div>
+  <div class="gx-me${on(S.my) ? ' active' : ''}" data-seat=${S.my}><div class=gx-name>${S.dealer === S.my ? '👑 ' : ''}คุณ</div>${o.sub ? `<span class=gx-sub>${o.sub(S.my)}</span>` : ''}${on(S.my) ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>
+  <div class=gxo-log>${S.logs.slice(-1).map(esc).join('')}</div>
+  <div class="dock gx-dock gxo-dock">${dock}</div>
+</div>${S.over ? gxOver() : ''}`;
 }
 const gxOrder = () => Array.from({ length: S.P.length }, (_, k) => (S.my + k) % S.P.length);
 const gxLeaveBtn = '<button class="g sm" onclick="gxLeave()">ออก</button>';

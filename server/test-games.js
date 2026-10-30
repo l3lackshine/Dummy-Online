@@ -128,7 +128,7 @@ async function playOut(pg, id) {
     pg.ev("showRules('" + id + "')"); ok(pg.modal.el && pg.modal.el.innerHTML.includes('กติกา' + NAMES[id]) && pg.modal.el.innerHTML.includes('การนับเหรียญ') && pg.modal.el.innerHTML.includes('30 🪙'), 'กล่องกติกาแสดงวิธีเล่นและเหรียญตามเดิมพัน 30'); pg.ev('closeRules()');
     await waitFor(() => !pg.ev('shufAnim'), 3000); pg.ev('doShuffle()'); await waitFor(() => pg.ev('lob.shuffle.ready')); const coin0 = Number(store.dummyCoins || 5000); pg.ev('begin()');
     const started = await waitFor(() => pg.ev('S') && pg.ev('S.rule') === id); 
-    ok(started && pg.ev('screen') === 'game' && pg.appEl.innerHTML.includes('class=gx') && pg.appEl.innerHTML.includes('class=arena'), 'เริ่มเกม: เข้าหน้าโต๊ะของ ' + NAMES[id]);
+    ok(started && pg.ev('screen') === 'game' && pg.appEl.innerHTML.includes('class=gx') && pg.appEl.innerHTML.includes('gxo-stage'), 'เริ่มเกม: เข้าหน้าโต๊ะของ ' + NAMES[id]);
     ok(await playOut(pg, id), NAMES[id] + ': เล่นจนจบตา');
     const dlt = pg.ev('S.res.coin.delta[S.my]'), coin1 = Number(store.dummyCoins);
     ok(coin1 === Math.max(0, coin0 + dlt) && pg.appEl.innerHTML.includes('class="ov rsv"') && pg.appEl.innerHTML.includes('เหรียญตานี้') && pg.appEl.innerHTML.includes((dlt > 0 ? '+' : '') + dlt + ' 🪙'), NAMES[id] + ': จ่ายเหรียญครั้งเดียวตรงผล (' + coin0 + ' ' + (dlt >= 0 ? '+' : '') + dlt + ' → ' + coin1 + ') และหน้าสรุปแสดงผล');

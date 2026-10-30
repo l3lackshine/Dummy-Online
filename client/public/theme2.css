@@ -491,3 +491,64 @@
 .gc-r{background:#fff!important;border:2px solid var(--rk,#ccc);color:#3b4255!important;font-weight:800}
 .gc-r.common{--rk:var(--rk-common)}.gc-r.rare{--rk:var(--rk-rare)}.gc-r.epic{--rk:var(--rk-sr)}.gc-r.legendary{--rk:var(--rk-ssr)}
 .iv-bigpv>.pv-frame{transform:none!important;height:100%;width:auto;max-width:100%;min-height:0}
+
+/* ===================== Beta 0.5.1 ===================== */
+/* หัวข้อหน้า: พื้นป้ายพอดีกับข้อความ และอยู่กลางจอทุกหน้า */
+.pg-title{container-type:normal!important;width:max-content!important;max-width:80vw;justify-self:center!important;align-self:start;margin-left:auto!important;margin-right:auto!important;
+  display:flex!important;align-items:center;justify-content:center;padding:0 2.2vw!important;box-sizing:content-box}
+.pg-title span{font-size:3.3vh!important;line-height:1!important;white-space:nowrap}
+.pg>.pg-title{grid-area:1/1;z-index:4}
+
+/* พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — ตัดเป็นช่องสามเหลี่ยมตามที่นั่ง */
+.gxl .gx-sb{position:absolute;inset:0;z-index:0;pointer-events:none;background:center/cover no-repeat;opacity:.9;transition:opacity .25s,filter .25s}
+.gxl .gx-sb-top{clip-path:polygon(0 0,100% 0,72% 28%,28% 28%);background-position:center top}
+.gxl .gx-sb-left{clip-path:polygon(0 0,28% 28%,28% 60%,0 100%);background-position:left center}
+.gxl .gx-sb-right{clip-path:polygon(100% 0,100% 100%,72% 60%,72% 28%);background-position:right center}
+.gxl .gx-sb-bottom{clip-path:polygon(0 100%,28% 60%,72% 60%,100% 100%);background-position:center bottom}
+.gxl .gx-sb.on{opacity:1;filter:brightness(1.08)}
+.gxl .gx-bg{position:absolute;z-index:0}
+.gxl .gx-art{z-index:1}
+
+/* ตัวละครของเราไม่ทับปุ่ม: ย้ายไปมุมซ้ายล่างสุด เล็กลง และอยู่ใต้ปุ่มทั้งหมด */
+#app.gxl .gx-art-bottom{left:-1%!important;bottom:0!important;width:11%!important;height:27%!important;z-index:1!important;opacity:.85}
+#app.gxl .gx-art-bottom.on{opacity:1}
+#app.gxl .gx-me{left:calc(11% + 1vh)!important;bottom:2vh!important}
+#app.gxl .gx-tools{left:calc(11% + 1vh)!important;bottom:calc(2vh + 15vh)!important}
+#app.gxl .gx-dock{left:24%!important;right:19%!important}
+
+/* ===== เกมอื่น (ป๊อกเด้ง เก้าเก ผสมสิบ อีแก่) ใช้โต๊ะแบบเดียวกับดัมมี่ ===== */
+#app.gxo .gx-stage{background:url(./UI/Assets/kit2/bg-home.webp) center/cover no-repeat}
+#app.gxo .gx-hub.gxo-hub{left:24%!important;right:24%!important;top:13%!important;bottom:37%!important;display:flex;flex-direction:column;gap:1vh;overflow:auto;padding:1.4vh!important}
+#app.gxo .gx-hub .gx{flex:1;min-height:0;display:flex;flex-direction:column;gap:1vh;justify-content:center}
+#app.gxo .gx-hub .gx-hint{flex:none}
+#app.gxo .gx-sub{font:700 max(10px,1.9vh) Sarabun,sans-serif;color:#3b4255;background:#fffd;border:.2vh solid #e9c27a;border-radius:99px;padding:.1vh 1.2vh;white-space:nowrap}
+#app.gxo .gx-sub small{font:inherit;color:inherit}
+#app.gxo .gxo-log{position:absolute;z-index:4;left:50%;transform:translateX(-50%);bottom:calc(37% - 4.6vh);max-width:52%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:#fff;font:600 max(10px,1.8vh) Sarabun,sans-serif;text-shadow:0 1px 3px #000a}
+/* กลางโต๊ะ: ช่องผู้เล่น/กองทิ้ง เป็นกระจกขาว อ่านง่ายบนพื้นม่วง */
+#app.gxo .gs,#app.gxo .gpile{background:#ffffff1f!important;border:.2vh solid #ffffff40!important;border-radius:1.6vh!important;color:#fff}
+#app.gxo .gs.on,#app.gxo .gpile.on{border-color:#e0a521!important;box-shadow:0 0 1.2vh #e0a52199!important}
+#app.gxo .gs.me,#app.gxo .gpile.mine{background:#e0a52133!important}
+#app.gxo .gs small,#app.gxo .gpile small,#app.gxo .gnote,#app.gxo .gstock,#app.gxo .gind{color:#f1ecf7!important}
+#app.gxo .gpot{background:#ffffff1f!important;border:.2vh solid #e0a521!important;color:#ffe3a8!important}
+#app.gxo .gpile.can{border-color:#7cff9a!important;box-shadow:0 0 1.2vh #7cff9a88!important}
+/* ไพ่ในมือและปุ่ม */
+#app.gxo .gxo-dock{left:24%!important;right:0!important;bottom:calc(var(--cw)*-.3)!important}
+#app.gxo .gxo-dock .hand{padding-right:30vh!important}
+#app.gxo .gxo-dock .acts.gx-acts{position:fixed;right:2vh;bottom:2.5vh;width:round(down,26vh,2px)}
+#app.gxo .gxo-dock .acts.gx-acts .sm{display:none!important}
+#app.gxo .gxo-dock .acts.gx-acts button:disabled{filter:grayscale(.7);opacity:.7}
+#app.gxo .gxo-dock .gempty{color:#fff;font-weight:700}
+#app.gxo .c.dim{opacity:.5}
+#app.gxl .gx-tools{bottom:calc(2vh + 20vh)!important}
+#app.gxo .gx-hub.gxo-hub{top:11%!important;bottom:33%!important}
+#app.gxo .gx-hub .gx{justify-content:safe center;overflow:auto}
+#app.gxo .gslots,#app.gxo .gpiles{gap:.8vh!important}
+#app.gxo .gs,#app.gxo .gpile{padding:.6vh 1vh!important;gap:.3vh!important}
+#app.gxo .gx .gcards{min-height:0!important}
+#app.gxo .gx .gcards .c{width:calc(var(--u)*5.4)!important;height:calc(var(--u)*7.6)!important;font-size:max(10px,calc(var(--u)*2.4))!important}
+#app.gxo .sk-info{left:auto!important;right:2vh!important;top:9vh!important;bottom:auto!important;transform:none!important;max-width:min(30vw,380px)!important;text-align:left!important}
+.acts.gx-acts .g{border-image-source:var(--k-gray)!important;color:var(--gs-ivory,#ece5d8)!important;--dot:#8e96a8}
+#app.gxo .gxo-log{bottom:calc(33% - 4.4vh)!important}
+#app.gxl .sk-info{left:auto!important;right:2vh!important;top:9vh!important;bottom:auto!important;transform:none!important;max-width:min(30vw,380px)!important;text-align:left!important;font-size:max(11px,2vh)!important}
+@media (max-height:520px){#app.gxl .gx-tools{bottom:calc(2vh + 27vh)!important}}

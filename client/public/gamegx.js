@@ -1,5 +1,7 @@
 /* gamegx.js — หน้าโต๊ะเล่นแนวนอนแบบ 4 ฝั่งทแยง (อ้างอิงภาพตัวอย่าง)
    ยังคงของเดิมครบ: กองจั่ว · กองทิ้ง · ไพ่ที่เกิด (วางหน้าผู้เล่นแต่ละฝั่ง) · ไพ่ในมือ · ปุ่มเกิด/ฝาก/ทิ้ง */
+// รูปพื้นหลังที่นั่งของตัวละคร (ใช้ทั้งดัมมี่และเกมอื่น)
+function gxSeatImg(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch); return (x && x.seat) || ''; }
 const isWide = () => { try { return !!(window.matchMedia && window.matchMedia('(min-aspect-ratio:5/4)').matches); } catch (e) { return false; } };
 function gxView(c) {
   const { top, left, right, pm, pd, h, fresh } = c, me = S.P[S.my];
@@ -12,11 +14,14 @@ function gxView(c) {
     return `<div class="gx-art gx-art-${pos}${on ? ' on' : ''}">${art(p)}</div>`; };
   const meArt = `<div class="gx-art gx-art-bottom${meOn ? ' on' : ''}">${art(me)}</div>`;
   const meBadge = `<div class="gx-me${meOn ? ' active' : ''}" data-seat=${S.my}><div class=gx-name>คุณ</div><div class=gx-stack><i></i><i></i><b data-pc=${S.my}>${me.n_cards}</b><i></i><i></i></div><small class=gx-pts>${me.pts} แต้ม</small>${meOn ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`;
+  // พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — วางเต็มช่องสามเหลี่ยมของที่นั่งนั้น · ไม่มีรูป = ใช้สีเดิม
+  const seatBg = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch); return u ? `<div class="gx-sb gx-sb-${pos}${S.cur === pi && !S.over ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
   const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
   const on = pi => pi != null && S.cur === pi && !S.over;
   const last = S.disc.length ? S.disc[S.disc.length - 1] : null;
   return `<div class=gx-stage>
   <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(top))}${q('left', on(left))}${q('right', on(right))}${q('bottom', on(S.my))}</svg>
+  ${seatBg(top, 'top')}${seatBg(left, 'left')}${seatBg(right, 'right')}${seatBg(S.my, 'bottom')}
   ${wedge(top, 'top')}${wedge(left, 'left')}${wedge(right, 'right')}${meArt}
   <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><button class="pill gx-sk" onclick=openSkills()>⚡ สกิล</button><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span></div>
   <button class=gx-gear onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">⚙</button>

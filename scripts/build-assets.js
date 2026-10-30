@@ -36,11 +36,12 @@ function loadCharacters() {
     if (!cfg) { warns.push(`โฟลเดอร์ตัวละคร ${d} ไม่มี Character.config — ข้าม`); continue; }
     if (!cfg.id) cfg.id = d;
     if (cfg.id !== d) problems.push(`Character/${d}: id "${cfg.id}" ต้องตรงกับชื่อโฟลเดอร์`);
-    const { image, effects, sounds, background, ...rest } = cfg, e = { ...rest };
+    const { image, effects, sounds, background, seat, ...rest } = cfg, e = { ...rest };
     if (image) { needFile(path.join(base, image), `รูปตัวละคร ${d}`); e.asset = url('Character', d, image); }
     const fx = resolveMap(effects, `Character/${d}`), sd = resolveMap(sounds, `Character/${d}`);
     if (Object.keys(fx).length) e.effects = fx; if (Object.keys(sd).length) e.sounds = sd;
     if (background) e.background = url('Character', d, background);
+    if (seat) { needFile(path.join(base, seat), `พื้นหลังที่นั่ง ${d}`); e.seat = url('Character', d, seat); } // พื้นหลังที่นั่งบนโต๊ะเล่น
     e.src = 'folder'; out.push(e);
   }
   return out.sort(byOrder);
