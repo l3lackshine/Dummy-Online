@@ -19,7 +19,8 @@
     quest: '<path d="M6 3h10l3 3v15H6zM9 9h7M9 13h7M9 17h4"/>',
     search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
     users: '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
-    plus: '<path d="M12 5v14M5 12h14"/>'
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8M12 13v4M10.5 15h3"/>'
   };
   const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[n] + '</svg>';
   window.thIcon = ic;
@@ -35,7 +36,7 @@
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
     const d = document.createElement('div'); d.className = 'rv';
     d.innerHTML = `
-      <button class="rv-me" onclick="go('profile')"><span class="rv-av">${av ? `<img src="${E(av)}" alt="">` : ''}</span><span class="rv-nm"><b>${E(name)}</b><small>แตะเพื่อดูโปรไฟล์</small></span></button>
+      <button class="rv-me" onclick="go('profile')"><span class="rv-av">${av ? `<img src="${E(av)}" alt="">` : ''}</span><span class="rv-nm"><b>${E(name)}${window.Progress ? ' ' + Progress.badge() : ''}</b><small>แตะเพื่อดูโปรไฟล์</small></span></button>
       <div class="rv-top">
         <span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
         ${P ? `<span class="rv-cur"><img src="${KIT}gem.webp" alt="">${N(P.mcash)}<i onclick="go('shop')">${ic('plus')}</i></span>` : ''}
@@ -48,6 +49,7 @@
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
+        <button class="rv-card rv-bp" onclick="bpOpen()"><i>${ic('medal')}</i><span>แบทเทิลพาส<small>ฤดู ราชินีซากุระ</small></span></button>
         <button class="rv-card" onclick="openQuests()"><i>${ic('quest')}</i><span>เควสประจำวัน<small>${nq ? nq + ' รายการรอรับ' : 'ทำเควสรับเหรียญ'}</small></span>${nq ? '<em>' + E(nq) + '</em>' : ''}</button>
       </div>
       <nav class="rv-nav">

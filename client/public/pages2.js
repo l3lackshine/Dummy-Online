@@ -30,6 +30,7 @@
     const st = DB.P.stats || [], t = st.reduce((a, g) => ({ p: a.p + g.plays, w: a.w + g.wins }), { p: 0, w: 0 });
     return `<div class=pv-stats><div><b>${N(DB.P.coins)}</b><small>เหรียญ</small></div><div><b>${t.p}</b><small>เล่นแล้ว</small></div><div><b>${t.w}</b><small>ชนะ</small></div><div><b>${t.p ? Math.round(t.w / t.p * 100) : 0}%</b><small>% ชนะ</small></div></div>`;
   }
+  function lvBar() { const L = Progress.level(), p = Math.min(100, Math.round(L.into / L.need * 100)); return `<div class=pv-lv><b>Lv.${L.level}</b><i><u style="width:${p}%"></u></i><small>${N(L.into)}/${N(L.need)} EXP</small></div>`; }
   function profileView() {
     const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
     const title = (DBON() ? DB.P.title : get('dummyTitle', '')) || '';
@@ -37,12 +38,12 @@
     const body = `<div class=pv>
       <section class="pv-card pv-id">
         <div class=pv-av><img src="${E(ch && ch.asset || '')}" alt=""><button class=pv-avbtn onclick="invOpen('characters')">เปลี่ยน</button></div>
-        <b class=pv-nm>${E(nick)}</b><span class=pv-tt>${title ? E(title) : 'ยังไม่ได้ตั้งฉายา'}</span><small class=pv-un>${uname}</small>
+        <b class=pv-nm>${E(nick)}</b>${window.Progress ? lvBar() : ''}<span class=pv-tt>${title ? E(title) : 'ยังไม่ได้ตั้งฉายา'}</span><small class=pv-un>${uname}</small>
         ${statsBox()}
       </section>
       <section class="pv-card pv-form">
         <h3 class=pv-h><i>${ic('user')}</i>ข้อมูลโปรไฟล์</h3>
-        <label class=pv-f><span>ชื่อในเกม</span><input id=nickInput maxlength=14 value="${E(nick)}" oninput="setNick(this.value)"><small>ไม่เกิน 14 ตัวอักษร</small></label>
+        <label class=pv-f><span>ชื่อในเกม</span><span class=pv-nrow><input id=nickInput maxlength=14 value="${E(nick)}" oninput="setNick(this.value)">${DBON() ? `<button id=nickSave class=pv-nsave disabled onclick="event.preventDefault();nickSave()">บันทึกชื่อ</button>` : ''}</span><small>ไม่เกิน 14 ตัวอักษร${DBON() ? ' · ' + (DB.renameCost() ? 'เปลี่ยนชื่อครั้งละ ' + N(DB.renameCost()) + ' 🪙' : 'เปลี่ยนครั้งแรกฟรี ครั้งต่อไป ' + N(DB.P.rename_cost || 500) + ' 🪙') : ''}</small></label>
         <label class=pv-f><span>ฉายา</span><input id=titleInput maxlength=16 value="${E(title)}" placeholder="เช่น ราชาน็อก" oninput="pfTitle(this.value)"><small>แสดงใต้ชื่อในห้องและหน้าสรุปผล</small></label>
         <div class=pv-f><span>รูปโปรไฟล์</span><button class=pv-link onclick="invOpen('characters')"><i>${ic('bag')}</i>เลือกจากตัวละครในช่องเก็บของ</button></div>
       </section>

@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node -r ./src/env.js src/index.js",
     "dev": "node -r ./src/env.js --watch src/index.js",
-    "test": "node test-shuffle.js && node test-rules.js && node test-scoring.js && node test-fuzz.js && node test-online.js && node test-client.js && node test-games.js && node test-simple-rules.js && node test-wallet.js && node test-supabase.js && node test-packkeys.js && node test-skills.js && node test-skills-account.js && node test-namefilter.js"
+    "test": "node test-shuffle.js && node test-rules.js && node test-scoring.js && node test-fuzz.js && node test-online.js && node test-client.js && node test-games.js && node test-simple-rules.js && node test-wallet.js && node test-supabase.js && node test-packkeys.js && node test-skills.js && node test-skills-account.js && node test-namefilter.js && node test-economy.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -1,0 +1,37 @@
+{
+  "note": "แบทเทิลพาสฤดูที่ 1 · แก้แล้วรัน node scripts/gen-bp-sql.js แล้ววาง supabase/bp_seed.sql ใน SQL Editor · tracks: free (ทุกคน) / gem (ปลดด้วยเพชร คืนทุนได้) / premium (ล็อกไว้ก่อน ยังไม่มีระบบเติมเงิน) · default = รางวัลทุกเลเวล, levels = รางวัลเฉพาะเลเวล (แทนค่า default) · item = \"kind:id\" ต้องมีใน catalog · preview = ข้อความแสดงอย่างเดียว (ของที่ยังไม่ได้ทำ)",
+  "id": "s1",
+  "name": "ราชินีซากุระ",
+  "starts": "2026-10-30",
+  "days": 30,
+  "levelExp": 1000,
+  "maxLevel": 50,
+  "gemCost": 300,
+  "premiumOpen": false,
+  "cycleCoins": 200,
+  "exp": { "dailyBonus": 1000, "weeklyQuest": 750, "weeklyBonus": 1000, "perGame": 30, "perGameDailyCap": 300, "tierBonusPct": 3 },
+  "tracks": {
+    "free": {
+      "default": { "coins": 100 },
+      "every": { "5": { "mcash": 10 }, "10": { "mcash": 10, "coins": 300 } },
+      "levels": { "25": { "item": "tables:sakura-felt" }, "50": { "mcash": 30, "coins": 1000 } }
+    },
+    "gem": {
+      "default": { "coins": 150 },
+      "every": { "5": { "mcash": 45 } },
+      "levels": { "15": { "item": "frames:sakura-gem", "mcash": 45 }, "35": { "item": "backs:sakura-01", "mcash": 45 }, "50": { "mcash": 45, "coins": 2000 } }
+    },
+    "premium": {
+      "default": { "coins": 200 },
+      "every": { "5": { "mcash": 20 } },
+      "levels": {
+        "1": { "preview": "อีโมตซากุยะ (เฉพาะฤดู)" },
+        "10": { "preview": "หลังไพ่ราชินีซากุระ", "mcash": 20 },
+        "20": { "preview": "โต๊ะท้องพระโรง", "mcash": 20 },
+        "30": { "preview": "กรอบการ์ดราชินีซากุระ", "mcash": 20 },
+        "40": { "preview": "ฉายา \"ราชินีแห่งฤดู\"", "mcash": 20 },
+        "50": { "preview": "พื้นหลังท้องพระโรงทองแดง", "mcash": 20 }
+      }
+    }
+  }
+}

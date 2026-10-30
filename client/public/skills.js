@@ -199,13 +199,16 @@
   }
 
   // ---------- การ์ดตัวละคร (หน้าสกิล / ช่องเก็บของ) ----------
+  // เหรียญที่ใช้อัปดาว (ต้องตรงกับ game_config.star_coin_cost ในฐานข้อมูล)
+  const coinCost = st => { const a = (dbOn() && Array.isArray(DB.P.star_coin_cost) ? DB.P.star_coin_cost : null) || [500, 1000, 2000, 4000]; return Number(a[Math.min(st - 1, a.length - 1)]) || 0; };
+  const coinsNow = () => (dbOn() ? Number(DB.P.coins) || 0 : (typeof sv !== 'undefined' ? sv.coins : 0));
   const starsHtml = (n, max) => Array.from({ length: max }, (_, i) => `<i class="${i < n ? 'on' : ''}">★</i>`).join('');
   window.skCharCard = function (id, opt) {
     opt = opt || {}; const ch = (typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY.characters || [] : []).find(x => x.id === id), s = SkillCore.skillOf(SK, id);
-    const st = starsOf(id), max = maxStars(id), full = st >= max, cost = full ? 0 : starCost(id, st), have = dupesOf(id), can = !full && have >= cost;
+    const st = starsOf(id), max = maxStars(id), full = st >= max, cost = full ? 0 : starCost(id, st), have = dupesOf(id), cc = full ? 0 : coinCost(st), can = !full && have >= cost && coinsNow() >= cc;
     const games = s ? Object.keys(GAME).filter(g => s.games && s.games[g]).map(g => `<div class=ck-g><b>${GAME[g]}</b><small>${E(s.games[g].desc || '')}</small></div>`).join('') : '';
     const un = (SK.starUnlocks || []).filter(u => u.star <= max).map(u => `<li class="${st >= u.star ? 'on' : ''}">${'★'.repeat(u.star)} ${E(u.name)} <em>เร็ว ๆ นี้</em></li>`).join('');
-    const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · ใช้ตัวซ้ำ ${cost} (มี ${have})</button>${!can && dbOn() ? `<button class="sk-up" onclick="document.querySelectorAll('.sk-modal').forEach(n=>n.remove());go('shop')">🎰 ไปสุ่มกาชาเพื่อหาตัวซ้ำ</button>` : ''}`;
+    const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · ตัวซ้ำ ${cost} (มี ${have}) + ${cc.toLocaleString('en-US')} 🪙</button>${!can && dbOn() ? `<button class="sk-up" onclick="document.querySelectorAll('.sk-modal').forEach(n=>n.remove());go('shop')">🎰 ไปสุ่มกาชาเพื่อหาตัวซ้ำ</button>` : ''}`;
     return `<div class="ck${opt.compact ? ' compact' : ''}"><div class=ck-h>${ch && ch.asset ? `<img src="${E(ch.asset)}" alt="">` : ''}<div><b>${E((ch && ch.name) || id || 'ตัวละคร')}</b><div class=ck-stars>${starsHtml(st, max)}</div></div></div>
       ${s ? `<div class=ck-sk2><span class="ck-tier ${E(s.tier)}">${TIER[s.tier] || ''}</span><b>${E(s.icon || '')} ${E(s.name)}</b><small>${E(s.desc || '')}</small></div>${opt.compact ? '' : games}` : '<small class=ck-none>ตัวละครนี้ยังไม่มีสกิล</small>'}
       ${opt.compact ? '' : `<h4>ดาวปลดของแต่ง (ไม่เพิ่มพลัง)</h4><ul class=ck-un>${un}</ul>`}<div class=ck-up>${up}</div></div>`;
@@ -213,7 +216,7 @@
   window.skUpStar = async function (id) {
     const st = starsOf(id); if (st >= maxStars(id)) return; const cost = starCost(id, st);
     if (dbOn()) { try { const r = await DB.upStar(id); if (window.dbToast) dbToast('⭐ ' + r.stars + ' ดาว!'); } catch (e) { if (window.dbToast) dbToast(e.message); } }
-    else { if (dupesOf(id) < cost) return; dupes0[id] = dupesOf(id) - cost; jset('dummyDupes', dupes0); stars0[id] = st + 1; jset('dummyStars', stars0); if (typeof save === 'function') save(); }
+    else { const cc = coinCost(st); if (dupesOf(id) < cost || sv.coins < cc) return; sv.coins -= cc; dupes0[id] = dupesOf(id) - cost; jset('dummyDupes', dupes0); stars0[id] = st + 1; jset('dummyStars', stars0); if (typeof save === 'function') save(); }
     const m = document.querySelector('.sk-modal.sk-main'); if (m) fill(m); render();
   };
   function fill(m) {

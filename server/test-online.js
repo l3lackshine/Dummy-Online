@@ -183,7 +183,7 @@ const connectedPlayersCount = r => r.players.filter(p => p.connected && p.id).le
       find(A, 20); await until(() => A.joined && A.lob); ok(A.lob.match && A.lob.match.state === 'searching' && A.lob.match.humans === 1, 'กดหาแมตช์: เข้าห้องจับคู่ สถานะกำลังค้นหา');
       E.errors.length = 0; E.emit('room:join', { code: A.joined.code, name: 'E9' }); await sleep(80); ok(E.errors.length > 0 && !E.joined, 'ห้องจับคู่เข้าด้วยรหัสห้องไม่ได้');
       find(B, 20); await until(() => B.joined); ok(B.joined.code === A.joined.code && A.lob.match.humans === 2, 'ตัวเลือกเดียวกัน (เดิมพัน 20) → เข้าห้องเดียวกัน');
-      find(C, 50); await until(() => C.joined); ok(C.joined.code !== A.joined.code, 'เดิมพันต่างกัน (50) → คนละห้อง'); C.emit('room:leave'); await sleep(60);
+      C.emit('match:find', { name: C.nm, rule: 'dummy', options: { stake: 20, spetoMode: 'knocker' } }); await until(() => C.joined); ok(C.joined.code !== A.joined.code, 'ตัวเลือกกติกาต่างกัน (สเปโตเฉพาะคนน็อก) → คนละห้อง'); C.emit('room:leave'); await sleep(60);
       find(E, 20); find(F, 20); await until(() => A.lob.match && A.lob.match.state === 'countdown', 3000, 'countdown'); ok(A.lob.match.cdLeftMs > 0 && A.lob.match.humans === 4, 'ครบ 4 คน → นับถอยหลังเริ่ม');
       await until(() => A.S && B.S && E.S && F.S, 3000, 'auto start'); ok(roomsD.get(A.joined.code).game.P.length === 4 && A.lob.match.state === 'playing', 'หมดเวลานับ → เริ่มเกมเอง ไม่ต้องมีใครกด');
       { const [G, H, I, J] = await Promise.all(['G9', 'H9', 'I9', 'J9'].map(cl)); [G, H, I, J].forEach(c => find(c, 30)); await until(() => G.lob && G.lob.match && G.lob.match.state === 'countdown', 3000, 'cd2');

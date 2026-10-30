@@ -38,7 +38,7 @@ const M = require('./test-mock-sio');
   const rec = calls.filter(x => x.path.endsWith('record_game_result'));
   ok(rec.length === 1, 'จบตา → บันทึกผลครั้งเดียวต่อผู้เล่นที่ล็อกอิน (บอทไม่ถูกบันทึก)');
   const a = rec[0].body;
-  ok(a.p_user === 'uid-alice' && a.p_game === 'dummy' && a.p_delta === 120 && a.p_won === true && a.p_melds === 2 && a.p_knock === true && a.p_char === 'boy', 'ส่งผลถูก: เดลตา 120, ชนะ, เกิด 2 ชุด, น็อก, ตัวละคร boy');
+  ok(a.p_user === 'uid-alice' && a.p_game === 'dummy' && a.p_delta === 60 && a.p_won === true && a.p_melds === 2 && a.p_knock === true && a.p_char === 'boy', 'ส่งผลถูก: ที่ 1 จาก 4 ที่นั่ง → รางวัล 60 เหรียญ (ไม่ใช่ชิปในโต๊ะ 120), ชนะ, เกิด 2 ชุด, น็อก, ตัวละคร boy');
   ok(a.p_gid === G.gid, 'ใช้ gid ของเกมกันบันทึกซ้ำ');
   c.emit('game:shuffle'); await sleep(60);
   ok(calls.filter(x => x.path.endsWith('record_game_result')).length === 1, 'event ต่อมาไม่บันทึกซ้ำ');

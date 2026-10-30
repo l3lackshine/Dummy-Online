@@ -32,7 +32,7 @@ function gxView(c) {
   <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(top))}${q('left', on(left))}${q('right', on(right))}${q('bottom', on(S.my))}</svg>
   ${seatBg(top, 'top')}${seatBg(left, 'left')}${seatBg(right, 'right')}${seatBg(S.my, 'bottom')}
   ${wedge(top, 'top')}${wedge(left, 'left')}${wedge(right, 'right')}${meArt}
-  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><button class="pill gx-sk" onclick=openSkills()>⚡ สกิล</button><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span></div>
+  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><button class="pill gx-sk" onclick=openSkills()>⚡ สกิล</button><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}</span></div>
   <button class=gx-gear onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">⚙</button>
   ${badge(top, 'top')}${badge(left, 'left')}${badge(right, 'right')}
   <div class="zone zone-top">${ms(top)}</div><div class="zone zone-left">${ms(left)}</div><div class="zone zone-right">${ms(right)}</div><div class="zone zone-bottom">${ms(S.my)}</div>
@@ -83,7 +83,7 @@ function gxRoom(c) {
   <div class=rm-hint>${esc(M || !h || /^รอผู้เล่น|^ห้องเล่นกับบอท/.test(h) ? status : h)}</div>
   <aside class=rm-panel>
     <div class=rm-card>${soloRoom || M ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
-      ${M ? row('สถานะ', M.state === 'countdown' ? '⏱ นับถอยหลัง' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่'))}${stake != null ? row('เดิมพัน', '🪙 ' + esc(stake) + ' ต่อคน') : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
+      ${M ? row('สถานะ', M.state === 'countdown' ? '⏱ นับถอยหลัง' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่'))}${row('รางวัล', 'เหรียญตามอันดับ · แพ้ก็ได้')}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
     ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}</div>`}
     <div class=rm-acts>${M ? '<button class=gray onclick=leave()>✖ ยกเลิกการค้นหา</button>' : ''}${!M && !isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${!M && isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom || M ? '' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}</div>
   </aside>

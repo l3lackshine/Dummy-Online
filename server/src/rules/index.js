@@ -20,7 +20,9 @@ register(require('./eekae'));     // อีแก่
 const DEFAULT = 'dummy';
 const has = id => registry.has(id);
 const get = id => registry.get(has(id) ? id : DEFAULT);
-const list = () => [...registry.values()].map(m => m.meta);
+// ไม่มีระบบเดิมพันแล้ว: "stake" เป็นแค่ขนาดชิปในโต๊ะ (ใช้จัดอันดับในตานั้น ไม่ใช่เหรียญ) — ซ่อนจากหน้าสร้างห้องและบังคับเป็นค่าเริ่มต้น
+const HIDDEN = new Set(['stake']);
+const list = () => [...registry.values()].map(m => Object.assign({}, m.meta, { options: (m.meta.options || []).filter(o => !HIDDEN.has(o.key)) }));
 
 // ตรวจ/ปัดค่าตัวเลือกจาก client ตามที่ meta.options ประกาศ — ค่าที่ไม่ถูกต้องใช้ค่าเริ่มต้น, ตัวเลขถูกบีบให้อยู่ในช่วง
 function cleanOptions(id, raw) {
@@ -33,6 +35,7 @@ function cleanOptions(id, raw) {
       if (o.step) v = o.min + Math.round((v - o.min) / o.step) * o.step;
     } else if (o.type === 'select') v = (o.choices || []).some(c => c.v === v) ? v : o.default;
     else v = o.default;
+    if (HIDDEN.has(o.key)) v = o.default;
     out[o.key] = v;
   }
   return out;

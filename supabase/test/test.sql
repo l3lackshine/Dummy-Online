@@ -71,7 +71,7 @@ do $t$ declare j jsonb; begin
   j := public.gacha_pull('t1',1);
   perform pg_temp.ok(not (j->'results'->0->>'new')::boolean and (j->'results'->0->>'qty')::int = 2, 'ได้ซ้ำ → qty 2');
   j := public.upgrade_star('rina');
-  perform pg_temp.ok((j->>'stars')::int = 2 and (j->>'cost')::int = 1, 'อัพดาว 1→2 ใช้ตัวซ้ำ 1');
+  perform pg_temp.ok((j->>'stars')::int = 2 and (j->>'used')::int = 1 and (j->>'coins_used')::int = 500, 'อัพดาว 1→2 ใช้ตัวซ้ำ 1 + 500 เหรียญ');
   perform pg_temp.ok((select qty from public.inventory where item_id='rina') = 1, 'ตัวซ้ำถูกใช้แล้ว เหลือ 1');
   perform pg_temp.fails($$select public.upgrade_star('rina')$$, 'ดาว 2→3 ต้อง 2 ตัวซ้ำ แต่ยังไม่มี');
   perform public.gacha_pull('t1',10);   -- +10 → qty 11
@@ -86,7 +86,7 @@ do $t$ declare j jsonb; begin
   perform pg_temp.fails($$select public.sell_dupes('characters','rina',1)$$, 'เหลือ 1 ขายไม่ได้');
   perform pg_temp.fails($$select public.sell_dupes('characters','nope',1)$$, 'ขายของที่ไม่มี');
   perform pg_temp.fails($$select public.sell_dupes('characters','rina',0)$$, 'จำนวนต้อง ≥ 1');
-  perform pg_temp.ok((select coins from public.profiles) = 5100 - 100 - 100 - 900 + 8000, 'เหรียญหลังสุ่ม/ขายถูก');
+  perform pg_temp.ok((select coins from public.profiles) = 5100 - 100 - 100 - 900 - 500 - 1000 + 8000, 'เหรียญหลังสุ่ม/อัปดาว/ขายถูก');
   perform pg_temp.ok((public.set_equipped('characters','rina')->>'characters') = 'rina', 'ใส่ตัวละครที่สุ่มได้');
   perform pg_temp.ok((select count(*) from public.gacha_log) = 3, 'บันทึกประวัติสุ่ม');
   perform pg_temp.ok(jsonb_array_length(public.get_gacha()->'banners') >= 3, 'get_gacha คืนตู้');
@@ -116,20 +116,20 @@ select public.record_game_result('00000000-0000-0000-0000-0000000000a1','g2','du
 select public.record_game_result('00000000-0000-0000-0000-0000000000a1','g3','pokdeng',0,false,0,false,null);
 reset role;
 select pg_temp.ok((select plays||'/'||wins||'/'||losses from public.game_stats where game_id='dummy') = '2/1/1', 'สถิติดัมมี่ 2 เล่น 1 ชนะ 1 แพ้');
-select pg_temp.ok((select draws from public.game_stats where game_id='pokdeng') = 1, 'เสมอนับ draw');
+select pg_temp.ok((select losses from public.game_stats where game_id='pokdeng') = 1, 'ไม่ได้ที่ 1 นับเป็นแพ้');
 select pg_temp.ok((select last_game from public.profiles where username='alice') = 'pokdeng', 'เกมล่าสุด');
-select pg_temp.ok((select coins from public.profiles where username='alice') = current_setting('t.coins')::bigint+200-50, 'เหรียญหลังผลเกมถูก');
+select pg_temp.ok((select coins from public.profiles where username='alice') = current_setting('t.coins')::bigint+200, 'เหรียญหลังผลเกมถูก (แพ้ไม่เสียเหรียญ)');
 
 -- โบนัสเหรียญตามดาว: rina ดาว 1 → 0%, ดาว 2 → 10%
 update public.user_characters set stars=2 where user_id='00000000-0000-0000-0000-0000000000a1' and character_id='rina';
 set role service_role;
-select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000a1','g4','dummy',100,true,0,false,'rina')->>'bonus')::int = 10, 'โบนัสเหรียญ 10% ที่ดาว 2');
+select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000a1','g4','dummy',100,true,0,false,'rina')->>'bonus')::int = 0, 'ไม่มีโบนัสเหรียญตามดาวแล้ว');
 select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000a1','g5','dummy',-100,false,0,false,'rina')->>'bonus')::int = 0, 'แพ้ไม่มีโบนัส');
 reset role;
 
 -- เหรียญไม่ติดลบ
 set role service_role;
-select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000b2','b1','dummy',-99999,false,0,false,null)->>'coins')::int = 0, 'แพ้เกินที่มี → 0 ไม่ติดลบ');
+select pg_temp.ok((public.record_game_result('00000000-0000-0000-0000-0000000000b2','b1','dummy',-99999,false,0,false,null)->>'delta')::int = 0, 'ส่งค่าติดลบมา → ไม่หักเหรียญ (ไม่มีการเสียจากการเล่น)');
 select pg_temp.ok((public.grant_mcash('00000000-0000-0000-0000-0000000000b2',100,'pay-1')->>'mcash')::int = 100, 'เติม MCash 100');
 select pg_temp.ok((public.grant_mcash('00000000-0000-0000-0000-0000000000b2',100,'pay-1')->>'duplicate')::boolean, 'เติมซ้ำเลขอ้างอิงเดิมไม่เพิ่ม');
 reset role;

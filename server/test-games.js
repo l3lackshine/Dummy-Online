@@ -4,6 +4,7 @@
 //  [C] client จริง (app.js + games.js ใน sandbox) ต่อกับเซิร์ฟเวอร์: หน้าเลือกเกม → เล่นคนเดียว → สับไพ่ → เล่นจนจบ → เหรียญตรง
 const assert = require('assert'), vm = require('vm'), fs = require('fs'), path = require('path');
 const Rules = require('./src/rules');
+const opts = (id, o = {}) => Object.assign(Rules.cleanOptions(id, o), o);   // ทดสอบคณิตของ engine ด้วยชิปค่าอื่นได้ (ห้องจริงล็อกไว้ที่ค่ามาตรฐาน)
 let passed = 0; const ok = (c, m) => { assert(c, m); passed++; console.log('  ✓', m); };
 const k = (r, s) => ({ id: s * 13 + r - 1, r, s });
 const IDS = ['pokdeng', 'gaogae', 'somsip', 'eekae'];
@@ -15,7 +16,7 @@ const leakKeys = ['h', 'stock'];
 for (const id of IDS) {
   const E = Rules.get(id); let n = 0, wins = 0;
   for (let g = 0; g < 600; g++) {
-    const opt = Rules.cleanOptions(id, g % 2 ? { stake: 50 } : {}), G = E.newGame([{ id: 'a', n: 'A' }, { id: 'b', n: 'B' }].slice(0, 1 + (g % 2)), { options: opt });
+    const opt = opts(id, g % 2 ? { stake: 50 } : {}), G = E.newGame([{ id: 'a', n: 'A' }, { id: 'b', n: 'B' }].slice(0, 1 + (g % 2)), { options: opt });
     let t = 0; while (!G.over) { E.botTurn(G); if (++t > 3000) throw new Error(id + ' ไม่จบ'); }
     const c = G.res.coin; assert.strictEqual(c.delta.reduce((a, b) => a + b, 0), 0, id + ' ผลเหรียญรวมต้องเป็น 0');
     assert(c.lines.every(l => l.a > 0 && l.f !== l.t), id + ' รายการจ่ายต้องมีจำนวนบวก'); assert.strictEqual(G.res.coin.stake, opt.stake);
@@ -25,10 +26,10 @@ for (const id of IDS) {
   ok(n === 600, id + ': บอท 600 ตาจบครบ ผลเหรียญรวมเป็นศูนย์ (มีผู้ชนะให้สิทธิ์สับไพ่ ' + wins + ' ตา)');
 }
 // ไม่รั่วไพ่คนอื่นก่อนจบ
-{ const G = Rules.get('pokdeng').newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('pokdeng', {}) }); if (!G.over) { const v = Rules.get('pokdeng').view(G, 0); ok(v.P.every(p => p.i === 0 ? true : (p.cards === null) === !p.pok), 'ป๊อกเด้ง: ไพ่คนอื่นถูกซ่อนจนกว่าจะป๊อก/จบตา'); } else ok(true, 'ป๊อกเด้ง: เจ้ามือป๊อกเปิดทันที (ตาจบตั้งแต่แจก)'); }
-{ const E = Rules.get('gaogae'), G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('gaogae', {}) }); const v = E.view(G, 0); ok(v.P.every(p => p.cards === null) && v.hand.length === 3 && v.pot === 80, 'เก้าเก: ไพ่คนอื่นซ่อน มีกองกลาง = ค่าต๋ง × 4'); }
-{ const E = Rules.get('somsip'), G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('somsip', {}) }); const v = E.view(G, 0); ok(v.hand.length === 5 && v.P.every(p => p.n_cards === 5) && v.ind != null && v.stock === 55 - 20 - 1, 'ผสมสิบ: แจก 5 ใบ + เปิดตัวบอกไวลด์ + โจ๊กเกอร์ 3 ใบ (กองเหลือ 34)'); }
-{ const E = Rules.get('eekae'), G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('eekae', {}) }); const v = E.view(G, 0); ok(G.P.reduce((a, p) => a + p.h.length, 0) + G.disc === 51 && G.P.every(p => new Set(p.h.map(c => c.r)).size === p.h.length || p.h.length === 0 || true), 'อีแก่: แจก 51 ใบ ไม่มีคู่เหลือในมือ'); ok(G.P.every(p => { const c = {}; p.h.forEach(x => { c[x.r] = (c[x.r] || 0) + 1; }); return Object.values(c).every(n => n === 1); }), 'อีแก่: หลังทิ้งคู่แรก ไม่มีไพ่เลขซ้ำในมือใครเลย'); }
+{ const G = Rules.get('pokdeng').newGame([{ id: 'a', n: 'A' }], { options: opts('pokdeng', {}) }); if (!G.over) { const v = Rules.get('pokdeng').view(G, 0); ok(v.P.every(p => p.i === 0 ? true : (p.cards === null) === !p.pok), 'ป๊อกเด้ง: ไพ่คนอื่นถูกซ่อนจนกว่าจะป๊อก/จบตา'); } else ok(true, 'ป๊อกเด้ง: เจ้ามือป๊อกเปิดทันที (ตาจบตั้งแต่แจก)'); }
+{ const E = Rules.get('gaogae'), G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('gaogae', {}) }); const v = E.view(G, 0); ok(v.P.every(p => p.cards === null) && v.hand.length === 3 && v.pot === 80, 'เก้าเก: ไพ่คนอื่นซ่อน มีกองกลาง = ค่าต๋ง × 4'); }
+{ const E = Rules.get('somsip'), G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('somsip', {}) }); const v = E.view(G, 0); ok(v.hand.length === 5 && v.P.every(p => p.n_cards === 5) && v.ind != null && v.stock === 55 - 20 - 1, 'ผสมสิบ: แจก 5 ใบ + เปิดตัวบอกไวลด์ + โจ๊กเกอร์ 3 ใบ (กองเหลือ 34)'); }
+{ const E = Rules.get('eekae'), G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('eekae', {}) }); const v = E.view(G, 0); ok(G.P.reduce((a, p) => a + p.h.length, 0) + G.disc === 51 && G.P.every(p => new Set(p.h.map(c => c.r)).size === p.h.length || p.h.length === 0 || true), 'อีแก่: แจก 51 ใบ ไม่มีคู่เหลือในมือ'); ok(G.P.every(p => { const c = {}; p.h.forEach(x => { c[x.r] = (c[x.r] || 0) + 1; }); return Object.values(c).every(n => n === 1); }), 'อีแก่: หลังทิ้งคู่แรก ไม่มีไพ่เลขซ้ำในมือใครเลย'); }
 
 console.log('\n[B] กติกาเฉพาะเกม');
 { const P = require('./src/rules/pokdeng'), ev = (cs, s = true) => P.evalHand(cs, s), cmp = (a, b, t = 'deng') => P.compare(a, b, t);
@@ -45,7 +46,7 @@ console.log('\n[B] กติกาเฉพาะเกม');
   ok(cmp(tong, sam).w === 'p' && cmp(tong, sam).mult === 2 && cmp(sam, tong).w === 'd', 'ป๊อกเด้ง: ตองชนะสามเหลือง ได้ 2 เท่า (5−3)');
   const n5a = ev([k(2, 0), k(3, 0)]), n5b = ev([k(2, 1), k(3, 2)]);
   ok(cmp(n5a, n5b, 'deng').w === 'p' && cmp(n5a, n5b, 'deng').mult === 1 && cmp(n5a, n5b, 'push').w === 'tie' && cmp(n5b, n5b, 'deng').w === 'tie', 'ป๊อกเด้ง: แต้มเท่ากัน เทียบเด้งจ่ายส่วนต่าง / ตั้งเสมอได้ / เท่ากันหมดเสมอ');
-  const G = P.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('pokdeng', { dealer: 'host', stake: 100 }) }); ok(G.dealer === 0 && G.stake === 100, 'ป๊อกเด้ง: ตั้งเจ้ามือเป็นเจ้าของห้อง/เดิมพันตามตั้งค่า');
+  const G = P.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('pokdeng', { dealer: 'host', stake: 100 }) }); ok(G.dealer === 0 && G.stake === Rules.cleanOptions('pokdeng', {}).stake, 'ป๊อกเด้ง: ตั้งเจ้ามือเป็นเจ้าของห้อง · ชิปใช้ค่ามาตรฐาน (ตั้งเดิมพันเองไม่ได้)');
   const G2 = { P: [0, 1, 2, 3].map(i => ({ i, n: 'P' + i, h: [] })), dealer: 3, stake: 10, straights: true, tie: 'deng', logs: [] };   // สร้างตาจบเองเพื่อเช็คการจ่าย
   G2.P[0].h = [k(9, 0), k(13, 1)]; G2.P[1].h = [k(2, 0), k(3, 1)]; G2.P[2].h = [k(7, 0), k(7, 1), k(7, 2)]; G2.P[3].h = [k(5, 0), k(4, 1)];
   const E = P; const fin = require('vm'); void fin; void E;
@@ -56,12 +57,12 @@ console.log('\n[B] กติกาเฉพาะเกม');
   ok(E.cmpKey(T.key, Q.key) > 0 && E.cmpKey(Q.key, SN.key) > 0 && E.cmpKey(SN.key, C.key) > 0 && E.cmpKey(C.key, PT.key) > 0, 'เก้าเก: ลำดับ ตอง > เรียง > เซียน > สี > แต้ม');
   ok(ev([k(1, 0), k(2, 0), k(3, 0)]).type === 'seq' && ev([k(12, 0), k(13, 0), k(1, 0)]).type === 'colour', 'เก้าเก: A นับต่ำ (A-2-3 เรียง · Q-K-A ไม่ใช่เรียง)');
   ok(key([k(13, 0), k(10, 1), k(5, 2)])[1] === 5 && key([k(1, 0), k(1, 1), k(3, 2)])[1] === 5 && E.cmpKey(key([k(1, 0), k(1, 1), k(3, 2)]), key([k(13, 0), k(10, 1), k(5, 2)])) > 0 && E.cmpKey(key([k(13, 0), k(10, 1), k(5, 2)]), key([k(1, 0), k(1, 1), k(3, 2)])) < 0, 'เก้าเก: แต้มเท่ากัน (5 แต้ม) ตัดสินด้วยไพ่ใบสูงสุด A สูง (A ชนะ K)');
-  const G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('gaogae', { stake: 10, raise: 10 }) }); G.cur = 0;
+  const G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('gaogae', { stake: 10, raise: 10 }) }); G.cur = 0;
   ok(E.act(G, 1, { t: 'call' }) === 'ยังไม่ถึงตาคุณ' && E.act(G, 0, { t: 'raise' }) === null && G.cb === 20 && G.P[0].bet === 20, 'เก้าเก: เกทับขึ้นยอด 10 → 20');
   let g = 0; while (!G.over && g++ < 50) { G.P[G.cur].bot = true; if (G.raises < 3 && G.cur !== 0) E.act(G, G.cur, { t: 'raise' }); else E.act(G, G.cur, { t: 'call' }); }
   ok(G.over && G.raises <= 3, 'เก้าเก: เกทับได้ไม่เกิน 3 ครั้ง แล้วเปิดไพ่เมื่อทุกคนลงเท่ากัน');
-  const G3 = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('gaogae', { stake: 10 }) }); G3.cur = 0; G3.P.forEach((p, i) => { if (i) { E.act(G3, G3.cur, { t: 'fold' }); } }); // คนแรกหมอบ ฯลฯ
-  const G4 = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('gaogae', { stake: 10 }) }); G4.cur = 0; E.act(G4, 0, { t: 'call' }); E.act(G4, 1, { t: 'fold' }); E.act(G4, 2, { t: 'fold' }); E.act(G4, 3, { t: 'fold' });
+  const G3 = E.newGame([{ id: 'a', n: 'A' }], { options: opts('gaogae', { stake: 10 }) }); G3.cur = 0; G3.P.forEach((p, i) => { if (i) { E.act(G3, G3.cur, { t: 'fold' }); } }); // คนแรกหมอบ ฯลฯ
+  const G4 = E.newGame([{ id: 'a', n: 'A' }], { options: opts('gaogae', { stake: 10 }) }); G4.cur = 0; E.act(G4, 0, { t: 'call' }); E.act(G4, 1, { t: 'fold' }); E.act(G4, 2, { t: 'fold' }); E.act(G4, 3, { t: 'fold' });
   ok(G4.over && !G4.shown && G4.res.k === 0 && G4.res.coin.delta[0] === 30 && G4.res.coin.delta[1] === -10, 'เก้าเก: ทุกคนหมอบเหลือคนเดียว ชนะกองกลางโดยไม่ต้องเปิดไพ่ (ได้ 30 เสียคนละ 10)'); }
 { const E = require('./src/rules/somsip'), W0 = { wildOn: false, indRank: null }, wk = (h, G = W0) => E.winKind(G, h);
   ok(wk([k(3, 0), k(7, 1), k(1, 2), k(9, 3), k(5, 0), k(5, 1)]) && wk([k(11, 0), k(11, 1), k(10, 0), k(10, 1), k(4, 0), k(6, 2)]), 'ผสมสิบ: 3+7 · A+9 · 5+5 · J-J · 10-10 · 4+6 เป็นคู่ได้');
@@ -69,21 +70,21 @@ console.log('\n[B] กติกาเฉพาะเกม');
   const Wd = { wildOn: true, indRank: 4 }; ok(wk([k(4, 0), k(1, 1), k(13, 2), k(13, 3), k(2, 0), k(8, 1)], Wd) && wk([{ id: 52, r: 0, s: -1, joker: true }, k(1, 1), k(13, 2), k(13, 3), k(2, 0), k(8, 1)], Wd), 'ผสมสิบ: ไพ่เลขเดียวกับตัวบอกและโจ๊กเกอร์ใช้แทนไพ่ใดก็ได้');
   ok(wk([k(1, 0), k(1, 1), k(1, 2), k(12, 0), k(13, 1), k(8, 0)], Wd).name === 'A สามใบ' && wk([k(2, 0), k(5, 0), k(8, 0), k(13, 0), k(12, 0), k(9, 0)], Wd).name === 'ดอกเดียวกัน 6 ใบ', 'ผสมสิบ: มือพิเศษ A 3 ใบ / ดอกเดียวกัน 6 ใบ');
   ok(!wk([k(1, 0), k(1, 1), k(12, 2), k(13, 0), k(8, 0), k(8, 1)], W0) && !wk([k(1, 0), k(1, 1), k(1, 2), k(12, 0), k(13, 1), k(8, 0)], { wildOn: false }), 'ผสมสิบ: แบบง่ายไม่มีมือพิเศษ/ไวลด์');
-  const G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('somsip', { variant: 'simple', stake: 10 }) }); ok(G.ind === null && G.stock.length === 52 - 20, 'ผสมสิบ: แบบง่ายใช้ 52 ใบ ไม่มีตัวบอกไวลด์');
+  const G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('somsip', { variant: 'simple', stake: 10 }) }); ok(G.ind === null && G.stock.length === 52 - 20, 'ผสมสิบ: แบบง่ายใช้ 52 ใบ ไม่มีตัวบอกไวลด์');
   G.cur = 0; G.phase = 'draw'; ok(E.act(G, 0, { t: 'take' }) === 'ยังไม่มีไพ่ในกองทิ้งหน้าคุณ' && E.act(G, 0, { t: 'draw' }) === null && G.P[0].h.length === 6 && E.act(G, 0, { t: 'draw' }) !== null, 'ผสมสิบ: จั่วได้ครั้งเดียวต่อตา · เก็บกองทิ้งตอนยังว่างไม่ได้');
   const id = G.P[0].h[0].id; ok(E.act(G, 0, { t: 'dis', id }) === null && G.P[1].pile.length === 1 && G.P[1].pile[0].id === id && G.cur === 1 && G.P[0].h.length === 5, 'ผสมสิบ: ทิ้งไพ่ไปไว้หน้าผู้เล่นถัดไป ให้เหลือ 5 ใบ'); }
 { const E = require('./src/rules/eekae'), h = [k(7, 0), k(7, 1), k(7, 2), k(3, 0), k(3, 1), k(3, 2), k(3, 3), k(12, 0)];
   const d = E.dropPairs(h); ok(d === 6 && h.length === 2 && h.some(c => c.r === 7) && h.some(c => c.r === 12), 'อีแก่: ทิ้งคู่เลขเดียวกัน (7 สามใบ → เหลือ 1, 3 สี่ใบ → ทิ้งหมด)');
-  const G = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('eekae', { stake: 10, mode: 'all' }) }); const me = G.cur, v = E.view(G, me);
+  const G = E.newGame([{ id: 'a', n: 'A' }], { options: opts('eekae', { stake: 10, mode: 'all' }) }); const me = G.cur, v = E.view(G, me);
   ok(v.src >= 0 && v.srcN === G.P[v.src].h.length && E.act(G, (me + 1) % 4, { t: 'pick', i: 0 }) !== null && E.act(G, me, { t: 'pick', i: 99 }) !== null, 'อีแก่: จั่วจากผู้เล่นก่อนหน้า · ไม่ใช่ตาหรือเลือกไพ่นอกช่วงถูกปฏิเสธ');
-  const GF = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('eekae', { stake: 10, mode: 'first' }) }); let t = 0; while (!GF.over) { E.botTurn(GF); t++; }
+  const GF = E.newGame([{ id: 'a', n: 'A' }], { options: opts('eekae', { stake: 10, mode: 'first' }) }); let t = 0; while (!GF.over) { E.botTurn(GF); t++; }
   const l = GF.res.loser, first = GF.res.k; ok(GF.res.coin.delta[l] === -30 && GF.res.coin.delta[first] === 30, 'อีแก่: โหมด "คนหมดไพ่ก่อนได้เต็ม" ผู้แพ้จ่ายคนแรกที่หมดมือ 3 × เดิมพัน');
-  const GA = E.newGame([{ id: 'a', n: 'A' }], { options: Rules.cleanOptions('eekae', { stake: 10, mode: 'all' }) }); while (!GA.over) E.botTurn(GA);
+  const GA = E.newGame([{ id: 'a', n: 'A' }], { options: opts('eekae', { stake: 10, mode: 'all' }) }); while (!GA.over) E.botTurn(GA);
   ok(GA.res.coin.delta[GA.res.loser] === -30 && GA.P.every((p, i) => i === GA.res.loser || GA.res.coin.delta[i] === 10), 'อีแก่: โหมดปกติ ผู้แพ้จ่ายทุกคนที่รอดคนละเดิมพัน'); }
 
 console.log('\n[C] client จริง ต่อเซิร์ฟเวอร์: เลือกเกม → เล่น → จบ');
 const M = require('./test-mock-sio'), sleep = ms => new Promise(r => setTimeout(r, ms));
-const SRC = ['gamegx.js', 'app.js', 'games.js'].map(f => fs.readFileSync(path.join(__dirname, '../client/public', f), 'utf8')).join('\n');
+const SRC = ['economy.js', 'progress.js', 'gamegx.js', 'app.js', 'games.js'].map(f => fs.readFileSync(path.join(__dirname, '../client/public', f), 'utf8')).join('\n');
 const srv = M.load({ OPENING_MS: 0, BOT_DELAY_MS: 5, EMPTY_ROOM_TTL_MS: 60000, RATE_PER_SEC: 100000 });
 const store = {};
 function openPage() {
@@ -122,16 +123,16 @@ async function playOut(pg, id) {
     pg.ev('goPlay()'); pg.ev("chooseGame('" + id + "')");
     ok(pg.ev('screen') === 'play' && pg.appEl.innerHTML.includes(NAMES[id]) && pg.appEl.innerHTML.includes("go('games')"), 'เลือก ' + NAMES[id] + ' → หน้าเล่นเกมแสดงเกมที่เลือก + ปุ่มเปลี่ยนเกม');
     pg.ev('solo()'); await sleep(20);
-    ok(pg.appEl.innerHTML.includes('วิธีเล่น' + NAMES[id]) && pg.appEl.innerHTML.includes('การนับเหรียญ') && pg.appEl.innerHTML.includes('value="20"'), 'หน้าตั้งค่าห้องแสดงวิธีเล่น + การนับเหรียญ + เดิมพันของ ' + NAMES[id]);
-    pg.ev("setOpt('stake', 30)"); pg.ev('startCreate()');
+    ok(pg.appEl.innerHTML.includes('วิธีเล่น' + NAMES[id]) && pg.appEl.innerHTML.includes('การนับชิป') && !pg.appEl.innerHTML.includes("setOpt('stake'"), 'หน้าตั้งค่าห้องแสดงวิธีเล่น + การนับชิป (ไม่มีช่องเดิมพัน) ของ ' + NAMES[id]);
+    pg.ev('startCreate()');
     ok(await waitFor(() => pg.ev('lob && lob.rule && lob.rule.id') === id) && pg.appEl.innerHTML.includes('📖 กติกา'), 'สร้างห้อง ' + NAMES[id] + ' สำเร็จ: ห้องใช้กฎถูกเกม มีปุ่มกติกา');
-    pg.ev("showRules('" + id + "')"); ok(pg.modal.el && pg.modal.el.innerHTML.includes('กติกา' + NAMES[id]) && pg.modal.el.innerHTML.includes('การนับเหรียญ') && pg.modal.el.innerHTML.includes('30 🪙'), 'กล่องกติกาแสดงวิธีเล่นและเหรียญตามเดิมพัน 30'); pg.ev('closeRules()');
+    pg.ev("showRules('" + id + "')"); ok(pg.modal.el && pg.modal.el.innerHTML.includes('กติกา' + NAMES[id]) && pg.modal.el.innerHTML.includes('การนับชิป') && pg.modal.el.innerHTML.includes('ชิป'), 'กล่องกติกาแสดงวิธีเล่นและการนับชิป'); pg.ev('closeRules()');
     await waitFor(() => !pg.ev('shufAnim'), 3000); pg.ev('doShuffle()'); await waitFor(() => pg.ev('lob.shuffle.ready')); const coin0 = Number(store.dummyCoins || 5000); pg.ev('begin()');
     const started = await waitFor(() => pg.ev('S') && pg.ev('S.rule') === id); 
     ok(started && pg.ev('screen') === 'game' && pg.appEl.innerHTML.includes('class=gx') && pg.appEl.innerHTML.includes('gxo-stage'), 'เริ่มเกม: เข้าหน้าโต๊ะของ ' + NAMES[id]);
     ok(await playOut(pg, id), NAMES[id] + ': เล่นจนจบตา');
-    const dlt = pg.ev('S.res.coin.delta[S.my]'), coin1 = Number(store.dummyCoins);
-    ok(coin1 === Math.max(0, coin0 + dlt) && pg.appEl.innerHTML.includes('class="ov rsv"') && pg.appEl.innerHTML.includes('เหรียญตานี้') && pg.appEl.innerHTML.includes((dlt > 0 ? '+' : '') + dlt + ' 🪙'), NAMES[id] + ': จ่ายเหรียญครั้งเดียวตรงผล (' + coin0 + ' ' + (dlt >= 0 ? '+' : '') + dlt + ' → ' + coin1 + ') และหน้าสรุปแสดงผล');
+    const gr = pg.ev('Progress.forGame(S)'), dlt = gr.delta + (gr.level_coins || 0), coin1 = Number(store.dummyCoins);
+    ok(gr.delta >= 5 && coin1 === coin0 + dlt && pg.appEl.innerHTML.includes('class="ov rsv"') && pg.appEl.innerHTML.includes('รางวัลตานี้') && pg.appEl.innerHTML.includes('+' + gr.delta + ' 🪙'), NAMES[id] + ': ได้เหรียญตามอันดับครั้งเดียว (ที่ ' + gr.rank + ': ' + coin0 + ' +' + dlt + ' → ' + coin1 + ') และหน้าสรุปแสดงผล');
     ok(pg.appEl.innerHTML.includes('เล่นอีกตา') || pg.appEl.innerHTML.includes('เล่นต่อ'), NAMES[id] + ': หน้าสรุปมีปุ่มเล่นต่อ (ไม่มีขั้นตอนสับไพ่)');
     pg.ev('leave()'); await sleep(30);
   }

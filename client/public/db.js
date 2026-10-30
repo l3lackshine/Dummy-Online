@@ -101,7 +101,10 @@
   DB.equip = async (kind, id) => { try { await call('set_equipped', { p_kind: kind, p_id: id }); if (DB.P) DB.P.equipped = Object.assign({}, DB.P.equipped, { [kind]: id }); } catch (e) { /* ใส่ไม่ได้ → ซิงก์กลับ */ DB.refresh().catch(() => {}); } };
   DB.upStar = async id => { const r = await call('upgrade_star', { p_char: id }); await DB.refresh(); return r; };
   let nt = null, tt = null;
-  DB.setName = v => { clearTimeout(nt); nt = setTimeout(() => call('update_profile', { p_name: v }).then(r => { if (DB.P) { DB.P.display_name = r.display_name; } }).catch(e => { if (window.dbToast && e && e.message) dbToast(e.message); }), 600); };
+  // เปลี่ยนชื่อ: ครั้งแรกฟรี ครั้งต่อไปเสียเหรียญ → กดบันทึกเองเท่านั้น (ไม่บันทึกอัตโนมัติระหว่างพิมพ์)
+  DB.renameCost = () => (DB.P && Number(DB.P.name_changes) >= 1 ? Number(DB.P.rename_cost) || 500 : 0);
+  DB.saveName = async v => { const r = await call('update_profile', { p_name: v }); await DB.refresh(); return r; };
+  DB.setName = () => {};
   DB.setTitle = v => { clearTimeout(tt); tt = setTimeout(() => call('update_profile', { p_title: v }).then(r => { if (DB.P) DB.P.title = r.title; }).catch(e => { if (window.dbToast && e && e.message) dbToast(e.message); }), 600); };
   DB.claimLogin = async () => { const r = await call('claim_login_reward'); await DB.refresh(); return r; };
   DB.quests = () => call('get_quests');
@@ -114,6 +117,9 @@
     if (d.coins != null) DB.P.coins = d.coins; if (d.mcash != null) DB.P.mcash = d.mcash;
     sync();
     try { if (S && d.gid && S.gid === d.gid && !d.duplicate) coinDelta = (Number(d.delta) || 0) + (Number(d.bonus) || 0); } catch (e) {}
+    if (window.Progress) Progress.onWallet(d);
+    if (d.level != null) { DB.P.level = d.level; if (d.player_exp != null) DB.P.player_exp = d.player_exp; }
+    if (d.level_up && window.dbToast) dbToast('⬆ เลเวล ' + d.level + '!' + (d.level_mcash ? ' +' + d.level_mcash + ' 💎' : '') + (d.level_coins ? ' +' + d.level_coins + ' 🪙' : ''));
     DB.refresh().catch(() => repaint());   // ดึงสถิติ/เกมล่าสุด/ยอดล่าสุดมาแสดง
   };
 

@@ -10,7 +10,7 @@ const gxBack = n => Array.from({ length: n }, () => '<span class=cb></span>').jo
 const gxSort = ids => ids.slice().sort((a, b) => (a >= 52) - (b >= 52) || (ALL[a] ? ALL[a].r : 0) - (ALL[b] ? ALL[b].r : 0) || a - b);
 const gxName = i => (i === S.my ? 'คุณ' : esc(S.P[i].n));
 const gxMine = () => S && S.cur === S.my && !S.over;
-const gxCd = d => `<b class="cd ${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${sgn(d)} 🪙</b>`;
+const gxCd = d => `<b class="cd ${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">${sgn(d)} ชิป</b>`;   // ชิปในโต๊ะ (จัดอันดับ) ไม่ใช่เหรียญ
 
 function gxAct(t, extra) { if (!gxMine()) { hint = 'ยังไม่ถึงตาคุณ'; return render(); } hint = ''; emit(Object.assign({ t }, extra || {})); }
 function gxLeave() { if (confirm('ออกจากห้อง?')) leave(); }
@@ -40,7 +40,7 @@ function gxFrame(o) {
   <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', T)}${q('left', L)}${q('right', R)}${q('bottom', S.my)}</svg>
   ${sb(T, 'top')}${sb(L, 'left')}${sb(R, 'right')}${sb(S.my, 'bottom')}
   ${art(T, 'top')}${art(L, 'left')}${art(R, 'right')}${art(S.my, 'bottom')}
-  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}${S.stake != null ? ' · ตัวละ ' + esc(S.stake) + ' 🪙' : ''}</span><button class="pill rl" onclick="showRules()">📖 กติกา</button></div>
+  <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}</span><button class="pill rl" onclick="showRules()">📖 กติกา</button></div>
   <button class=gx-gear onclick="gxLeave()" aria-label="ออก">⚙</button>
   ${seat(T, 'top')}${seat(L, 'left')}${seat(R, 'right')}
   <div class="felt gx-hub gxo-hub"><div class=gx>${o.center}</div><div class=gx-hint>${o.hint}${o.small ? ` <small>${o.small}</small>` : ''}</div></div>
@@ -63,16 +63,16 @@ function gxOver() {
   const rows = (r.rows || []).map(x => ({ x, cd: (c.delta && c.delta[x.i]) || 0 })).sort((a, b) => b.cd - a.cd);
   const rank = rows.findIndex(o => o.x.i === my) + 1;
   const board = rows.map(({ x, cd }, k) => { const p = S.P[x.i], lb = label(x);
-    return `<div class="rs-row${x.i === my ? ' me' : ''}${x.win || x.result === 'win' ? ' knk' : ''}"><b class=rs-rk>${medal[k] || k + 1}</b>${ava(p)}<div class=rs-who><b>${nm(x.i)}${x.dealer ? ' 👑' : ''}</b>${x.name ? `<span class=rs-chips><i>${esc(x.name)}</i></span>` : ''}${x.cards && x.cards.length ? `<div class="gcards rs-cards">${x.cards.map(id => gxc(id)).join('')}</div>` : ''}</div><div class=rs-pt><small>${lb}</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)} 🪙</div></div>`; }).join('');
+    return `<div class="rs-row${x.i === my ? ' me' : ''}${x.win || x.result === 'win' ? ' knk' : ''}"><b class=rs-rk>${medal[k] || k + 1}</b>${ava(p)}<div class=rs-who><b>${nm(x.i)}${x.dealer ? ' 👑' : ''}</b>${x.name ? `<span class=rs-chips><i>${esc(x.name)}</i></span>` : ''}${x.cards && x.cards.length ? `<div class="gcards rs-cards">${x.cards.map(id => gxc(id)).join('')}</div>` : ''}</div><div class=rs-pt><small>${lb}</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)}<small>ชิป</small></div></div>`; }).join('');
   const pairs = r.pairs ? `<div class=gpairs>${r.pairs.map(pr => `<span class=gpair>${pr.map(id => gxc(id)).join('')}</span>`).join('')}</div>` : '';
-  const pay = c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ตัวละ ${esc(c.stake)} 🪙</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>🪙 ${l.a}</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการจ่ายเหรียญตานี้</p>';
+  const pay = c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ชิปในโต๊ะ (ใช้จัดอันดับเท่านั้น ไม่ใช่เหรียญ)</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>${l.a} ชิป</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการชิปตานี้</p>';
   const shuf = shufflePanel(), sh = lob && lob.shuffle, need = !!(sh && sh.needed && !sh.ready);
-  const tabs = [['📊 สรุปผล', pairs + board], ['🪙 รายการจ่าย', pay]]; 
+  const tabs = [['📊 สรุปผล', pairs + board], ['🎴 รายการชิป', pay]]; 
   if (resTab >= tabs.length) resTab = 0;
   return `<div class="ov rsv"><div class="rs ${win ? 'win' : lose ? 'lose' : 'even'}">
   <div class=rs-head><div class=rs-ttl><small>${win ? '🏆 คุณชนะตานี้' : lose ? 'แพ้ตานี้ สู้ใหม่!' : 'เสมอ'}</small><h2>${esc(r.title || 'จบตา')}</h2></div></div>
   <div class=rs-body>
-    <aside class=rs-me><div class=rs-big><small>เหรียญตานี้</small><b class="${win ? 'pos' : lose ? 'neg' : ''}">${sgn(md)} 🪙</b></div><div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${sv.coins}</b></div>${rank ? `<div class=rs-kv><span>อันดับ</span><b>${medal[rank - 1] || rank} ที่ ${rank}</b></div>` : ''}${r.pot ? `<div class=rs-kv><span>กองกลาง</span><b>🪙 ${r.pot}</b></div>` : ''}</aside>
+    ${window.Progress ? Progress.panel(S).replace('</aside>', `${r.pot ? `<div class=rs-kv><span>กองกลาง</span><b>${r.pot} ชิป</b></div>` : ''}</aside>`) : ''}
     <section class=rs-main><nav class=rs-tabs>${tabs.map((x, i) => `<button class="${i === resTab ? 'on' : ''}" onclick="setResTab(${i})">${x[0]}</button>`).join('')}</nav><div class=rs-pane>${tabs[resTab][1]}</div></section>
   </div>
   <div class=rs-foot>${typeof nextFoot === 'function' ? nextFoot() : startBtn('▶ เล่นอีกตา')}<button class=g onclick=leave()>ออกจากห้อง</button></div></div></div>`;
@@ -88,7 +88,7 @@ GX.pokdeng = () => {
     if (p.pok) return '🎉 ป๊อก!'; if (S.cur === i) return 'กำลังเล่น...'; if (S.queue.includes(i)) return 'รอตา'; return p.n_cards === 3 ? 'จั่วแล้ว' : 'ไม่จั่ว'; };
   const slot = i => { const p = P[i], cards = i === S.my ? S.hand : p.cards;
     return `<div class="gs${S.cur === i && !S.over ? ' on' : ''}${i === S.my ? ' me' : ''}"><b>${i === S.dealer ? '👑 ' : ''}${gxName(i)}</b><div class=gcards>${cards ? cards.map(id => gxc(id)).join('') : gxBack(p.n_cards)}</div><small>${st(i)}</small></div>`; };
-  const center = `<div class=gslots>${gxOrder().map(slot).join('')}</div><p class=gnote>เจ้ามือ: ${gxName(S.dealer)} · เดิมพันคนละ ${S.stake} 🪙 · ไพ่เหลือในกอง ${S.stock}</p>`;
+  const center = `<div class=gslots>${gxOrder().map(slot).join('')}</div><p class=gnote>เจ้ามือ: ${gxName(S.dealer)} · ชิปคนละ ${S.stake} · ไพ่เหลือในกอง ${S.stock}</p>`;
   const h = hint || (S.over ? 'จบตา — เปิดไพ่เทียบเจ้ามือ' : P[S.my].pok && !turn ? 'คุณได้ป๊อก! รอผู้เล่นคนอื่น' : turn ? `ตาคุณ — ${S.mine.name}${S.phase === 'dealer' ? ' (คุณเป็นเจ้ามือ)' : ''} จั่วเพิ่มหรือไม่?` : (P[S.cur].n) + ' กำลังเล่น...');
   const acts = turn ? `<button class=blue onclick="gxAct('draw')" ${S.canDraw ? '' : 'disabled'}>🂠 จั่วเพิ่ม 1 ใบ</button><button class=grn onclick="gxAct('stay')">✋ ไม่จั่ว</button>` : '';
   gxFrame({ center, hint: esc(h), small: esc(S.mine.name), sub: i => `<small>${P[i].n_cards} ใบ</small>`,
@@ -100,13 +100,13 @@ GX.gaogae = () => {
   const turn = gxMine(), P = S.P, me = P[S.my], fold = me.folded;
   const st = i => { const p = P[i];
     if (S.over) { const r = S.res.rows[i], d = S.res.coin.delta[i]; return (r.win ? '🏆 ' : '') + esc(r.name) + ' ' + gxCd(d); }
-    return (p.folded ? '🙅 หมอบ' : S.cur === i ? 'กำลังตัดสินใจ...' : 'ลงแล้ว') + ' · 🪙' + p.bet; };
+    return (p.folded ? '🙅 หมอบ' : S.cur === i ? 'กำลังตัดสินใจ...' : 'ลงแล้ว') + ' · ' + p.bet + ' ชิป'; };
   const slot = i => { const p = P[i], cards = i === S.my ? S.hand : p.cards;
     return `<div class="gs${S.cur === i && !S.over ? ' on' : ''}${i === S.my ? ' me' : ''}${p.folded ? ' fold' : ''}"><b>${gxName(i)}</b><div class=gcards>${cards ? cards.map(id => gxc(id)).join('') : gxBack(p.n_cards)}</div><small>${st(i)}</small></div>`; };
-  const center = `<div class=gpot>💰 กองกลาง <b>${S.pot}</b> 🪙 · ยอดที่ต้องตาม <b>${S.cb}</b> · เกทับแล้ว ${S.raises}/${S.maxRaises}</div><div class=gslots>${gxOrder().map(slot).join('')}</div>`;
-  const h = hint || (S.over ? 'จบตา' : fold ? 'คุณหมอบแล้ว รอดูผล' : turn ? `ตาคุณ — ${S.mine.name} · ${S.toCall > 0 ? 'ตามต้องจ่ายเพิ่ม ' + S.toCall + ' 🪙' : 'ยังไม่มีใครเกทับ'}` : (P[S.cur].n) + ' กำลังตัดสินใจ...');
+  const center = `<div class=gpot>💰 กองกลาง <b>${S.pot}</b> ชิป · ยอดที่ต้องตาม <b>${S.cb}</b> · เกทับแล้ว ${S.raises}/${S.maxRaises}</div><div class=gslots>${gxOrder().map(slot).join('')}</div>`;
+  const h = hint || (S.over ? 'จบตา' : fold ? 'คุณหมอบแล้ว รอดูผล' : turn ? `ตาคุณ — ${S.mine.name} · ${S.toCall > 0 ? 'ตามต้องลงเพิ่ม ' + S.toCall + ' ชิป' : 'ยังไม่มีใครเกทับ'}` : (P[S.cur].n) + ' กำลังตัดสินใจ...');
   const acts = turn ? `<button class=g onclick="gxAct('fold')">🙅 หมอบ</button><button class=grn onclick="gxAct('call')">${S.toCall > 0 ? '👊 ตาม +' + S.toCall : '✋ สู้'}</button><button class=org onclick="gxAct('raise')" ${S.canRaise ? '' : 'disabled'}>🔥 เกทับ +${S.raise}</button>` : '';
-  gxFrame({ center, hint: esc(h), small: esc(S.mine.name), sub: i => `<small>🪙 ${P[i].bet}${P[i].folded ? ' · หมอบ' : ''}</small>`,
+  gxFrame({ center, hint: esc(h), small: esc(S.mine.name), sub: i => `<small>${P[i].bet} ชิป${P[i].folded ? ' · หมอบ' : ''}</small>`,
     dock: `<div class=hand>${S.hand.map(id => gxb(id, fold ? ' dim' : '')).join('')}</div><div class=acts>${acts}${gxLeaveBtn}</div>` });
 };
 

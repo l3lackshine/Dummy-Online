@@ -194,6 +194,7 @@ function startGame(room) {
   return true;
 }
 const NameFilter = require('./namefilter');
+const Economy = require('./economy');
 const cleanName = name => NameFilter.clean(name, 'ผู้เล่น'); // ตัดอักขระควบคุม · ยาวไม่เกิน 14 · ชื่อหยาบ/แอบอ้างทีมงาน → "ผู้เล่น"
 const cleanFrame = f => (typeof f === 'string' && /^[a-z0-9-]{1,40}$/.test(f) ? f : null); // กรอบการ์ด (ของแต่งเท่านั้น ไม่มีผลกับเกม)
 function joinRoom(socket, room, name, ch, bg, fr, s5) {
@@ -282,16 +283,23 @@ io.use(async (socket, next) => {
   socket.data.uid = u.id; socket.data.uname = u.name;
   next();
 });
-// เมื่อจบตา: ส่งผลของผู้เล่นที่ล็อกอินแต่ละคนไปบันทึก (เหรียญ/สถิติ/เควส) แล้วแจ้งยอดใหม่กลับไปที่ client
+// เมื่อจบตา: ให้เหรียญตามอันดับแก่ผู้เล่นที่ล็อกอิน (ไม่มีการเดิมพัน — ดู src/economy.js) แล้วแจ้งยอด/EXP ใหม่กลับไปที่ client
+// อันดับใช้ผลชิป/แต้มในโต๊ะของตานั้น (G.res.coin.delta) · ฐานข้อมูลเป็นคนตัดเพดานรายวันและคิด EXP/เลเวล/แบทเทิลพาส
+function standings(room) {
+  const G = room.game, d = (G.res && G.res.coin && G.res.coin.delta) || G.P.map(() => 0), win = ruleOf(room).winner(G);
+  const r = Economy.ranks(d.map((v, i) => (Number(v) || 0) + (i === win ? 0.5 : 0)));   // เสมอกัน: ผู้ชนะตามกติกาได้อันดับดีกว่า
+  const humans = room.players.filter(p => p.seat != null && G.P[p.seat] && !G.P[p.seat].bot).length;
+  return { ranks: r, seats: G.P.length, humans };
+}
 function recordResults(room) {
   if (!SB.enabled()) return;
-  const G = room.game, rid = room.rule, win = ruleOf(room).winner(G), gid = String(G.gid || room.code + ':' + room.round);
+  const G = room.game, rid = room.rule, gid = String(G.gid || room.code + ':' + room.round), st = standings(room);
   for (const p of room.players) {
     if (!p.uid || p.seat == null || !G.P[p.seat]) continue;
-    const seat = p.seat, delta = Math.round(Number(G.res && G.res.coin && G.res.coin.delta ? G.res.coin.delta[seat] : 0)) || 0;
-    const args = { p_user: p.uid, p_gid: gid, p_game: rid, p_delta: delta, p_won: win === seat,
+    const seat = p.seat, rank = st.ranks[seat], reward = Economy.reward(rank, st.seats, st.humans);
+    const args = { p_user: p.uid, p_gid: gid, p_game: rid, p_delta: reward, p_won: rank === 1,
       p_melds: rid === 'dummy' ? (G.melds || []).filter(m => m.o === seat).length : 0, p_knock: rid === 'dummy' && !!G.res && G.res.k === seat, p_char: p.ch || null };
-    SB.rpcRetry('record_game_result', args).then(r => { if (r && p.id) io.to(p.id).emit('wallet:update', { gid, ...r }); })
+    SB.rpcRetry('record_game_result', args).then(r => { if (r && p.id) io.to(p.id).emit('wallet:update', { gid, rank, seats: st.seats, humans: st.humans, reward, ...r }); })
       .catch(e => console.error('record_game_result failed', e && e.message));
   }
 }
