@@ -90,11 +90,11 @@
     const cur = getFarm(), st = now(), cost = (st && st.cost) || EC.STAMINA.COST;
     const card = f => { const top = EC.farmReward(f, 1, 4), low = EC.farmReward(f, 4, 4);
       const icon = f === 'coins' ? '<img class=it-ic src="./UI/Assets/kit2/coin.webp" alt="">' : f === 'pexp' ? Items.icon('pexp') : Items.icon('exp-m');
-      const what = f === 'coins' ? `ที่ 1 ได้ <b>${N(top.coins)}</b> 🪙 · ที่สุดท้าย ${N(low.coins)}` : f === 'pexp' ? `ที่ 1 ได้ EXP เพิ่ม <b>+${N(top.exp)}</b> · ที่สุดท้าย +${N(low.exp)}` : `ที่ 1 ${itemsLine(top.items)} · ที่สุดท้าย ${itemsLine(low.items)}`;
+      const val = r => (f === 'coins' ? `<b>${N(r.coins)}</b> 🪙` : f === 'pexp' ? `EXP <b>+${N(r.exp)}</b>` : itemsLine(r.items));
+      const what = `<i class=fm-row><em>ที่ 1</em>${val(top)}</i><i class=fm-row><em>ที่สุดท้าย</em>${val(low)}</i>`;
       return `<button class="fm-card${cur === f ? ' on' : ''}" onclick="farmSet('${f}')">${icon}<span><b>${E(EC.FARM[f].name)}</b><small>${what}</small></span></button>`; };
     const enough = !st || st.stamina >= cost;
-    return `<h3 class=sec>🎯 ฟาร์มอะไรดี</h3><div class=fm>${Object.keys(EC.FARM).map(card).join('')}</div>
-      <div class="fm-st${enough ? '' : ' low'}">${STICON()}<span>${enough ? `ใช้สตามิน่า <b>${cost}</b> ต่อตา · มี <b data-st>${N(st ? st.stamina : 0)}</b>/${N(st ? st.max : 0)}` : `สตามิน่าไม่พอ (มี <b data-st>${N(st.stamina)}</b> ต้องใช้ ${cost}) → เล่นได้แบบ<b>โหมดซ้อม</b> ไม่ได้รางวัล`}</span><button onclick="staminaOpen()">🍵 เติม</button></div>`;
+    return `<h3 class=sec>🎯 ฟาร์มอะไรดี</h3><div class="fm-st${enough ? '' : ' low'}">${STICON()}<span>${enough ? `ตาละ <b>${cost}</b> · มี <b data-st>${N(st ? st.stamina : 0)}</b>/${N(st ? st.max : 0)}` : `สตามิน่าไม่พอ (มี <b data-st>${N(st.stamina)}</b> ต้องใช้ ${cost}) → เล่นได้แบบ<b>โหมดซ้อม</b> ไม่ได้รางวัล`}</span><button onclick="staminaOpen()">🍵 เติม</button></div><div class=fm>${Object.keys(EC.FARM).map(card).join('')}</div>`;
   }
   // บรรทัดสั้นในห้องรอ/หน้าโหวต: บอกว่ามีบอทจะใช้สตามิน่า + เลือกโหมดฟาร์มได้ (คนที่เข้าห้องทีหลังเห็นตรงนี้)
   function lobbyLine() {

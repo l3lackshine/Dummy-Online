@@ -763,3 +763,72 @@
 .fm-lob{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px}.fm-lob.low{color:#c8102e}
 .fm-chip{border:1.5px solid #d9c9a6;border-radius:99px;background:#fff;padding:1px 8px;font:700 12px Sarabun,sans-serif;color:#3b4255;cursor:pointer}.fm-chip.on{border-color:#e0a521;background:#fff3cf}
 .mm-st{font-size:13px}
+
+/* ===== จัดวางใหม่สำหรับจอเตี้ย (มือถือแนวนอน): เนื้อหาไม่ล้น · แผ่ออกด้านข้าง · ส่วนยาวเลื่อนในกล่องตัวเอง ===== */
+/* หน้าตั้งค่าห้อง: 2–3 คอลัมน์ (เกม+ตั้งค่า | ฟาร์ม | รางวัล+ปุ่มเริ่ม) */
+.pg[data-pg=create] .pg-body{display:flex!important;flex-direction:column!important;align-items:stretch!important;overflow:hidden!important;padding:1.2vh 2.4vw 2vh!important}
+.pg[data-pg=create] .panel.cr{flex:1;min-height:0;width:100%;max-width:none!important;margin:0 auto;columns:auto!important;display:grid!important;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0 2.4vw;padding:1vh 1.6vw!important;box-sizing:border-box}
+.pg[data-pg=create] .panel.cr.cr3{grid-template-columns:minmax(0,1.05fr) minmax(0,.85fr) minmax(0,1fr)}
+.cr-col{min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:.4vw;scrollbar-width:thin}
+.cr-col>.sec:first-child,.cr-col>.cr-scroll>.sec:first-child{margin-top:0!important}
+.cr-go{display:flex;flex-direction:column;gap:1vh;overflow:hidden}
+.cr-go .cr-scroll{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin}
+.cr-go .wbtn.go{flex:none;margin-top:0!important}
+.cr-farm .fm{grid-template-columns:1fr!important;gap:1vh}
+.cr-farm .fm-card{padding:1vh 1.2vh;gap:1.2vh}
+.cr-farm .fm-card b{font-size:max(13px,2.2vh)}.cr-farm .fm-card small{font-size:max(11px,1.8vh);line-height:1.4}
+.cr-farm .fm-card .it-ic{width:max(30px,5.2vh);height:max(30px,5.2vh)}
+.cr-farm .fm-st{flex-wrap:wrap;margin-top:1vh;font-size:max(11px,1.9vh)}
+/* จอแคบแนวตั้ง: กลับเป็นคอลัมน์เดียวเลื่อนทั้งหน้า */
+@media (max-aspect-ratio:1/1){
+  .pg[data-pg=create] .pg-body{overflow-y:auto!important}
+  .pg[data-pg=create] .panel.cr,.pg[data-pg=create] .panel.cr.cr3{display:block!important;flex:none}
+  .cr-col,.cr-go,.cr-go .cr-scroll{overflow:visible}
+  .cr-go .wbtn.go{margin-top:1.4vh!important}
+}
+.fm-row{display:flex;align-items:center;flex-wrap:wrap;gap:2px 4px;font-style:normal}.fm-row em{font-style:normal;min-width:5.2em;color:#9aa0ad}
+.fm-st{margin:0 0 1vh!important}
+.fm-row{flex-wrap:nowrap!important;white-space:nowrap}.fm-row em{min-width:4.6em!important}
+.fm-row .fm-it{margin-right:2px}.fm-row .fm-it .it-ic{width:max(16px,2.8vh)!important;height:max(16px,2.8vh)!important}
+.cr-farm .fm-card>span{min-width:0;flex:1}
+.cr-farm .fm-st span{white-space:nowrap}
+.cr-farm .fm-st{flex-wrap:nowrap!important}
+/* ---- จอเตี้ยแนวนอน (สูงไม่เกิน ~500px) ---- */
+@media (max-height:500px) and (min-aspect-ratio:4/3){
+  /* แบทเทิลพาส: หัวบางลง · ช่องรางวัลย่อ · แถบวิธีได้ EXP เป็นบรรทัดเดียวเลื่อนข้าง */
+  .bp{gap:1vh;padding:0 2vh 1.4vh}
+  .bp-top{padding:.8vh 1.6vh;gap:1.6vh}.bp-ttl h3{font-size:max(15px,4.4vh)}.bp-ttl small{font-size:max(10px,2.6vh)}
+  .bp-lvl b{font-size:max(15px,4.6vh)}.bp-lvl small{font-size:max(10px,2.6vh)}.bp-claim{padding:.8vh 2vh;font-size:max(11px,3vh)}
+  .bp-rows{grid-template-rows:max(16px,4.4vh) repeat(3,1fr);min-width:max(96px,20vh)}.bp-col{grid-template-rows:max(16px,4.4vh) repeat(3,1fr);width:max(60px,13vh)}
+  .bp-n{font-size:max(10px,2.8vh)}
+  .bp-cell{padding:.3vh;gap:0;font-size:max(9px,2.3vh);line-height:1.15}.bp-it{gap:0;font-size:max(9px,2.2vh)}.bp-it img{width:max(18px,5vh);height:max(18px,5vh)}
+  .bp-pv{font-size:max(8px,2.1vh);line-height:1.1}.bp-c .st-ic,.bp-c img{width:1em;height:1em}
+  .bp-rh{padding:0 1vh;gap:.2vh}.bp-rh b{font-size:max(11px,2.9vh)}.bp-rh small{font-size:max(8px,2.1vh);line-height:1.15}
+  .bp-buy,.bp-soon,.bp-own{font-size:max(9px,2.3vh);padding:.3vh 1vh}
+  .bp-how{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding:.6vh 1.2vh;gap:2vh;font-size:max(10px,2.5vh);scrollbar-width:none}
+  .bp-q{flex:none;padding:.4vh 1.4vh;font-size:max(10px,2.5vh)}
+  /* ช่องเก็บของ → ตัวละคร: ซ่อนภาพใหญ่ ให้ส่วนเลเวล/ชุดแต่งใช้ความสูงเต็ม */
+  .iv-det:has(.iv-sk.has-cl) .iv-stage{display:none}
+  .iv-det:has(.iv-sk.has-cl) .iv-info{flex:1;min-height:0}
+  .iv-det:has(.iv-sk.has-cl) .iv-info>b{font-size:max(13px,4vh)}
+  .iv-sk.has-cl{flex:1;min-height:0;max-height:none!important}
+  .iv-sk .cl-bks{gap:.6vh;margin:.6vh 0}.iv-sk .cl{padding:.8vh}
+  .iv-sk .cl-slots{grid-template-columns:repeat(4,1fr);gap:.6vh}.iv-sk .cl-slot{padding:.6vh}
+  /* หน้าต่างสตามิน่า: แผ่ออกด้านข้าง 2 คอลัมน์ (ข้อมูล | ชา) */
+  .st-modal .st-box{width:min(94vw,860px);display:grid;grid-template-columns:1.15fr 1fr;grid-auto-flow:row dense;gap:0 18px;align-content:start;padding:12px 16px}
+  .st-modal .st-box>*{grid-column:1}.st-modal .st-box>h4,.st-modal .st-box>.st-tea,.st-modal .st-box>.st-note{grid-column:2}
+  .st-modal .st-box>h4{grid-row:1;margin-top:0}.st-modal .st-box>.st-tea{margin-bottom:6px}
+  .st-head{grid-row:1/span 1}.st-big{width:48px;height:48px}.st-head b{font-size:28px}
+  .st-rule{font-size:12px;line-height:1.45;margin:4px 0}
+  .cl-modal .st-box{display:block;width:min(92vw,560px)}
+  /* หน้าต่างสกิล: กว้างขึ้น เนื้อหาแบ่ง 2 คอลัมน์ */
+  .sk-modal.sk-main .sk-box{width:min(94vw,980px)!important}
+  .sk-modal.sk-main .ck{columns:2;column-gap:20px}.sk-modal.sk-main .ck>*{break-inside:avoid}
+}
+/* หัวหน้าย่อย: จอไม่กว้าง → ชื่อหน้าชิดซ้ายถัดจากปุ่มย้อนกลับ ไม่ทับปุ่มด้านขวา */
+@media (max-width:1100px){
+  .pg>.pg-title{justify-self:start!important;margin-left:calc(2vw + 10.5vh)!important;margin-right:0!important;max-width:34vw}
+  .pg>.pg-title span{overflow:hidden;text-overflow:ellipsis;display:block}
+}
+/* การ์ดร้านค้า: ปุ่มไม่ล้นการ์ด */
+.item2 .wbtn[disabled]{font-size:.82em;white-space:nowrap}
