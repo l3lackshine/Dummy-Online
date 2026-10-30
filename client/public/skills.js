@@ -74,8 +74,9 @@
   const SPETO = [40, 11]; // 2♣ Q♠
 
   // ---------- ตั้งค่าของโมดูลอัตโนมัติ ----------
-  const setv = jget('dummySkillSet', { pdDraw: 4, ggCall: 0 });
+  const setv = Object.assign({ pdDraw: 0, ggCall: 0, ssWin: 0, ekPick: 0 }, jget('dummySkillSet', {})); // ตัวช่วยอัตโนมัติทุกอันเริ่มต้น = ปิด
   window.skSet = (k, v) => { setv[k] = Math.max(0, Math.round(Number(v) || 0)); jset('dummySkillSet', setv); render(); };
+  const tog = (k, label) => `<label class=sk-tog><input type=checkbox ${setv[k] ? 'checked' : ''} onchange="skSet('${k}',this.checked?1:0)"> ${label}</label>`;
   let autoKey = '';
   const once = (k, fn, ms) => { const key = (S && S.gid) + ':' + (S && S.v) + ':' + k; if (autoKey === key) return; autoKey = key; setTimeout(() => { if (S && (S.gid + ':' + S.v + ':' + k) === key) fn(); }, ms || 700); };
 
@@ -139,7 +140,8 @@
         for (let i = 0; i < h.length; i++) for (let j = i + 1; j < h.length; j++) if (!used.has(h[i]) && !used.has(h[j]) && ok(h[i], h[j])) { used.add(h[i]); used.add(h[j]); hi.push(h[i], h[j]); }
         const need = h.filter(id => !used.has(id)).map(id => { const c = C(id); return c.joker ? null : c.r <= 9 ? RKs[10 - c.r] : RKs[c.r]; }).filter(Boolean);
         return { hi, lines: need.length ? ['ใบที่ขาด: ' + [...new Set(need)].join(' ')] : [] }; },
-      'ss-autowin': () => { if (S.canWin && S.cur === S.my && !S.over && typeof gxAct === 'function') once('swin', () => gxAct('win')); return {}; },
+      'ss-autowin': () => { if (setv.ssWin && S.canWin && S.cur === S.my && !S.over && typeof gxAct === 'function') once('swin', () => gxAct('win'));
+        return { lines: [tog('ssWin', 'ประกาศชนะให้อัตโนมัติเมื่อครบ')] }; },
       'ss-log': () => { const a = acc(); a.game.dis = a.game.dis || []; newLines().forEach(l => { if (/ ทิ้ง /.test(l)) a.game.dis.push(l); });
         return { lines: a.game.dis.length ? ['ทิ้งล่าสุด: ' + a.game.dis.slice(-5).map(E).join(' · ')] : [] }; },
       'ss-key': () => { const W = S.wildRank, seen = [...S.hand, ...S.P.flatMap(p => p.pile || [])], n = seen.filter(id => id >= 52 || (W && C(id).r === W)).length;
@@ -153,7 +155,8 @@
       'ek-new': () => { const a = acc(), prev = a.game.hand || [], now = S.hand; a.game.hand = now.slice();
         const nw = prev.length ? now.filter(id => !prev.includes(id)) : []; if (nw.length) a.game.fresh = { ids: nw, until: Date.now() + 4000 };
         const f = a.game.fresh; return { hi: f && Date.now() < f.until ? f.ids : [] }; },
-      'ek-autopick': () => { if (S.src >= 0 && S.srcN > 0 && S.cur === S.my && !S.over && typeof gxPick === 'function') once('epick', () => gxPick(Math.floor(Math.random() * S.srcN)), 900); return {}; },
+      'ek-autopick': () => { if (setv.ekPick && S.src >= 0 && S.srcN > 0 && S.cur === S.my && !S.over && typeof gxPick === 'function') once('epick', () => gxPick(Math.floor(Math.random() * S.srcN)), 900);
+        return { lines: [tog('ekPick', 'จั่วไพ่ให้อัตโนมัติเมื่อถึงตา')] }; },
       'ek-log': () => { const a = acc(); a.game.ev = a.game.ev || []; newLines().forEach(l => { if (/ จั่วจาก /.test(l)) a.game.ev.push(l); });
         return { lines: a.game.ev.length ? [a.game.ev.slice(-4).map(E).join(' · ')] : [] }; },
       'ek-key': () => { const n = ((S.logs || []).join('\n').match(/ได้คู่ Q /g) || []).length; return { lines: [`ควีนถูกจับคู่ไปแล้ว ${n} คู่`] }; },
@@ -167,7 +170,9 @@
   // ---------- ตัวช่วยเดิมที่ตอนนี้เป็นสกิล: ปิดถ้าไม่มีโมดูล ----------
   function gate() {
     if (typeof S === 'undefined' || !S || S.over) return;
-    if ((S.rule || 'dummy') === 'dummy' && !has('takeable') && Array.isArray(S.ok)) S.ok = [];
+    if ((S.rule || 'dummy') !== 'dummy' || !Array.isArray(S.ok)) return;
+    if (!S._ok0) Object.defineProperty(S, '_ok0', { value: S.ok.slice(), enumerable: false }); // เก็บค่าจากเซิร์ฟเวอร์ไว้ (ไฟล์สกิลอาจยังโหลดไม่เสร็จ)
+    S.ok = has('takeable') ? S._ok0.slice() : [];
   }
   function gateDom() {
     if ((typeof S === 'undefined' || !S) || (S.rule && S.rule !== 'dummy')) return;

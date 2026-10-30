@@ -27,3 +27,4 @@
 .sk-modal.sk-main h4{color:#8a6d3b!important}
 .sk-modal.sk-main .sk-x{color:#3b4255!important;background:#fff!important;border:0!important;border-radius:50%!important}
 .sk-modal.sk-main .ck-stars i{color:#d5cbbd}.sk-modal.sk-main .ck-stars i.on{color:#e0a521}
+.sk-info .sk-tog{display:inline-flex;align-items:center;gap:.4em;cursor:pointer}.sk-info .sk-tog input{width:1.1em;height:1.1em;accent-color:#e0a521}
