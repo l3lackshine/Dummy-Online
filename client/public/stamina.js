@@ -17,7 +17,7 @@
   const rerender = () => { if (typeof render === 'function') render(); };
 
   /* ---------------- ไอเทม ---------------- */
-  const ICON = id => './Item/Mats/' + id + '.svg';
+  const ICON = id => './Item/Mats/' + id + '.webp';
   const Items = {
     info: id => Object.assign({ id, name: id, desc: '' }, EC.ITEMS[id] || {}, { icon: ICON(id) }),
     icon: (id, cls) => `<img class="${cls || 'it-ic'}" src="${ICON(id)}" alt="">`,
@@ -25,7 +25,7 @@
     list: () => Object.keys(EC.ITEMS),
   };
   window.Items = Items;
-  const STICON = cls => `<img class="${cls || 'st-ic'}" src="./Item/Mats/stamina.svg" alt="">`;
+  const STICON = cls => `<img class="${cls || 'st-ic'}" src="./Item/Mats/stamina.webp" alt="">`;
 
   /* ---------------- สตามิน่า ---------------- */
   let base = null, seen = null;
