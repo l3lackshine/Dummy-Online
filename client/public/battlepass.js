@@ -9,8 +9,8 @@
   const dbOn = () => !!(window.DB && DB.enabled && DB.P);
   const TRACK = { free: 'ฟรี', gem: 'สายเพชร', premium: 'พรีเมียม' };
   let BP = null, busy = false, err = '';
-  const itemName = (k, id) => { const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.name || x.n)) || id; };
-  const itemImg = (k, id) => { const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.asset || x.preview)) || ''; };
+  const itemName = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).name; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.name || x.n)) || id; };
+  const itemImg = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).icon; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.asset || x.preview)) || ''; };
 
   async function load() {
     if (!dbOn()) return;
@@ -33,7 +33,7 @@
 
   function cell(r, st) {
     const has = st.owned(r.track), got = st.got(r.track, r.level), reach = r.level <= st.lv;
-    const lines = [r.preview ? `<em class=bp-pv>${E(r.preview)}</em>` : '', r.item_kind ? `<span class=bp-it>${itemImg(r.item_kind, r.item_id) ? `<img src="${E(itemImg(r.item_kind, r.item_id))}" alt="">` : ''}${E(itemName(r.item_kind, r.item_id))}</span>` : '',
+    const lines = [r.preview ? `<em class=bp-pv>${E(r.preview)}</em>` : '', r.item_kind ? `<span class=bp-it>${itemImg(r.item_kind, r.item_id) ? `<img src="${E(itemImg(r.item_kind, r.item_id))}" alt="">` : ''}${r.item_kind === 'items' ? `<b class=bp-qty>×${N(r.qty || 1)}</b>` : E(itemName(r.item_kind, r.item_id))}</span>` : '',
       r.mcash ? `<span class=bp-m>💎 ${N(r.mcash)}</span>` : '', r.coins ? `<span class=bp-c>🪙 ${N(r.coins)}</span>` : ''].filter(Boolean).join('');
     const cls = ['bp-cell', 'bp-' + r.track, got ? 'got' : reach && has ? 'ready' : '', !has ? 'lock' : '', r.preview || r.item_kind ? 'big' : ''].filter(Boolean).join(' ');
     return `<div class="${cls}">${lines || '<span class=bp-c>—</span>'}${got ? '<i class=bp-ok>✓</i>' : !has ? '<i class=bp-lk>🔒</i>' : ''}</div>`;
@@ -64,7 +64,7 @@
         <div class=bp-scroll id=bpScroll>${cols}<div class="bp-col bp-cyc"><b class=bp-n>${s.max_level}+</b><div class="bp-cell big"><span class=bp-c>🪙 ${N(s.cycle_coins)}</span><em class=bp-pv>ทุกเลเวลที่เกิน</em></div></div></div>
       </div>
       <footer class=bp-how><b>ได้ EXP จาก</b>
-        <span>⚡ แต้มกิจกรรมรายวันครบ 100 <em>+${N(x.dailyBonus)}</em></span><span>📜 เควสรายสัปดาห์ <em>+${N(x.weeklyQuest)}/ข้อ</em></span>
+        <span>🎯 แต้มกิจกรรมรายวันครบ 100 <em>+${N(x.dailyBonus)}</em></span><span>📜 เควสรายสัปดาห์ <em>+${N(x.weeklyQuest)}/ข้อ</em></span>
         <span>🎁 โบนัสรายสัปดาห์ <em>+${N(x.weeklyBonus)}</em></span><span>🎴 เล่นจบตา <em>+${N(x.perGame)} (วันละไม่เกิน ${N(x.perGameDailyCap)})</em></span>
         <button class=bp-q onclick="openQuests('d')">ไปทำเควส</button></footer>
     </div>`;
@@ -76,7 +76,7 @@
   const toast = m => { if (window.dbToast) dbToast(m); };
   window.bpClaim = async () => {
     if (busy) return; busy = true; view();
-    try { const r = await DB.call('claim_bp'); toast('🎖 รับรางวัลแล้ว' + (r.coins ? ' +' + N(r.coins) + ' 🪙' : '') + (r.mcash ? ' +' + N(r.mcash) + ' 💎' : '') + ((r.items || []).length ? ' + ของ ' + r.items.length + ' ชิ้น' : '')); await DB.refresh(); }
+    try { const r = await DB.call('claim_bp'); toast('🎖 รับรางวัลแล้ว' + (r.coins ? ' +' + N(r.coins) + ' 🪙' : '') + (r.mcash ? ' +' + N(r.mcash) + ' 💎' : '') + ((r.items || []).length ? ' + ' + r.items.map(i => itemName(i.kind, i.id) + (i.qty > 1 ? ' ×' + i.qty : '')).join(', ') : '')); await DB.refresh(); }
     catch (e) { toast(e.message); }
     busy = false; await load();
   };

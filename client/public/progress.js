@@ -40,7 +40,13 @@
   function forGame(S) {
     if (!S || !S.over) return null;
     if (byGid[S.gid]) return byGid[S.gid];
-    const st = standing(S); return { gid: S.gid, rank: st.rank, seats: st.seats, delta: E.reward(st.rank, st.seats, st.humans), exp: E.expFor(st.rank), pending: true };
+    const st = standing(S), est = { gid: S.gid, rank: st.rank, seats: st.seats, delta: E.reward(st.rank, st.seats, st.humans), exp: E.expFor(st.rank), pending: true };
+    // เล่นกับบอท (บัญชี): ประมาณตามโหมดฟาร์ม · สตามิน่าไม่พอ = โหมดซ้อม
+    if (dbOn() && S.P.some(p => p.bot) && window.Farm && window.Stamina) {
+      const fr = E.farmReward(Farm.get(), st.rank, st.seats), sn = Stamina.now(), prac = !!sn && sn.stamina < sn.cost;
+      Object.assign(est, { bots: true, farm: fr.farm, delta: prac ? 0 : fr.coins, items: prac ? {} : fr.items, practice: prac, exp: prac ? 0 : est.exp });
+    }
+    return est;
   }
   function level() {
     const exp = dbOn() ? Number(DB.P.player_exp) || 0 : Number(get('dummyExp', 0)) || 0;
@@ -56,9 +62,12 @@
     const extra = [g.level_up ? `<div class="pg-up">⬆ เลเวล ${g.level}!${g.level_mcash ? ` +${g.level_mcash} 💎` : ''}${g.level_coins ? ` +${N(g.level_coins)} 🪙` : ''}</div>` : '',
       g.bp ? `<div class=pg-kv><span>แบทเทิลพาส</span><b>+${N(g.bp)} EXP</b></div>` : '',
       g.capped ? `<div class=pg-cap>ครบเพดานเหรียญวันนี้แล้ว (${N(g.cap || E.CFG.DAILY_CAP)}) · ได้ตาละ ${E.CFG.OVER_CAP}</div>` : ''].join('');
-    return `<aside class="rs-me pg-me"><div class=rs-big><small>รางวัลตานี้</small><b class=pos>+${N(g.delta)} 🪙</b>${g.pending ? '<em class=pg-wait>กำลังบันทึก…</em>' : ''}</div>
+    const items = g.items && Object.keys(g.items).length && window.Farm ? Farm.itemsLine(g.items) : '';
+    const big = g.practice ? `<span class=pg-prac>โหมดซ้อม</span><em class=pg-wait>สตามิน่าไม่พอ · ตานี้ไม่ได้รางวัล</em>` : items && !g.delta ? `<span class="pg-items big">${items}</span>` : `<b class=pos>+${N(g.delta)} 🪙</b>${items ? `<span class=pg-items>${items}</span>` : ''}`;
+    const st = g.bots && g.stamina != null ? `<div class=rs-kv><span>สตามิน่า</span><b><img class=st-ic src="./Item/Mats/stamina.svg" alt=""> ${N(g.stamina)}/${N(g.max)}</b></div>` : '';
+    return `<aside class="rs-me pg-me"><div class=rs-big><small>${g.bots ? 'ของที่ฟาร์มได้' : 'รางวัลตานี้'}</small>${big}${g.pending ? '<em class=pg-wait>กำลังบันทึก…</em>' : ''}</div>
       <div class=rs-kv><span>อันดับ</span><b>${medal} ที่ ${g.rank}/${g.seats}</b></div>
-      <div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${N(typeof sv !== 'undefined' ? sv.coins : 0)}</b></div>
+      <div class=rs-kv><span>รวมทั้งหมด</span><b>🪙 ${N(typeof sv !== 'undefined' ? sv.coins : 0)}</b></div>${st}
       <div class=pg-lv><span>Lv.${L.level}</span><i><u style="width:${pct}%"></u></i><small>+${g.exp} EXP</small></div>${extra}</aside>`;
   }
   window.Progress = { onWallet, settleLocal, forGame, panel, level, badge, standing };

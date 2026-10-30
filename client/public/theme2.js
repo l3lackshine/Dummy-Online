@@ -38,7 +38,7 @@
     d.innerHTML = `
       <button class="rv-me" onclick="go('profile')"><span class="rv-av">${av ? `<img src="${E(av)}" alt="">` : ''}</span><span class="rv-nm"><b>${E(name)}${window.Progress ? ' ' + Progress.badge() : ''}</b><small>แตะเพื่อดูโปรไฟล์</small></span></button>
       <div class="rv-top">
-        <span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
+        ${window.Stamina ? Stamina.pill() : ''}<span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
         ${P ? `<span class="rv-cur"><img src="${KIT}gem.webp" alt="">${N(P.mcash)}<i onclick="go('shop')">${ic('plus')}</i></span>` : ''}
         ${typeof window.openDaily === 'function' && P ? `<button class="rv-rb" style="background-image:url(${KIT}rb-gift.webp)" onclick="openDaily()" aria-label="ล็อกอินรายวัน"></button>` : ''}
         <button class="rv-rb" style="background-image:url(${KIT}rb-gear.webp)" onclick="go('profile')" aria-label="ตั้งค่า"></button>

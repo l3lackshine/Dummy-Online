@@ -62,7 +62,7 @@ function publicLobby(room, forPlayer) {
     match: room.match ? { state: room.match.state, humans: connectedPlayers(room).length, max: MAX_PLAYERS, waitedMs: Date.now() - (room.match.since || Date.now()), cdLeftMs: room.match.state === 'countdown' ? Math.max(0, room.match.cdUntil - Date.now()) : null,
       prompt: room.match.prompt ? { leftMs: Math.max(0, room.match.prompt.until - Date.now()), voted: forPlayer ? (room.match.prompt.votes[forPlayer.id] || null) : null } : null } : null,
     next: room.next ? { leftMs: room.next.until ? Math.max(0, room.next.until - Date.now()) : null } : null,
-    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, fr: p.fr || null, s5: !!p.s5, connected: p.connected, host: p === host, ready: p === host || !!p.ready, again: !!p.again, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
+    players: room.players.map(p => ({ name: p.name, ch: p.ch, bg: p.bg, fr: p.fr || null, s5: !!p.s5, connected: p.connected, host: p === host, ready: p === host || !!p.ready, again: !!p.again, farm: forPlayer && p === forPlayer ? p.farm : undefined, shuffler: p === sh, seat: p.seat, you: !!forPlayer && p === forPlayer })),
   };
 }
 // จบตาแล้วจดผู้ชนะไว้ (ครั้งเดียวต่อเกม) เพื่อมอบสิทธิ์สับไพ่ตาถัดไป
@@ -187,6 +187,7 @@ function startGame(room) {
   room.players.forEach(p => { p.ready = false; });   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
   const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
   room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
+  room.game.humans0 = room.players.length; room.game.bots0 = room.game.P.length - room.players.length;   // ตัดสินตอนเริ่ม: คนหลุดกลางเกมแล้วบอทเล่นแทน ไม่ทำให้กลายเป็นเกมบอท
   closeNext(room); if (room.match) { clearMatchTimers(room); room.match.state = 'playing'; room.match.prompt = null; } room.game.v++; room.openingUntil = Date.now() + OPENING_MS;
   if (SB.enabled()) room.players.forEach(p => { if (p.uid) SB.rpc('touch_last_game', { p_user: p.uid, p_game: room.rule }).catch(() => {}); });
   emitStates(room);
@@ -197,8 +198,9 @@ const NameFilter = require('./namefilter');
 const Economy = require('./economy');
 const cleanName = name => NameFilter.clean(name, 'ผู้เล่น'); // ตัดอักขระควบคุม · ยาวไม่เกิน 14 · ชื่อหยาบ/แอบอ้างทีมงาน → "ผู้เล่น"
 const cleanFrame = f => (typeof f === 'string' && /^[a-z0-9-]{1,40}$/.test(f) ? f : null); // กรอบการ์ด (ของแต่งเท่านั้น ไม่มีผลกับเกม)
-function joinRoom(socket, room, name, ch, bg, fr, s5) {
-  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, fr: cleanFrame(fr), s5: s5 === true, connected: true, token: newToken(), seat: null, ready: false };
+const cleanFarm = f => (Economy.FARM[f] ? f : 'coins');   // โหมดฟาร์มเมื่อเล่นกับบอท (ดู economy.js FARM)
+function joinRoom(socket, room, name, ch, bg, fr, s5, farm) {
+  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, fr: cleanFrame(fr), s5: s5 === true, farm: cleanFarm(farm), connected: true, token: newToken(), seat: null, ready: false };
   room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
@@ -288,8 +290,8 @@ io.use(async (socket, next) => {
 function standings(room) {
   const G = room.game, d = (G.res && G.res.coin && G.res.coin.delta) || G.P.map(() => 0), win = ruleOf(room).winner(G);
   const r = Economy.ranks(d.map((v, i) => (Number(v) || 0) + (i === win ? 0.5 : 0)));   // เสมอกัน: ผู้ชนะตามกติกาได้อันดับดีกว่า
-  const humans = room.players.filter(p => p.seat != null && G.P[p.seat] && !G.P[p.seat].bot).length;
-  return { ranks: r, seats: G.P.length, humans };
+  const humans = G.humans0 != null ? G.humans0 : room.players.filter(p => p.seat != null && G.P[p.seat] && !G.P[p.seat].bot).length;
+  return { ranks: r, seats: G.P.length, humans, bots: (G.bots0 != null ? G.bots0 : G.P.length - humans) > 0 };
 }
 function recordResults(room) {
   if (!SB.enabled()) return;
@@ -298,8 +300,9 @@ function recordResults(room) {
     if (!p.uid || p.seat == null || !G.P[p.seat]) continue;
     const seat = p.seat, rank = st.ranks[seat], reward = Economy.reward(rank, st.seats, st.humans);
     const args = { p_user: p.uid, p_gid: gid, p_game: rid, p_delta: reward, p_won: rank === 1,
-      p_melds: rid === 'dummy' ? (G.melds || []).filter(m => m.o === seat).length : 0, p_knock: rid === 'dummy' && !!G.res && G.res.k === seat, p_char: p.ch || null };
-    SB.rpcRetry('record_game_result', args).then(r => { if (r && p.id) io.to(p.id).emit('wallet:update', { gid, rank, seats: st.seats, humans: st.humans, reward, ...r }); })
+      p_melds: rid === 'dummy' ? (G.melds || []).filter(m => m.o === seat).length : 0, p_knock: rid === 'dummy' && !!G.res && G.res.k === seat, p_char: p.ch || null,
+      p_bots: st.bots, p_farm: p.farm || 'coins', p_rank: rank, p_seats: st.seats };   // มีบอท = หักสตามิน่า + ได้ของตามโหมดฟาร์ม (ฐานข้อมูลตัดสิน)
+    SB.rpcRetry('record_game_result', args).then(r => { if (r && p.id) io.to(p.id).emit('wallet:update', { gid, rank, seats: st.seats, humans: st.humans, bots: st.bots, reward, ...r }); })
       .catch(e => console.error('record_game_result failed', e && e.message));
   }
 }
@@ -317,7 +320,7 @@ io.on('connection', socket => {
     // bots: false เฉพาะห้องที่สร้างเอง (ไม่ใช่โหมดเล่นคนเดียว) — ปิดได้ = ไม่เติมบอทในที่นั่งว่าง ต้องรอผู้เล่นจริง
     const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), allowBots: bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
     rooms.set(code, room);
-    joinRoom(socket, room, name, ch, bg, fr, d.s5);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
   }));
   // Find Match: เข้าห้องจับคู่ที่เปิดอยู่ (กติกา+ตัวเลือกเดียวกัน เลือกห้องที่คนมากสุดก่อน) หรือสร้างห้องจับคู่ใหม่
   on(socket, 'match:find', raw => withOwned(socket, raw, d => { const { name, ch, bg, fr, rule, options } = d;
@@ -332,7 +335,7 @@ io.on('connection', socket => {
       room = { code, rule: rid, options: opts, allowBots: true, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0, match: { key, state: 'searching', since: Date.now(), prompt: null, waitTimer: null, promptTimer: null, cdTimer: null, cdUntil: null } };
       rooms.set(code, room);
     }
-    joinRoom(socket, room, name, ch, bg, fr, d.s5);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
     const p = findPlayer(room, socket.id); if (p) p.ready = true;   // ห้องจับคู่ไม่มีปุ่มพร้อม
     matchTick(room, true);
   }));
@@ -350,8 +353,10 @@ io.on('connection', socket => {
     if (!room || room.match) return socket.emit('system:error', 'ไม่พบห้องนี้');
     if (active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
     if (connectedPlayers(room).length >= MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
-    joinRoom(socket, room, name, ch, bg, fr, d.s5);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
   }));
+  // เปลี่ยนโหมดฟาร์มของตัวเองในห้อง (มีผลตอนจบตาถัดไปที่ยังไม่จบ)
+  on(socket, 'player:farm', d => { const room = rooms.get(socket.data.roomCode), p = room && room.players.find(x => x.id === socket.id); if (!p || !allow(socket)) return; p.farm = cleanFarm(obj(d).farm); emitLobby(room); });
   on(socket, 'room:rejoin', d => { const { code, token } = obj(d);
     if (!allow(socket)) return;
     if (socket.data.roomCode) return;

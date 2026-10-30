@@ -88,12 +88,22 @@
   function detail(kind, x, cur) {
     const big = kind === 'characters' && x.asset ? `<img class=iv-hero src="${E(x.asset)}" alt="">` : `<div class=iv-bigpv>${prevBox(kind, x)}</div>`;
     const btn = x.id === cur ? `<button class="pv-btn gray" disabled>✓ ใช้อยู่</button>` : `<button class="pv-btn green" onclick="equip('${kind}','${E(x.id)}')">เลือกใช้</button>`;
-    const extra = kind === 'characters' && typeof skCharCard === 'function' ? `<div class=iv-sk>${skCharCard(x.id, { compact: true })}</div>` : '';
+    const extra = kind === 'characters' && typeof skCharCard === 'function' ? `<div class="iv-sk${window.CharLv ? ' has-cl' : ''}">${window.CharLv ? CharLv.section(x.id) : ''}${skCharCard(x.id, { compact: true })}</div>` : '';
     return `<div class=iv-det><div class=iv-stage>${big}</div><div class=iv-info><b>${E(x.name || x.n || x.id)}</b>${extra}${btn}</div></div>`;
   }
+  // ไอเทม: ชา (เติมสตามิน่า) · คัมภีร์ (อัปเลเวลตัวละคร) · ตัวซ้ำจากกาชา
   function itemsTab() {
-    const inv = DBON() ? (DB.P.inventory || []).filter(i => (Number(i.qty) || 0) > 1) : [];
-    return `<div class=iv-empty><i>${ic('bag')}</i><b>${inv.length ? 'ตัวซ้ำจากกาชา' : 'ยังไม่มีไอเทม'}</b><small>${inv.length ? inv.map(i => E(i.item_id) + ' ×' + (i.qty - 1)).join(' · ') : 'ไอเทมและตัวซ้ำจากกาชาจะมาอยู่ที่นี่'}</small><button class="pv-btn blue" onclick="go('shop')">ไปร้านค้า / กาชา</button></div>`;
+    const items = window.Items && DBON() ? Items.list().filter(id => Items.qty(id) > 0) : [];
+    const dupes = DBON() ? (DB.P.inventory || []).filter(i => i.kind === 'characters' && (Number(i.qty) || 0) > 1) : [];
+    if (!items.length && !dupes.length) return `<div class=iv-empty><i>${ic('bag')}</i><b>ยังไม่มีไอเทม</b><small>${DBON() ? 'ชาและคัมภีร์ได้จากการเล่นกับบอท (โหมดฟาร์ม) และแบทเทิลพาส' : 'ล็อกอินเพื่อเก็บไอเทม'}</small><button class="pv-btn blue" onclick="bpOpen()">ไปแบทเทิลพาส</button></div>`;
+    const pick = items.includes(sel.items) ? sel.items : items[0];
+    const grid = items.map(id => { const it = Items.info(id);
+      return `<button class="iv-cell${id === pick ? ' sel' : ''}" onclick="invSel('items','${id}')"><em class=iv-qty>×${Items.qty(id)}</em><span class=iv-pv>${Items.icon(id, 'iv-itic')}</span><b>${E(it.name)}</b></button>`; }).join('');
+    const it = pick && Items.info(pick);
+    const act = !it ? '' : it.stamina ? `<button class="pv-btn green" onclick="staminaUse('${pick}')">🍵 ดื่ม (+${it.stamina} สตามิน่า)</button>` : `<button class="pv-btn blue" onclick="invTab('characters')">ใช้ที่หน้าตัวละคร</button>`;
+    const det = it ? `<div class=iv-det><div class=iv-stage><div class=iv-bigpv>${Items.icon(pick, 'iv-itbig')}</div></div><div class=iv-info><b>${E(it.name)}</b><p class=iv-desc>${E(it.desc)} · มี ${Items.qty(pick)} ชิ้น</p>${act}</div></div>` : '';
+    const dl = dupes.length ? `<small class=iv-dupes>ตัวซ้ำจากกาชา (ใช้อัปดาว): ${dupes.map(i => E(i.item_id) + ' ×' + (i.qty - 1)).join(' · ')}</small>` : '';
+    return `<div class=iv-main><div class=iv-grid>${grid}${dl}</div>${det}</div>`;
   }
   function invView() {
     const tabs = `<nav class=iv-tabs>${TABS.map(([k, l]) => {

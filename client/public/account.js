@@ -96,7 +96,7 @@
   const claimable = () => { let n = 0; if (Q) ['daily', 'weekly'].forEach(k => { const b = Q[k]; (b.quests || []).forEach(q => { if (q.progress >= q.target && !q.claimed) n++; }); if (b.bonus && b.bonus.ready) n++; }); return n; };
   function qRow(kind, q) {
     const done = q.progress >= q.target, pct = Math.min(100, Math.floor(q.progress / q.target * 100));
-    const reward = [q.reward_coins ? '🪙 ' + fmt(q.reward_coins) : '', q.reward_mcash ? '💎 ' + fmt(q.reward_mcash) : '', q.points ? '⚡' + q.points : '', q.reward_bp ? '🎖 ' + fmt(q.reward_bp) : ''].filter(Boolean).join(' ');
+    const reward = [q.reward_coins ? '🪙 ' + fmt(q.reward_coins) : '', q.reward_mcash ? '💎 ' + fmt(q.reward_mcash) : '', q.points ? '🎯' + q.points : '', q.reward_bp ? '🎖 ' + fmt(q.reward_bp) : ''].filter(Boolean).join(' ');
     return `<div class="q-row${done ? ' done' : ''}${q.claimed ? ' got' : ''}"><div class=q-ic>${E(q.icon)}</div><div class=q-mid><b>${E(q.name)}</b><small>${E(q.description)}</small><div class=q-bar><i style="width:${pct}%"></i></div><small class=q-num>${q.progress} / ${q.target}</small></div>`
       + (q.claimed ? '<span class="q-btn got">รับแล้ว ✓</span>' : `<button class="q-btn${done ? ' go' : ''}" ${done ? '' : 'disabled'} onclick="qClaim('${E(q.id)}')">${reward}</button>`) + '</div>';
   }
@@ -107,7 +107,7 @@
     const bb = b.bonus, bonusTxt = ['🪙 ' + fmt(bb.coins), bb.mcash ? '💎 ' + fmt(bb.mcash) : '', bb.bp ? '🎖 ' + fmt(bb.bp) : ''].filter(Boolean).join(' ');
     const bonusBtn = bb.claimed ? '<span class="q-btn got">รับแล้ว ✓</span>' : `<button class="q-btn${bb.ready ? ' go' : ''}" ${bb.ready ? '' : 'disabled'} onclick="qBonus('${kind}')">${bonusTxt}</button>`;
     // แต้มกิจกรรมรายวัน (ครบ 100 = รับโบนัส: เหรียญ + เพชร + EXP แบทเทิลพาส)
-    const act = kind === 'daily' && b.points_max ? `<div class=q-act><b>⚡ แต้มกิจกรรม ${fmt(b.points)}/${fmt(b.points_max)}</b><i><u style="width:${Math.min(100, Math.round(b.points / b.points_max * 100))}%"></u></i><small>ครบแล้วรับโบนัสด้านล่าง · 🎖 = EXP แบทเทิลพาส</small></div>` : '';
+    const act = kind === 'daily' && b.points_max ? `<div class=q-act><b>🎯 แต้มกิจกรรม ${fmt(b.points)}/${fmt(b.points_max)}</b><i><u style="width:${Math.min(100, Math.round(b.points / b.points_max * 100))}%"></u></i><small>ครบแล้วรับโบนัสด้านล่าง · 🎖 = EXP แบทเทิลพาส</small></div>` : '';
     m.innerHTML = `<div class=sk-box><button class=q-x onclick="closeQuests()" aria-label="ปิด">✕</button><h3>📜 เควส <span class=sk-coin>🪙 ${fmt(sv.coins)}</span></h3>
       <div class=q-tabs><button class="q-tab${kind === 'daily' ? ' on' : ''}" onclick="openQuests('d')">รายวัน</button><button class="q-tab${kind === 'weekly' ? ' on' : ''}" onclick="openQuests('w')">รายสัปดาห์</button></div>
       <div class=q-left id=qLeft>⏰ ${leftText()}</div>${act}${qs.map(q => qRow(kind, q)).join('')}
@@ -121,7 +121,7 @@
     drawQ(); if (!tab || !Q) loadQ();
   };
   window.closeQuests = () => { qOpen = false; const m = document.querySelector('.q-modal'); if (m) m.remove(); };
-  window.qClaim = async id => { try { const r = await DB.claimQuest(id); toast('🪙 +' + fmt(r.coins) + (r.mcash ? '  💎 +' + fmt(r.mcash) : '') + (r.points ? '  ⚡+' + r.points : '') + (r.bp ? '  🎖 +' + fmt(r.bp) : '')); } catch (e) { toast(e.message); } loadQ(); };
+  window.qClaim = async id => { try { const r = await DB.claimQuest(id); toast('🪙 +' + fmt(r.coins) + (r.mcash ? '  💎 +' + fmt(r.mcash) : '') + (r.points ? '  🎯+' + r.points : '') + (r.bp ? '  🎖 +' + fmt(r.bp) : '')); } catch (e) { toast(e.message); } loadQ(); };
   window.qBonus = async p => { try { const r = await DB.claimBonus(p); toast('🎁 โบนัส +' + fmt(r.coins) + ' 🪙' + (r.mcash ? '  +' + fmt(r.mcash) + ' 💎' : '') + (r.bp ? '  +' + fmt(r.bp) + ' EXP แบทเทิลพาส' : '')); } catch (e) { toast(e.message); } loadQ(); };
   window.dummyQuests = { reload: loadQ, claimable };
 

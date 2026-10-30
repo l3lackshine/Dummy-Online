@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // สร้าง supabase/bp_seed.sql จาก client/public/BattlePass/season*.json (ฤดูแบทเทิลพาส + รางวัลทุกเลเวล) · รันซ้ำได้ ปลอดภัย
-//   node scripts/gen-bp-sql.js → วางไฟล์ที่ได้ใน Supabase SQL Editor
+//   node scripts/gen-bp-sql.js → วางไฟล์ที่ได้ใน Supabase SQL Editor (ต้องรัน v7_stamina.sql ก่อน เพราะใช้คอลัมน์ qty)
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..'), DIR = path.join(ROOT, 'client/public/BattlePass');
 const q = s => (s == null ? 'null' : "'" + String(s).replace(/'/g, "''") + "'");
@@ -23,10 +23,10 @@ function build(seasons) {
     const rows = [];
     for (const t of ['free', 'gem', 'premium']) for (let lv = 1; lv <= s.maxLevel; lv++) {
       const r = rewardAt(s.tracks[t] || {}, lv), [ik, ii] = r.item ? String(r.item).split(':') : [null, null];
-      rows.push(`(${q(s.id)}, ${lv}, ${q(t)}, ${int(r.coins)}, ${int(r.mcash)}, ${q(ik)}, ${q(ii)}, ${q(r.preview || null)})`);
+      rows.push(`(${q(s.id)}, ${lv}, ${q(t)}, ${int(r.coins)}, ${int(r.mcash)}, ${q(ik)}, ${q(ii)}, ${q(r.preview || null)}, ${Math.max(1, int(r.qty) || 1)})`);
     }
-    out.push('insert into public.bp_rewards(season_id, level, track, coins, mcash, item_kind, item_id, preview) values', rows.join(',\n'),
-      'on conflict (season_id, level, track) do update set coins = excluded.coins, mcash = excluded.mcash, item_kind = excluded.item_kind, item_id = excluded.item_id, preview = excluded.preview;', '');
+    out.push('insert into public.bp_rewards(season_id, level, track, coins, mcash, item_kind, item_id, preview, qty) values', rows.join(',\n'),
+      'on conflict (season_id, level, track) do update set coins = excluded.coins, mcash = excluded.mcash, item_kind = excluded.item_kind, item_id = excluded.item_id, preview = excluded.preview, qty = excluded.qty;', '');
   }
   return out.join('\n');
 }
