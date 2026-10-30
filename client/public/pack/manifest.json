@@ -5,27 +5,77 @@
    "id": "base",
    "file": "base.pak",
    "tier": "public",
-   "version": "5188677695441ecd",
-   "bytes": 337527,
-   "files": 5
+   "version": "8b20240600e831c4",
+   "bytes": 1171621,
+   "files": 14
   },
   {
    "id": "char-arya-01",
    "file": "char-arya-01.pak",
    "tier": "owner",
-   "version": "e00cfff656865609",
-   "bytes": 215195,
-   "files": 1,
+   "version": "372adfc6a1f1621e",
+   "bytes": 473047,
+   "files": 2,
    "kind": "characters",
    "item": "arya-01"
+  },
+  {
+   "id": "char-haru-r",
+   "file": "char-haru-r.pak",
+   "tier": "owner",
+   "version": "2a33d1a64118be98",
+   "bytes": 401031,
+   "files": 3,
+   "kind": "characters",
+   "item": "haru-r"
+  },
+  {
+   "id": "char-ken-r",
+   "file": "char-ken-r.pak",
+   "tier": "owner",
+   "version": "43e08d6be6a7c2ce",
+   "bytes": 419485,
+   "files": 3,
+   "kind": "characters",
+   "item": "ken-r"
+  },
+  {
+   "id": "char-leo-r",
+   "file": "char-leo-r.pak",
+   "tier": "owner",
+   "version": "9511ba81a73cb78e",
+   "bytes": 483101,
+   "files": 3,
+   "kind": "characters",
+   "item": "leo-r"
+  },
+  {
+   "id": "char-miyu-r",
+   "file": "char-miyu-r.pak",
+   "tier": "owner",
+   "version": "04cadfe20b758c81",
+   "bytes": 599631,
+   "files": 3,
+   "kind": "characters",
+   "item": "miyu-r"
+  },
+  {
+   "id": "char-rei-r",
+   "file": "char-rei-r.pak",
+   "tier": "owner",
+   "version": "321704f653a7698e",
+   "bytes": 473825,
+   "files": 3,
+   "kind": "characters",
+   "item": "rei-r"
   },
   {
    "id": "char-rena-01",
    "file": "char-rena-01.pak",
    "tier": "owner",
-   "version": "39d42795f13f39f6",
-   "bytes": 2955101,
-   "files": 1,
+   "version": "34d914910c29df5a",
+   "bytes": 3197809,
+   "files": 2,
    "kind": "characters",
    "item": "rena-01"
   },
@@ -33,11 +83,31 @@
    "id": "char-rina-01",
    "file": "char-rina-01.pak",
    "tier": "owner",
-   "version": "9d8db9f58a626847",
-   "bytes": 150709,
-   "files": 1,
+   "version": "b1eddb0cfc5e13e9",
+   "bytes": 264377,
+   "files": 2,
    "kind": "characters",
    "item": "rina-01"
+  },
+  {
+   "id": "char-sakuya-ssr",
+   "file": "char-sakuya-ssr.pak",
+   "tier": "owner",
+   "version": "1e3286fcdb4ac1f0",
+   "bytes": 683356,
+   "files": 3,
+   "kind": "characters",
+   "item": "sakuya-ssr"
+  },
+  {
+   "id": "char-yuna-r",
+   "file": "char-yuna-r.pak",
+   "tier": "owner",
+   "version": "ed4dcf9f937547f7",
+   "bytes": 412791,
+   "files": 3,
+   "kind": "characters",
+   "item": "yuna-r"
   }
  ]
 }
