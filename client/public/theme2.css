@@ -832,3 +832,13 @@
 }
 /* การ์ดร้านค้า: ปุ่มไม่ล้นการ์ด */
 .item2 .wbtn[disabled]{font-size:.82em;white-space:nowrap}
+/* แพตช์โน้ต */
+.ver{cursor:pointer}
+.pn-box{width:min(94vw,760px)!important;display:block!important;max-height:88vh;overflow:auto}
+.pn-box h3{margin:0 0 8px;font-size:20px;color:#8a6d3b}
+.pn-ver{padding:10px 12px;border-radius:12px;background:#fff;margin-bottom:10px}.pn-ver.old{opacity:.85}
+.pn-ver header{display:flex;align-items:baseline;gap:8px}.pn-ver header b{font-size:17px;color:#c8102e}.pn-ver header small{color:#9aa0ad}
+.pn-ver h4{margin:2px 0 6px;font-size:15px;color:#3b4255}
+.pn-ver h5{margin:8px 0 2px;font-size:13px;color:#8a6d3b}
+.pn-ver ul{margin:0;padding-left:18px;font-size:13px;line-height:1.55;color:#555c6e}
+@media (max-height:500px) and (min-aspect-ratio:4/3){.pn-box .pn-list{columns:2;column-gap:14px}.pn-ver{break-inside:avoid}}

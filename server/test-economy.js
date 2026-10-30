@@ -28,4 +28,6 @@ ok(cfgSql === require('../scripts/gen-economy-sql').build(), 'supabase/v7_config
 const bp = fs.readFileSync(path.join(__dirname, '../supabase/bp_seed.sql'), 'utf8'), seasons = fs.readdirSync(path.join(__dirname, '../client/public/BattlePass')).filter(f => /^season.*\.json$/.test(f)).sort().map(f => require('../client/public/BattlePass/' + f));
 ok(bp === require('../scripts/gen-bp-sql').build(seasons), 'supabase/bp_seed.sql ตรงกับ season*.json (ถ้าไม่ตรง: node scripts/gen-bp-sql.js)');
 ok(seasons.every(s => ['free', 'gem'].every(t => JSON.stringify(s.tracks[t]).match(/items:([a-z0-9-]+)/g).every(m => E.ITEMS[m.slice(6)]))), 'ไอเทมในแบทเทิลพาสมีอยู่จริงใน economy.js');
+const pn = JSON.parse(fs.readFileSync(path.join(__dirname, '../client/public/patchnotes.json'), 'utf8')), ver = /DUMMY_VERSION = '([^']+)'/.exec(fs.readFileSync(path.join(__dirname, '../client/public/version.js'), 'utf8'))[1];
+ok(pn.notes[0].version === ver, 'แพตช์โน้ตล่าสุดตรงกับเวอร์ชันเกม (' + ver + ')');
 console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`);
