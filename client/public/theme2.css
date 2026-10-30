@@ -760,3 +760,6 @@
 .pg-items.big{margin:.6vh 0;font-size:max(18px,3.4vh);color:#3b4255}.pg-items.big .it-ic{width:max(32px,5.6vh);height:max(32px,5.6vh)}
 .pg-items .fm-it{margin-right:1vh}
 .iv-sk .cl-bk button{color:#fff!important}.iv-sk .cl-go{color:#3a2748!important}.iv-sk .cl-warn{color:#c8102e!important}.iv-sk .cl-slot small,.iv-sk .cl-bk small,.iv-sk .cl-top>small{color:#7d8394!important}.iv-sk .cl-top b{color:#b8862b!important}
+.fm-lob{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px}.fm-lob.low{color:#c8102e}
+.fm-chip{border:1.5px solid #d9c9a6;border-radius:99px;background:#fff;padding:1px 8px;font:700 12px Sarabun,sans-serif;color:#3b4255;cursor:pointer}.fm-chip.on{border-color:#e0a521;background:#fff3cf}
+.mm-st{font-size:13px}

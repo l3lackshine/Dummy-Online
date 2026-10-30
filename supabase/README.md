@@ -5,6 +5,10 @@
 ## ตั้งค่าครั้งแรก (ทำครั้งเดียว)
 1. **Supabase → Authentication → Providers → Email** : ปิด **Confirm email** (ผู้เล่นสมัครด้วย "ชื่อผู้ใช้" ระบบสร้างอีเมลภายในให้ `<ชื่อ>@example.com` — เปลี่ยนโดเมนได้ที่ `AUTH_EMAIL_DOMAIN` ใน `client/public/config.js`)
 2. **SQL Editor** : วางและรัน `supabase/name_filter.sql` (ตัวตรวจชื่อ) ตามด้วย `supabase/schema.sql` ทั้งไฟล์ แล้วตามด้วย `supabase/seed_catalog.sql` (รันซ้ำได้ ปลอดภัย)
+   แล้วรันต่อตามลำดับนี้ (Beta 0.6 ขึ้นไป): `supabase/v6_progression.sql` → `supabase/v7_stamina.sql` → `supabase/v7_config.sql` → `supabase/bp_seed.sql`
+   - v6 = รางวัลตามอันดับ/เลเวลผู้เล่น/แบทเทิลพาส · v7 = สตามิน่า/ชา/ฟาร์มกับบอท/เลเวลตัวละคร · v7_config = ตัวเลขจาก economy.js · bp_seed = ข้อมูลฤดูแบทเทิลพาส
+   - **รัน v6 ซ้ำเมื่อไหร่ ต้องรัน v7 ตามทุกครั้ง** (v7 แทนที่ฟังก์ชันบันทึกผลเกมของ v6) · แก้ตัวเลขใน economy.js แล้ว `node scripts/gen-economy-sql.js` · แก้ฤดูแล้ว `node scripts/gen-bp-sql.js`
+   - รัน SQL ให้เสร็จก่อนอัปโค้ดเซิร์ฟเวอร์ใหม่ (เซิร์ฟเวอร์ใหม่ส่งค่าที่ฐานข้อมูลเก่าไม่รู้จัก)
 3. **เซิร์ฟเวอร์เกม (Render)** : ตั้ง Environment ตาม `server/.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`) แล้ว deploy ใหม่ — รันในเครื่องใช้ `server/.env` (ตั้งไว้ให้แล้ว)
 4. **client** : ค่า URL/publishable key อยู่ใน `client/public/config.js` แล้ว (สร้างจาก `client/.env` ด้วย `node scripts/apply-env.js`)
 

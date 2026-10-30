@@ -55,7 +55,7 @@
     return `<div class=st-box><button class=st-x onclick="this.closest('.st-modal').remove()">✕</button>
       <div class=st-head>${STICON('st-big')}<div><small>สตามิน่า</small><b data-st>${N(st.stamina)}</b><em>/ ${N(st.max)}</em></div></div>
       <p class=st-time data-st-time>${stTime(st)}</p>
-      <ul class=st-rule><li>เล่นกับบอทใช้ตาละ <b>${st.cost}</b> · ได้ของตามโหมดฟาร์มที่เลือก</li><li>เล่นกับเพื่อน/หาแมตช์ <b>ไม่ใช้</b> สตามิน่า</li>
+      <ul class=st-rule><li>เล่นกับบอทใช้ตาละ <b>${st.cost}</b> · ได้ของตามโหมดฟาร์มที่เลือก</li><li>โต๊ะที่มีบอทเติมที่นั่ง (เล่นคนเดียว · ห้องเพื่อนที่เปิดเติมบอท · หาแมตช์แล้วโหวตเติมบอท) <b>ใช้</b> สตามิน่า</li><li>โต๊ะที่เป็นคนจริงทั้งหมด <b>ไม่ใช้</b> สตามิน่า</li>
         <li>ฟื้น 1 ทุก ${Math.round(EC.STAMINA.REGEN_SEC / 60)} นาที · ขึ้นเลเวลผู้เล่นแล้วเติมเต็ม · สูงสุดเพิ่ม 20 ทุก ${EC.STAMINA.EVERY} เลเวล (สูงสุด ${EC.STAMINA.CAP})</li>
         <li>สตามิน่าไม่พอยังเล่นกับบอทได้ เป็นโหมดซ้อม (ไม่ได้รางวัล)</li></ul>
       <h4>ดื่มชาเติมสตามิน่า</h4>${teas}<small class=st-note>ชาได้จากแบทเทิลพาส · ดื่มเกินค่าสูงสุดได้ (เกินแล้วหยุดฟื้นจนกว่าจะใช้ลง)</small></div>`;
@@ -96,7 +96,14 @@
     return `<h3 class=sec>🎯 ฟาร์มอะไรดี</h3><div class=fm>${Object.keys(EC.FARM).map(card).join('')}</div>
       <div class="fm-st${enough ? '' : ' low'}">${STICON()}<span>${enough ? `ใช้สตามิน่า <b>${cost}</b> ต่อตา · มี <b data-st>${N(st ? st.stamina : 0)}</b>/${N(st ? st.max : 0)}` : `สตามิน่าไม่พอ (มี <b data-st>${N(st.stamina)}</b> ต้องใช้ ${cost}) → เล่นได้แบบ<b>โหมดซ้อม</b> ไม่ได้รางวัล`}</span><button onclick="staminaOpen()">🍵 เติม</button></div>`;
   }
-  window.Farm = { get: getFarm, section: farmSection, itemsLine };
+  // บรรทัดสั้นในห้องรอ/หน้าโหวต: บอกว่ามีบอทจะใช้สตามิน่า + เลือกโหมดฟาร์มได้ (คนที่เข้าห้องทีหลังเห็นตรงนี้)
+  function lobbyLine() {
+    if (!dbOn()) return 'เล่นได้ แต่ต้องล็อกอินถึงจะได้ของ';
+    const cur = getFarm(), st = now(), cost = (st && st.cost) || EC.STAMINA.COST, low = st && st.stamina < cost;
+    const chips = Object.keys(EC.FARM).map(f => `<button class="fm-chip${cur === f ? ' on' : ''}" onclick="farmSet('${f}')">${E(EC.FARM[f].name)}</button>`).join('');
+    return `<span class="fm-lob${low ? ' low' : ''}">${STICON()} ${low ? `สตามิน่าไม่พอ (<b data-st>${N(st.stamina)}</b>/${cost}) → โหมดซ้อม` : `ใช้สตามิน่า ${cost} · มี <b data-st>${N(st ? st.stamina : 0)}</b>`} · ฟาร์ม ${chips}</span>`;
+  }
+  window.Farm = { get: getFarm, section: farmSection, itemsLine, lobbyLine };
 
   /* ---------------- เลเวลตัวละคร + ช่องชุดแต่ง ---------------- */
   const SLOT_NAME = { frames: 'กรอบการ์ด', backs: 'หลังไพ่', tables: 'ผ้าปูโต๊ะ', backgrounds: 'พื้นหลัง' };
