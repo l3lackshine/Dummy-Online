@@ -863,3 +863,22 @@
 .rv-lvbar b em{font-style:normal;color:#ffd83b;margin-right:.35em;font-size:.95em}
 .rv-lvbar small{position:absolute;right:calc(var(--D)*.5);bottom:14%;color:#fff!important;font-size:calc(var(--D)*.11);line-height:1;text-shadow:0 .1vh .2vh #0006}
 @media (max-height:500px){.rv-me2{--D:20vh}}
+/* ===== หน้าแรก/โปรไฟล์ (0.6.2) ===== */
+/* พื้นหลังหน้าแรกเต็มจอ รวมพื้นที่ขอบเว้า (notch) ไม่ให้เห็นภาพอื่นต่อ */
+#app.home{background:url(./UI/Assets/kit2/bg-home.webp) center/cover no-repeat!important}
+#app.home .scene{background:none!important}
+/* ปุ่มแพตช์โน้ตด้านซ้าย */
+.rv-sb.rv-pn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.rv-sb.rv-pn small{font:800 max(8px,1.6vh)/1 Sarabun,sans-serif;color:#ffe2a6;margin-top:.3vh}
+.rv-sb.rv-pn{width:8.4vh!important;height:8.4vh!important;padding:.8vh!important}.rv-sb.rv-pn svg{width:4.2vh!important;height:4.2vh!important;flex:none}
+/* ปุ่ม "เปลี่ยน" ใต้รูปโปรไฟล์: กดแล้วไม่เลื่อนออกข้าง */
+.pv-avbtn,.pv-avbtn:hover,.pv-avbtn:focus{transform:translateX(-50%)!important}
+.pv-avbtn:active{transform:translateX(-50%) translateY(2px)!important}
+/* หน้าโปรไฟล์เหลือ 2 แผง (ตั้งค่าย้ายไปไอคอนเฟือง) */
+.pv{grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr)!important}
+/* หน้าต่างตั้งค่า */
+.set-box{width:min(92vw,520px)!important;display:flex!important;flex-direction:column;gap:10px}
+.set-box .pv-h{margin:0 0 2px}
+.set-box .pv-acts{display:flex;gap:10px;margin-top:4px}.set-box .pv-acts .pv-btn{flex:1;height:44px}
+.set-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
+.pv-btn.sm{height:34px!important;padding:0 14px;flex:none;font-size:13px}

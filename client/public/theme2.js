@@ -20,6 +20,7 @@
     search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
     users: '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    news: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/>',
     medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8M12 13v4M10.5 15h3"/>'
   };
   const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[n] + '</svg>';
@@ -47,11 +48,10 @@
         ${window.Stamina ? Stamina.pill() : ''}<span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
         ${P ? `<span class="rv-cur"><img src="${KIT}gem.webp" alt="">${N(P.mcash)}<i onclick="go('shop')">${ic('plus')}</i></span>` : ''}
         ${typeof window.openDaily === 'function' && P ? `<button class="rv-rb" style="background-image:url(${KIT}rb-gift.webp)" onclick="openDaily()" aria-label="ล็อกอินรายวัน"></button>` : ''}
-        <button class="rv-rb" style="background-image:url(${KIT}rb-gear.webp)" onclick="go('profile')" aria-label="ตั้งค่า"></button>
+        <button class="rv-rb" style="background-image:url(${KIT}rb-gear.webp)" onclick="openSettings()" aria-label="ตั้งค่า"></button>
       </div>
       <div class="rv-side">
-        <button class="rv-sb" onclick="openSkills()" aria-label="ความสามารถ">${ic('bolt')}</button>
-        <button class="rv-sb" onclick="showRules(createSel.rule||'dummy')" aria-label="กติกา">${ic('book')}</button>
+        <button class="rv-sb rv-pn" onclick="openPatchNotes()" aria-label="แพตช์โน้ต">${ic('news')}<small>อัปเดต</small></button>
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
@@ -61,11 +61,8 @@
       <nav class="rv-nav">
         <button onclick="go('shop')">${ic('shop')}<span>ร้านค้า</span></button>
         <button onclick="invOpen('characters')">${ic('bag')}<span>ช่องเก็บของ</span></button>
-        <button onclick="go('profile')">${ic('user')}<span>โปรไฟล์</span></button>
       </nav>
       <div class="rv-play">
-        <button class="rv-mode" onclick="thMode('match')"><i>${ic('search')}</i><span>หาแมตช์</span></button>
-        <button class="rv-mode" onclick="thMode('room')"><i>${ic('users')}</i><span>สร้างห้อง</span></button>
         <button class="rv-start" onclick="goPlay()"><b>เริ่มเล่น</b><small>${E(ruleName())}</small></button>
       </div>`;
     scene.appendChild(d);

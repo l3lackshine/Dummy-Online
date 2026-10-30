@@ -10,6 +10,7 @@
   const set = (k, v) => { try { LS.setItem(k, v); } catch (e) {} };
   const ICON = {
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 4.5-6 8-6s6.5 1.5 8 6"/>',
+    news: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
     chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
     bag: '<path d="M3 9h18v11H3zM3 9l2-5h14l2 5M10 13h4"/>',
@@ -23,7 +24,21 @@
   const ic = n => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[n]}</svg>`;
 
   /* ---------------- PROFILE: ตั้งค่าโปรไฟล์อย่างเดียว ---------------- */
-  window.pvTog = k => { set(k, get(k, '1') === '1' ? '0' : '1'); render(); };
+  window.pvTog = k => { set(k, get(k, '1') === '1' ? '0' : '1'); render(); const m = document.querySelector('.set-modal .st-box'); if (m) m.innerHTML = settingsHtml(); };
+  // ---------- ตั้งค่า (เปิดจากไอคอนเฟืองมุมบนขวา) ----------
+  function settingsHtml() {
+    return `<button class=st-x onclick="this.closest('.st-modal').remove()">✕</button><h3 class=pv-h><i>${ic('gear')}</i>ตั้งค่า</h3>
+      ${tog('pvSfx', 'เสียงเอฟเฟกต์', 'sound', 'เสียงจั่ว ทิ้ง สับไพ่ และเอฟเฟกต์ตัวละคร')}
+      <div class=pv-set><i>${ic('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
+      <div class=pv-set><i>${ic('news')}</i><span><b>มีอะไรใหม่</b><small>แพตช์โน้ตของแต่ละเวอร์ชัน · ${E(window.DUMMY_VERSION || '')}</small></span><button class="pv-btn blue sm" onclick="openPatchNotes()">เปิดดู</button></div>
+      <div class=pv-acts>${DBON() ? `<button class="pv-btn blue" onclick="openDaily()">${ic('gift')}ล็อกอินรายวัน</button><button class="pv-btn gray" onclick="this.closest('.st-modal').remove();DB.signOut()">${ic('out')}ออกจากระบบ</button>` : ''}</div>
+      <div class=set-foot>${DBON() ? `<button class=pv-del onclick="this.closest('.st-modal').remove();pvDelAsk()">ลบบัญชีถาวร</button>` : ''}<a class=pv-priv href="./privacy.html" target=_blank rel=noopener>นโยบายความเป็นส่วนตัว</a></div>`;
+  }
+  window.openSettings = () => {
+    document.querySelectorAll('.set-modal').forEach(n => n.remove());
+    const m = document.createElement('div'); m.className = 'st-modal set-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
+    m.innerHTML = `<div class="st-box set-box">${settingsHtml()}</div>`; document.body.appendChild(m);
+  };
   const tog = (k, label, icon, note) => `<div class=pv-set><i>${ic(icon)}</i><span><b>${label}</b>${note ? `<small>${note}</small>` : ''}</span><button class="pv-sw${get(k, '1') === '1' ? ' on' : ''}" onclick="pvTog('${k}')" aria-pressed="${get(k, '1') === '1'}"><em></em></button></div>`;
   function statsBox() {
     if (!DBON()) return `<div class=pv-stats><div><b>${N(sv.coins)}</b><small>เหรียญ</small></div><div><b>—</b><small>เล่นแล้ว</small></div><div><b>—</b><small>ชนะ</small></div><div><b>—</b><small>% ชนะ</small></div></div><p class=pv-mut>สถิติจะแสดงเมื่อเข้าสู่ระบบบัญชี</p>`;
@@ -47,13 +62,7 @@
         <label class=pv-f><span>ฉายา</span><input id=titleInput maxlength=16 value="${E(title)}" placeholder="เช่น ราชาน็อก" oninput="pfTitle(this.value)"><small>แสดงใต้ชื่อในห้องและหน้าสรุปผล</small></label>
         <div class=pv-f><span>รูปโปรไฟล์</span><button class=pv-link onclick="invOpen('characters')"><i>${ic('bag')}</i>เลือกจากตัวละครในช่องเก็บของ</button></div>
       </section>
-      <section class="pv-card pv-opts">
-        <h3 class=pv-h><i>${ic('gear')}</i>ตั้งค่า</h3>
-        ${tog('pvSfx', 'เสียงเอฟเฟกต์', 'sound', 'เสียงจั่ว ทิ้ง สับไพ่ และเอฟเฟกต์ตัวละคร')}
-        <div class=pv-set><i>${ic('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
-        <div class=pv-acts>${DBON() ? `<button class="pv-btn blue" onclick="openDaily()">${ic('gift')}ล็อกอินรายวัน</button><button class="pv-btn gray" onclick="DB.signOut()">${ic('out')}ออกจากระบบ</button>` : ''}</div>
-        ${DBON() ? `<button class=pv-del onclick="pvDelAsk()">ลบบัญชีถาวร</button>` : ''}<a class=pv-priv href="./privacy.html" target=_blank rel=noopener>นโยบายความเป็นส่วนตัว</a>
-      </section></div>`;
+      </div>`;
     page2('โปรไฟล์', body, 'home');
     const pg = document.querySelector('.pg'); if (pg) pg.dataset.pg = 'pv';
   }
