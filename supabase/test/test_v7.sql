@@ -25,10 +25,12 @@ do $t$ declare j jsonb; begin
   perform pg_temp.ok((j->>'delta')::int = 0 and (j->'items'->>'exp-m')::int = 1 and (j->'items'->>'exp-s')::int = 3, 'ฟาร์มคัมภีร์: ที่ 1 ได้ขั้นกลาง 1 + ขั้นต้น 3');
   j := public.record_game_result('00000000-0000-0000-0000-0000000000e5', 'v7-3', 'dummy', 15, false, 0, false, null, true, 'exp', 4, 4);
   perform pg_temp.ok((j->'items'->>'exp-s')::int = 3 and (j->'items'->>'exp-m') is null, 'ฟาร์มคัมภีร์: ที่สุดท้ายได้ขั้นต้น 3');
+  j := public.record_game_result('00000000-0000-0000-0000-0000000000e5', 'v7-4', 'dummy', 15, false, 0, false, null, true, 'pexp', 2, 4);
+  perform pg_temp.ok((j->>'delta')::int = 0 and (j->>'exp')::int = 20 + 120, 'ฟาร์ม EXP ผู้เล่น: ที่ 2 ได้ EXP 20 + โบนัส 120');
 end $t$;
 reset role;
 select pg_temp.ok((select qty from public.inventory where user_id = '00000000-0000-0000-0000-0000000000e5' and kind = 'items' and item_id = 'exp-s') = 6, 'คัมภีร์เข้าคลัง (3 + 3)');
-select pg_temp.ok((select stamina from public.profiles where username = 'erin') = 50, 'เล่นกับบอท 3 ตา: 80 − 30 = 50');
+select pg_temp.ok((select stamina from public.profiles where username = 'erin') = 80, 'เล่นกับบอท 4 ตา แล้วตาที่ 4 ขึ้นเลเวล (ฟาร์ม EXP) → เติมสตามิน่าเต็ม 80');
 
 -- ===== โหมดซ้อม: สตามิน่าไม่พอ → ไม่ได้อะไร ไม่นับเควส =====
 update public.profiles set stamina = 5, stamina_at = now() where username = 'erin';

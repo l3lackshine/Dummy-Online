@@ -89,8 +89,8 @@
     if (!dbOn()) return '';
     const cur = getFarm(), st = now(), cost = (st && st.cost) || EC.STAMINA.COST;
     const card = f => { const top = EC.farmReward(f, 1, 4), low = EC.farmReward(f, 4, 4);
-      const icon = f === 'coins' ? '<img class=it-ic src="./UI/Assets/kit2/coin.webp" alt="">' : Items.icon('exp-m');
-      const what = f === 'coins' ? `ที่ 1 ได้ <b>${N(top.coins)}</b> 🪙 · ที่สุดท้าย ${N(low.coins)}` : `ที่ 1 ${itemsLine(top.items)} · ที่สุดท้าย ${itemsLine(low.items)}`;
+      const icon = f === 'coins' ? '<img class=it-ic src="./UI/Assets/kit2/coin.webp" alt="">' : f === 'pexp' ? Items.icon('pexp') : Items.icon('exp-m');
+      const what = f === 'coins' ? `ที่ 1 ได้ <b>${N(top.coins)}</b> 🪙 · ที่สุดท้าย ${N(low.coins)}` : f === 'pexp' ? `ที่ 1 ได้ EXP เพิ่ม <b>+${N(top.exp)}</b> · ที่สุดท้าย +${N(low.exp)}` : `ที่ 1 ${itemsLine(top.items)} · ที่สุดท้าย ${itemsLine(low.items)}`;
       return `<button class="fm-card${cur === f ? ' on' : ''}" onclick="farmSet('${f}')">${icon}<span><b>${E(EC.FARM[f].name)}</b><small>${what}</small></span></button>`; };
     const enough = !st || st.stamina >= cost;
     return `<h3 class=sec>🎯 ฟาร์มอะไรดี</h3><div class=fm>${Object.keys(EC.FARM).map(card).join('')}</div>

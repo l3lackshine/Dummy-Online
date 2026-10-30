@@ -2,7 +2,7 @@
 -- v7 · สตามิน่า + ชา · ฟาร์มของกับบอท · เลเวลตัวละคร + ช่องชุดแต่งประจำตัวละคร · ไอเทมในแบทเทิลพาส
 -- ลำดับรัน: schema.sql → v6_progression.sql → v7_stamina.sql → v7_config.sql → bp_seed.sql (รันซ้ำได้ ปลอดภัย · bp_seed ใช้คอลัมน์ qty ที่ v7 สร้าง)
 --   ถ้ารัน v6 ซ้ำภายหลัง ต้องรัน v7 ตามอีกครั้งเสมอ (v7 แทนที่ record_game_result ของ v6)
--- - เล่นกับบอท: หักสตามิน่าตอนจบตา (ตาละ economy.stamina.COST) แล้วได้ของตามโหมดฟาร์มที่เลือก (เหรียญ / คัมภีร์ตัวละคร)
+-- - เล่นกับบอท: หักสตามิน่าตอนจบตา (ตาละ economy.stamina.COST) แล้วได้ของตามโหมดฟาร์มที่เลือก (เหรียญ ×2 / คัมภีร์ตัวละคร / EXP ผู้เล่น)
 --   สตามิน่าไม่พอ = โหมดซ้อม: ไม่ได้เหรียญ EXP แบทเทิลพาส และไม่นับเควส
 -- - เล่นกับคน: ไม่ใช้สตามิน่า · เหรียญตามอันดับ มีเพดานรายวัน (นับเฉพาะเกมที่ไม่มีบอท)
 -- - สตามิน่าฟื้น 1 ทุก REGEN_SEC วินาทีจนถึงสูงสุด (80 +20 ทุก 5 เลเวล ตันที่ 300) · ชาเติมเกินสูงสุดได้ (เกินแล้วหยุดฟื้น) · ขึ้นเลเวลเติมเต็ม
@@ -118,7 +118,7 @@ declare v_res text; v_id bigint; v_coins bigint; v_mcash bigint; v_today_coins b
         v_cap int := public._cfg_int('daily_coin_cap', 1500); v_over int := public._cfg_int('over_cap_coins', 5); v_paid int := 0; v_capped boolean := false;
         v_exp int; v_old_exp bigint; v_old_lv int; v_new_lv int; v_lv int; v_lv_c int := 0; v_lv_m int := 0;
         s public.bp_seasons := public._bp_season(); v_bp int := 0; v_bp_per int; v_bp_cap int;
-        v_bots boolean := coalesce(p_bots, false); v_farm text; v_seats int; v_rank int; v_tier int; v_items jsonb := '{}'; k text; n text;
+        v_bots boolean := coalesce(p_bots, false); v_farm text; v_seats int; v_rank int; v_tier int; v_items jsonb := '{}'; k text; n text; v_pexp int := 0;
 begin
   if p_gid is null or p_game is null or p_game !~ '^[a-z0-9_-]{1,30}$' then raise exception 'ข้อมูลผลเกมไม่ถูกต้อง'; end if;
   p_delta := greatest(0, least(10000, coalesce(p_delta, 0)));      -- ไม่มีการเสียเหรียญจากการเล่น
@@ -131,7 +131,7 @@ begin
   v_res := case when p_won then 'win' else 'loss' end;   -- ได้ที่ 1 = ชนะ
   perform public._stamina_sync(p_user);
   if v_bots then
-    v_farm := case when p_farm = 'exp' then 'exp' else 'coins' end;
+    v_farm := case when p_farm in ('exp', 'pexp') then p_farm else 'coins' end;
     -- สตามิน่าไม่พอ → โหมดซ้อม: บันทึกไว้ (กันจ่ายซ้ำ) แต่ไม่ได้อะไรเลย และไม่นับเควส
     if not public._stamina_spend(p_user, public._eco_num('{stamina,COST}', 10)::int) then
       insert into public.game_log(user_id, gid, game_id, result, coin_delta, bonus, melds, knock, character_id, raw_delta, exp_gain, bp_gain, bots, practice, farm)
@@ -142,10 +142,11 @@ begin
         'coins', v_coins, 'mcash', v_mcash, 'exp', 0, 'player_exp', v_old_exp, 'level', public._level_of(v_old_exp), 'level_up', false,
         'level_coins', 0, 'level_mcash', 0, 'bp', 0, 'items', '{}'::jsonb) || public._stamina_info(p_user);
     end if;
+    v_seats := greatest(2, least(8, coalesce(p_seats, 4))); v_rank := greatest(1, least(v_seats, coalesce(p_rank, case when p_won then 1 else v_seats end)));
+    v_tier := case when v_rank <= 1 then 0 when v_rank >= v_seats then 3 when v_rank = 2 then 1 else 2 end;
     if v_farm = 'coins' then v_paid := least(20000, p_delta * public._eco_num('{farm,coins,mult}', 2))::int;
+    elsif v_farm = 'pexp' then v_pexp := coalesce((public._eco() #>> array['farm', 'pexp', 'bonus', v_tier::text])::int, 0);
     else
-      v_seats := greatest(2, least(8, coalesce(p_seats, 4))); v_rank := greatest(1, least(v_seats, coalesce(p_rank, case when p_won then 1 else v_seats end)));
-      v_tier := case when v_rank <= 1 then 0 when v_rank >= v_seats then 3 when v_rank = 2 then 1 else 2 end;
       v_items := coalesce(public._eco() #> array['farm', v_farm, 'tiers', v_tier::text], '{}'::jsonb);
     end if;
     select count(*) filter (where not practice) into v_today_games from public.game_log where user_id = p_user and played_at >= v_from;
@@ -158,7 +159,7 @@ begin
     else v_paid := least(p_delta, greatest(v_cap - v_today_coins, v_over)); v_capped := v_paid < p_delta; end if;
   end if;
   -- EXP ผู้เล่น · ขึ้นเลเวล = เพชร/เหรียญ + เติมสตามิน่าเต็ม
-  v_exp := public._cfg_int('exp_play', 20) + case when p_won then public._cfg_int('exp_win', 10) else 0 end;
+  v_exp := public._cfg_int('exp_play', 20) + case when p_won then public._cfg_int('exp_win', 10) else 0 end + v_pexp;   -- + โหมดฟาร์ม EXP ผู้เล่น
   select player_exp into v_old_exp from public.profiles where id = p_user;
   v_old_lv := public._level_of(v_old_exp); v_new_lv := public._level_of(v_old_exp + v_exp);
   update public.profiles set player_exp = player_exp + v_exp, last_game = p_game, last_game_at = now() where id = p_user;

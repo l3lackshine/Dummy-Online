@@ -50,12 +50,14 @@
   const FARM = {
     coins: { name: 'เหรียญ', mult: 2 },
     exp: { name: 'คัมภีร์ตัวละคร', tiers: [{ 'exp-m': 1, 'exp-s': 3 }, { 'exp-m': 1, 'exp-s': 1 }, { 'exp-s': 4 }, { 'exp-s': 3 }] },
+    pexp: { name: 'EXP ผู้เล่น', bonus: [150, 120, 90, 70] },   // EXP ผู้เล่นเพิ่มจากปกติ (ขึ้นเลเวลไวขึ้น = สตามิน่าสูงสุดเพิ่มไวขึ้น)
   };
   const tierOf = (rank, seats) => { seats = Math.max(2, Number(seats) || 2); return rank <= 1 ? 0 : rank >= seats ? 3 : rank === 2 ? 1 : 2; };
   function farmReward(farm, rank, seats) {
     const f = FARM[farm] ? farm : 'coins';
-    if (f === 'coins') return { farm: f, coins: reward(rank, seats, 1) * FARM.coins.mult, items: {} };
-    return { farm: f, coins: 0, items: Object.assign({}, FARM[f].tiers[tierOf(rank, seats)]) };
+    if (f === 'coins') return { farm: f, coins: reward(rank, seats, 1) * FARM.coins.mult, items: {}, exp: 0 };   // โต๊ะมีบอทไม่มีโบนัสคนจริง ×1.5 (เก็บไว้ทำกับระบบเพื่อน)
+    if (f === 'pexp') return { farm: f, coins: 0, items: {}, exp: FARM.pexp.bonus[tierOf(rank, seats)] };
+    return { farm: f, coins: 0, items: Object.assign({}, FARM[f].tiers[tierOf(rank, seats)]), exp: 0 };
   }
   // ---------- เลเวลตัวละคร ----------
   const CHAR = { MAX: 30, BASE: 100, STEP: 50, COIN_PER_EXP: 0.2, SLOTS: { frames: 5, backs: 10, tables: 20, backgrounds: 30 } };

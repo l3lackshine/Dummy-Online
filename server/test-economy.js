@@ -19,6 +19,7 @@ ok(E.levelReward(2).mcash === 5 && E.levelReward(10).mcash === 30 && E.levelRewa
 ok([1, 5, 6, 56, 99].map(E.staminaMax).join() === '80,80,100,300,300', 'สตามิน่าสูงสุด 80 → +20 ทุก 5 เลเวล → ตัน 300 ที่เลเวล 56');
 ok(E.farmReward('coins', 1, 4).coins === 120 && E.farmReward('exp', 1, 4).items['exp-m'] === 1 && E.farmReward('exp', 4, 4).items['exp-s'] === 3, 'ฟาร์ม: เหรียญ ×2 · คัมภีร์ตามอันดับ (ตรงกับ test_v7)');
 ok(E.farmReward('hack', 1, 4).farm === 'coins', 'โหมดฟาร์มแปลกๆ → ใช้เหรียญ');
+ok(E.farmReward('pexp', 2, 4).exp === 120 && E.farmReward('pexp', 2, 4).coins === 0, 'ฟาร์ม EXP ผู้เล่น: ที่ 2 ได้โบนัส 120 EXP (ตรงกับ test_v7)');
 ok(E.charLevelOf(0).level === 1 && E.charLevelOf(100).level === 2 && E.charLevelOf(250).level === 3 && E.charLevelOf(2200).level === 9 && E.charLevelOf(1e9).level === 30, 'เลเวลตัวละคร 0→1 · 100→2 · 250→3 · 2200→9 · ตัน 30 (ตรงกับ SQL)');
 ok(E.charCost(200) === 40, 'อัปเลเวลตัวละคร 200 EXP = 40 เหรียญ');
 ok(Object.values(E.ITEMS).every(x => x.name && (x.stamina || x.charExp)), 'ไอเทมทุกชิ้นมีชื่อและผล');

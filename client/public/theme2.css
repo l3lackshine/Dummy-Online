@@ -716,7 +716,7 @@
 .st-drink{border:0;border-radius:99px;padding:8px 18px;font:800 14px Sarabun,sans-serif;background:linear-gradient(#4cd36f,#1f9c4a);color:#fff;cursor:pointer}.st-drink:disabled{opacity:.4;cursor:default}
 .st-note{display:block;margin-top:6px;font-size:11px;color:#9aa0ad}
 /* โหมดฟาร์ม (หน้าสร้างห้องเล่นกับบอท) */
-.fm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .fm-card{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border-radius:14px;border:2px solid #e6dccb;background:#fffaf2;cursor:pointer;font-family:Sarabun,sans-serif;color:#3b4255}
 .fm-card b{display:block;font-size:15px}.fm-card small{display:block;font-size:12px;color:#7d8394;line-height:1.5}
 .fm-card.on{border-color:#e0a521;background:#fff3cf;box-shadow:0 0 0 3px #ffd36b66}

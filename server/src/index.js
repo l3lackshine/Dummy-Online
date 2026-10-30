@@ -298,7 +298,7 @@ function recordResults(room) {
   const G = room.game, rid = room.rule, gid = String(G.gid || room.code + ':' + room.round), st = standings(room);
   for (const p of room.players) {
     if (!p.uid || p.seat == null || !G.P[p.seat]) continue;
-    const seat = p.seat, rank = st.ranks[seat], reward = Economy.reward(rank, st.seats, st.humans);
+    const seat = p.seat, rank = st.ranks[seat], reward = Economy.reward(rank, st.seats, st.bots ? 1 : st.humans);   // โต๊ะมีบอท: ไม่มีโบนัสคนจริง (ฟาร์ม ×2 อย่างเดียว)
     const args = { p_user: p.uid, p_gid: gid, p_game: rid, p_delta: reward, p_won: rank === 1,
       p_melds: rid === 'dummy' ? (G.melds || []).filter(m => m.o === seat).length : 0, p_knock: rid === 'dummy' && !!G.res && G.res.k === seat, p_char: p.ch || null,
       p_bots: st.bots, p_farm: p.farm || 'coins', p_rank: rank, p_seats: st.seats };   // มีบอท = หักสตามิน่า + ได้ของตามโหมดฟาร์ม (ฐานข้อมูลตัดสิน)
