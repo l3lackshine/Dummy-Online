@@ -1,0 +1,143 @@
+{
+  "note": "ภารกิจระยะยาว (ถาวร ไม่รีเซ็ตข้ามฤดู) · นับตลอดอายุบัญชี · รับได้ครั้งเดียว · EXP เข้าแบทเทิลพาสฤดูปัจจุบัน · metric: play/win/coins/rules/days/melds/knock/login/charlv (เลเวลตัวละครสูงสุด)/chars (จำนวนตัวละคร) · แก้แล้วรัน node scripts/gen-bp-sql.js",
+  "missions": [
+    {
+      "id": "h_play10",
+      "name": "มือใหม่หัดเล่น",
+      "desc": "เล่นให้จบ 10 ตา",
+      "icon": "🎴",
+      "metric": "play",
+      "target": 10,
+      "bp": 800
+    },
+    {
+      "id": "h_play50",
+      "name": "ขาประจำวงไพ่",
+      "desc": "เล่นให้จบ 50 ตา",
+      "icon": "🎴",
+      "metric": "play",
+      "target": 50,
+      "bp": 800
+    },
+    {
+      "id": "h_play200",
+      "name": "เซียนวงไพ่",
+      "desc": "เล่นให้จบ 200 ตา",
+      "icon": "🎴",
+      "metric": "play",
+      "target": 200,
+      "bp": 800
+    },
+    {
+      "id": "h_win5",
+      "name": "ชิมลางชัยชนะ",
+      "desc": "ชนะ 5 ตา",
+      "icon": "🏆",
+      "metric": "win",
+      "target": 5,
+      "bp": 800
+    },
+    {
+      "id": "h_win30",
+      "name": "นักล่าชัยชนะ",
+      "desc": "ชนะ 30 ตา",
+      "icon": "🏆",
+      "metric": "win",
+      "target": 30,
+      "bp": 800
+    },
+    {
+      "id": "h_win100",
+      "name": "ราชาโต๊ะไพ่",
+      "desc": "ชนะ 100 ตา",
+      "icon": "👑",
+      "metric": "win",
+      "target": 100,
+      "bp": 800
+    },
+    {
+      "id": "h_rules5",
+      "name": "ครบทุกวง",
+      "desc": "เล่นครบทั้ง 5 เกม",
+      "icon": "🎲",
+      "metric": "rules",
+      "target": 5,
+      "bp": 800
+    },
+    {
+      "id": "h_knock1",
+      "name": "น็อกแรก",
+      "desc": "น็อกสำเร็จครั้งแรก (ดัมมี่)",
+      "icon": "👊",
+      "metric": "knock",
+      "game": "dummy",
+      "target": 1,
+      "bp": 800
+    },
+    {
+      "id": "h_knock10",
+      "name": "จอมน็อก",
+      "desc": "น็อกสำเร็จ 10 ครั้ง (ดัมมี่)",
+      "icon": "👊",
+      "metric": "knock",
+      "game": "dummy",
+      "target": 10,
+      "bp": 800
+    },
+    {
+      "id": "h_melds50",
+      "name": "นักเกิดไพ่",
+      "desc": "เกิดไพ่รวม 50 ชุด (ดัมมี่)",
+      "icon": "🃏",
+      "metric": "melds",
+      "game": "dummy",
+      "target": 50,
+      "bp": 800
+    },
+    {
+      "id": "h_login7",
+      "name": "แวะมาทักทาย",
+      "desc": "เข้าเกม 7 วัน",
+      "icon": "📅",
+      "metric": "login",
+      "target": 7,
+      "bp": 800
+    },
+    {
+      "id": "h_login30",
+      "name": "เพื่อนซี้วงไพ่",
+      "desc": "เข้าเกม 30 วัน",
+      "icon": "📅",
+      "metric": "login",
+      "target": 30,
+      "bp": 800
+    },
+    {
+      "id": "h_charlv10",
+      "name": "ฝึกฝนตัวละคร",
+      "desc": "อัปตัวละครถึงเลเวล 10",
+      "icon": "⭐",
+      "metric": "charlv",
+      "target": 10,
+      "bp": 800
+    },
+    {
+      "id": "h_charlv20",
+      "name": "ตัวละครคู่ใจ",
+      "desc": "อัปตัวละครถึงเลเวล 20",
+      "icon": "🌟",
+      "metric": "charlv",
+      "target": 20,
+      "bp": 800
+    },
+    {
+      "id": "h_chars5",
+      "name": "นักสะสม",
+      "desc": "มีตัวละคร 5 ตัว",
+      "icon": "🎎",
+      "metric": "chars",
+      "target": 5,
+      "bp": 800
+    }
+  ]
+}

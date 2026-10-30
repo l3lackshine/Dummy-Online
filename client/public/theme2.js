@@ -48,10 +48,10 @@
     if (e) e.stopPropagation();
     const old = document.querySelector('.rv-gpick'); if (old) { old.remove(); return; }
     const list = (typeof RULES !== 'undefined' && RULES.length ? RULES : []), cur = createSel.rule;
-    if (!list.length) { goPlay(); return; }
+    if (!list.length) { if (screen !== 'play') goPlay(); return; }
     const m = document.createElement('div'); m.className = 'rv-gpick';
     m.innerHTML = list.map(r => `<button class="${r.id === cur ? 'on' : ''}" onclick="setRule('${E(r.id)}');document.querySelector('.rv-gpick')?.remove()"><span>${E(r.icon || '🂠')}</span><b>${E(r.name)}</b>${r.id === cur ? '<em>✓</em>' : ''}</button>`).join('');
-    const host = document.querySelector('.rv-play'); if (host) host.appendChild(m);
+    const host = (e && e.currentTarget && e.currentTarget.closest && e.currentTarget.closest('.gcur-w')) || document.querySelector('.rv-play'); if (host) host.appendChild(m);
     setTimeout(() => document.addEventListener('click', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('click', off); } }), 0);
   };
   window.thMode = mode => { try { if (RULES.length) { chooseGame(createSel.rule || RULES[0].id); openCreate(mode); return; } } catch (e) {} goPlay(); };

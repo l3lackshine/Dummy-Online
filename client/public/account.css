@@ -116,3 +116,18 @@
   .gc-res.n10{grid-template-columns:repeat(10,minmax(0,1fr));gap:5px}.gc-box:has(.gc-res.n10){max-width:96vw;padding:8px 10px}
   .gc-res.n10 .gc-card b{font-size:10px}.gc-res.n10 .gc-card small{font-size:9px}.gc-res.n10 em{font-size:9px}
 }
+/* 0.8.0 เศษตัวละครในร้านประจำสัปดาห์ */
+.gc-wk-t{margin:8px 0 6px;color:#fff;font:800 14px Sarabun,sans-serif;text-shadow:0 1px 2px #0008}.gc-wk-t small{font-weight:600;opacity:.8;font-size:11px}
+.gc-shs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gc-sh{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px;border-radius:14px;background:linear-gradient(#2a4f86ee,#152a4dee);color:#fff;text-align:center;border:2px solid #8fd6ff66}
+.gc-sh.epic{background:linear-gradient(#6b2a86ee,#33154dee);border-color:#e3b24c99}
+.gc-sh>img{height:96px;max-width:100%;object-fit:contain}.gc-sh span{font-size:40px}
+.gc-sh b{font-size:13px}.gc-sh small{font-size:11px;opacity:.85}.gc-sh .wbtn{margin:2px 0 0}.gc-sh .wbtn.ask{background:linear-gradient(#ffd34d,#e08a00)}
+.gc-sh .wbtn{flex:none;width:auto;min-height:0;height:auto;padding:5px 16px;font-size:13px}
+@media (max-height:500px) and (orientation:landscape){.gc-sh{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto auto;column-gap:6px;row-gap:1px;text-align:left;padding:5px 8px;align-items:center}.gc-sh>img{grid-row:1/4;height:58px}.gc-sh b{font-size:12px}.gc-sh small{font-size:10px}.gc-sh .wbtn{justify-self:start;padding:3px 12px;font-size:12px}}
+.gc-ci{width:16px;height:16px;vertical-align:-3px;margin-right:3px}
+.gc-shb{border:0;border-radius:99px;padding:5px 16px;font:800 13px Sarabun,sans-serif;background:linear-gradient(#ffe08a,#e6a92a);color:#4a2f10;box-shadow:0 2px 0 #9a6a1a;cursor:pointer;display:inline-flex;align-items:center;gap:2px;margin-top:2px}
+.gc-shb.ask{background:linear-gradient(#ffd34d,#e08a00);animation:gcAsk .5s ease-in-out infinite alternate}.gc-shb.got{background:#ffffff33;color:#fff;box-shadow:none}.gc-shb:disabled{opacity:.6;cursor:default}
+@media (max-height:500px) and (orientation:landscape){.gc-shb{justify-self:start;padding:3px 12px;font-size:12px}}
+/* 0.8.0 เอาปุ่ม ⚡ ออกจาก HUD: ดันปุ่มที่เหลือไปชิดขวาเหมือนเดิม */
+.hud>.hud-back+*,.hud>.hud-who+*{margin-left:auto}

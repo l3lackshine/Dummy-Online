@@ -903,3 +903,55 @@
 .rv-gpick button{display:flex;align-items:center;gap:1.2vh;padding:1vh 1.4vh;border:0;border-radius:1.2vh;background:#f2ecdf;color:#3b4255;font:800 max(12px,2.4vh) Sarabun,sans-serif;text-align:left;cursor:pointer}
 .rv-gpick button span{font-size:1.2em}.rv-gpick button b{flex:1}.rv-gpick button.on{background:#fff3cf;box-shadow:inset 0 0 0 .25vh #e0a521}.rv-gpick button em{font-style:normal;color:#2e9a5a}
 @media (prefers-reduced-motion:reduce){.rv-start::after{animation:none}.rv-petal{display:none}}
+/* 0.7.1 หน้าเล่นเกม: ปุ่มเปลี่ยนเกมเปิดรายการเกมด้านล่าง (ไม่มีหน้าเลือกเกมแยกแล้ว) */
+.gcur-w{position:relative;width:100%;display:flex;justify-content:center;z-index:5}
+[data-pg=play] .gcur-w{grid-column:1/-1}
+.gcur-w .gcur{width:100%}
+.gcur-w .rv-gpick{top:calc(100% + .8vh);bottom:auto;left:50%;right:auto;transform:translateX(-50%);min-width:min(46vh,90vw)}
+/* ---- 0.8.0 แบทเทิลพาส: ตั๋วพักร้อน · แท็บภารกิจ · กล่องเลือกของ ---- */
+.bp-top:has(.bp-vac){grid-template-columns:auto 1fr auto auto}
+.bp-vac{display:flex;align-items:center;gap:.8vh;padding:.6vh 1.4vh .6vh .8vh;border-radius:99px;background:#ffffff1f;border:.2vh solid #9fe3ef88;white-space:nowrap}
+.bp-vac img{width:max(26px,5vh);height:max(26px,5vh);object-fit:contain}
+.bp-vac span{display:flex;flex-direction:column;line-height:1.1}.bp-vac b{font:800 max(13px,2.6vh) Sarabun,sans-serif;color:#bff4ff}.bp-vac b small{font-size:.7em;opacity:.8}.bp-vac>span>small{font-size:max(9px,1.5vh);opacity:.85}
+.bp-tabs{display:flex;gap:1vh;flex:none}
+.bp-tabs button{position:relative;border:0;border-radius:99px;padding:.8vh 2.2vh;font:800 max(11px,2vh) Sarabun,sans-serif;background:#fff;color:#5a3b6e;box-shadow:0 .4vh 1vh #3a274822;cursor:pointer}
+.bp-tabs button.on{background:linear-gradient(90deg,#8a1530,#5a1a40);color:#ffe7b0;box-shadow:0 0 0 .25vh #D4A537}
+.bp-tabs i{position:absolute;top:-.6vh;right:-.4vh;min-width:2.4vh;height:2.4vh;border-radius:99px;background:#e8344c;color:#fff;font:800 max(9px,1.5vh)/2.4vh Sarabun,sans-serif;font-style:normal;padding:0 .5vh}
+.bp-ms{flex:1;min-height:0;display:flex;flex-direction:column;gap:1vh;border-radius:2vh;background:#120d2ecc;padding:1.2vh 1.6vh;color:#fff}
+.bp-mh{margin:0;font:700 max(11px,1.9vh) Sarabun,sans-serif;color:#ffd1e2}
+.bp-ml{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,52vh),1fr));gap:1vh;align-content:start;scrollbar-width:thin}
+.bp-m{display:flex;align-items:center;gap:1.2vh;padding:1vh 1.2vh;border-radius:1.6vh;background:#ffffff12;border:.2vh solid #ffffff1a}
+.bp-m.ready{border-color:#ffd36b;background:#ffd36b1c;box-shadow:0 0 1.2vh #ffd36b44}.bp-m.got{opacity:.55}
+.bp-mi{font-size:max(18px,3.6vh);flex:none}
+.bp-mt{flex:1;min-width:0;display:flex;flex-direction:column;gap:.3vh}.bp-mt b{font:800 max(12px,2vh) Sarabun,sans-serif}.bp-mt small{font-size:max(10px,1.6vh);opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bp-mt i{display:block;height:.8vh;border-radius:99px;background:#ffffff22;overflow:hidden}.bp-mt u{display:block;height:100%;background:linear-gradient(90deg,#ff9ab8,#ffd36b)}
+.bp-mp{font:700 max(10px,1.7vh) Sarabun,sans-serif;opacity:.85;flex:none}
+.bp-me{font:800 max(10px,1.7vh) Sarabun,sans-serif;font-style:normal;color:#ffd36b;flex:none;white-space:nowrap}
+.bp-mb{flex:none;border:0;border-radius:99px;padding:.7vh 1.6vh;font:800 max(11px,1.8vh) Sarabun,sans-serif;background:#ffffff22;color:#fff;white-space:nowrap}
+.bp-mb.go{background:linear-gradient(90deg,#ffd36b,#e0a521);color:#3a2748;cursor:pointer}.bp-mb.got{background:none;color:#9fe8ff}.bp-mb:disabled{opacity:.6}
+.bp-ms.locked .bp-m{filter:grayscale(.5)}
+.cr-modal{position:fixed;inset:0;z-index:300;background:#0009;display:flex;align-items:center;justify-content:center;padding:2vh}
+.cr-box{background:linear-gradient(#3a1530,#1d1236);color:#fff;border:.3vh solid #D4A537;border-radius:2.4vh;padding:2vh 2.4vh;max-width:min(94vw,640px);max-height:94vh;overflow:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1vh}
+.cr-ic{width:max(56px,11vh);height:max(56px,11vh);object-fit:contain;filter:drop-shadow(0 0 1.4vh #ffd36b88)}
+.cr-box h3{margin:0;font:800 max(16px,3vh) Mali,Sarabun,sans-serif}.cr-box>small{opacity:.8}
+.cr-opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1vh;width:100%}
+.cr-opt{display:flex;flex-direction:column;align-items:center;gap:.4vh;padding:1.2vh .6vh;border-radius:1.6vh;border:.25vh solid #ffffff2a;background:#ffffff12;color:#fff;cursor:pointer;font-family:Sarabun,sans-serif}
+.cr-opt img{width:max(40px,8vh);height:max(40px,8vh);object-fit:contain}.cr-opt span{font-size:max(30px,6vh)}
+.cr-opt b{font-size:max(11px,1.8vh)}.cr-opt em{font-style:normal;font-weight:800;color:#ffd36b}
+.cr-opt.on{border-color:#ffd36b;background:#ffd36b26;box-shadow:0 0 1.4vh #ffd36b66}
+.cr-act{display:flex;gap:1vh}.cr-act .wbtn{margin:0}
+@media (max-width:520px){.cr-opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-height:500px) and (orientation:landscape){.bp-tabs button{padding:.5vh 1.8vh;font-size:max(10px,2.6vh)}.bp-ml{grid-template-columns:repeat(2,minmax(0,1fr))}.bp-m{padding:.6vh 1vh}.bp-mt small{font-size:max(9px,2.2vh)}.bp-vac img{width:24px;height:24px}}
+.bp{width:100%;max-width:100%;min-width:0}.bp>*{min-width:0;max-width:100%}
+.cr-box.wide{max-width:min(96vw,900px)}
+.cr-opts.sh{grid-template-columns:repeat(auto-fill,minmax(max(84px,14vh),1fr))}
+.cr-opt.sh .cr-ch{width:100%;height:max(70px,14vh);object-fit:cover;object-position:center top;border-radius:1vh}
+.cr-opt.sh small{font-size:max(9px,1.5vh);opacity:.85}
+.cl-sh{display:flex;align-items:center;gap:1vh;font-weight:700;margin-bottom:.8vh}.cl-sh i{flex:1;height:.9vh;border-radius:99px;background:#0002;overflow:hidden}.cl-sh u{display:block;height:100%;background:linear-gradient(90deg,#7fd4ff,#c99bff)}
+.cr-opt.sh .cr-ch{object-fit:contain;filter:drop-shadow(0 0 .8vh #7fc8ff66)}
+.cl-sh img{width:max(28px,5vh);height:max(28px,5vh);object-fit:contain}
+@media (max-height:500px) and (orientation:landscape){
+  .cr-box{padding:1.4vh 2vh;gap:.6vh}.cr-ic{width:44px;height:44px}.cr-box h3{font-size:max(14px,4.4vh)}.cr-box>small{font-size:max(10px,3vh)}
+  .cr-opts.sh{grid-template-columns:repeat(6,minmax(0,1fr));gap:.8vh}.cr-opt.sh{padding:.6vh .4vh}.cr-opt.sh .cr-ch{height:max(52px,15vh)}
+  .cr-opt b,.cr-opt em{font-size:max(10px,3vh)}.cr-opt.sh small{font-size:max(9px,2.6vh)}.cr-opt img{width:40px;height:40px}
+}

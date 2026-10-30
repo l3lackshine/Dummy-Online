@@ -70,7 +70,11 @@
     if (!DB.W) { if (!wLoading && !wFail) { wLoading = true; DB.weekly().then(w => { if (!w) wFail = 'โหลดร้านไม่สำเร็จ'; }).catch(e => { wFail = e.message || 'โหลดร้านไม่สำเร็จ'; }).then(() => { wLoading = false; try { render(); } catch (e) {} }); }
       return `<p class=note>${E(wFail ? wFail + ' — กดแท็บร้านอีกครั้งเพื่อลองใหม่' : 'กำลังโหลดร้านประจำสัปดาห์…')}</p>`; }
     const R = (DB.G && DB.G.rarities) || {}, left = Math.max(0, new Date(DB.W.resets_at) - Date.now()), d = Math.floor(left / 864e5), h = Math.floor(left % 864e5 / 36e5);
-    return `<p class="note gc-wk-h">🗓️ ของแต่งหมุนเวียนทุกสัปดาห์ · ซื้อด้วยเหรียญ · ของใหม่ในอีก <b>${d ? d + ' วัน ' : ''}${h} ชม.</b></p><div class="grid big gc-grid gc-week">${(DB.W.items || []).map(i => {
+    const SN = (window.Economy && Economy.SHARD_NEED) || 50, chr = id => (((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(x => x.id === id) || {});
+    const shards = (DB.W.shards || []).map(x => { const img = './Item/Shards/' + x.item_id + '.webp', gem = x.mcash != null, cost = gem ? x.mcash : x.coins, bal = gem ? (sv.mcash || 0) : sv.coins, ask = cfm === 'sh:' + x.slot;
+      return `<div class="gc-sh ${x.rarity}">${img ? `<img src="${E(img)}" alt="">` : '<span>🧩</span>'}<b>${E(x.name)}</b><small>${x.rarity === 'epic' ? 'SR' : 'Rare'} · เศษ ×${N(x.qty)} · มี ${N(x.have)}/${SN}</small>
+        <button class="gc-shb${x.bought ? ' got' : ''}${ask ? ' ask' : ''}" ${busy || x.bought || bal < cost ? 'disabled' : ''} onclick="gcBuyS('${E(x.slot)}',${gem ? 1 : 0})">${x.bought ? 'ซื้อแล้ว' : ask ? 'แตะอีกครั้ง · 💎 ' + N(cost) : (gem ? '💎 ' : '<img class=gc-ci src="./UI/Assets/kit2/coin.webp" alt="">') + N(cost)}</button></div>`; }).join('');
+    return `<p class="note gc-wk-h">🗓️ ของแต่งและเศษตัวละครหมุนเวียนทุกสัปดาห์ · ของใหม่ในอีก <b>${d ? d + ' วัน ' : ''}${h} ชม.</b></p>${shards ? `<h4 class=gc-wk-t>🧩 เศษตัวละคร <small>(ครบ ${SN} ชิ้นได้ตัวละคร · ช่องละ 1 ครั้ง/สัปดาห์)</small></h4><div class=gc-shs>${shards}</div><h4 class=gc-wk-t>🎨 ของแต่ง</h4>` : ''}<div class="grid big gc-grid gc-week">${(DB.W.items || []).map(i => {
       const no = busy || i.owned || sv.coins < i.price;
       return `<div class="item2 gc-i ${i.rarity}">${thumb(i.kind, i.item_id)}<b>${E(i.name)}</b><small>${E((R[i.rarity] || {}).name || '')} · ${E(kindLabel(i.kind))}</small>
         <button class="wbtn${i.owned ? '' : ' go'}" ${no ? 'disabled' : ''} onclick="gcBuyW('${E(i.kind)}','${E(i.item_id)}')">${i.owned ? 'มีแล้ว' : '🪙 ' + N(i.price)}</button></div>`; }).join('')}</div>`;
@@ -89,7 +93,7 @@
     ((DB.G && DB.G.banners) || []).forEach(b => (b.items || []).forEach(i => { cat[i.kind + ':' + i.item_id] = i; }));
     const inv = (DB.P.inventory || []).filter(i => i.qty > 0).sort((a, b) => b.qty - a.qty);
     if (!inv.length) return '<p class=note>ยังไม่มีของ — ไปสุ่มกาชากัน!</p>';
-    return `<p class=note>ตัวละครที่ได้ซ้ำนำไปอัพดาวได้ที่ ⚡ หรือหน้าโปรไฟล์ · หรือขายตัวซ้ำเป็นเหรียญ (เก็บไว้ 1 ชิ้นเสมอ)</p><div class="grid big gc-grid">${inv.map(i => {
+    return `<p class=note>ตัวละครที่ได้ซ้ำนำไปอัพดาวได้ที่หน้าตัวละคร (ช่องเก็บของ) · หรือขายตัวซ้ำเป็นเหรียญ (เก็บไว้ 1 ชิ้นเสมอ)</p><div class="grid big gc-grid">${inv.map(i => {
       const c = cat[i.kind + ':' + i.item_id] || {}, d = i.qty - 1, unit = (R[c.rarity] || {}).sell_coins || 0;
       return `<div class="item2 gc-i ${c.rarity || ''}">${thumb(i.kind, i.item_id)}<b>${E(c.name || (regItem(i.kind, i.item_id) || {}).name || i.item_id)} ×${i.qty}</b><small>${RICON[c.rarity] || ''} ${E(kindLabel(i.kind))} · ตัวซ้ำ ${d}</small>
         ${d > 0 && unit ? `<button class="wbtn go" ${busy ? 'disabled' : ''} onclick="gcSell('${i.kind}','${E(i.item_id)}',1)">ขาย 1 · 🪙 ${N(unit)}</button>${d > 1 ? `<button class="wbtn" ${busy ? 'disabled' : ''} onclick="gcSell('${i.kind}','${E(i.item_id)}',${d})">ขายซ้ำทั้งหมด ${d} · 🪙 ${N(unit * d)}</button>` : ''}` : '<button class="wbtn" disabled>ไม่มีตัวซ้ำ</button>'}</div>`; }).join('')}</div>`;
@@ -129,6 +133,13 @@
     try { await DB.buyWeekly(kind, id); note = 'ซื้อแล้ว — ใส่ได้ที่หน้าแต่งตัว'; toast(note); } catch (e) { note = e.message; }
     busy = false; render();
   };
+  window.gcBuyS = async (slot, gem) => {
+    if (busy) return;
+    if (gem && cfm !== 'sh:' + slot) { clearTimeout(cfmT); cfm = 'sh:' + slot; render(); cfmT = setTimeout(() => { cfm = ''; try { render(); } catch (e) {} }, 3500); return; }
+    cfm = ''; busy = true; render();
+    try { const r = await DB.call('buy_weekly_shard', { p_slot: slot }); await DB.refresh(); await DB.weekly(); note = r.chars ? '🎉 เศษครบแล้ว ได้ตัวละครใหม่!' : `ได้เศษ ×${N(r.qty)} · มี ${N(r.shards)} ชิ้น`; toast(note); } catch (e) { note = e.message; }
+    busy = false; render();
+  };
   window.gcSell = async (kind, id, q) => {
     if (busy) return; busy = true; render();
     try { const r = await DB.sell(kind, id, q); note = `ขายตัวซ้ำ ${r.sold} ชิ้น ได้ 🪙 ${N(r.coins_gained)}`; toast(note); }
@@ -143,7 +154,7 @@
     const m = document.createElement('div'); m.className = 'gc-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
     const best = res.reduce((a, x) => Math.max(a, (R[x.rarity] || {}).sort || 0), 0);
     m.innerHTML = `<div class="gc-box gc-top${best}"><h3>🎰 ผลการสุ่ม</h3><div class="gc-res n${res.length}">${res.map((x, i) => `<div class="gc-card ${x.rarity}${cardOf(x) ? ' has-card' : ''}" style="animation-delay:${i * 0.12}s">${cardOf(x) ? `<img class=gc-cimg src="${E(cardOf(x))}" alt="">` : thumb(x.kind, x.item_id)}<b>${E(x.name)}</b><small>${RICON[x.rarity] || ''} ${E((R[x.rarity] || {}).name || '')}</small>${x.new ? '<em class=gc-new>NEW</em>' : x.converted != null ? `<em class=gc-dup>ซ้ำ → 🪙 ${N(x.converted)}</em>` : `<em class=gc-dup>ซ้ำ ×${x.qty}</em>`}</div>`).join('')}</div>
-      <p class=gc-sum>${r.tickets_used ? `ใช้ตั๋ว ${N(r.tickets_used)} ใบ · ` : ''}${r.mcash_used ? `ใช้ 💎 ${N(r.mcash_used)} · ` : ''}${r.converted_coins ? `ของซ้ำแปลงเป็น 🪙 ${N(r.converted_coins)} · ` : ''}เหลือ 🪙 ${N(r.coins)} · 💎 ${N(r.mcash)}${r.tickets_left != null ? ` · ตั๋ว ${N(r.tickets_left)} ใบ` : ''}${res.some(x => !x.new && x.kind === 'characters') ? '<br>ได้ตัวละครซ้ำ — นำไปอัพดาวได้ที่ ⚡' : ''}</p><button class="wbtn go" onclick="this.closest('.gc-modal').remove()">ตกลง</button></div>`;
+      <p class=gc-sum>${r.tickets_used ? `ใช้ตั๋ว ${N(r.tickets_used)} ใบ · ` : ''}${r.mcash_used ? `ใช้ 💎 ${N(r.mcash_used)} · ` : ''}${r.converted_coins ? `ของซ้ำแปลงเป็น 🪙 ${N(r.converted_coins)} · ` : ''}เหลือ 🪙 ${N(r.coins)} · 💎 ${N(r.mcash)}${r.tickets_left != null ? ` · ตั๋ว ${N(r.tickets_left)} ใบ` : ''}${res.some(x => !x.new && x.kind === 'characters') ? '<br>ได้ตัวละครซ้ำ — นำไปอัพดาวได้ที่หน้าตัวละคร' : ''}</p><button class="wbtn go" onclick="this.closest('.gc-modal').remove()">ตกลง</button></div>`;
     document.body.appendChild(m);
   }
   window.gcShow = showResult;

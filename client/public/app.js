@@ -61,7 +61,7 @@ function prevBox(kind, x) {
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
-const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}<button class=hud-sk onclick=openSkills() aria-label="ความสามารถ">⚡</button>${window.Stamina ? Stamina.pill() : ''}<span class=coin-pill>🪙 ${sv.coins}</span>${window.DB && DB.enabled ? `<span class="coin-pill mc-pill" title="MCash">💎 ${sv.mcash || 0}</span>` : ''}</div>`;
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}${window.Stamina ? Stamina.pill() : ''}<span class=coin-pill>🪙 ${sv.coins}</span>${window.DB && DB.enabled ? `<span class="coin-pill mc-pill" title="MCash">💎 ${sv.mcash || 0}</span>` : ''}</div>`;
 const pgKind = b => (b.includes('class=plank') ? 'play' : b.includes('gtiles') ? 'games' : b.includes('scoreSum') ? 'create' : b.includes('class=ksec') ? (b.includes('namebox') ? 'profile' : 'shop') : '');
 const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app').innerHTML = `<div class=pg data-pg="${pgKind(body)}">${hud(back)}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
 function homeView() {
@@ -69,21 +69,16 @@ function homeView() {
   $('app').className = 'home';
   $('app').innerHTML = `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./UI/Assets/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./UI/Assets/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./UI/Assets/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
 }
-function goPlay() { joinOpen = false; conn(); if (sock && sock.connected && !RULES.length) sock.emit('rules:get'); go('games'); }
-// ===== หน้าเลือกเกม (หลังกดเล่นเกม): รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา เพิ่มกฎใหม่แล้วโผล่เองโดยไม่ต้องแก้ client =====
+// ปุ่มเริ่มเล่น → หน้าเล่นเกมของเกมที่เลือกไว้ทันที (เปลี่ยนเกมได้จากป้ายบนปุ่มเริ่มเล่น หรือปุ่ม "เปลี่ยนเกม" ในหน้าเล่นเกม)
+function goPlay() { joinOpen = false; conn(); if (sock && sock.connected && !RULES.length) sock.emit('rules:get'); if (RULES.length && !ruleMeta(createSel.rule)) setRule(RULES[0].id); go('play'); }
+// ===== เลือกเกม: รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา (เปลี่ยนได้จากป้ายบนปุ่มเริ่มเล่น / ปุ่มเปลี่ยนเกม → rvPickGame ใน theme2.js) =====
 function chooseGame(id) { if (!ruleMeta(id)) return; setRule(id); joinOpen = false; go('play'); }
-function gamesView() {
-  conn();
-  const cur = createSel && createSel.rule, pc = r => (r.maxPlayers > 1 ? (r.minPlayers || 1) + '–' + r.maxPlayers + ' คน' : '1 คน');
-  const tiles = RULES.map(r => `<button class="gtile${r.id === cur ? ' on' : ''}" onclick="chooseGame('${esc(r.id)}')"><span class=gt-ic>${esc(r.icon || '🂠')}</span><span class=gt-tx><b>${esc(r.name)}</b><small>${esc(r.desc || '')}</small><i>${pc(r)} · ล้อมวงกับบอทได้</i></span><span class=gt-go>›</span></button>`).join('');
-  page2('เลือกเกม', `${connStatus()}${RULES.length ? `<div class=gtiles>${tiles}</div>` : `<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดรายการเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`}<button class=wbtn onclick="toggleJoin()">🔑 เข้าห้องด้วยรหัสจากเพื่อน</button>${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom && RULES.length ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'home');
-}
 function toggleJoin() { joinOpen = !joinOpen; render(); if (joinOpen) { const i = $('cd'); if (i) i.focus(); } }
 function playView() {
   conn();
   const plank = (fn, t, s) => `<button class=plank onclick="${fn}"><b>${t}</b><small>${s}</small></button>`;
-  const gm = ruleMeta(createSel.rule), gh = gm ? `<button class=gcur onclick="go('games')"><span>${esc(gm.icon || '🂠')}</span><b>${esc(gm.name)}</b><small>เปลี่ยนเกม</small></button>` : '';
-  page2('เล่นเกม', `${gh}${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('openCreate(\'room\')', 'สร้างห้อง', 'เลือกไพ่ ตั้งเดิมพัน ชวนเพื่อน')}${plank('openCreate(\'match\')', '🔍 หาแมตช์', 'จับคู่ผู้เล่นออนไลน์อัตโนมัติ')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'games');
+  const gm = ruleMeta(createSel.rule), gh = gm ? `<div class=gcur-w><button class=gcur onclick="rvPickGame(event)"><span>${esc(gm.icon || '🂠')}</span><b>${esc(gm.name)}</b><small>เปลี่ยนเกม ▾</small></button></div>` : `<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดรายการเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`;
+  page2('เล่นเกม', `${gh}${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('openCreate(\'room\')', 'สร้างห้อง', 'เลือกไพ่ ตั้งเดิมพัน ชวนเพื่อน')}${plank('openCreate(\'match\')', '🔍 หาแมตช์', 'จับคู่ผู้เล่นออนไลน์อัตโนมัติ')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'home');
 }
 // ===== กฎเกม: รายการกฎ/ตัวเลือกมาจากเซิร์ฟเวอร์ (rules:list) หน้านี้สร้างจาก meta ล้วน ๆ — เพิ่มกฎใหม่ที่ server/src/rules ไม่ต้องแก้ client =====
 function loadCreateSel() { try { const v = JSON.parse(localStorage.getItem('dummyCreate') || 'null'); if (v && v.rule) return { rule: String(v.rule), options: v.options && typeof v.options === 'object' ? v.options : {} }; } catch (e) {} return { rule: 'dummy', options: {} }; }
@@ -125,7 +120,7 @@ function createView() {
   // จัดเป็นคอลัมน์ (เกม+ตั้งค่า · ฟาร์ม · รางวัล+ปุ่มเริ่ม) — จอเตี้ยแผ่ออกด้านข้าง แต่ละคอลัมน์เลื่อนในตัวเอง ปุ่มเริ่มอยู่ล่างคอลัมน์สุดท้ายเสมอ
   const farm = window.Farm && (solo_ || (!match_ && createBots)) ? Farm.section() : '';
   const col = (cls, html) => `<section class="cr-col ${cls}">${html}</section>`;
-  page2(solo_ ? 'เล่นคนเดียว' : match_ ? 'หาแมตช์' : 'สร้างห้อง', `${connStatus()}<div class="panel cr${farm ? ' cr3' : ''}">${col('cr-set', `<h3 class=sec>🎴 เกมที่เลือก</h3><button class=gcur onclick="go('games')"><span>${esc(m.icon || '🂠')}</span><b>${esc(m.name)}</b><small>เปลี่ยนเกม</small></button><p class=rule-desc>${esc(m.desc || '')}</p>${howtoHtml(m)}<h3 class=sec>⚙️ ตั้งค่าห้อง</h3>${opts}${botOpt}`)}${farm ? col('cr-farm', farm) : ''}${col('cr-go', `<div class=cr-scroll><h3 class=sec>📋 รางวัลและการนับชิป</h3><div id=scoreSum class=score-sum>${scoreHtml(m)}</div></div><button class="wbtn go" onclick="startCreate()">${solo_ ? '▶ เริ่มเล่นกับบอท' : match_ ? '🔍 ค้นหาแมตช์' : '🏠 สร้างห้อง'}</button>`)}</div>`, 'play');
+  page2(solo_ ? 'เล่นคนเดียว' : match_ ? 'หาแมตช์' : 'สร้างห้อง', `${connStatus()}<div class="panel cr${farm ? ' cr3' : ''}">${col('cr-set', `<h3 class=sec>🎴 เกมที่เลือก</h3><div class=gcur-w><button class=gcur onclick="rvPickGame(event)"><span>${esc(m.icon || '🂠')}</span><b>${esc(m.name)}</b><small>เปลี่ยนเกม ▾</small></button></div><p class=rule-desc>${esc(m.desc || '')}</p>${howtoHtml(m)}<h3 class=sec>⚙️ ตั้งค่าห้อง</h3>${opts}${botOpt}`)}${farm ? col('cr-farm', farm) : ''}${col('cr-go', `<div class=cr-scroll><h3 class=sec>📋 รางวัลและการนับชิป</h3><div id=scoreSum class=score-sum>${scoreHtml(m)}</div></div><button class="wbtn go" onclick="startCreate()">${solo_ ? '▶ เริ่มเล่นกับบอท' : match_ ? '🔍 ค้นหาแมตช์' : '🏠 สร้างห้อง'}</button>`)}</div>`, 'play');
 }
 // กดปุ่มยืนยันในหน้าสร้างห้อง: เล่นคนเดียว = สร้างห้องส่วนตัวเล่นกับบอท / สร้างห้อง = ห้องออนไลน์
 function startCreate() {
@@ -159,7 +154,7 @@ function conn() {
   sock = io(CFG.BACKEND_URL || undefined, ioOpt);
   sock.on('connect', () => { lerr = ''; authed = true; const ss = getSess(); if (ss && !code && !soloPending) sock.emit('room:rejoin', ss); else if (soloPending && !code) mk(); if (!RULES.length) sock.emit('rules:get'); render(); });
   sock.on('room:rejoin-failed', () => { setSess(null); if (soloPending && !code) mk(); render(); });
-  sock.on('rules:list', d => { if (d && Array.isArray(d.rules)) { RULES = d.rules; SRV_VER = String(d.version || ''); render(); } });
+  sock.on('rules:list', d => { if (d && Array.isArray(d.rules)) { RULES = d.rules; if (RULES.length && !ruleMeta(createSel.rule)) createSel = { rule: RULES[0].id, options: {} }; SRV_VER = String(d.version || ''); render(); } });
   sock.on('connect_error', e => { if (e && e.message === 'unauthorized' && window.DB && DB.enabled) { lerr = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่'; if (window.DB.signOut) DB.signOut(); return; } lerr = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; render(); });
   sock.on('wallet:update', d => { if (window.DB && DB.enabled) DB.onWallet(d); });
   sock.on('system:error', m => { hint = 'เซิร์ฟเวอร์: ' + m; lerr = m; render(); });
@@ -209,7 +204,7 @@ function connStatus() { // แสดงสถานะที่หน้าแ�
   return `<p class=cstat>${w ? '⏳ กำลังเข้าเกม... เซิร์ฟเวอร์ฟรีอาจหลับอยู่ ครั้งแรกใช้เวลาราว 1 นาที กรุณารอ' : ''}${w && e ? '<br>' : ''}${e}</p>`; }
 function leave() { clearDeal(); setSess(null); if (sock) sock.emit('room:leave'); code = ''; lob = null; S = null; ho = []; sel = new Set(); prevM = prevD = 0; soloRoom = false; soloPending = false; hint = lerr = ''; screen = 'home'; render(); }
 function lobbyView() {
-  if (screen === 'home') return homeView(); if (screen === 'games' && !code) return gamesView(); if (screen === 'shop') return shopView(); if (screen === 'profile') return profileView(); if (screen === 'create' && !code) return createView();
+  if (screen === 'home') return homeView(); if (screen === 'games' && !code) { screen = 'play'; return playView(); } if (screen === 'shop') return shopView(); if (screen === 'profile') return profileView(); if (screen === 'create' && !code) return createView();
   if (screen === 'play' || (screen === 'lobby' && !code)) return playView(); conn();
   tableView();
 }

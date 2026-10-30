@@ -9,7 +9,7 @@
       if (document.getElementById('pileModal') && typeof closePile === 'function') return closePile();
       if (screen === 'game' || (typeof code !== 'undefined' && code)) { if (confirm('ออกจากห้อง?')) leave(); return; }
       if (screen === 'home') return App.exitApp();
-      go(screen === 'create' || screen === 'play' ? 'games' : 'home');
+      go(screen === 'create' ? 'play' : 'home');
     } catch (e) { try { App.exitApp(); } catch (_) {} }
   });
 })();

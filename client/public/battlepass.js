@@ -8,7 +8,7 @@
   const N = n => Number(n || 0).toLocaleString('en-US');
   const dbOn = () => !!(window.DB && DB.enabled && DB.P);
   const TRACK = { free: 'ฟรี', gem: 'สายเพชร', premium: 'พรีเมียม' };
-  let BP = null, busy = false, err = '';
+  let BP = null, busy = false, err = '', tab = 'rw';
   const itemName = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).name; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.name || x.n)) || id; };
   const itemImg = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).icon; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.asset || x.preview)) || ''; };
 
@@ -25,8 +25,11 @@
     if (!dbOn()) return 0;
     if (Date.now() - lastLoad > 60000) load();
     if (!BP || !BP.season) return 0;
-    const st = stat(); return st.ready + st.cycNew;
+    const st = stat(); return st.ready + st.cycNew + mReady();
   }
+  // ภารกิจที่สำเร็จแล้วแต่ยังไม่รับ
+  const mList = k => { const m = BP && BP.missions; if (!m) return []; return k === 'speedup' ? ((m.speedup && m.speedup.open && m.speedup.missions) || []) : (m.horizon || []); };
+  const mReady = k => (k ? mList(k) : [...mList('speedup'), ...mList('horizon')]).filter(x => !x.claimed && x.progress >= x.target).length;
   window.bpOpen = () => { if (typeof go === 'function') go('bp'); load(); };
 
   // สถานะ: เลเวลตอนนี้ · EXP ในเลเวล · รับได้กี่ช่อง
@@ -64,18 +67,20 @@
       <header class=bp-top>
         <div class=bp-ttl><small>ฤดูที่ 1 · ${leftTxt(st.left)}</small><h3>${E(s.name)}</h3></div>
         <div class=bp-lvl><b>Lv.${st.lv}<small>/${s.max_level}</small></b><i><u style="width:${Math.round(st.into / st.L * 100)}%"></u></i><small>${N(st.into)} / ${N(st.L)} EXP${st.bonus ? ` · โบนัส EXP +${st.bonus}%` : ''}</small></div>
+        ${me.vacation_cap ? `<div class=bp-vac title="ตั๋วพักร้อน"><img src="./Item/Mats/vacation.webp" alt=""><span><b>${N(me.vacation)}<small>/${N(me.vacation_cap)}</small></b><small>ตั๋วพักร้อน</small></span></div>` : ''}
         <button class="bp-claim${claim ? ' on' : ''}" ${claim && !busy ? '' : 'disabled'} onclick="bpClaim()">${claim ? `รับรางวัล (${claim})` : 'ยังไม่มีรางวัลใหม่'}</button>
       </header>
-      <div class=bp-board>
+      <nav class=bp-tabs>${[['rw', '🎖 รางวัล', 0], ['speedup', '⚡ ภารกิจเร่ง', mReady('speedup')], ['horizon', '🧭 ภารกิจระยะยาว', mReady('horizon')]].map(([k, l, n]) => `<button class="${tab === k ? 'on' : ''}" onclick="bpTab('${k}')">${l}${n ? `<i>${n}</i>` : ''}</button>`).join('')}</nav>
+      ${tab !== 'rw' ? missionsHtml(tab) : `<div class=bp-board>
         <div class=bp-rows><div class=bp-rh></div>
           <div class="bp-rh bp-free"><b>ฟรี</b><small>ทุกคนได้</small></div>
           <div class="bp-rh bp-gem"><b>สายเพชร</b><small>คืนทุนได้ · EXP +${x.tierBonusPct || 3}%</small>${gemBtn}</div>
           <div class="bp-rh bp-premium"><b>พรีเมียม</b><small>ของพิเศษประจำฤดู</small>${preBtn}</div></div>
         <div class=bp-scroll id=bpScroll>${cols}<div class="bp-col bp-cyc"><b class=bp-n>${s.max_level}+</b><div class="bp-cell big"><span class=bp-c>🪙 ${N(s.cycle_coins)}</span><em class=bp-pv>ทุกเลเวลที่เกิน</em></div></div></div>
-      </div>
+      </div>`}
       <footer class=bp-how><b>ได้ EXP จาก</b>
         <span>🎯 แต้มกิจกรรมรายวันครบ 100 <em>+${N(x.dailyBonus)}</em></span><span>📜 เควสรายสัปดาห์ <em>+${N(x.weeklyQuest)}/ข้อ</em></span>
-        <span>🎁 โบนัสรายสัปดาห์ <em>+${N(x.weeklyBonus)}</em></span><span>🎴 เล่นจบตา <em>+${N(x.perGame)} (วันละไม่เกิน ${N(x.perGameDailyCap)})</em></span>
+        <span>🎁 โบนัสรายสัปดาห์ <em>+${N(x.weeklyBonus)}</em></span><span>🎴 เล่นจบตา <em>+${N(x.perGame)} (วันละไม่เกิน ${N(x.perGameDailyCap)})</em></span>${me.vacation_cap ? `<span>🏖️ ตั๋วพักร้อน <em>วันที่ไม่ได้เข้าได้ 1 ใบ (เก็บได้ ${N(me.vacation_cap)}) · ใช้อัตโนมัติ โบนัสรายวัน ×2</em></span>` : ''}
         <button class=bp-q onclick="openQuests('d')">ไปทำเควส</button></footer>
     </div>`;
     page2('แบทเทิลพาส', body, 'home');
@@ -83,6 +88,54 @@
     const sc = document.getElementById('bpScroll'), nx = sc && sc.querySelector('.bp-col.next');
     if (sc && nx) sc.scrollLeft = Math.max(0, nx.offsetLeft - sc.clientWidth / 3);
   }
+  // ภารกิจเร่ง (เปิดช่วงท้ายฤดู) · ภารกิจระยะยาว (ถาวร ข้ามฤดู)
+  function missionsHtml(k) {
+    const m = BP.missions || {}, sp = m.speedup || {}, list = k === 'speedup' ? (sp.missions || []) : (m.horizon || []);
+    const head = k === 'speedup'
+      ? (sp.open ? `<p class=bp-mh>⚡ ภารกิจเร่งเปิดแล้ว! ทำให้ทันก่อนจบฤดู · ${leftTxt(new Date(BP.season.ends_at) - Date.now())}</p>` : `<p class=bp-mh>🔒 ภารกิจเร่งเปิดช่วง 7 วันสุดท้ายของฤดู · เปิดใน${leftTxt(new Date(sp.opens_at) - Date.now()).replace('เหลือ', '')}</p>`)
+      : `<p class=bp-mh>🧭 ภารกิจถาวร ไม่รีเซ็ตข้ามฤดู · ทำสำเร็จเมื่อไหร่ก็รับ EXP เข้าแบทเทิลพาสฤดูนั้น · สำเร็จ ${list.filter(x => x.claimed).length}/${list.length}</p>`;
+    const locked = k === 'speedup' && !sp.open;
+    const rows = list.map(x => { const done = x.progress >= x.target;
+      const btn = x.claimed ? '<span class="bp-mb got">รับแล้ว ✓</span>' : locked ? '<span class="bp-mb">🔒</span>' : `<button class="bp-mb${done ? ' go' : ''}" ${done && !busy ? '' : 'disabled'} onclick="bpMission('${k}','${E(x.id)}')">${done ? 'รับ' : 'ยังไม่ครบ'}</button>`;
+      return `<div class="bp-m${x.claimed ? ' got' : done && !locked ? ' ready' : ''}"><span class=bp-mi>${E(x.icon || '🎯')}</span><span class=bp-mt><b>${E(x.name)}</b><small>${E(x.desc || '')}</small><i><u style="width:${Math.min(100, Math.round(x.progress / x.target * 100))}%"></u></i></span><span class=bp-mp>${N(x.progress)}/${N(x.target)}</span><em class=bp-me>+${N(x.bp)} EXP</em>${btn}</div>`; }).join('');
+    return `<div class="bp-ms${locked ? ' locked' : ''}">${head}<div class=bp-ml>${rows || '<p class=bp-mh>ยังไม่มีภารกิจ</p>'}</div></div>`;
+  }
+  window.bpTab = k => { tab = k; view(); };
+  window.bpMission = async (k, id) => {
+    if (busy) return; busy = true; view();
+    try { const r = await DB.call('claim_bp_mission', { p_kind: k, p_id: id }); toast('✅ สำเร็จภารกิจ +' + N(r.bp) + ' EXP แบทเทิลพาส'); } catch (e) { toast(e.message); }
+    busy = false; await load();
+  };
+  // ---------- กล่องเลือกของ: เปิดแล้วเลือก 1 อย่าง (ตัวเลือกมาจากฐานข้อมูล crate_options) ----------
+  const SHARD_NEED = (window.Economy && Economy.SHARD_NEED) || 50;
+  const charReg = id => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(x => x.id === id) || {};
+  const optName = o => o.kind === 'coins' ? 'เหรียญ' : o.kind === 'mcash' ? 'เพชร' : o.kind === 'shards' ? (o.name || charReg(o.id).name || o.id) : itemName(o.kind, o.id);
+  const optImg = o => o.kind === 'coins' ? './UI/Assets/kit2/coin.webp' : o.kind === 'mcash' ? '' : o.kind === 'shards' ? './Item/Shards/' + o.id + '.webp' : itemImg(o.kind, o.id);
+  let crOpts = {}, crBusy = false;
+  window.crateOpen = async (id, pick) => {
+    const it = window.Items && Items.info(id); if (!it) return;
+    if (!crOpts[id]) { try { crOpts[id] = await DB.call('crate_options', { p_id: id }); } catch (e) { toast(e.message); return; } }
+    const opts = crOpts[id] || [], shard = opts.length && opts[0].kind === 'shards';
+    document.querySelectorAll('.cr-modal').forEach(n => n.remove());
+    const have = window.DB && DB.qty ? DB.qty('items', id) : 0;
+    const m = document.createElement('div'); m.className = 'cr-modal'; m.onclick = e => { if (e.target === m) m.remove(); };
+    const card = (o, i) => shard
+      ? `<button class="cr-opt sh${pick === i ? ' on' : ''}" onclick="crateOpen('${E(id)}',${i})">${optImg(o) ? `<img class=cr-ch src="${E(optImg(o))}" alt="">` : '<span>🧩</span>'}<b>${E(optName(o))}</b><em>เศษ ×${N(o.qty)}</em><small>${o.owned ? 'มีแล้ว · ' : ''}${N(o.have || 0)}/${SHARD_NEED}</small></button>`
+      : `<button class="cr-opt${pick === i ? ' on' : ''}" onclick="crateOpen('${E(id)}',${i})">${optImg(o) ? `<img src="${E(optImg(o))}" alt="">` : '<span>💎</span>'}<b>${E(optName(o))}</b><em>×${N(o.qty)}</em></button>`;
+    m.innerHTML = `<div class="cr-box${shard ? ' wide' : ''}"><img class=cr-ic src="${E(it.icon)}" alt=""><h3>${E(it.name)}</h3><small>${shard ? `เลือกตัวละคร 1 ตัว · เศษครบ ${SHARD_NEED} ชิ้นได้ตัวละครทันที (มีแล้ว = ตัวซ้ำไว้อัพดาว)` : 'เลือกของ 1 อย่าง'} · มี ${N(have)} กล่อง</small>
+      <div class="cr-opts${shard ? ' sh' : ''}">${opts.map(card).join('')}</div>
+      <div class=cr-act><button class=wbtn onclick="this.closest('.cr-modal').remove()">ยกเลิก</button><button class="wbtn go" ${pick == null || !have ? 'disabled' : ''} onclick="crateGo('${E(id)}',${pick == null ? -1 : pick})">${pick == null ? 'เลือกก่อน' : 'รับ ' + E(optName(opts[pick])) + (shard ? ' เศษ' : '') + ' ×' + N(opts[pick].qty)}</button></div></div>`;
+    document.body.appendChild(m);
+  };
+  window.crateGo = async (id, pick) => {
+    if (crBusy || pick < 0) return; crBusy = true;
+    try {
+      const r = await DB.call('open_crate', { p_id: id, p_pick: pick }); delete crOpts[id];
+      toast(r.chars ? `🎉 เศษครบ ${SHARD_NEED}! ได้ตัวละคร ${optName(r.got)}` : '🎁 ได้ ' + optName(r.got) + (r.got.kind === 'shards' ? ` เศษ ×${N(r.got.qty)} (${N(r.shards)}/${SHARD_NEED})` : ' ×' + N(r.got.qty)));
+      document.querySelectorAll('.cr-modal').forEach(n => n.remove()); await DB.refresh();
+    } catch (e) { toast(e.message); }
+    crBusy = false;
+  };
   const toast = m => { if (window.dbToast) dbToast(m); };
   window.bpClaim = async () => {
     if (busy) return; busy = true; view();

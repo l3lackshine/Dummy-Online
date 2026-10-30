@@ -4,7 +4,7 @@
 const fs = require('fs'), path = require('path');
 const E = require('../server/src/economy');
 function build() {
-  const items = Object.fromEntries(Object.entries(E.ITEMS).map(([id, x]) => [id, { stamina: x.stamina || 0, charExp: x.charExp || 0 }]));
+  const items = Object.fromEntries(Object.entries(E.ITEMS).map(([id, x]) => [id, Object.assign({ stamina: x.stamina || 0, charExp: x.charExp || 0 }, x.crate ? { crate: x.crate } : {}, x.shards ? { shards: x.shards } : {})]));
   const cfg = { stamina: E.STAMINA, items, farm: E.FARM, char: E.CHAR };
   const json = JSON.stringify(cfg).replace(/'/g, "''");
   return ['-- สร้างอัตโนมัติโดย scripts/gen-economy-sql.js — อย่าแก้มือ (แก้ server/src/economy.js แล้วรันใหม่)',

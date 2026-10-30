@@ -13,7 +13,7 @@ function rewardAt(track, lv) {
   if (track.levels && track.levels[lv]) r = Object.assign({}, r, track.levels[lv]);
   return r;
 }
-function build(seasons) {
+function build(seasons, horizon) {
   const out = ['-- สร้างอัตโนมัติโดย scripts/gen-bp-sql.js — อย่าแก้มือ (แก้ client/public/BattlePass/season*.json แล้วรันใหม่)', ''];
   for (const s of seasons) {
     const start = `('${s.starts}'::date)::timestamp at time zone 'Asia/Bangkok'`;
@@ -28,10 +28,13 @@ function build(seasons) {
     out.push('insert into public.bp_rewards(season_id, level, track, coins, mcash, item_kind, item_id, preview, qty) values', rows.join(',\n'),
       'on conflict (season_id, level, track) do update set coins = excluded.coins, mcash = excluded.mcash, item_kind = excluded.item_kind, item_id = excluded.item_id, preview = excluded.preview, qty = excluded.qty;', '');
   }
+  // ภารกิจระยะยาว (ถาวร) → game_config.bp_horizon
+  if (horizon && Array.isArray(horizon.missions)) out.push(`insert into public.game_config(key, value) values ('bp_horizon', ${q(JSON.stringify(horizon.missions))}::jsonb) on conflict (key) do update set value = excluded.value;`, '');
   return out.join('\n');
 }
 module.exports = { build, rewardAt };
 if (require.main === module) {
   const seasons = fs.readdirSync(DIR).filter(f => /^season.*\.json$/.test(f)).sort().map(f => JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8')));
-  const f = path.join(ROOT, 'supabase/bp_seed.sql'); fs.writeFileSync(f, build(seasons)); console.log('✓ เขียน ' + path.relative(ROOT, f) + ' · ' + seasons.length + ' ฤดู');
+  const hz = fs.existsSync(path.join(DIR, 'horizon.json')) ? JSON.parse(fs.readFileSync(path.join(DIR, 'horizon.json'), 'utf8')) : null;
+  const f = path.join(ROOT, 'supabase/bp_seed.sql'); fs.writeFileSync(f, build(seasons, hz)); console.log('✓ เขียน ' + path.relative(ROOT, f) + ' · ' + seasons.length + ' ฤดู');
 }

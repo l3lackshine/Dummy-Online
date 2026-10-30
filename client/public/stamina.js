@@ -123,7 +123,8 @@
     const pct = L.max ? 100 : Math.round(L.into / L.need * 100);
     const slots = Object.keys(EC.CHAR.SLOTS).map(k => { const need = EC.CHAR.SLOTS[k], open = L.level >= need, cur = L.loadout[k];
       return `<button class="cl-slot${open ? '' : ' lock'}${cur ? ' set' : ''}" ${open ? `onclick="clSlotOpen('${E(id)}','${k}')"` : 'disabled'}><small>${SLOT_NAME[k]}</small><b>${open ? (cur ? E(regName(k, cur)) : '+ ว่าง') : '🔒 Lv.' + need}</b></button>`; }).join('');
-    return `<div class=cl><div class=cl-top><b>Lv.${L.level}<small>/${EC.CHAR.MAX}</small></b><i><u style="width:${pct}%"></u></i><small>${L.max ? 'เลเวลสูงสุดแล้ว' : `${N(L.into)}/${N(L.need)} EXP`}</small></div>
+    const sh = DB.qty ? DB.qty('shards', id) : 0, SN = EC.SHARD_NEED || 50;
+    return `<div class=cl>${sh ? `<div class=cl-sh><img src="./Item/Shards/${E(id)}.webp" alt="" onerror="this.remove()">เศษตัวละคร <b>${N(sh)}/${SN}</b><i><u style="width:${Math.min(100, Math.round(sh / SN * 100))}%"></u></i></div>` : ''}<div class=cl-top><b>Lv.${L.level}<small>/${EC.CHAR.MAX}</small></b><i><u style="width:${pct}%"></u></i><small>${L.max ? 'เลเวลสูงสุดแล้ว' : `${N(L.into)}/${N(L.need)} EXP`}</small></div>
       ${L.max ? '' : `<div class=cl-bks>${books}</div><button class=cl-go ${add && coins >= cost && !busyCl ? '' : 'disabled'} onclick="clLevelUp('${E(id)}')">${add ? `อัปเป็น Lv.${to} · +${N(use)} EXP · ${N(cost)} 🪙` : 'เลือกคัมภีร์เพื่ออัปเลเวล'}</button>${add && coins < cost ? '<small class=cl-warn>เหรียญไม่พอ</small>' : ''}`}
       <h4>ชุดแต่งประจำตัวละคร <small>เลือกตัวนี้แล้วใส่ให้อัตโนมัติ</small></h4><div class=cl-slots>${slots}</div></div>`;
   }

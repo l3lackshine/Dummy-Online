@@ -181,6 +181,7 @@
   }
 
   // ---------- วาดผล ----------
+  window.skInfoMin = rule => { const el = document.querySelector('.sk-info'), min = !(el && el.classList.contains('min')); try { localStorage.setItem('dummySkMin:' + rule, min ? '1' : '0'); } catch (e) {} paint(); };
   function paint() {
     document.querySelectorAll('.sk-info').forEach(n => n.remove());
     document.querySelectorAll('.c.hk,.c.sk-hi').forEach(n => n.classList.remove('hk', 'sk-hi'));
@@ -193,8 +194,10 @@
     document.querySelectorAll('.hand .c[data-id], .gx-dock .c[data-id]').forEach(b => { const id = Number(b.dataset.id); if (hi.has(id)) b.classList.add('hk'); if (warn.has(id)) b.classList.add('sk-hi'); });
     if (!lines.length) return;
     const host = document.querySelector('.gx-stage') || document.getElementById('app'); if (!host) return;
-    const d = document.createElement('div'); d.className = 'sk-info sk-t-' + (s.tier || 'common');
-    d.innerHTML = `<b class=sk-ttl>${E(s.icon || '')} ${E(s.name)}</b>${lines.map(l => `<div>${l}</div>`).join('')}`;
+    // แผงพับได้: แตะหัวแผงเพื่อพับ/กาง · จำแยกตามเกม · ดัมมี่ (โต๊ะมีที่ว่าง) กางไว้ตั้งแต่แรก เกมอื่นพับไว้ก่อน
+    let min = rule !== 'dummy'; try { const v = localStorage.getItem('dummySkMin:' + rule); if (v != null) min = v === '1'; } catch (e) {}
+    const d = document.createElement('div'); d.className = 'sk-info sk-t-' + (s.tier || 'common') + (rule === 'dummy' ? ' sk-wide' : ' sk-narrow') + (min ? ' min' : '');
+    d.innerHTML = `<b class=sk-ttl onclick="skInfoMin('${E(rule)}')">${E(s.icon || '')} ${E(s.name)}<span class=sk-tg>${min ? '▸ แตะเพื่อดู' : '▾ พับ'}</span></b>${lines.map(l => `<div>${l}</div>`).join('')}`;
     host.appendChild(d);
   }
 

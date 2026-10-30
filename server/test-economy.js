@@ -22,11 +22,11 @@ ok(E.farmReward('hack', 1, 4).farm === 'coins', 'โหมดฟาร์มแ�
 ok(E.farmReward('pexp', 2, 4).exp === 120 && E.farmReward('pexp', 2, 4).coins === 0, 'ฟาร์ม EXP ผู้เล่น: ที่ 2 ได้โบนัส 120 EXP (ตรงกับ test_v7)');
 ok(E.charLevelOf(0).level === 1 && E.charLevelOf(100).level === 2 && E.charLevelOf(250).level === 3 && E.charLevelOf(2200).level === 9 && E.charLevelOf(1e9).level === 30, 'เลเวลตัวละคร 0→1 · 100→2 · 250→3 · 2200→9 · ตัน 30 (ตรงกับ SQL)');
 ok(E.charCost(200) === 40, 'อัปเลเวลตัวละคร 200 EXP = 40 เหรียญ');
-ok(Object.values(E.ITEMS).every(x => x.name && (x.stamina || x.charExp || x.ticket)), 'ไอเทมทุกชิ้นมีชื่อและผล');
+ok(Object.values(E.ITEMS).every(x => x.name && (x.stamina || x.charExp || x.ticket || x.crate || x.shards)), 'ไอเทมทุกชิ้นมีชื่อและผล');
 const cfgSql = fs.readFileSync(path.join(__dirname, '../supabase/v7_config.sql'), 'utf8');
 ok(cfgSql === require('../scripts/gen-economy-sql').build(), 'supabase/v7_config.sql ตรงกับ economy.js (ถ้าไม่ตรง: node scripts/gen-economy-sql.js)');
 const bp = fs.readFileSync(path.join(__dirname, '../supabase/bp_seed.sql'), 'utf8'), seasons = fs.readdirSync(path.join(__dirname, '../client/public/BattlePass')).filter(f => /^season.*\.json$/.test(f)).sort().map(f => require('../client/public/BattlePass/' + f));
-ok(bp === require('../scripts/gen-bp-sql').build(seasons), 'supabase/bp_seed.sql ตรงกับ season*.json (ถ้าไม่ตรง: node scripts/gen-bp-sql.js)');
+ok(bp === require('../scripts/gen-bp-sql').build(seasons, JSON.parse(fs.readFileSync(path.join(__dirname, '../client/public/BattlePass/horizon.json'), 'utf8'))), 'supabase/bp_seed.sql ตรงกับ season*.json (ถ้าไม่ตรง: node scripts/gen-bp-sql.js)');
 ok(seasons.every(s => ['free', 'gem'].every(t => JSON.stringify(s.tracks[t]).match(/items:([a-z0-9-]+)/g).every(m => E.ITEMS[m.slice(6)]))), 'ไอเทมในแบทเทิลพาสมีอยู่จริงใน economy.js');
 const pn = JSON.parse(fs.readFileSync(path.join(__dirname, '../client/public/patchnotes.json'), 'utf8')), ver = /DUMMY_VERSION = '([^']+)'/.exec(fs.readFileSync(path.join(__dirname, '../client/public/version.js'), 'utf8'))[1];
 ok(pn.notes[0].version === ver, 'แพตช์โน้ตล่าสุดตรงกับเวอร์ชันเกม (' + ver + ')');

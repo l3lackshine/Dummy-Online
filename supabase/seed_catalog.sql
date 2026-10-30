@@ -53,7 +53,7 @@ insert into public.gacha_banners(id, name, description, single_coins, single_mca
 ('cosm-sakura', 'ตู้ของแต่งซากุระ', 'หลังไพ่ · ผ้าปูโต๊ะ · พื้นหลัง · กรอบการ์ด · สุ่มด้วยเหรียญ · ได้ของซ้ำแปลงเป็นเหรียญอัตโนมัติ', 500, null, 4500, null, 0, 3, true, null, null, null, 'cosm')
 on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true, ticket = excluded.ticket, ticket_mcash = excluded.ticket_mcash, ticket_mcash10 = excluded.ticket_mcash10, grp = excluded.grp;
 
-insert into public.game_config(key, value) values ('weekly_shop', '{"banner":"cosm-sakura","slots":6,"price":{"common":800,"rare":2000,"epic":5000,"legendary":12000}}'::jsonb) on conflict (key) do update set value = excluded.value;
+insert into public.game_config(key, value) values ('weekly_shop', '{"banner":"cosm-sakura","slots":6,"price":{"common":800,"rare":2000,"epic":5000,"legendary":12000},"shards":[{"slot":"sh-r","rarity":"rare","qty":5,"coins":2000},{"slot":"sh-s","rarity":"epic","qty":5,"coins":10000},{"slot":"sh-sg","rarity":"epic","qty":5,"mcash":200}]}'::jsonb) on conflict (key) do update set value = excluded.value;
 
 update public.gacha_banners set active = false where id not in ('sakura-ace', 'sakuya-up', 'cosm-sakura');
 

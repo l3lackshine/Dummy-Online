@@ -47,6 +47,13 @@
     'exp-l': { name: 'คัมภีร์ฝึกขั้นสูง', desc: 'EXP ตัวละคร 2,000', charExp: 2000, rarity: 'epic' },
     'ticket-b': { name: 'ตั๋วสุ่มระดับ 1', desc: 'ใช้สุ่มตู้ธรรมดา 1 ครั้ง', ticket: 'sakura-ace', rarity: 'rare' },
     'ticket-r': { name: 'ตั๋วสุ่มระดับ 2', desc: 'ใช้สุ่มตู้เรทอัป 1 ครั้ง', ticket: 'sakuya-up', rarity: 'epic' },
+    // กล่องเลือกของ: เปิดแล้วเลือก 1 อย่าง · crate = ของตายตัว (kind: items/coins/mcash) · shards = เลือกเศษตัวละครระดับนั้น 1 ตัว (ครบ 50 ได้ตัว)
+    'crate-s': { name: 'กล่องเลือกของ', desc: 'เลือก 1 อย่าง: เหรียญ · คัมภีร์ · ชา', rarity: 'rare', crate: [
+      { kind: 'coins', qty: 800 }, { kind: 'items', id: 'exp-m', qty: 2 }, { kind: 'items', id: 'tea-g', qty: 2 }] },
+    'crate-sp': { name: 'กล่องเลือกของหรู', desc: 'เลือก 1 อย่าง: เหรียญ · คัมภีร์ · ชา (มากกว่ากล่องเล็ก)', rarity: 'epic', crate: [
+      { kind: 'coins', qty: 2000 }, { kind: 'items', id: 'exp-m', qty: 5 }, { kind: 'items', id: 'tea-m', qty: 2 }] },
+    'crate-m': { name: 'กล่องเศษตัวละคร Rare', desc: 'เลือกเศษตัวละคร Rare 1 ตัว ×10 (ครบ 50 ชิ้นได้ตัวละคร)', rarity: 'epic', shards: { rarity: 'rare', qty: 10 } },
+    'crate-l': { name: 'กล่องเศษตัวละคร SR', desc: 'เลือกเศษตัวละคร SR 1 ตัว ×10 (ครบ 50 ชิ้นได้ตัวละคร)', rarity: 'legendary', shards: { rarity: 'epic', qty: 10 } },
   };
   // ---------- ฟาร์มกับบอท: ของที่ได้ตามอันดับ (ชั้น 0 = ที่ 1 · ชั้น 3 = ที่สุดท้าย) ----------
   const FARM = {
@@ -62,6 +69,7 @@
     return { farm: f, coins: 0, items: Object.assign({}, FARM[f].tiers[tierOf(rank, seats)]), exp: 0 };
   }
   // ---------- เลเวลตัวละคร ----------
+  const SHARD_NEED = 50; // เศษตัวละครครบเท่านี้ได้ตัวละคร
   const CHAR = { MAX: 30, BASE: 100, STEP: 50, COIN_PER_EXP: 0.2, SLOTS: { frames: 5, backs: 10, tables: 20, backgrounds: 30 } };
   const charNeed = lv => CHAR.BASE + CHAR.STEP * (lv - 1);
   function charLevelOf(exp) {
@@ -71,5 +79,5 @@
   }
   const charMaxExp = () => { let t = 0; for (let l = 1; l < CHAR.MAX; l++) t += charNeed(l); return t; };
   const charCost = exp => Math.floor(Math.max(0, Number(exp) || 0) * CHAR.COIN_PER_EXP);
-  return { CFG, ranks, reward, expFor, needFor, levelOf, levelReward, STAMINA, staminaMax, ITEMS, FARM, tierOf, farmReward, CHAR, charNeed, charLevelOf, charMaxExp, charCost };
+  return { CFG, ranks, reward, expFor, needFor, levelOf, levelReward, STAMINA, staminaMax, ITEMS, FARM, tierOf, farmReward, CHAR, charNeed, charLevelOf, charMaxExp, charCost, SHARD_NEED };
 });

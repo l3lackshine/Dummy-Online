@@ -122,7 +122,7 @@
   };
   window.closeQuests = () => { qOpen = false; const m = document.querySelector('.q-modal'); if (m) m.remove(); };
   window.qClaim = async id => { try { const r = await DB.claimQuest(id); toast('🪙 +' + fmt(r.coins) + (r.mcash ? '  💎 +' + fmt(r.mcash) : '') + (r.points ? '  🎯+' + r.points : '') + (r.bp ? '  🎖 +' + fmt(r.bp) : '')); } catch (e) { toast(e.message); } loadQ(); };
-  window.qBonus = async p => { try { const r = await DB.claimBonus(p); toast('🎁 โบนัส +' + fmt(r.coins) + ' 🪙' + (r.mcash ? '  +' + fmt(r.mcash) + ' 💎' : '') + (r.bp ? '  +' + fmt(r.bp) + ' EXP แบทเทิลพาส' : '')); } catch (e) { toast(e.message); } loadQ(); };
+  window.qBonus = async p => { try { const r = await DB.claimBonus(p); toast('🎁 โบนัส +' + fmt(r.coins) + ' 🪙' + (r.mcash ? '  +' + fmt(r.mcash) + ' 💎' : '') + (r.bp ? '  +' + fmt(r.bp) + ' EXP แบทเทิลพาส' : '') + (r.vacation_used ? ' (🏖️ ใช้ตั๋วพักร้อน ×2)' : '')); } catch (e) { toast(e.message); } loadQ(); };
   window.dummyQuests = { reload: loadQ, claimable };
 
   // ================= ปุ่มบน HUD =================

@@ -1,5 +1,5 @@
 {
-  "note": "แบทเทิลพาสฤดูที่ 1 · แก้แล้วรัน node scripts/gen-bp-sql.js แล้ววาง supabase/bp_seed.sql ใน SQL Editor · tracks: free (ทุกคน) / gem (ปลดด้วยเพชร คืนทุนได้) / premium (ล็อกไว้ก่อน ยังไม่มีระบบเติมเงิน) · default = รางวัลทุกเลเวล, levels = รางวัลเฉพาะเลเวล (แทนค่า default) · item = \"kind:id\" ต้องมีใน catalog · preview = ข้อความแสดงอย่างเดียว (ของที่ยังไม่ได้ทำ) · qty = จำนวนของ (ไอเทม items:tea-g / items:exp-s ฯลฯ ดูชื่อใน economy.js ITEMS)",
+  "note": "แบทเทิลพาสฤดูที่ 1 · แก้แล้วรัน node scripts/gen-bp-sql.js แล้ววาง supabase/bp_seed.sql ใน SQL Editor · tracks: free (ทุกคน) / gem (ปลดด้วยเพชร คืนทุนได้) / premium (ล็อกไว้ก่อน ยังไม่มีระบบเติมเงิน) · default = รางวัลทุกเลเวล, levels = รางวัลเฉพาะเลเวล (แทนค่า default) · item = \"kind:id\" ต้องมีใน catalog · preview = ข้อความแสดงอย่างเดียว (ของที่ยังไม่ได้ทำ) · qty = จำนวนของ (ไอเทม items:tea-g / items:exp-s ฯลฯ ดูชื่อใน economy.js ITEMS) · exp.vacation.cap = ตั๋วพักร้อนสะสมสูงสุด · exp.speedup = ภารกิจเร่ง (days = เปิดกี่วันสุดท้ายของฤดู · metric: play/win/coins/rules/days/melds/knock/login · game = จำกัดเกม)",
   "id": "s1",
   "name": "ราชินีซากุระ",
   "starts": "2026-10-30",
@@ -15,7 +15,60 @@
     "weeklyBonus": 1000,
     "perGame": 30,
     "perGameDailyCap": 300,
-    "tierBonusPct": 3
+    "tierBonusPct": 3,
+    "vacation": {
+      "cap": 4
+    },
+    "speedup": {
+      "days": 7,
+      "missions": [
+        {
+          "id": "s_play15",
+          "name": "เร่งเครื่อง",
+          "desc": "เล่นให้จบ 15 ตา",
+          "icon": "🎴",
+          "metric": "play",
+          "target": 15,
+          "bp": 2000
+        },
+        {
+          "id": "s_win5",
+          "name": "โค้งสุดท้าย",
+          "desc": "ชนะ 5 ตา",
+          "icon": "🏆",
+          "metric": "win",
+          "target": 5,
+          "bp": 2000
+        },
+        {
+          "id": "s_days4",
+          "name": "ไม่ทิ้งกัน",
+          "desc": "เล่นอย่างน้อย 4 วัน",
+          "icon": "🔥",
+          "metric": "days",
+          "target": 4,
+          "bp": 1600
+        },
+        {
+          "id": "s_rules3",
+          "name": "ครบเครื่อง",
+          "desc": "เล่น 3 เกมต่างชนิดกัน",
+          "icon": "🎲",
+          "metric": "rules",
+          "target": 3,
+          "bp": 1200
+        },
+        {
+          "id": "s_coin600",
+          "name": "เก็บเหรียญ",
+          "desc": "ได้เหรียญจากการเล่นรวม 600",
+          "icon": "🪙",
+          "metric": "coins",
+          "target": 600,
+          "bp": 1200
+        }
+      ]
+    }
   },
   "tracks": {
     "free": {
@@ -47,6 +100,10 @@
         }
       },
       "levels": {
+        "10": {
+          "item": "items:crate-s",
+          "qty": 1
+        },
         "20": {
           "item": "items:ticket-b",
           "qty": 2
@@ -55,15 +112,23 @@
           "item": "tables:sakura-felt",
           "qty": 1
         },
+        "30": {
+          "item": "items:crate-m",
+          "qty": 1
+        },
         "40": {
           "item": "items:ticket-b",
           "qty": 2
         },
+        "45": {
+          "item": "items:crate-s",
+          "qty": 1
+        },
         "50": {
           "mcash": 30,
           "coins": 1000,
-          "item": "items:exp-l",
-          "qty": 2
+          "item": "items:crate-sp",
+          "qty": 1
         }
       }
     },
@@ -95,6 +160,10 @@
         }
       },
       "levels": {
+        "10": {
+          "item": "items:crate-sp",
+          "qty": 1
+        },
         "15": {
           "item": "frames:sakura-gem",
           "qty": 1,
@@ -102,6 +171,10 @@
         },
         "20": {
           "item": "items:ticket-r",
+          "qty": 1
+        },
+        "30": {
+          "item": "items:crate-m",
           "qty": 1
         },
         "35": {
@@ -113,11 +186,15 @@
           "item": "items:ticket-r",
           "qty": 1
         },
+        "45": {
+          "item": "items:crate-sp",
+          "qty": 1
+        },
         "50": {
           "mcash": 45,
           "coins": 2000,
-          "item": "items:tea-m",
-          "qty": 3
+          "item": "items:crate-l",
+          "qty": 1
         }
       }
     },

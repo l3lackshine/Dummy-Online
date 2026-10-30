@@ -109,7 +109,7 @@
     const grid = items.map(id => { const it = Items.info(id);
       return `<button class="iv-cell${id === pick ? ' sel' : ''}" onclick="invSel('items','${id}')"><em class=iv-qty>×${Items.qty(id)}</em><span class=iv-pv>${Items.icon(id, 'iv-itic')}</span><b>${E(it.name)}</b></button>`; }).join('');
     const it = pick && Items.info(pick);
-    const act = !it ? '' : it.stamina ? `<button class="pv-btn green" onclick="staminaUse('${pick}')">🍵 ดื่ม (+${it.stamina} สตามิน่า)</button>` : it.ticket ? `<button class="pv-btn blue" onclick="go('shop');setTimeout(()=>window.gcTab&&gcTab('pull'),0)">🎫 ไปสุ่มตู้ตัวละคร</button>` : `<button class="pv-btn blue" onclick="invTab('characters')">ใช้ที่หน้าตัวละคร</button>`;
+    const act = !it ? '' : it.stamina ? `<button class="pv-btn green" onclick="staminaUse('${pick}')">🍵 ดื่ม (+${it.stamina} สตามิน่า)</button>` : it.ticket ? `<button class="pv-btn blue" onclick="go('shop');setTimeout(()=>window.gcTab&&gcTab('pull'),0)">🎫 ไปสุ่มตู้ตัวละคร</button>` : it.crate ? `<button class="pv-btn green" onclick="crateOpen('${pick}')">🎁 เปิดกล่อง (เลือก 1 อย่าง)</button>` : `<button class="pv-btn blue" onclick="invTab('characters')">ใช้ที่หน้าตัวละคร</button>`;
     const det = it ? `<div class=iv-det><div class=iv-stage><div class=iv-bigpv>${Items.icon(pick, 'iv-itbig')}</div></div><div class=iv-info><b>${E(it.name)}</b><p class=iv-desc>${E(it.desc)} · มี ${Items.qty(pick)} ชิ้น</p>${act}</div></div>` : '';
     const dl = dupes.length ? `<small class=iv-dupes>ตัวซ้ำจากกาชา (ใช้อัปดาว): ${dupes.map(i => E(i.item_id) + ' ×' + (i.qty - 1)).join(' · ')}</small>` : '';
     return `<div class=iv-main><div class=iv-grid>${grid}${dl}</div>${det}</div>`;

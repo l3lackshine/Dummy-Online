@@ -18,12 +18,13 @@ function openPage() { // = เปิด/รีเฟรชหน้าเว็�
 (async () => {
   console.log('\n[A] เปิดหน้าแรก + เล่นคนเดียว');
   let pg = openPage(); await sleep(30); ok(pg.appEl.innerHTML.includes('class=ver>v7.0.0-test') && pg.appEl.innerHTML.includes('goPlay()') && pg.appEl.innerHTML.includes('sign-shop.webp') && pg.appEl.innerHTML.includes('sign-profile.webp'), 'หน้าแรกแสดงป้ายเล่นเกม/ร้านค้า/โปรไฟล์');
-  pg.ev('goPlay()'); await sleep(30); ok(pg.ev('screen') === 'games' && ['dummy', 'pokdeng', 'gaogae', 'somsip', 'eekae'].every(id => pg.appEl.innerHTML.includes("chooseGame('" + id + "')")), 'กดเล่นเกม → หน้าเลือกเกม มีครบ 5 เกม (ดัมมี่ ป๊อกเด้ง เก้าเก ผสมสิบ อีแก่)');
+  pg.ev('goPlay()'); await sleep(30); ok(pg.ev('screen') === 'play' && pg.appEl.innerHTML.includes('rvPickGame(event)') && pg.ev('RULES.length') === 5, 'กดเล่นเกม → ไปหน้าเล่นเกมของเกมที่เลือกไว้ทันที (ไม่มีหน้าเลือกเกมแยก) · มีปุ่มเปลี่ยนเกม · กฎครบ 5 เกม');
+  pg.ev("go('games')"); await sleep(10); ok(pg.ev('screen') === 'play', "ลิงก์เก่าไปหน้าเลือกเกม → พาไปหน้าเล่นเกมแทน");
   pg.ev("chooseGame('dummy')"); ok(pg.ev('screen') === 'play' && ['solo()', "openCreate('room')", 'toggleJoin()'].every(f => pg.appEl.innerHTML.includes(f)), 'เลือกเกมแล้ว → หน้าเล่นเกมมีป้ายเล่นคนเดียว/สร้างห้อง/เข้าห้อง');
   pg.ev("go('shop')"); ok(pg.appEl.innerHTML.includes('buyItem(') && !pg.appEl.innerHTML.includes('equip('), 'หน้าร้านค้ามีแต่ของที่ขาย');
   pg.ev("go('profile')"); ok(['characters', 'backs', 'tables', 'backgrounds'].every(k => pg.appEl.innerHTML.includes("equip('" + k + "'")), 'หน้าโปรไฟล์เลือกตัวละคร/หลังไพ่/โต๊ะ/พื้นหลังได้');
   pg.ev('goPlay()'); pg.ev("chooseGame('dummy')"); pg.ev('solo()'); await sleep(40);
-  ok(pg.ev('screen') === 'create' && ["go('games')", 'setOpt(', 'startCreate()', 'name=', 'เกมที่เลือก', 'การนับชิป'].every(t => t === 'name=' || pg.appEl.innerHTML.includes(t)), 'เล่นคนเดียว → หน้าเลือกไพ่/ตั้งค่า (มีรายการกฎจากเซิร์ฟเวอร์ ตัวเลือกเดิมพัน และสรุปการนับเหรียญ)');
+  ok(pg.ev('screen') === 'create' && ['rvPickGame(event)', 'setOpt(', 'startCreate()', 'name=', 'เกมที่เลือก', 'การนับชิป'].every(t => t === 'name=' || pg.appEl.innerHTML.includes(t)), 'เล่นคนเดียว → หน้าเลือกไพ่/ตั้งค่า (มีรายการกฎจากเซิร์ฟเวอร์ ตัวเลือกเดิมพัน และสรุปการนับเหรียญ)');
   ok(pg.appEl.innerHTML.includes('ดัมมี่') && !pg.appEl.innerHTML.includes("setOpt('stake'") && pg.appEl.innerHTML.includes('20 ชิป'), 'หน้าตั้งค่าแสดงกฎ ดัมมี่ ไม่มีช่องเดิมพันแล้ว (ชิปในโต๊ะใช้จัดอันดับ 20 ชิป)');
   pg.ev('startCreate()'); for (let i = 0; i < 200 && !pg.ev('lob'); i++) await sleep(10);
   ok(!pg.ev('S') && pg.appEl.innerHTML.includes('class="deckbox') && !pg.appEl.innerHTML.includes('doShuffle()') && /<button class=blue onclick=begin\(\) >/.test(pg.appEl.innerHTML), 'ห้องเล่นกับบอท: เข้าที่โต๊ะ มีกองไพ่กลางโต๊ะ ไม่มีปุ่มสับ (เซิร์ฟเวอร์สับให้) และปุ่มเริ่มกดได้ทันที');

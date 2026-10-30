@@ -117,11 +117,11 @@ async function playOut(pg, id) {
 (async () => {
   let pg = openPage(); await sleep(40);
   pg.ev('goPlay()'); await waitFor(() => pg.ev('RULES.length') === 5);
-  ok(pg.ev('screen') === 'games' && Object.values(NAMES).every(n => pg.appEl.innerHTML.includes(n)) && pg.appEl.innerHTML.includes('ดัมมี่'), 'หน้าเลือกเกมแสดงทั้ง 5 เกมพร้อมชื่อ/คำอธิบาย');
+  ok(pg.ev('screen') === 'play' && Object.keys(NAMES).every(id => pg.ev('!!ruleMeta(' + JSON.stringify(id) + ')')), 'กดเล่นเกม → หน้าเล่นเกม · กฎทั้ง 5 เกมโหลดครบ');
   for (const id of IDS) {
     console.log('\n  — ' + NAMES[id]);
     pg.ev('goPlay()'); pg.ev("chooseGame('" + id + "')");
-    ok(pg.ev('screen') === 'play' && pg.appEl.innerHTML.includes(NAMES[id]) && pg.appEl.innerHTML.includes("go('games')"), 'เลือก ' + NAMES[id] + ' → หน้าเล่นเกมแสดงเกมที่เลือก + ปุ่มเปลี่ยนเกม');
+    ok(pg.ev('screen') === 'play' && pg.appEl.innerHTML.includes(NAMES[id]) && pg.appEl.innerHTML.includes('rvPickGame(event)'), 'เลือก ' + NAMES[id] + ' → หน้าเล่นเกมแสดงเกมที่เลือก + ปุ่มเปลี่ยนเกม');
     pg.ev('solo()'); await sleep(20);
     ok(pg.appEl.innerHTML.includes('วิธีเล่น' + NAMES[id]) && pg.appEl.innerHTML.includes('การนับชิป') && !pg.appEl.innerHTML.includes("setOpt('stake'"), 'หน้าตั้งค่าห้องแสดงวิธีเล่น + การนับชิป (ไม่มีช่องเดิมพัน) ของ ' + NAMES[id]);
     pg.ev('startCreate()');
