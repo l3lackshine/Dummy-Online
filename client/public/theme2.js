@@ -28,6 +28,32 @@
 
   // ---------- 1) หน้าแรก ----------
   const ruleName = () => { try { const m = ruleMeta(createSel.rule); return m ? m.name : 'ดัมมี่'; } catch (e) { return 'ดัมมี่'; } };
+  // ---------- ปุ่มเริ่มเล่น: บอกสตามิน่า · กดแล้วกลีบซากุระแตก · ลูกศรเปลี่ยนเกม ----------
+  const rvStLine = () => {
+    const st = window.Stamina && Stamina.now(); if (!st) return '';
+    const ic = '<img class=st-ic src="./Item/Mats/stamina.webp" alt="">';
+    return st.stamina < st.cost ? `${ic} ไม่พอ · โหมดซ้อม` : `${ic} <b data-st>${N(st.stamina)}</b>/${N(st.max)} · ตาละ ${st.cost}`;
+  };
+  window.rvStart = e => {
+    const b = e && e.currentTarget; if (!b || b.dataset.go) return; b.dataset.go = '1'; b.classList.add('press');
+    const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement('i'); p.className = 'rv-petal'; const a = Math.PI * 2 * i / 14 + Math.random() * .4, d = r.height * (1.2 + Math.random() * 1.1);
+      p.style.cssText = `left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
+      document.body.appendChild(p); setTimeout(() => p.remove(), 950);
+    }
+    setTimeout(() => { delete b.dataset.go; b.classList.remove('press'); goPlay(); }, 320);
+  };
+  window.rvPickGame = e => {
+    if (e) e.stopPropagation();
+    const old = document.querySelector('.rv-gpick'); if (old) { old.remove(); return; }
+    const list = (typeof RULES !== 'undefined' && RULES.length ? RULES : []), cur = createSel.rule;
+    if (!list.length) { goPlay(); return; }
+    const m = document.createElement('div'); m.className = 'rv-gpick';
+    m.innerHTML = list.map(r => `<button class="${r.id === cur ? 'on' : ''}" onclick="setRule('${E(r.id)}');document.querySelector('.rv-gpick')?.remove()"><span>${E(r.icon || '🂠')}</span><b>${E(r.name)}</b>${r.id === cur ? '<em>✓</em>' : ''}</button>`).join('');
+    const host = document.querySelector('.rv-play'); if (host) host.appendChild(m);
+    setTimeout(() => document.addEventListener('click', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('click', off); } }), 0);
+  };
   window.thMode = mode => { try { if (RULES.length) { chooseGame(createSel.rule || RULES[0].id); openCreate(mode); return; } } catch (e) {} goPlay(); };
   function buildHome(app) {
     const scene = app.querySelector('.scene'); if (!scene || scene.querySelector('.rv')) return;
@@ -63,7 +89,8 @@
         <button onclick="invOpen('characters')">${ic('bag')}<span>ช่องเก็บของ</span></button>
       </nav>
       <div class="rv-play">
-        <button class="rv-start" onclick="goPlay()"><b>เริ่มเล่น</b><small>${E(ruleName())}</small></button>
+        <button class="rv-swap" onclick="rvPickGame(event)" aria-label="เปลี่ยนเกม"><span>${E(ruleName())}</span><i>▾</i></button>
+        <button class="rv-start" onclick="rvStart(event)"><b>เริ่มเล่น</b><small class=rv-st>${rvStLine()}</small></button>
       </div>`;
     scene.appendChild(d);
   }

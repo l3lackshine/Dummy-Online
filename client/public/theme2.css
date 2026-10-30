@@ -882,3 +882,24 @@
 .set-box .pv-acts{display:flex;gap:10px;margin-top:4px}.set-box .pv-acts .pv-btn{flex:1;height:44px}
 .set-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:2px}
 .pv-btn.sm{height:34px!important;padding:0 14px;flex:none;font-size:13px}
+/* ===== ปุ่มเริ่มเล่น: สตามิน่า · แสงวิ่ง · กดยุบ + กลีบซากุระ · ลูกศรเปลี่ยนเกม ===== */
+.rv-play{flex-direction:column!important;align-items:center!important;gap:.8vh!important}
+.rv-start{position:relative;transition:transform .12s ease,filter .12s ease}
+.rv-start::after{content:"";position:absolute;top:0;bottom:0;left:-7.5vh;right:-7.5vh;clip-path:inset(0 round 99px);pointer-events:none;
+  background:linear-gradient(105deg,transparent 0 38%,#fff8 46%,#ffffffcc 50%,#fff8 54%,transparent 62% 100%) no-repeat;background-size:60% 100%;background-position:-150% 0;animation:rvShine 3.6s ease-in-out infinite}
+@keyframes rvShine{0%,62%{background-position:-150% 0}100%{background-position:250% 0}}
+.rv-start:active,.rv-start.press{transform:translateY(.6vh) scale(.96);filter:drop-shadow(0 .3vh .6vh #0006) brightness(.97)}
+.rv-start b{font-size:5.6vh!important}
+.rv-start .rv-st{white-space:nowrap;display:flex;align-items:center;gap:.5vh;font-size:max(10px,2vh)!important;font-weight:800;opacity:1!important;color:#4a3410;text-shadow:none}
+.rv-start .rv-st .st-ic{width:2.8vh;height:2.8vh}.rv-start .rv-st b{font-size:inherit!important;letter-spacing:0;line-height:1}
+.rv-petal{position:fixed;z-index:9999;width:max(12px,3.4vh);height:max(9px,2.5vh);margin:-1.2vh 0 0 -1.7vh;border-radius:80% 10% 80% 10%;pointer-events:none;
+  background:radial-gradient(circle at 30% 30%,#fff 0 18%,#ffc7da 40%,#f48fb1 100%);box-shadow:0 0 .4vh #ff9ec0aa;animation:rvPetal .9s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes rvPetal{0%{transform:translate(0,0) rotate(0) scale(.6);opacity:1}65%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(1);opacity:0}}
+.rv-swap{display:inline-flex;align-items:center;gap:.8vh;height:4.6vh;padding:0 1.8vh;border-radius:99px;border:.25vh solid #e9cf86;background:linear-gradient(#3b4255ee,#2a3040ee);color:#fff;
+  font:800 max(11px,2.2vh) Sarabun,sans-serif;box-shadow:0 .4vh 1vh #0005;cursor:pointer}
+.rv-swap i{font-style:normal;color:#ffd36b;font-size:.9em;transition:transform .15s}
+.rv-swap:active{transform:translateY(.3vh)}
+.rv-gpick{position:absolute;right:0;bottom:calc(100% + 1vh);min-width:30vh;padding:1vh;border-radius:1.8vh;background:#fffaf2;box-shadow:0 1vh 2.4vh #0007;display:flex;flex-direction:column;gap:.6vh;z-index:20;animation:pgUp .18s ease-out}
+.rv-gpick button{display:flex;align-items:center;gap:1.2vh;padding:1vh 1.4vh;border:0;border-radius:1.2vh;background:#f2ecdf;color:#3b4255;font:800 max(12px,2.4vh) Sarabun,sans-serif;text-align:left;cursor:pointer}
+.rv-gpick button span{font-size:1.2em}.rv-gpick button b{flex:1}.rv-gpick button.on{background:#fff3cf;box-shadow:inset 0 0 0 .25vh #e0a521}.rv-gpick button em{font-style:normal;color:#2e9a5a}
+@media (prefers-reduced-motion:reduce){.rv-start::after{animation:none}.rv-petal{display:none}}
