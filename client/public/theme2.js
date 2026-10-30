@@ -34,6 +34,7 @@
     const coins = P ? P.coins : (typeof sv !== 'undefined' ? sv.coins : 0);
     const av = (app.querySelector('.hud-av img') || {}).src || '';
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
+    const nb = window.battlePass && battlePass.count ? battlePass.count() : 0;   // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
     const d = document.createElement('div'); d.className = 'rv';
     d.innerHTML = `
       <button class="rv-me" onclick="go('profile')"><span class="rv-av">${av ? `<img src="${E(av)}" alt="">` : ''}</span><span class="rv-nm"><b>${E(name)}${window.Progress ? ' ' + Progress.badge() : ''}</b><small>แตะเพื่อดูโปรไฟล์</small></span></button>
@@ -49,7 +50,7 @@
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
-        <button class="rv-card rv-bp" onclick="bpOpen()"><i>${ic('medal')}</i><span>แบทเทิลพาส<small>ฤดู ราชินีซากุระ</small></span></button>
+        <button class="rv-card rv-bp" onclick="bpOpen()"><i>${ic('medal')}</i><span>แบทเทิลพาส<small>${nb ? nb + ' รางวัลรอรับ' : 'ฤดู ราชินีซากุระ'}</small></span>${nb ? '<em>' + nb + '</em>' : ''}</button>
         <button class="rv-card" onclick="openQuests()"><i>${ic('quest')}</i><span>เควสประจำวัน<small>${nq ? nq + ' รายการรอรับ' : 'ทำเควสรับเหรียญ'}</small></span>${nq ? '<em>' + E(nq) + '</em>' : ''}</button>
       </div>
       <nav class="rv-nav">

@@ -12,10 +12,20 @@
   const itemName = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).name; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.name || x.n)) || id; };
   const itemImg = (k, id) => { if (k === 'items' && window.Items) return Items.info(id).icon; const l = (typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY[k]) || []; const x = l.find(y => y.id === id); return (x && (x.asset || x.preview)) || ''; };
 
+  let lastLoad = 0;
   async function load() {
     if (!dbOn()) return;
+    lastLoad = Date.now();
     try { BP = await DB.call('get_bp'); err = ''; } catch (e) { err = e.message || 'โหลดไม่สำเร็จ'; }
     if (typeof screen !== 'undefined' && screen === 'bp') view();
+    else if (typeof screen !== 'undefined' && screen === 'home' && typeof render === 'function') render();   // อัปเดตป้ายแจ้งเตือนบนการ์ดแบทเทิลพาส
+  }
+  // จำนวนรางวัลที่รับได้ (ป้ายแจ้งเตือนบนการ์ดหน้าแรก) · โหลดข้อมูลเงียบ ๆ อย่างมากนาทีละครั้ง
+  function count() {
+    if (!dbOn()) return 0;
+    if (Date.now() - lastLoad > 60000) load();
+    if (!BP || !BP.season) return 0;
+    const st = stat(); return st.ready + st.cycNew;
   }
   window.bpOpen = () => { if (typeof go === 'function') go('bp'); load(); };
 
@@ -93,5 +103,5 @@
     window.render = function () { if (typeof screen !== 'undefined' && screen === 'bp') { view(); return; } return _r.apply(this, arguments); };
   }
   install();
-  window.battlePass = { load, get: () => BP };
+  window.battlePass = { load, get: () => BP, count };
 })();
