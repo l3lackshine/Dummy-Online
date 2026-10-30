@@ -193,7 +193,8 @@ function startGame(room) {
   scheduleBots(room);
   return true;
 }
-const cleanName = name => String(name == null ? '' : name).replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 14) || 'ผู้เล่น';
+const NameFilter = require('./namefilter');
+const cleanName = name => NameFilter.clean(name, 'ผู้เล่น'); // ตัดอักขระควบคุม · ยาวไม่เกิน 14 · ชื่อหยาบ/แอบอ้างทีมงาน → "ผู้เล่น"
 const cleanFrame = f => (typeof f === 'string' && /^[a-z0-9-]{1,40}$/.test(f) ? f : null); // กรอบการ์ด (ของแต่งเท่านั้น ไม่มีผลกับเกม)
 function joinRoom(socket, room, name, ch, bg, fr, s5) {
   const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, fr: cleanFrame(fr), s5: s5 === true, connected: true, token: newToken(), seat: null, ready: false };

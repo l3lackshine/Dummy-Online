@@ -51,10 +51,29 @@
         ${tog('pvSfx', 'เสียงเอฟเฟกต์', 'sound', 'เสียงจั่ว ทิ้ง สับไพ่ และเอฟเฟกต์ตัวละคร')}
         <div class=pv-set><i>${ic('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
         <div class=pv-acts>${DBON() ? `<button class="pv-btn blue" onclick="openDaily()">${ic('gift')}ล็อกอินรายวัน</button><button class="pv-btn gray" onclick="DB.signOut()">${ic('out')}ออกจากระบบ</button>` : ''}</div>
+        ${DBON() ? `<button class=pv-del onclick="pvDelAsk()">ลบบัญชีถาวร</button>` : ''}<a class=pv-priv href="./privacy.html" target=_blank rel=noopener>นโยบายความเป็นส่วนตัว</a>
       </section></div>`;
     page2('โปรไฟล์', body, 'home');
     const pg = document.querySelector('.pg'); if (pg) pg.dataset.pg = 'pv';
   }
+
+  /* ---------------- ลบบัญชี (หน้าต่างยืนยัน 2 ชั้น: อ่านผลที่จะเกิด → พิมพ์ชื่อผู้ใช้) ---------------- */
+  window.pvDelAsk = () => {
+    if (!DBON()) return; const un = DB.P.username, m = document.createElement('div'); m.className = 'pv-dm';
+    m.innerHTML = `<div class=pv-dbox><h3>ลบบัญชีถาวร</h3>
+      <p>บัญชี <b>@${E(un)}</b> และข้อมูลทั้งหมดจะถูกลบทันที <b>กู้คืนไม่ได้</b></p>
+      <ul><li>เหรียญ เพชร และของในช่องเก็บของ</li><li>ตัวละคร ดาว และกรอบการ์ด</li><li>สถิติ ประวัติเกม ประวัติกาชา และเควส</li></ul>
+      <label><span>พิมพ์ชื่อผู้ใช้ <b>${E(un)}</b> เพื่อยืนยัน</span><input id=pvDelIn autocomplete=off spellcheck=false></label><em class=pv-derr></em>
+      <div class=pv-dacts><button class="pv-btn gray" onclick="this.closest('.pv-dm').remove()">ยกเลิก</button><button class="pv-btn red" id=pvDelGo disabled onclick="pvDelGo()">ลบบัญชี</button></div></div>`;
+    document.body.appendChild(m); const i = m.querySelector('#pvDelIn'), go = m.querySelector('#pvDelGo');
+    i.oninput = () => { go.disabled = i.value.trim().toLowerCase() !== String(un).toLowerCase(); }; i.focus();
+  };
+  window.pvDelGo = async () => {
+    const m = document.querySelector('.pv-dm'), go = m && m.querySelector('#pvDelGo'), err = m && m.querySelector('.pv-derr'); if (!m) return;
+    go.disabled = true; go.textContent = 'กำลังลบ…';
+    try { await DB.deleteAccount(m.querySelector('#pvDelIn').value.trim()); m.remove(); if (window.dbToast) dbToast('ลบบัญชีเรียบร้อยแล้ว'); }
+    catch (e) { err.textContent = (e && e.message) || 'ลบไม่สำเร็จ ลองใหม่อีกครั้ง'; go.disabled = false; go.textContent = 'ลบบัญชี'; }
+  };
 
   /* ---------------- INVENTORY: ช่องเก็บของ ---------------- */
   const TABS = [['characters', 'ตัวละคร'], ['frames', 'กรอบการ์ด'], ['backs', 'หลังไพ่'], ['tables', 'โต๊ะ'], ['backgrounds', 'พื้นหลัง'], ['items', 'ไอเทม']];

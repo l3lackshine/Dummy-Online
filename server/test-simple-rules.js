@@ -1,49 +1,46 @@
 'use strict';
+// ตรวจทุกเกมที่เปิดให้เล่น: เล่นด้วยบอทจนจบได้ · ยอดเหรียญรวมเป็นศูนย์ · ไม่ส่งไพ่ในมือคนอื่น · คำสั่งพื้นฐานของแต่ละเกมใช้ได้
 const assert = require('assert');
 const Rules = require('./src/rules');
-const P = (n) => ({ id: 'id-' + n, n: 'P' + n });
-const humans = [P(0),P(1),P(2),P(3),P(4),P(5)];
-function ok(v, m) { assert(v, m); console.log('  ✓ ' + m); }
+const P = n => ({ id: 'id-' + n, n: 'P' + n });
+let passed = 0; const ok = (v, m) => { assert(v, m); passed++; console.log('  ✓ ' + m); };
+const sum = a => a.reduce((x, y) => x + y, 0);
+const playOut = (R, G) => { let t = 0; while (!G.over && t++ < 5000) { R.botTurn(G); G.v = (G.v || 0) + 1; } return t; };
 
-console.log('\n[Simple rules] registry and player counts');
-for (const id of ['pokdeng','gaogae','oldmaid']) {
-  const R=Rules.get(id), G=R.newGame(humans,{options:{stake:10}});
-  ok(G.P.length===6 && G.P.every(p=>p.h.length>0), id+' รองรับผู้เล่น 6 คนและแจกไพ่');
-  const view=R.view(G,0);
-  ok(view.P.every(p=>!Object.prototype.hasOwnProperty.call(p,'h')),'view '+id+' ไม่ส่งไพ่ในมือคนอื่น');
+console.log('\n[ทุกเกม] เล่นจนจบ · เหรียญรวมศูนย์ · ไม่เปิดมือคู่แข่ง');
+for (const m of Rules.list()) {
+  const R = Rules.get(m.id);
+  for (const n of [2, 4]) {
+    for (let k = 0; k < 20; k++) {
+      const G = R.newGame(Array.from({ length: n }, (_, i) => P(i)), { options: { stake: 20 } });
+      for (let s = 0; s < G.P.length; s++) { const v = R.view(G, s); assert(v.P.every((p, i) => i === s || !Object.prototype.hasOwnProperty.call(p, 'h')), m.id + ' ส่งไพ่ในมือคนอื่น'); }
+      const t = playOut(R, G);
+      assert(G.over && t < 5000, m.id + ' ไม่จบ'); assert(R.winner(G) == null || G.P[R.winner(G)], m.id + ' ผู้ชนะไม่ถูกต้อง');
+      if (G.res && G.res.coin) assert.strictEqual(sum(G.res.coin.delta), 0, m.id + ' เหรียญรวมไม่เป็นศูนย์');
+    }
+  }
+  ok(true, m.id + ': 40 เกม (2 และ 4 คน) จบได้ ไม่เปิดมือ เหรียญรวมศูนย์');
 }
-console.log('\n[Pok Deng] basic turn and settlement');
+
+console.log('\n[ป๊อกเด้ง] ไม่จั่วทุกคน → จบและคิดผลครบทุกที่นั่ง');
 {
- const R=Rules.get('pokdeng'), G=R.newGame([P(0),P(1),P(2)],{options:{stake:10}}); let turns=0;
- while(!G.over && turns++<20){const i=G.cur; const result=R.act(G,i,{t:'stand'});assert.equal(result,null);G.v++;}
- ok(G.over && G.res.coin.delta.reduce((a,b)=>a+b,0)===0,'ป๊อกเด้งจบได้และยอดเหรียญรวมเป็นศูนย์');
- ok(G.res.coin.delta.length===3,'ป๊อกเด้งคำนวณผลให้ทุกที่นั่ง');
+  const R = Rules.get('pokdeng'), G = R.newGame([P(0), P(1), P(2)], { options: { stake: 10 } }); let t = 0;
+  while (!G.over && t++ < 20) { assert.strictEqual(R.act(G, G.cur, { t: 'stay' }), null); G.v++; }
+  ok(G.over && G.res.coin.delta.length === G.P.length && sum(G.res.coin.delta) === 0, 'ป๊อกเด้งจบได้และคิดเหรียญครบทุกที่นั่ง (รวมเจ้ามือ)');
+  ok(R.act(G, 0, { t: 'stay' }) != null, 'จบแล้วสั่งต่อไม่ได้');
 }
-console.log('\n[Gao Gae] pot distribution and rank evaluation');
+console.log('\n[เก้าเก] หมอบ/ตาม และสั่งนอกตาไม่ได้');
 {
- const R=Rules.get('gaogae'), G=R.newGame([P(0),P(1),P(2),P(3)],{options:{stake:25}});
- ok(!G.over && G.phase==='decision' && R.view(G,0).actions.includes('fight') && R.view(G,0).actions.includes('fold'),'เก้าเกเริ่มด้วยช่วงให้ผู้เล่นตัดสินใจสู้หรือหมอบ');
- let turns=0; while(!G.over && turns++<10) { const i=G.cur; assert.equal(R.act(G,i,{t:'fight'}),null); }
- ok(G.over && G.res.coin.delta.reduce((a,b)=>a+b,0)===0,'เก้าเกเปิดผลหลังผู้เล่นทุกคนตัดสินใจ และยอดเหรียญรวมเป็นศูนย์');
- ok(G.res.coin.delta.length===4 && G.res.ranks.length===4,'เก้าเกส่งอันดับครบทุกคน');
- const E=R.evaluate;
- const card=(r,s)=>({id:(s*13)+(r-1),r,s});
- ok(E([card(4,0),card(4,1),card(4,2)]).category===6,'ตองได้อันดับสูงสุดในตารางมาตรฐาน');
- ok(E([card(2,0),card(3,0),card(4,0)]).category===5,'เรียงดอกเดียวกันสูงกว่าเรียงธรรมดา');
+  const R = Rules.get('gaogae'), G = R.newGame([P(0), P(1), P(2), P(3)], { options: { stake: 25 } });
+  const other = (G.cur + 1) % G.P.length;
+  ok(R.act(G, other, { t: 'call' }) != null, 'สั่งตอนที่ไม่ใช่ตาตัวเองไม่ได้');
+  let t = 0; while (!G.over && t++ < 50) { assert.strictEqual(R.act(G, G.cur, { t: 'call' }), null); G.v++; }
+  ok(G.over && sum(G.res.coin.delta) === 0, 'ทุกคนตาม → เปิดผลและเหรียญรวมศูนย์');
 }
-console.log('\n[Old Maid] no hidden cards and finite end');
+console.log('\n[อีแก่] สำรับและการจบ');
 {
- const R=Rules.get('oldmaid'), G=R.newGame([P(0),P(1),P(2)],{options:{stake:10}});
- ok(G.P.reduce((n,p)=>n+p.h.length,0)<=51,'อีแก่ใช้สำรับ 51 ใบ');
- ok(!G.P.some(p=>p.h.some(c=>c.id===11)),'อีแก่ตัด Q♠ ออก');
- let turns=0; while(!G.over&&turns++<3000){R.botTurn(G);G.v++;}
- ok(G.over && turns<3000,'อีแก่จบได้ ไม่วนไม่สิ้นสุด');
- ok(G.res.lastCard!=null && G.res.coin.delta.reduce((a,b)=>a+b,0)===0,'ผู้ถือไพ่ใบสุดท้ายแพ้ และกองกลางแจกครบ');
- ok(R.view(G,0).P.every(p=>!Object.prototype.hasOwnProperty.call(p,'h')),'อีแก่ไม่เปิดมือคู่แข่ง');
+  const R = Rules.get('eekae'), G = R.newGame([P(0), P(1), P(2)], { options: { stake: 10 } });
+  ok(G.P.reduce((n, p) => n + p.h.length, 0) <= 51, 'อีแก่ใช้ไพ่ไม่เกิน 51 ใบ (ตัดควีนออก 1 ใบ)');
+  playOut(R, G); ok(G.over && sum(G.res.coin.delta) === 0, 'อีแก่จบได้และกองกลางแจกครบ');
 }
-console.log('\n[Korat] guardrail');
-{
- const R=Rules.get('korat'); ok(R.meta.enabled===false,'สมสิบโคราชถูกปิดไว้จนกว่ายืนยันกติกาท้องถิ่น');
- assert.throws(()=>R.newGame([P(0),P(1)],{}),/ยังไม่เปิดให้เล่น/); ok(true,'สมสิบโคราชไม่ใช้กติกาที่เดาขึ้นเอง');
-}
-console.log('simple rule tests passed');
+console.log(`\nผ่านทั้งหมด ${passed} จุดตรวจ`);

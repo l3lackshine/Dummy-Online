@@ -4,7 +4,7 @@
 
 ## ตั้งค่าครั้งแรก (ทำครั้งเดียว)
 1. **Supabase → Authentication → Providers → Email** : ปิด **Confirm email** (ผู้เล่นสมัครด้วย "ชื่อผู้ใช้" ระบบสร้างอีเมลภายในให้ `<ชื่อ>@example.com` — เปลี่ยนโดเมนได้ที่ `AUTH_EMAIL_DOMAIN` ใน `client/public/config.js`)
-2. **SQL Editor** : วางและรัน `supabase/schema.sql` ทั้งไฟล์ แล้วตามด้วย `supabase/seed_catalog.sql` (รันซ้ำได้ ปลอดภัย)
+2. **SQL Editor** : วางและรัน `supabase/name_filter.sql` (ตัวตรวจชื่อ) ตามด้วย `supabase/schema.sql` ทั้งไฟล์ แล้วตามด้วย `supabase/seed_catalog.sql` (รันซ้ำได้ ปลอดภัย)
 3. **เซิร์ฟเวอร์เกม (Render)** : ตั้ง Environment ตาม `server/.env.example` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`) แล้ว deploy ใหม่ — รันในเครื่องใช้ `server/.env` (ตั้งไว้ให้แล้ว)
 4. **client** : ค่า URL/publishable key อยู่ใน `client/public/config.js` แล้ว (สร้างจาก `client/.env` ด้วย `node scripts/apply-env.js`)
 

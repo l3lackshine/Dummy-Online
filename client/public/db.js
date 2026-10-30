@@ -72,6 +72,7 @@
     if (!DB.validUser(u)) throw new Error('ชื่อผู้ใช้ใช้ได้เฉพาะ a-z 0-9 _ ความยาว 3-20 ตัว');
     if (String(pw || '').length < 6) throw new Error('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
     const dn = String(name || u).trim().slice(0, 14) || u;
+    const bad = window.NameFilter && NameFilter.check(dn); if (bad) throw new Error(bad);
     const { data, error } = await sb.auth.signUp({ email: emailOf(u), password: pw, options: { data: { username: u, display_name: dn } } });
     if (error) throw new Error(th(error.message));
     if (!data.session) throw new Error('สมัครแล้ว แต่ต้องยืนยันอีเมลก่อน — เจ้าของเกมต้องปิด "Confirm email" ที่ Supabase (Authentication › Providers › Email)');
@@ -84,6 +85,13 @@
     repaint();
   };
 
+  // ลบบัญชีถาวร: ฐานข้อมูลตรวจว่าพิมพ์ชื่อผู้ใช้ตรงก่อนลบ (ย้อนกลับไม่ได้) แล้วล้างข้อมูลในเครื่องและออกจากระบบ
+  DB.deleteAccount = async confirmName => {
+    await call('delete_my_account', { p_confirm: String(confirmName || '') });
+    try { Object.keys(localStorage).filter(k => /^dummy/i.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+    await DB.signOut();
+  };
+
   // ---- การกระทำของผู้เล่น (ทุกอย่างตรวจและหักเหรียญที่ฝั่งฐานข้อมูล) ----
   // กาชา: สุ่ม/ขายตัวซ้ำ (ราคา โอกาส การันตี ตรวจที่ฐานข้อมูลทั้งหมด)
   DB.gacha = async () => { DB.G = await call('get_gacha'); return DB.G; };
@@ -93,8 +101,8 @@
   DB.equip = async (kind, id) => { try { await call('set_equipped', { p_kind: kind, p_id: id }); if (DB.P) DB.P.equipped = Object.assign({}, DB.P.equipped, { [kind]: id }); } catch (e) { /* ใส่ไม่ได้ → ซิงก์กลับ */ DB.refresh().catch(() => {}); } };
   DB.upStar = async id => { const r = await call('upgrade_star', { p_char: id }); await DB.refresh(); return r; };
   let nt = null, tt = null;
-  DB.setName = v => { clearTimeout(nt); nt = setTimeout(() => call('update_profile', { p_name: v }).then(r => { if (DB.P) { DB.P.display_name = r.display_name; } }).catch(() => {}), 600); };
-  DB.setTitle = v => { clearTimeout(tt); tt = setTimeout(() => call('update_profile', { p_title: v }).then(r => { if (DB.P) DB.P.title = r.title; }).catch(() => {}), 600); };
+  DB.setName = v => { clearTimeout(nt); nt = setTimeout(() => call('update_profile', { p_name: v }).then(r => { if (DB.P) { DB.P.display_name = r.display_name; } }).catch(e => { if (window.dbToast && e && e.message) dbToast(e.message); }), 600); };
+  DB.setTitle = v => { clearTimeout(tt); tt = setTimeout(() => call('update_profile', { p_title: v }).then(r => { if (DB.P) DB.P.title = r.title; }).catch(e => { if (window.dbToast && e && e.message) dbToast(e.message); }), 600); };
   DB.claimLogin = async () => { const r = await call('claim_login_reward'); await DB.refresh(); return r; };
   DB.quests = () => call('get_quests');
   DB.claimQuest = async id => { const r = await call('claim_quest', { p_id: id }); await DB.refresh(); return r; };

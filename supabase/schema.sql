@@ -258,6 +258,7 @@ begin
   end if;
   v_name := left(trim(regexp_replace(coalesce(new.raw_user_meta_data->>'display_name', v_user), '[[:cntrl:]]', '', 'g')), 14);
   if v_name = '' then v_name := left(v_user, 14); end if;
+  if public._bad_name(v_name) is not null then v_name := 'ผู้เล่น'; end if;  -- ชื่อหยาบ/แอบอ้างทีมงาน (ดู name_filter.sql)
   insert into public.profiles(id, username, display_name, coins, mcash)
   values (new.id, v_user, v_name,
           coalesce((public._cfg('start_coins') #>> '{}')::bigint, 5000),
@@ -460,10 +461,12 @@ begin
   if p_name is not null then
     v_name := left(trim(regexp_replace(p_name, '[[:cntrl:]]', '', 'g')), 14);
     if v_name = '' then raise exception 'ชื่อห้ามว่าง'; end if;
+    if public._bad_name(v_name) is not null then raise exception '%', public._bad_name(v_name); end if;
     update public.profiles set display_name = v_name, updated_at = now() where id = u;
   end if;
   if p_title is not null then
     v_title := left(trim(regexp_replace(p_title, '[[:cntrl:]]', '', 'g')), 16);
+    if v_title <> '' and public._bad_name(v_title) is not null then raise exception 'ฉายา: %', public._bad_name(v_title); end if;
     update public.profiles set title = v_title, updated_at = now() where id = u;
   end if;
   return (select jsonb_build_object('display_name', display_name, 'title', title) from public.profiles where id = u);
@@ -718,6 +721,20 @@ revoke insert, update, delete, truncate on
   public.quest_defs, public.user_quests, public.quest_bonus from anon, authenticated;
 revoke all on public.wallet_ledger, public.game_log, public.gacha_log, public.gacha_pity, public.inventory from anon;
 
+-- ---------- ลบบัญชีผู้เล่น (Google Play บังคับ) ----------
+-- ผู้เล่นลบบัญชีของตัวเองได้ทันที: ต้องพิมพ์ชื่อผู้ใช้ (username) ยืนยัน · ลบที่ auth.users แล้วข้อมูลทุกตาราง (โปรไฟล์ เหรียญ คลังของ ตัวละคร
+-- สถิติ ประวัติเกม ประวัติกาชา เควส) หายตามด้วย on delete cascade · ย้อนกลับไม่ได้
+create or replace function public.delete_my_account(p_confirm text) returns boolean
+language plpgsql security definer set search_path = public, auth as $$
+declare u uuid := public._uid(); v_user text;
+begin
+  select username into v_user from public.profiles where id = u;
+  if v_user is null then raise exception 'ไม่พบบัญชี'; end if;
+  if lower(trim(coalesce(p_confirm, ''))) <> lower(v_user) then raise exception 'ชื่อผู้ใช้ที่พิมพ์ยืนยันไม่ตรงกับบัญชีนี้'; end if;
+  delete from auth.users where id = u;
+  return true;
+end $$;
+
 -- ฟังก์ชัน: ปิดทั้งหมดก่อน แล้วเปิดเฉพาะที่จำเป็น
 revoke all on all functions in schema public from public, anon, authenticated;
 grant execute on function public.game_day(timestamptz), public.game_week(timestamptz) to anon, authenticated;
@@ -725,7 +742,7 @@ grant execute on function
   public.record_login(), public.claim_login_reward(), public.get_quests(), public.claim_quest(text), public.claim_quest_bonus(text),
   public.gacha_pull(text, int, text), public.sell_dupes(text, text, int), public.get_gacha(),
   public.set_equipped(text, text), public.update_profile(text, text), public.upgrade_star(text),
-  public.get_profile() to authenticated;
+  public.get_profile(), public.delete_my_account(text) to authenticated;
 grant execute on function
   public.record_game_result(uuid, text, text, int, boolean, int, boolean, text),
   public.touch_last_game(uuid, text), public.grant_mcash(uuid, int, text) to service_role;

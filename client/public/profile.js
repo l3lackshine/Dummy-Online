@@ -12,7 +12,9 @@
   const DBON = () => !!(window.DB && DB.enabled && DB.P);
   let tab = 'chars';
   window.pfTab = t => { tab = t; render(); };
-  window.pfTitle = v => { try { LS.setItem(TK, String(v || '').slice(0, 16)); } catch (e) {} if (window.DB && DB.enabled) DB.setTitle(String(v || '')); };
+  window.pfTitle = v => { const t = String(v || '').trim().slice(0, 16), bad = t && window.NameFilter ? NameFilter.check(t) : null;   // ฉายาตรวจคำหยาบเหมือนชื่อ
+    const i = document.getElementById('titleInput'); if (i) { i.classList.toggle('nk-bad', !!bad); let w = i.parentNode.querySelector('.nk-warn'); if (bad) { if (!w) { w = document.createElement('em'); w.className = 'nk-warn'; i.insertAdjacentElement('afterend', w); } w.textContent = bad; } else if (w) w.remove(); }
+    if (bad) return; try { LS.setItem(TK, t); } catch (e) {} if (window.DB && DB.enabled) DB.setTitle(t); };
 
   function skinPanel() {
     return KINDS.map(([kind, label, , ic]) => {
