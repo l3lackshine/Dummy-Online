@@ -39,7 +39,7 @@
     const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     for (let i = 0; i < 14; i++) {
       const p = document.createElement('i'); p.className = 'rv-petal'; const a = Math.PI * 2 * i / 14 + Math.random() * .4, d = r.height * (1.2 + Math.random() * 1.1);
-      p.style.cssText = `left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
+      p.style.cssText = `background-image:url(./UI/Assets/fx/petal-${1 + (Math.random() * 7 | 0)}.webp);--sz:${(0.8 + Math.random() * 0.6).toFixed(2)};left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
       document.body.appendChild(p); setTimeout(() => p.remove(), 950);
     }
     setTimeout(() => { delete b.dataset.go; b.classList.remove('press'); goPlay(); }, 320);
