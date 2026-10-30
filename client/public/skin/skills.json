@@ -1,316 +1,81 @@
 {
-  "version": 2,
-  "note": "ไฟล์นี้แก้ได้ด้วย skill-studio.html (หรือแก้มือ) · ค่าความสามารถผูกกับตัวละคร: ค่า = base + perStar × (ดาว-1) · อัพดาวแทนการอัพค่าความสามารถ · effect ที่เกมรองรับ: hawkeye, cardcount, coinbonus, scramble",
-  "stats": [
-    {
-      "id": "insight",
-      "name": "ไหวพริบ",
-      "icon": "🧠",
-      "desc": "สกิลช่วยคิดใช้ได้บ่อยและนานขึ้น",
-      "max": 10
-    },
-    {
-      "id": "luck",
-      "name": "โชคลาภ",
-      "icon": "🍀",
-      "desc": "โบนัสเหรียญเมื่อชนะ (ไม่มีผลกับไพ่ที่จั่ว)",
-      "max": 10
-    },
-    {
-      "id": "focus",
-      "name": "สมาธิ",
-      "icon": "🎯",
-      "desc": "ลดเวลาที่โดนสกิลป่วนสายตา",
-      "max": 10
-    },
-    {
-      "id": "charm",
-      "name": "เสน่ห์",
-      "icon": "💖",
-      "desc": "ปลดล็อกอิโมจิ/บทพูด/เอฟเฟกต์ (เร็ว ๆ นี้)",
-      "max": 10
-    }
-  ],
+  "version": 3,
+  "note": "ระบบสกิล v3 · ตัวละคร 1 ตัว = สกิล 1 อย่าง · ระดับ (common/rare/sr/ssr) = งบพลัง: common ช่วย 1 อย่าง · rare 2 · sr 3 · ssr ครบชุด · หลักการ: ช่วยจำและช่วยดู ไม่ทำนาย ไม่ตัดสินใจแทน ใช้แค่ไพ่ในมือตัวเอง + สิ่งที่ทุกคนเห็นบนโต๊ะ · games.<เกม>.mods = รายการโมดูลที่เขียนไว้ในโค้ด (skills.js) ไฟล์นี้ใช้เลือก/จับคู่เท่านั้น · ดาวปลดของแต่ง ไม่เพิ่มพลัง",
+  "tiers": {
+    "common": { "name": "Common", "budget": 1 },
+    "rare": { "name": "Rare", "budget": 2 },
+    "sr": { "name": "SR", "budget": 3 },
+    "ssr": { "name": "SSR", "budget": 99 }
+  },
   "skills": [
     {
-      "id": "hawkeye",
-      "name": "สายตาเหยี่ยว",
-      "icon": "🔍",
-      "type": "active",
-      "effect": "hawkeye",
-      "enabled": true,
-      "desc": "ไฮไลต์ไพ่ในกองทิ้งที่เก็บแล้ว 'เกิดได้จริง' กับมือคุณ (คำนวณจากไพ่ที่เห็นอยู่แล้ว)",
-      "params": {
-        "uses": 2,
-        "cooldown": 20,
-        "duration": 6
-      },
-      "scale": {
-        "uses": {
-          "stat": "insight",
-          "per": 0.2
-        },
-        "cooldown": {
-          "stat": "insight",
-          "per": -1
-        },
-        "duration": {
-          "stat": "insight",
-          "per": 0.3
-        }
-      },
-      "limit": {
-        "uses": [
-          1,
-          4
-        ],
-        "cooldown": [
-          8,
-          60
-        ],
-        "duration": [
-          3,
-          10
-        ]
+      "id": "quickeye", "name": "ตาไว", "icon": "👁", "tier": "common",
+      "desc": "ชี้ไพ่ที่ใช้ได้ตอนนี้",
+      "games": {
+        "dummy": { "mods": ["takeable"], "desc": "ไฮไลต์ไพ่ในกองทิ้งที่เก็บแล้วเกิดได้" },
+        "pokdeng": { "mods": ["pd-deng"], "desc": "บอกเด้งที่เป็นไปได้ถ้าจั่วเพิ่ม" },
+        "gaogae": { "mods": ["gg-ladder"], "desc": "บอกประเภทมือและลำดับในตารางมือ" },
+        "somsip": { "mods": ["ss-pairs"], "desc": "ไฮไลต์คู่ที่ได้ 10 ในมือ และบอกใบที่ขาด" },
+        "eekae": { "mods": ["ek-new"], "desc": "ไฮไลต์ไพ่ใบที่เพิ่งจั่วได้" }
       }
     },
     {
-      "id": "cardcount",
-      "name": "นักจำไพ่",
-      "icon": "📊",
-      "type": "passive",
-      "effect": "cardcount",
-      "enabled": true,
-      "desc": "แสดงว่าไพ่แต้มเดียวกับที่คุณถือ เหลือที่ยังไม่เห็นกี่ใบ",
-      "params": {
-        "ranks": 3
-      },
-      "scale": {
-        "ranks": {
-          "stat": "insight",
-          "per": 0.5
-        }
-      },
-      "limit": {
-        "ranks": [
-          2,
-          8
-        ]
+      "id": "quickhand", "name": "มือไว", "icon": "✋", "tier": "common",
+      "desc": "กดครั้งเดียวทำให้หลายอย่าง",
+      "games": {
+        "dummy": { "mods": ["autodep"], "desc": "ปุ่มฝากออโต้: ฝากทุกใบที่ฝากได้ในกดเดียว" },
+        "pokdeng": { "mods": ["pd-autodraw"], "desc": "จั่วให้อัตโนมัติถ้าแต้มต่ำกว่าที่ตั้งไว้ (ตั้งเองได้ ปิดได้)" },
+        "gaogae": { "mods": ["gg-autocall"], "desc": "ตามให้อัตโนมัติไม่เกินวงเงินที่ตั้งเอง (เริ่มต้นปิด)" },
+        "somsip": { "mods": ["ss-autowin"], "desc": "ประกาศชนะให้ทันทีเมื่อครบ" },
+        "eekae": { "mods": ["ek-autopick"], "desc": "จั่วไพ่ให้อัตโนมัติเมื่อถึงตา" }
       }
     },
     {
-      "id": "coinbonus",
-      "name": "นักล่าโชค",
-      "icon": "🪙",
-      "type": "passive",
-      "effect": "coinbonus",
-      "enabled": true,
-      "desc": "ได้โบนัสเหรียญเป็น % ของเหรียญที่ชนะ",
-      "params": {
-        "pct": 3
-      },
-      "scale": {
-        "pct": {
-          "stat": "luck",
-          "per": 1.5
-        }
-      },
-      "limit": {
-        "pct": [
-          0,
-          20
-        ]
+      "id": "notebook", "name": "สมุดจดไพ่", "icon": "📒", "tier": "sr",
+      "desc": "จดว่าแต่ละคนทำอะไรบนโต๊ะ + ติดตามไพ่สำคัญ + นับไพ่",
+      "games": {
+        "dummy": { "mods": ["log", "speto", "count"], "desc": "ใครเก็บอะไรจากกองทิ้ง · สเปโตออกแล้วหรือยัง · ไพ่แต้มที่ถือเหลือกี่ใบ" },
+        "pokdeng": { "mods": ["pd-log", "pd-key", "pd-count"], "desc": "สถิติป๊อกในห้อง · 8/9 ที่เปิดแล้ว · ไพ่ที่เปิดแล้วรอบนี้" },
+        "gaogae": { "mods": ["gg-log", "gg-key", "gg-count"], "desc": "สไตล์ตาม/หมอบ/เกทับของแต่ละคนในห้อง · ไพ่ภาพที่เปิดแล้ว · ไพ่ที่หงายแล้ว" },
+        "somsip": { "mods": ["ss-log", "ss-key", "ss-count"], "desc": "ใครทิ้งอะไร · ไวลด์ที่ออกแล้ว · ไพ่ที่ต้องการเหลือกี่ใบ" },
+        "eekae": { "mods": ["ek-log", "ek-key", "ek-count"], "desc": "ใครจั่วจากใคร ทิ้งคู่อะไร · ควีนที่ถูกจับคู่แล้ว · แต้มที่ยังไม่ถูกจับคู่" }
       }
     },
     {
-      "id": "scramble",
-      "name": "ป่วนสายตา",
-      "icon": "🎭",
-      "type": "active",
-      "effect": "scramble",
-      "enabled": true,
-      "desc": "ไพ่ในมือเป้าหมายสลับตำแหน่งและมีหมอกบาง ๆ ไพ่ยังเห็นครบ กดเรียงไพ่แก้ได้ ใช้ซ้ำกับคนเดิมติดกันไม่ได้",
-      "params": {
-        "uses": 1,
-        "cooldown": 25,
-        "duration": 5
-      },
-      "scale": {
-        "uses": {
-          "stat": "insight",
-          "per": 0.1
-        },
-        "duration": {
-          "stat": "insight",
-          "per": 0.1
-        }
-      },
-      "limit": {
-        "uses": [
-          1,
-          2
-        ],
-        "cooldown": [
-          20,
-          60
-        ],
-        "duration": [
-          3,
-          6
-        ]
+      "id": "danger", "name": "สัญญาณอันตราย", "icon": "🚨", "tier": "sr",
+      "desc": "เตือนเมื่อคู่แข่งใกล้ชนะ + บอกสิ่งที่ควรรีบเคลียร์ + คำนวณแต้มสด",
+      "games": {
+        "dummy": { "mods": ["danger", "clear", "score"], "desc": "คู่แข่งเหลือ ≤2 ใบ · ไฮไลต์ไพ่แต้มสูงในมือ · ถ้าจบตอนนี้ค้างมือกี่แต้ม" },
+        "pokdeng": { "mods": ["pd-danger", "pd-score"], "desc": "เตือนเมื่อมีคนป๊อก · แต้ม เด้ง และเหรียญถ้าชนะ/แพ้" },
+        "gaogae": { "mods": ["gg-danger", "gg-score"], "desc": "เตือนเมื่อมีคนเกทับแรง · กองกลางเทียบเงินที่ต้องตาม" },
+        "somsip": { "mods": ["ss-danger", "ss-score"], "desc": "เตือนเมื่อกองจั่วใกล้หมด · ห่างจากชนะอีกกี่คู่" },
+        "eekae": { "mods": ["ek-danger", "ek-score"], "desc": "ใครใกล้หมดมือ · ไพ่ในมือเหลือกี่ใบ" }
+      }
+    },
+    {
+      "id": "planner", "name": "นักวางแผน", "icon": "🧭", "tier": "sr",
+      "desc": "ชี้ทุกอย่างที่ทำได้ในมือและบนโต๊ะ",
+      "games": {
+        "dummy": { "mods": ["takeable", "melds", "deposit"], "desc": "ไพ่ในกองทิ้งที่เก็บได้ · ชุดที่เกิดได้ในมือ · ไพ่ที่ฝากได้" },
+        "pokdeng": { "mods": ["pd-deng", "pd-score"], "desc": "เด้งที่เป็นไปได้ · แต้มและเหรียญถ้าจบตอนนี้" },
+        "gaogae": { "mods": ["gg-ladder", "gg-score"], "desc": "ประเภทมือและลำดับ · กองกลางเทียบเงินที่ต้องตาม" },
+        "somsip": { "mods": ["ss-pairs", "ss-score"], "desc": "คู่ที่ได้ 10 และใบที่ขาด · ห่างจากชนะอีกกี่คู่" },
+        "eekae": { "mods": ["ek-new", "ek-score"], "desc": "ไพ่ที่เพิ่งจั่วได้ · ไพ่ในมือเหลือกี่ใบ" }
       }
     }
   ],
   "characters": {
-    "boy": {
-      "maxStars": 5,
-      "stats": {
-        "insight": {
-          "base": 2,
-          "perStar": 1
-        },
-        "luck": {
-          "base": 1,
-          "perStar": 0.5
-        },
-        "focus": {
-          "base": 2,
-          "perStar": 1
-        },
-        "charm": {
-          "base": 1,
-          "perStar": 0.5
-        }
-      },
-      "skills": [
-        "cardcount"
-      ]
-    },
-    "girl": {
-      "maxStars": 5,
-      "stats": {
-        "insight": {
-          "base": 1,
-          "perStar": 0.5
-        },
-        "luck": {
-          "base": 3,
-          "perStar": 1.5
-        },
-        "focus": {
-          "base": 1,
-          "perStar": 0.5
-        },
-        "charm": {
-          "base": 2,
-          "perStar": 1
-        }
-      },
-      "skills": [
-        "coinbonus"
-      ]
-    },
-    "rina-01": {
-      "maxStars": 5,
-      "stats": {
-        "insight": {
-          "base": 3,
-          "perStar": 1.5
-        },
-        "luck": {
-          "base": 1,
-          "perStar": 0.5
-        },
-        "focus": {
-          "base": 2,
-          "perStar": 1
-        },
-        "charm": {
-          "base": 3,
-          "perStar": 1
-        }
-      },
-      "skills": [
-        "hawkeye",
-        "cardcount"
-      ]
-    },
-    "arya-01": {
-      "maxStars": 5,
-      "stats": {
-        "insight": {
-          "base": 2,
-          "perStar": 1
-        },
-        "luck": {
-          "base": 4,
-          "perStar": 1.5
-        },
-        "focus": {
-          "base": 3,
-          "perStar": 1
-        },
-        "charm": {
-          "base": 2,
-          "perStar": 1
-        }
-      },
-      "skills": [
-        "coinbonus",
-        "scramble"
-      ]
-    },
-    "rena-01": {
-      "maxStars": 5,
-      "stats": {
-        "insight": {
-          "base": 3,
-          "perStar": 1
-        },
-        "luck": {
-          "base": 3,
-          "perStar": 1
-        },
-        "focus": {
-          "base": 3,
-          "perStar": 1
-        },
-        "charm": {
-          "base": 3,
-          "perStar": 1
-        }
-      },
-      "skills": [
-        "hawkeye",
-        "coinbonus"
-      ]
-    }
+    "boy": { "skill": "quickeye", "maxStars": 4, "starCosts": [1] },
+    "girl": { "skill": "quickhand", "maxStars": 4, "starCosts": [1] },
+    "rina-01": { "skill": "notebook", "maxStars": 5, "starCosts": [1] },
+    "arya-01": { "skill": "danger", "maxStars": 5, "starCosts": [1] },
+    "rena-01": { "skill": "planner", "maxStars": 5, "starCosts": [1] }
   },
-  "defaults": {
-    "maxStars": 5,
-    "starCosts": [
-      1,
-      2,
-      3,
-      4
-    ],
-    "stats": {
-      "insight": {
-        "base": 0,
-        "perStar": 0.5
-      },
-      "luck": {
-        "base": 0,
-        "perStar": 0.5
-      },
-      "focus": {
-        "base": 0,
-        "perStar": 0.5
-      },
-      "charm": {
-        "base": 0,
-        "perStar": 0.5
-      }
-    }
-  }
+  "starUnlocks": [
+    { "star": 2, "name": "อีโมตของตัวละคร" },
+    { "star": 3, "name": "เสียงพากย์" },
+    { "star": 4, "name": "กรอบการ์ดของตัวละคร" },
+    { "star": 5, "name": "ชุดใหม่ / ฉายา" }
+  ],
+  "defaults": { "maxStars": 5, "starCosts": [1, 2, 3, 4] }
 }

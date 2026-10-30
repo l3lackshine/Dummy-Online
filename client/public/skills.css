@@ -1,0 +1,29 @@
+/* skills.css — หน้าตาของสกิล v3 (แผงข้อมูลสกิล · ไฮไลต์ไพ่ · การ์ดสกิลตัวละคร) ใช้โทนเดียวกับ theme2.css */
+.sk-info{position:fixed;z-index:8;right:2vh;top:calc(2vh + 7vh);max-width:min(36vw,440px);
+  padding:.8vh 1.6vh;border-radius:1.8vh;background:rgba(28,24,44,.52);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.28);box-shadow:0 .6vh 1.6vh rgba(0,0,0,.2);color:#fff;font:600 max(11px,2.1vh)/1.45 Sarabun,sans-serif;text-align:left;pointer-events:auto}
+.gx-stage .sk-info{position:absolute;right:auto;top:auto;bottom:calc(var(--u,1vh)*30);left:50%;transform:translateX(-50%);max-width:min(52vw,640px);text-align:center;font-size:max(12px,2.3vh)}
+.sk-info .sk-ttl{display:block;font-size:max(10px,1.7vh);letter-spacing:.03em;color:#e9d7a3;margin-bottom:.2vh}
+.sk-info.sk-t-sr .sk-ttl{color:#ffd36b}.sk-info.sk-t-ssr .sk-ttl{color:#ff9ccf}.sk-info.sk-t-rare .sk-ttl{color:#c9a6ff}.sk-info.sk-t-common .sk-ttl{color:#9cc6ff}
+.sk-info b{color:#ffe3a8}.sk-info .sk-on{color:#3b4255;background:#ffd36b;border-radius:99px;padding:0 .6em}
+.sk-info .sk-w{font-style:normal;color:#ffb3b3;font-weight:800}
+.sk-info .sk-n{width:3.4em;padding:.1em .3em;border-radius:.6em;border:1px solid #ffffff66;background:#ffffff22;color:#fff;font:700 inherit/1 Sarabun,sans-serif;text-align:center}
+.c.sk-hi{box-shadow:0 0 0 3px #ff7a6b,0 0 14px #ff7a6b!important}
+/* การ์ดสกิลตัวละคร */
+.ck-sk2{margin-top:8px;padding:8px 10px;border-radius:12px;background:#fff;color:#3b4255;box-shadow:inset 0 0 0 2px #eadcf2;display:flex;flex-direction:column;gap:2px}
+.ck-sk2 b{font-size:15px}.ck-sk2 small{color:#7d8394}
+.ck-tier{align-self:flex-start;font:800 11px/1 Sarabun,sans-serif;padding:3px 9px;border-radius:99px;color:#fff;background:#8e96a8}
+.ck-tier.common{background:#4f8fe0}.ck-tier.rare{background:#9a5be0}.ck-tier.sr{background:#d9a93b}.ck-tier.ssr{background:linear-gradient(90deg,#ff7ab6,#ffd36b,#7ce0ff)}
+.ck-g{display:flex;gap:8px;align-items:baseline;padding:4px 2px;border-bottom:1px solid #00000010}
+.ck-g b{flex:none;width:64px;font-size:12px}.ck-g small{font-size:11.5px;opacity:.85}
+.ck-un{list-style:none;margin:4px 0;padding:0;font-size:12px}.ck-un li{opacity:.6;padding:2px 0}.ck-un li.on{opacity:1}
+.ck-un em{font-style:normal;font-size:10px;opacity:.7;margin-left:4px}
+.sk-rule{display:block;margin-top:8px;opacity:.8}
+/* หน้าสกิลตัวละคร (⚡) ใช้แผงครีมแบบเดียวกับหน้าอื่น */
+.sk-modal.sk-main .sk-box{background:none!important;color:#3b4255!important;border-style:solid!important;border-color:transparent!important;border-width:3vh!important;
+  border-image:url(./UI/Assets/kit2/panel-cream.webp) 90 fill/3vh stretch!important;box-shadow:0 2vh 5vh #0006!important;border-radius:0!important;padding:0!important;max-height:92vh;overflow:auto}
+.sk-modal.sk-main .sk-box h3,.sk-modal.sk-main .ck-h b,.sk-modal.sk-main .ck-g b{color:#3b4255!important}
+.sk-modal.sk-main .ck-h small,.sk-modal.sk-main .ck-g small,.sk-modal.sk-main .sk-rule,.sk-modal.sk-main .ck-un{color:#5b6274!important}
+.sk-modal.sk-main h4{color:#8a6d3b!important}
+.sk-modal.sk-main .sk-x{color:#3b4255!important;background:#fff!important;border:0!important;border-radius:50%!important}
+.sk-modal.sk-main .ck-stars i{color:#d5cbbd}.sk-modal.sk-main .ck-stars i.on{color:#e0a521}

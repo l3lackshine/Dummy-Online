@@ -4,7 +4,8 @@ const GX = {};
 const gxRed = c => c.s === 1 || c.s === 2;
 // ไพ่หงาย (span) / ไพ่หงายแบบปุ่ม / หลังไพ่ — id >= 52 คือโจ๊กเกอร์ (ผสมสิบ)
 function gxc(id, cls = '') { if (id >= 52) return `<span class="c jk${cls}">🃏</span>`; const c = ALL[id]; return `<span class="c${gxRed(c) ? ' r' : ''}${cls}">${RK[c.r]}<span>${SU[c.s]}</span></span>`; }
-function gxb(id, cls, attrs) { if (id >= 52) return `<button ${attrs || ''} class="c jk${cls || ''}">🃏</button>`; const c = ALL[id]; return `<button ${attrs || ''} class="c${gxRed(c) ? ' r' : ''}${cls || ''}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; }
+function gxb(id, cls, attrs) { if (!/data-id/.test(attrs || '')) attrs = (attrs || '') + ' data-id=' + id; // data-id ให้สกิลไฮไลต์ไพ่ได้
+  if (id >= 52) return `<button ${attrs || ''} class="c jk${cls || ''}">🃏</button>`; const c = ALL[id]; return `<button ${attrs || ''} class="c${gxRed(c) ? ' r' : ''}${cls || ''}">${RK[c.r]}<span>${SU[c.s]}</span></button>`; }
 const gxBack = n => Array.from({ length: n }, () => '<span class=cb></span>').join('');
 const gxSort = ids => ids.slice().sort((a, b) => (a >= 52) - (b >= 52) || (ALL[a] ? ALL[a].r : 0) - (ALL[b] ? ALL[b].r : 0) || a - b);
 const gxName = i => (i === S.my ? 'คุณ' : esc(S.P[i].n));

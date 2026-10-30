@@ -7,7 +7,8 @@ const Rules = require('./rules');
 const { CHARS, BGS } = require('./rules/common');
 const VERSION = require('../package.json').version;
 const Shuffle = require('./shuffle');
-const SB = require('./supabase');   // บัญชีผู้เล่น + บันทึกผลเกมลง Supabase (ปิดเองถ้าไม่ได้ตั้งค่า)
+const SB = require('./supabase');
+const Skills = require('./skills'); // สกิลที่ต้องเช็กสิทธิ์ + ตรวจว่ามีตัวละคร/กรอบจริง   // บัญชีผู้เล่น + บันทึกผลเกมลง Supabase (ปิดเองถ้าไม่ได้ตั้งค่า)
 
 const PORT = process.env.PORT || 3000;
 const ALLOWED_ORIGIN = process.env.CLIENT_ORIGIN || '*';
@@ -257,6 +258,14 @@ function cleanAction(a) {
 }
 // exception ใน handler ของ socket.io ที่ไม่ถูกดักจะทำให้โปรเซสล้มทั้งตัว (payload จาก client เชื่อถือไม่ได้) จึงห่อทุก handler
 const on = (socket, ev, fn) => socket.on(ev, (...a) => { try { fn(...a); } catch (e) { console.error('handler error:', ev, e && e.message); } });
+// โหมดบัญชี: ตรวจว่าผู้เล่นมีตัวละคร/กรอบที่ส่งมาจริงก่อนเข้าห้อง (ไม่มี/ตรวจไม่ได้ = ใช้ค่าว่าง) · โหมดในเครื่อง = ผ่านทันที
+function withOwned(socket, raw, fn) {
+  const d = obj(raw);
+  if (!(SB.enabled() && socket.data.uid)) return fn(d);
+  Promise.all([Skills.verifyOwned(SB, socket.data.uid, 'characters', d.ch), Skills.verifyOwned(SB, socket.data.uid, 'frames', d.fr)])
+    .then(([ch, fr]) => { try { fn(Object.assign({}, d, { ch, fr })); } catch (e) { console.error('handler error:', e && e.message); } })
+    .catch(e => console.error('verifyOwned error:', e && e.message));
+}
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
 // ส่งกุญแจแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น (ดู src/packkeys.js) — ต้องตั้ง PACK_MASTER ใน Environment
 app.get('/pack-key', require('./packkeys').route({ master: process.env.PACK_MASTER, verifyToken: SB.verifyToken, ownsItem: SB.ownsItem }));
@@ -289,7 +298,7 @@ io.on('connection', socket => {
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
   socket.emit('rules:list', rulesPayload()); // รายการกฎ + ตัวเลือกของแต่ละกฎ ให้ client สร้างหน้าตั้งค่าห้องเอง
   on(socket, 'rules:get', () => { if (allow(socket)) socket.emit('rules:list', rulesPayload()); });
-  on(socket, 'room:create', d => { const { name, ch, bg, fr, rule, options, bots } = obj(d);
+  on(socket, 'room:create', raw => withOwned(socket, raw, d => { const { name, ch, bg, fr, rule, options, bots } = d;
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     if (rooms.size >= MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
@@ -299,9 +308,9 @@ io.on('connection', socket => {
     const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), allowBots: bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
     rooms.set(code, room);
     joinRoom(socket, room, name, ch, bg, fr);
-  });
+  }));
   // Find Match: เข้าห้องจับคู่ที่เปิดอยู่ (กติกา+ตัวเลือกเดียวกัน เลือกห้องที่คนมากสุดก่อน) หรือสร้างห้องจับคู่ใหม่
-  on(socket, 'match:find', d => { const { name, ch, bg, fr, rule, options } = obj(d);
+  on(socket, 'match:find', raw => withOwned(socket, raw, d => { const { name, ch, bg, fr, rule, options } = d;
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     const rid = Rules.has(rule) ? rule : Rules.DEFAULT, opts = Rules.cleanOptions(rid, options), key = rid + '|' + JSON.stringify(opts);
@@ -316,7 +325,7 @@ io.on('connection', socket => {
     joinRoom(socket, room, name, ch, bg, fr);
     const p = findPlayer(room, socket.id); if (p) p.ready = true;   // ห้องจับคู่ไม่มีปุ่มพร้อม
     matchTick(room, true);
-  });
+  }));
   // โหวตตอนหาคนไม่ครบ: 'wait' รอต่อ · 'bots' เติมบอทแล้วเล่นเลย (เริ่มเมื่อทุกคนเลือกเติมบอท)
   on(socket, 'match:choice', raw => {
     if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode), c = String(obj(raw).c || '');
@@ -324,7 +333,7 @@ io.on('connection', socket => {
     room.match.prompt.votes[socket.id] = c;
     if (connectedPlayers(room).every(p => room.match.prompt.votes[p.id])) resolvePrompt(room); else emitLobby(room);
   });
-  on(socket, 'room:join', d => { const { code, name, ch, bg, fr } = obj(d);
+  on(socket, 'room:join', raw => withOwned(socket, raw, d => { const { code, name, ch, bg, fr } = d;
     if (!allow(socket)) return;
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     const room = rooms.get(String(code || '').trim().toUpperCase());
@@ -332,7 +341,7 @@ io.on('connection', socket => {
     if (active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
     if (connectedPlayers(room).length >= MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
     joinRoom(socket, room, name, ch, bg, fr);
-  });
+  }));
   on(socket, 'room:rejoin', d => { const { code, token } = obj(d);
     if (!allow(socket)) return;
     if (socket.data.roomCode) return;
@@ -390,6 +399,8 @@ io.on('connection', socket => {
     if (!p || p.seat == null) return socket.emit('system:error', 'ไม่พบที่นั่งของคุณ');
     const action = cleanAction(raw);
     if (!action) return socket.emit('system:error', 'คำสั่งไม่ถูกต้อง');
+    const blocked = Skills.actionBlocked(room.rule, p.ch, action.t); // คำสั่งที่ต้องมีสกิล (เช่น ฝากออโต้ = มือไว)
+    if (blocked) { socket.emit('game:action-result', { ok: false, error: blocked, action: action.t }); return socket.emit('system:error', blocked); }
     const msg = ruleOf(room).act(room.game, p.seat, action);
     if (msg) { socket.emit('game:action-result', { ok: false, error: msg, action: action.t }); return socket.emit('system:error', msg); }
     socket.emit('game:action-result', { ok: true, action: action.t });
@@ -397,26 +408,8 @@ io.on('connection', socket => {
     emitStates(room);
     scheduleBots(room);
   });
-  // ===== สกิล "ป่วนสายตา": เซิร์ฟเวอร์แค่ตรวจโควตา/คูลดาวน์ แล้วส่งเอฟเฟกต์ภาพไปให้เป้าหมาย (ไม่แตะกติกา/ไพ่จริง) =====
-  on(socket, 'skill:use', raw => {
-    if (!allow(socket)) return; const d = obj(raw);
-    const room = rooms.get(socket.data.roomCode); if (!room || !room.game) return;
-    const p = findPlayer(room, socket.id); if (!p || p.seat == null) return;
-    const res = (ok, error) => socket.emit('skill:result', { ok, id: 'scramble', error });
-    if (d.id !== 'scramble') return res(false, 'สกิลนี้ยังไม่รองรับ');
-    const t = room.players.find(x => x.seat === Number(d.to) && x.connected && x.id && x.seat !== p.seat);
-    if (!t) return res(false, 'เป้าหมายต้องเป็นผู้เล่นจริงคนอื่นที่ออนไลน์อยู่');
-    const sk = room.skUse && room.skUse.game === room.game ? room.skUse : (room.skUse = { game: room.game, m: {} });
-    const m = sk.m[p.seat] || (sk.m[p.seat] = { n: 0, at: 0, last: null }), now = Date.now();
-    if (m.n >= 2) return res(false, 'ใช้ครบโควตาของเกมนี้แล้ว');
-    if (now - m.at < 18000) return res(false, 'สกิลยังคูลดาวน์');
-    if (m.last === t.seat) return res(false, 'ใช้ซ้ำกับคนเดิมติดกันไม่ได้');
-    const ms = Math.min(6000, Math.max(3000, Math.round(Number(d.ms) || 5000)));
-    m.n++; m.at = now; m.last = t.seat;
-    io.to(t.id).emit('skill:fx', { type: 'scramble', from: p.name, ms });
-    io.to(room.code).emit('system:notice', p.name + ' ใช้ 🎭 ป่วนสายตา ใส่ ' + t.name);
-    res(true);
-  });
+  // ป่วนสายตาถูกยกเลิกแล้ว (สกิล v3 ไม่มีสกิลที่กระทบผู้เล่นอื่น) — ตอบกลับไว้เผื่อ client เก่า
+  on(socket, 'skill:use', () => { if (allow(socket)) socket.emit('skill:result', { ok: false, error: 'สกิลนี้ถูกยกเลิกแล้ว' }); });
   on(socket, 'room:leave', () => { if (allow(socket)) leaveRoom(socket, false, true); });
   on(socket, 'disconnect', () => leaveRoom(socket, true));
 });

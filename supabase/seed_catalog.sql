@@ -107,9 +107,9 @@ on conflict (banner_id, kind, item_id) do update set weight = excluded.weight;
 delete from public.gacha_pool where banner_id in ('standard', 'sakura-ace') and (banner_id, kind, item_id) not in (('standard', 'characters', 'boy'), ('standard', 'characters', 'girl'), ('standard', 'characters', 'rina-01'), ('standard', 'characters', 'arya-01'), ('standard', 'characters', 'rena-01'), ('standard', 'backs', 'sakura-navy'), ('standard', 'backs', 'classic-red'), ('standard', 'backs', 'midnight'), ('standard', 'backs', 'paw-pink'), ('standard', 'backs', 'gold'), ('standard', 'backs', 'sakura-01'), ('standard', 'tables', 'green-felt'), ('standard', 'tables', 'sakura-felt'), ('standard', 'tables', 'navy-felt'), ('standard', 'tables', 'wood'), ('standard', 'tables', 'table-sakura02'), ('standard', 'tables', 'table-sakura01'), ('standard', 'backgrounds', 'sakura-house'), ('standard', 'backgrounds', 'room-night'), ('standard', 'backgrounds', 'room-day'), ('standard', 'backgrounds', 'room-sakura'), ('standard', 'backgrounds', 'sunset'), ('standard', 'backgrounds', 'sakura'), ('standard', 'backgrounds', 'night'), ('standard', 'backgrounds', 'forest'), ('standard', 'backgrounds', 'gold'), ('standard', 'frames', 'sakura-gem'), ('sakura-ace', 'characters', 'boy'), ('sakura-ace', 'characters', 'girl'), ('sakura-ace', 'characters', 'rina-01'), ('sakura-ace', 'characters', 'arya-01'), ('sakura-ace', 'characters', 'rena-01'), ('sakura-ace', 'backs', 'sakura-navy'), ('sakura-ace', 'backs', 'classic-red'), ('sakura-ace', 'backs', 'midnight'), ('sakura-ace', 'backs', 'paw-pink'), ('sakura-ace', 'backs', 'gold'), ('sakura-ace', 'backs', 'sakura-01'), ('sakura-ace', 'tables', 'green-felt'), ('sakura-ace', 'tables', 'sakura-felt'), ('sakura-ace', 'tables', 'navy-felt'), ('sakura-ace', 'tables', 'wood'), ('sakura-ace', 'tables', 'table-sakura02'), ('sakura-ace', 'tables', 'table-sakura01'), ('sakura-ace', 'backgrounds', 'sakura-house'), ('sakura-ace', 'backgrounds', 'room-night'), ('sakura-ace', 'backgrounds', 'room-day'), ('sakura-ace', 'backgrounds', 'room-sakura'), ('sakura-ace', 'backgrounds', 'sunset'), ('sakura-ace', 'backgrounds', 'sakura'), ('sakura-ace', 'backgrounds', 'night'), ('sakura-ace', 'backgrounds', 'forest'), ('sakura-ace', 'backgrounds', 'gold'), ('sakura-ace', 'frames', 'sakura-gem'));
 
 insert into public.character_defs(id, max_stars, star_costs, bonus_pct) values
-('boy', 5, null, null),
-('girl', 5, null, '{7,9,12,14,16}'),
-('rina-01', 5, null, null),
-('arya-01', 5, null, '{9,11,13,15,18}'),
-('rena-01', 5, null, '{7,9,10,12,13}')
+('boy', 4, '{1}', null),
+('girl', 4, '{1}', null),
+('rina-01', 5, '{1}', null),
+('arya-01', 5, '{1}', null),
+('rena-01', 5, '{1}', null)
 on conflict (id) do update set max_stars = excluded.max_stars, star_costs = excluded.star_costs, bonus_pct = excluded.bonus_pct;
