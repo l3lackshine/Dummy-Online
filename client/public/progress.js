@@ -39,6 +39,7 @@
   // ผลของตานี้: โหมดบัญชีรอเซิร์ฟเวอร์ (ระหว่างรอ แสดงค่าประมาณจากสูตรเดียวกัน)
   function forGame(S) {
     if (!S || !S.over) return null;
+    if (S.tutorial) return { gid: S.gid, rank: standing(S).rank, seats: S.P.length, delta: 0, exp: 0, tutorial: true };   // ตาสอนเล่น: ไม่นับผล
     if (byGid[S.gid]) return byGid[S.gid];
     const st = standing(S), est = { gid: S.gid, rank: st.rank, seats: st.seats, delta: E.reward(st.rank, st.seats, st.humans), exp: E.expFor(st.rank), pending: true };
     // เล่นกับบอท (บัญชี): ประมาณตามโหมดฟาร์ม · สตามิน่าไม่พอ = โหมดซ้อม
@@ -63,7 +64,7 @@
       g.bp ? `<div class=pg-kv><span>แบทเทิลพาส</span><b>+${N(g.bp)} EXP</b></div>` : '',
       g.capped ? `<div class=pg-cap>ครบเพดานเหรียญวันนี้แล้ว (${N(g.cap || E.CFG.DAILY_CAP)}) · ได้ตาละ ${E.CFG.OVER_CAP}</div>` : ''].join('');
     const items = g.items && Object.keys(g.items).length && window.Farm ? Farm.itemsLine(g.items) : '';
-    const big = g.practice ? `<span class=pg-prac>โหมดซ้อม</span><em class=pg-wait>สตามิน่าไม่พอ · ตานี้ไม่ได้รางวัล</em>` : g.farm === 'pexp' && !g.delta ? `<b class=pos>+${N(g.exp)} EXP</b>` : items && !g.delta ? `<span class="pg-items big">${items}</span>` : `<b class=pos>+${N(g.delta)} 🪙</b>${items ? `<span class=pg-items>${items}</span>` : ''}`;
+    const big = g.tutorial ? `<span class=pg-prac>โหมดสอน</span><em class=pg-wait>ไม่นับผล · ไม่เสียสตามิน่า</em>` : g.practice ? `<span class=pg-prac>โหมดซ้อม</span><em class=pg-wait>สตามิน่าไม่พอ · ตานี้ไม่ได้รางวัล</em>` : g.farm === 'pexp' && !g.delta ? `<b class=pos>+${N(g.exp)} EXP</b>` : items && !g.delta ? `<span class="pg-items big">${items}</span>` : `<b class=pos>+${N(g.delta)} 🪙</b>${items ? `<span class=pg-items>${items}</span>` : ''}`;
     const st = g.bots && g.stamina != null ? `<div class=rs-kv><span>สตามิน่า</span><b><img class=st-ic src="./Item/Mats/stamina.webp" alt=""> ${N(g.stamina)}/${N(g.max)}</b></div>` : '';
     return `<aside class="rs-me pg-me"><div class=rs-big><small>${g.bots ? 'ของที่ฟาร์มได้' : 'รางวัลตานี้'}</small>${big}${g.pending ? '<em class=pg-wait>กำลังบันทึก…</em>' : ''}</div>
       <div class=rs-kv><span>อันดับ</span><b>${medal} ที่ ${g.rank}/${g.seats}</b></div>

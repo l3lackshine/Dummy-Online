@@ -1,6 +1,15 @@
 {
-  "note": "ภารกิจระยะยาว (ถาวร ไม่รีเซ็ตข้ามฤดู) · นับตลอดอายุบัญชี · รับได้ครั้งเดียว · EXP เข้าแบทเทิลพาสฤดูปัจจุบัน · metric: play/win/coins/rules/days/melds/knock/login/charlv (เลเวลตัวละครสูงสุด)/chars (จำนวนตัวละคร) · แก้แล้วรัน node scripts/gen-bp-sql.js",
+  "note": "ภารกิจระยะยาว (ถาวร ไม่รีเซ็ตข้ามฤดู) · นับตลอดอายุบัญชี · รับได้ครั้งเดียว · EXP เข้าแบทเทิลพาสฤดูปัจจุบัน · metric: play/win/coins/rules/days/melds/knock/login/charlv (เลเวลตัวละครสูงสุด)/chars (จำนวนตัวละคร)/tutorial (จบบทสอน) · แก้แล้วรัน node scripts/gen-bp-sql.js",
   "missions": [
+    {
+      "id": "h_tutorial",
+      "name": "เรียนจบดัมมี่",
+      "desc": "เล่นบทสอนดัมมี่จนจบ (หรือข้าม)",
+      "icon": "🎓",
+      "metric": "tutorial",
+      "target": 1,
+      "bp": 800
+    },
     {
       "id": "h_play10",
       "name": "มือใหม่หัดเล่น",

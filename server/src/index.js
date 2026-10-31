@@ -72,7 +72,7 @@ function settle(room) {
   G.settled = true;
   const seat = ruleOf(room).winner(G);
   const w = seat == null ? null : room.players.find(p => p.seat === seat);
-  recordResults(room);
+  if (!room.tutorial) recordResults(room);   // ตาสอนเล่นไม่นับผล ไม่หักสตามิน่า
   room.lastWinner = w || null;                 // ผู้ชนะเป็นบอท → ไม่มีคนจริงรับสิทธิ์ → เจ้าของห้องสับแทน
   room.round = (room.round || 0) + 1;
   openNext(room);
@@ -186,7 +186,8 @@ function startGame(room) {
   const sh = room.deck ? null : Shuffle.shuffle(), deck = room.deck || sh.ids; room.deck = null; room.shuffledBy = null; room.shuffleSeq = (room.shuffleSeq || 0) + 1; // สับใหม่ทุกตาโดยเซิร์ฟเวอร์
   room.players.forEach(p => { p.ready = false; });   // สำรับที่สับไว้ใช้ได้ครั้งเดียว ตาถัดไปต้องสับใหม่
   const minSeats = room.allowBots === false ? humans.length : MAX_PLAYERS; // ปิดบอท → ไม่เติมที่นั่งว่าง เล่นเท่าจำนวนคนจริง
-  room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
+  const tut = room.tutorial && room.rule === 'dummy' ? DummyTutorial : null;   // ห้องสอนเล่น: สำรับจัดไว้ + บอทตามสคริปต์ (ตาจริงสับด้วยเอนจินปกติเสมอ)
+  room.game = ruleOf(room).newGame(room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg })), tut ? { deck: tut.deck(), options: room.options, minSeats: MAX_PLAYERS, first: 0, script: tut.script() } : { deck, options: room.options, minSeats }); // ไม่มีสำรับ (เล่นคนเดียว) → engine สับเองด้วยเอนจิ้นเดียวกัน
   room.game.humans0 = room.players.length; room.game.bots0 = room.game.P.length - room.players.length;   // ตัดสินตอนเริ่ม: คนหลุดกลางเกมแล้วบอทเล่นแทน ไม่ทำให้กลายเป็นเกมบอท
   closeNext(room); if (room.match) { clearMatchTimers(room); room.match.state = 'playing'; room.match.prompt = null; } room.game.v++; room.openingUntil = Date.now() + OPENING_MS;
   if (SB.enabled()) room.players.forEach(p => { if (p.uid) SB.rpc('touch_last_game', { p_user: p.uid, p_game: room.rule }).catch(() => {}); });
@@ -196,6 +197,7 @@ function startGame(room) {
 }
 const NameFilter = require('./namefilter');
 const Economy = require('./economy');
+const DummyTutorial = require('./rules/dummy/tutorial');
 const cleanName = name => NameFilter.clean(name, 'ผู้เล่น'); // ตัดอักขระควบคุม · ยาวไม่เกิน 14 · ชื่อหยาบ/แอบอ้างทีมงาน → "ผู้เล่น"
 const cleanFrame = f => (typeof f === 'string' && /^[a-z0-9-]{1,40}$/.test(f) ? f : null); // กรอบการ์ด (ของแต่งเท่านั้น ไม่มีผลกับเกม)
 const cleanFarm = f => (Economy.FARM[f] ? f : 'coins');   // โหมดฟาร์มเมื่อเล่นกับบอท (ดู economy.js FARM)
@@ -316,9 +318,10 @@ io.on('connection', socket => {
     if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
     if (rooms.size >= MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
     let code; do { code = roomCode(); } while (rooms.has(code));
-    const rid = Rules.has(rule) ? rule : Rules.DEFAULT;
+    const tut = d.tutorial === true;   // ห้องสอนเล่น: ดัมมี่ สำรับจัดไว้ บอทตามสคริปต์ ไม่บันทึกผล/ไม่หักสตามิน่า
+    const rid = tut ? 'dummy' : Rules.has(rule) ? rule : Rules.DEFAULT;
     // bots: false เฉพาะห้องที่สร้างเอง (ไม่ใช่โหมดเล่นคนเดียว) — ปิดได้ = ไม่เติมบอทในที่นั่งว่าง ต้องรอผู้เล่นจริง
-    const room = { code, rule: rid, options: Rules.cleanOptions(rid, options), allowBots: bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0 };
+    const room = { code, rule: rid, options: Rules.cleanOptions(rid, tut ? {} : options), allowBots: tut || bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0, tutorial: tut };
     rooms.set(code, room);
     joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
   }));

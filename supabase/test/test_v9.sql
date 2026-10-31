@@ -60,7 +60,7 @@ select pg_temp.ok(not (public.get_bp()->'missions'->'speedup'->>'open')::boolean
 select pg_temp.fails($$select public.claim_bp_mission('speedup', 's_win5')$$, 'ภารกิจเร่งยังไม่เปิด → รับไม่ได้');
 
 -- ===== ภารกิจระยะยาว =====
-select pg_temp.ok(jsonb_array_length(public.get_bp()->'missions'->'horizon') = 15, 'ภารกิจระยะยาว 15 ภารกิจ');
+select pg_temp.ok(jsonb_array_length(public.get_bp()->'missions'->'horizon') = 16, 'ภารกิจระยะยาว 16 ภารกิจ (รวมเรียนจบดัมมี่)');
 do $t$ declare j jsonb; begin
   j := public.claim_bp_mission('horizon', 'h_play10');
   perform pg_temp.ok((j->>'bp')::int = 800, 'ภารกิจระยะยาว เล่น 10 ตา → 800 EXP');

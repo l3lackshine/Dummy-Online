@@ -77,7 +77,7 @@ function toggleJoin() { joinOpen = !joinOpen; render(); if (joinOpen) { const i 
 function playView() {
   conn();
   const plank = (fn, t, s) => `<button class=plank onclick="${fn}"><b>${t}</b><small>${s}</small></button>`;
-  const gm = ruleMeta(createSel.rule), gh = gm ? `<div class=gcur-w><button class=gcur onclick="rvPickGame(event)"><span>${esc(gm.icon || '🂠')}</span><b>${esc(gm.name)}</b><small>เปลี่ยนเกม ▾</small></button></div>` : `<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดรายการเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`;
+  const gm = ruleMeta(createSel.rule), gh = gm ? `<div class=gcur-w><button class=gcur onclick="rvPickGame(event)"><span>${esc(gm.icon || '🂠')}</span><b>${esc(gm.name)}</b><small>เปลี่ยนเกม ▾</small></button><button class=tut-open onclick="window.Tutorial&&Tutorial.start()">🎓 สอนเล่นดัมมี่</button></div>` : `<p class=note>${lerr ? '⚠️ ' + esc(lerr) : '⏳ กำลังโหลดรายการเกมจากเซิร์ฟเวอร์... ครั้งแรกอาจใช้เวลาราว 1 นาที'}</p>`;
   page2('เล่นเกม', `${gh}${connStatus()}${plank('solo()', 'เล่นคนเดียว', 'เล่นกับบอท 3 คน')}${plank('openCreate(\'room\')', 'สร้างห้อง', 'เลือกไพ่ ตั้งเดิมพัน ชวนเพื่อน')}${plank('openCreate(\'match\')', '🔍 หาแมตช์', 'จับคู่ผู้เล่นออนไลน์อัตโนมัติ')}${plank('toggleJoin()', 'เข้าห้อง', 'ใส่รหัสห้องจากเพื่อน')}${joinOpen ? `<div class=joinbox><input id=cd placeholder="รหัสห้อง" maxlength=6 autocapitalize=characters autocomplete=off value="${esc(joinCode)}" oninput="joinCode=this.value"><button class="wbtn go" onclick=jn()>เข้าห้อง</button></div>` : ''}${lerr && !soloRoom ? `<p class=note>${esc(lerr)}</p>` : ''}`, 'home');
 }
 // ===== กฎเกม: รายการกฎ/ตัวเลือกมาจากเซิร์ฟเวอร์ (rules:list) หน้านี้สร้างจาก meta ล้วน ๆ — เพิ่มกฎใหม่ที่ server/src/rules ไม่ต้องแก้ client =====
@@ -167,7 +167,7 @@ function conn() {
   sock.on('game:state', s => { S = s; if (s.phase !== 'draw') closePile(); if (s.rule && s.rule !== 'dummy') clearDeal(); screen = 'game'; if (!s.over) { paid = false; coinDelta = 0; }
     if (!s.over && (!s.rule || s.rule === 'dummy') && s.v <= 1 && s.gid && s.gid !== dealtGid) { dealtGid = s.gid; startDeal(s); } // ตาใหม่ (ยังไม่มีใครเดิน) → แจกไพ่ทีละใบ
     if (s.over) { // ไม่มีเดิมพัน: จบตาได้เหรียญตามอันดับ (โหมดบัญชี = เซิร์ฟเวอร์จ่ายแล้วแจ้ง wallet:update · ไม่ล็อกอิน = จ่ายในเครื่องครั้งเดียวต่อตา)
-      if (!paid) { paid = true; if (!(window.DB && DB.enabled) && localStorage.getItem('dummyPaid') !== s.gid && window.Progress) { localStorage.setItem('dummyPaid', s.gid || ''); coinDelta = Progress.settleLocal(s); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
+      if (!paid) { paid = true; if (!s.tutorial && !(window.DB && DB.enabled) && localStorage.getItem('dummyPaid') !== s.gid && window.Progress) { localStorage.setItem('dummyPaid', s.gid || ''); coinDelta = Progress.settleLocal(s); sv.coins = Math.max(0, sv.coins + coinDelta); save(); } } }
     sel = new Set([...sel].filter(i => s.hand.includes(i))); if (s.rule && s.rule !== 'dummy') closeRules(); render(); });
 }
 function onAuth(r) {}

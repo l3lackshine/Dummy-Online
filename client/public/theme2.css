@@ -955,3 +955,9 @@
   .cr-opts.sh{grid-template-columns:repeat(6,minmax(0,1fr));gap:.8vh}.cr-opt.sh{padding:.6vh .4vh}.cr-opt.sh .cr-ch{height:max(52px,15vh)}
   .cr-opt b,.cr-opt em{font-size:max(10px,3vh)}.cr-opt.sh small{font-size:max(9px,2.6vh)}.cr-opt img{width:40px;height:40px}
 }
+/* 0.9.0 ป้ายแต้มลอยตรงที่นั่ง (seatfx.js) */
+.seat-fx{position:fixed;z-index:9100;transform:translate(-50%,-100%);pointer-events:none;white-space:nowrap;padding:.25vh 1vh;border-radius:99px;background:rgba(18,12,36,.38);color:#fff;font:600 max(10px,1.7vh) Sarabun,sans-serif;text-shadow:0 1px 2px #000;border:1px solid rgba(255,255,255,.18);animation:seatFx 2.8s ease-out forwards}
+.seat-fx b{font-size:1.15em;font-weight:800}.seat-fx.up b{color:#5dff8f}.seat-fx.down b{color:#ff5d6c}
+.seat-fx.up{border-color:#5dff8f44}.seat-fx.down{border-color:#ff5d6c44}
+@keyframes seatFx{0%{opacity:0;transform:translate(-50%,-60%) scale(.8)}10%{opacity:1;transform:translate(-50%,-100%) scale(1.05)}18%{transform:translate(-50%,-100%) scale(1)}80%{opacity:1;transform:translate(-50%,-150%)}100%{opacity:0;transform:translate(-50%,-180%)}}
+@media (prefers-reduced-motion:reduce){.seat-fx{animation:none}}

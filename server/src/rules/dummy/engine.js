@@ -6,6 +6,7 @@ const { card, cn, sp, val, sc } = require('./cards');
 const Scoring = require('./scoring');
 const { defaults } = require('./meta');
 const BOTS = ['น้องมี่', 'ลุงหัว', 'ป้าน็อก', 'ตาโอ', 'พี่เกิด'];
+const TEEM = 50; // ตีเต็ม: คนทิ้งใบที่ครบชุดในกองทิ้งจ่ายแต้มนี้ให้คนเกิด
 
 // เรียงชุด: ตอง (เลขเดียวกัน ≤4 ดอกต่างกัน) หรือ เรียงดอกเดียวกัน ≥3 (A ต่ำหรือสูงได้ ไม่วนรอบ)
 // กติกา: A เป็นไพ่สูงเท่านั้น (Q-K-A เกิดได้ แต่ A-2-3 และ K-A-2 เกิดไม่ได้)
@@ -56,7 +57,8 @@ function newGame(humans, opts) {
   }));
   const hd = d.pop(); hd.head = true;
   // DUMMY_FIRST (env) ใช้เฉพาะตอนทดสอบ เพื่อกำหนดคนเริ่ม
-  const G = { P, melds: [], stock: d, disc: [hd], cur: typeof process !== 'undefined' && process.env.DUMMY_FIRST ? +process.env.DUMMY_FIRST % total : rnd(total), over: false, res: null, gid: crypto.randomBytes(6).toString('hex'), logs: ['หัวคือ ' + cn(hd) + ' เริ่มเลย!'], v: 0, stake, spetoMode: o.spetoMode === 'knocker' ? 'knocker' : 'all', ledger: [] };
+  const G = { P, melds: [], stock: d, disc: [hd], cur: opts && Number.isInteger(opts.first) ? opts.first % total : typeof process !== 'undefined' && process.env.DUMMY_FIRST ? +process.env.DUMMY_FIRST % total : rnd(total), over: false, res: null, gid: crypto.randomBytes(6).toString('hex'), logs: ['หัวคือ ' + cn(hd) + ' เริ่มเลย!'], v: 0, stake, spetoMode: o.spetoMode === 'knocker' ? 'knocker' : 'all', ledger: [] };
+  if (opts && opts.script) { G.script = {}; Object.keys(opts.script).forEach(k => { G.script[k] = opts.script[k].slice(); }); G.tutorial = true; }   // โหมดสอน: บอททิ้งไพ่ตามลำดับที่กำหนด
   G.logs.push('สุ่มได้ ' + P[G.cur].n + ' เริ่มก่อน!'); begin(G); return G;
 }
 function begin(G) {
@@ -67,27 +69,37 @@ const nxt = G => { G.cur = (G.cur + 1) % G.P.length; begin(G); };
 function lay(p, c, head) { p.pts += sc(c, head); p.suits.add(c.s); }
 // ตีปี้: "ตี" (ทิ้ง) โต (2♣/Q♠) แล้วมีคนเก็บไปเกิดได้ → คนตีจ่าย 50 ให้คนเกิด
 // ตีปี้หัว: ไพ่ที่ตีแล้วทำให้อีกคนเกิดหัวได้ → คนตีจ่ายค่าหัว (50, หัวเป็นโต 100) ให้คนเกิด
-function pee(G, from, to, n, why) { G.P[from].pts -= n; G.P[to].pts += n; lg(G, G.P[from].n + ' ' + why + ' เสีย ' + n + ' ให้ ' + G.P[to].n); }
+// เหตุการณ์แต้ม (ส่งให้ทุกคนในโต๊ะ แสดงป้าย +/− ที่ที่นั่ง): i = ที่นั่ง · t = การกระทำ · d = แต้มที่ได้/เสีย
+function ev(G, i, t, d) { if (!d) return; G.evSeq = (G.evSeq || 0) + 1; (G.ev = G.ev || []).push({ s: G.evSeq, i, t, d }); if (G.ev.length > 24) G.ev.shift(); }
+function pee(G, from, to, n, why) {
+  G.P[from].pts -= n; G.P[to].pts += n; lg(G, G.P[from].n + ' ' + why + ' เสีย ' + n + ' ให้ ' + G.P[to].n);
+  ev(G, from, why, -n); ev(G, to, why.startsWith('ถูกฝากสเปโต') ? why.replace('ถูกฝากสเปโต', 'ฝากโต') : 'ได้จาก' + why, n);
+}
 function peeBill(G, p, cs) {
   const pack = G.pack || [];
   // เหรียญ: ไพ่ทุกใบที่คนอื่นทิ้งไว้ แล้วถูกเก็บมาใช้เกิดในชุดนี้ = ตีปี้ (คนทิ้งจ่ายคนเกิด 1 เดิมพันต่อใบ)
   cs.forEach(c => { if (pack.includes(c) && c.by != null && c.by !== p.i) { const a = Scoring.pee(G, c.by, p.i, c); lg(G, G.P[c.by].n + ' ตีปี้ ' + cn(c) + ' จ่าย ' + a + ' 🪙 ให้ ' + p.n); } });
   cs.forEach(c => { if (pack.includes(c) && c.by != null && c.by !== p.i && sp(c)) pee(G, c.by, p.i, 50, 'ตีโต ' + cn(c)); });
+  // ตีเต็ม: ในกองทิ้งมีไพ่ที่เข้าชุดกันอยู่แล้ว ≥2 ใบ แล้วมีคนทิ้งใบที่ครบชุดลงมา → คนทิ้งใบนั้นจ่าย 50 แต้มให้คนเกิด
+  const fromPack = cs.filter(c => pack.includes(c)).sort((a, b) => pack.indexOf(a) - pack.indexOf(b));
+  if (fromPack.length >= 3) { const x = fromPack[fromPack.length - 1]; if (x.by != null && x.by !== p.i) pee(G, x.by, p.i, TEEM, 'ตีเต็ม ' + cn(x)); }
   const h = G.must; if (!h || !h.head || !cs.includes(h)) return;
   const bonus = sp(h) ? 100 : 50, seen = new Set();
   cs.forEach(c => { if (c !== h && pack.includes(c) && c.by != null && c.by !== p.i && !sp(c) && !seen.has(c.by)) { seen.add(c.by); pee(G, c.by, p.i, bonus, 'ตีปี้หัว ' + cn(c)); } });
 }
 function doMeld(G, p, cs) {
   const m = ord(cs); p.h = p.h.filter(c => !cs.includes(c));
-  G.melds.push({ o: p.i, cs: m }); cs.forEach(c => lay(p, c, c.head)); p.melded = true;
+  G.melds.push({ o: p.i, cs: m }); const before = p.pts; cs.forEach(c => lay(p, c, c.head)); p.melded = true;
+  ev(G, p.i, cs.some(c => c.head) ? 'เกิดหัว' : 'เกิด', p.pts - before);
   peeBill(G, p, cs); if (G.must && cs.includes(G.must)) G.must = null; lg(G, p.n + ' เกิด ' + m.map(cn).join(' '));
 }
 function doDep(G, p, cs, m) {
   let n = 0;
   for (const c of cs) {
     if (p.h.length <= 1) break; const o = ord([...m.cs, c]); if (!o) continue;
-    m.cs = o; p.h = p.h.filter(x => x !== c); lay(p, c, false); n++; lg(G, p.n + ' ฝาก ' + cn(c));
-    if (sp(c) && m.o !== p.i) { G.P[m.o].pts -= 50; lg(G, G.P[m.o].n + ' ถูกฝากสเปโต -50'); }
+    m.cs = o; p.h = p.h.filter(x => x !== c); n++; lg(G, p.n + ' ฝาก ' + cn(c));
+    // ฝากโตลงชุดของคนอื่น: แต้ม 50 ของสเปโตหักจากคนเกิด (เจ้าของชุด) มาจ่ายคนฝาก ไม่ได้จากเกม · ฝากลงชุดตัวเองได้แต้มสเปโตปกติ
+    if (sp(c) && m.o !== p.i) { p.suits.add(c.s); pee(G, m.o, p.i, 50, 'ถูกฝากสเปโต ' + cn(c)); } else { const b0 = p.pts; lay(p, c, false); ev(G, p.i, 'ฝาก ' + cn(c), p.pts - b0); }
   }
   return n;
 }
@@ -159,6 +171,12 @@ const keep = (c, h) => { let k = 0; h.forEach(o => { if (o === c) return; if (o.
 // บอท (และตัวแทนผู้เล่นที่หลุด) เล่นครบหนึ่งตา
 function botTurn(G) {
   const p = G.P[G.cur]; let ti = -1;
+  const q = G.script && G.script[p.i];
+  if (q) { // โหมดสอน: จั่ว แล้วทิ้งใบตามสคริปต์ (ไม่เก็บ ไม่เกิด) · หมดสคริปต์แล้วทิ้งใบที่ไม่ใช้
+    if (G.stock.length) act(G, p.i, { t: 'draw' });
+    const id = q.shift(), c = p.h.find(x => x.id === id) || [...p.h].sort((a, b) => keep(a, p.h) - keep(b, p.h))[0];
+    discard(G, p, c); return;
+  }
   for (let j = G.disc.length - 1; j >= 0 && j >= G.disc.length - 4; j--) if (canTake(G, p, j)) { ti = j; break; }
   if (ti >= 0) act(G, p.i, { t: 'take', i: ti }); else if (G.stock.length) act(G, p.i, { t: 'draw' });
   for (let g = 0; g < 6 && !G.over; g++) {
@@ -179,7 +197,7 @@ function winner(G) { if (!G || !G.over || !G.res) return null; if (G.res.k != nu
 function view(G, seat) {
   const me = G.P[seat], pub = c => [c.id, c.head ? 1 : 0];
   return {
-    v: G.v, gid: G.gid, rule: 'dummy', stake: G.stake, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
+    v: G.v, gid: G.gid, rule: 'dummy', tutorial: !!G.tutorial, ev: G.ev || [], stake: G.stake, my: seat, cur: G.cur, phase: G.cur === seat ? G.phase : null, must: G.cur === seat && G.must ? G.must.id : null, over: G.over, res: G.res, down: G.over && G.down ? G.down.id : null, logs: G.logs,
     hand: me.h.map(c => c.id), stock: G.stock.length, disc: G.disc.map(pub),
     melds: G.melds.map(m => ({ o: m.o, cs: m.cs.map(c => c.id) })),
     P: G.P.map(p => ({ i: p.i, n: p.n, ch: p.ch, bg: p.bg, bot: p.bot, n_cards: p.h.length, pts: p.pts, melded: p.melded })),
