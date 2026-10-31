@@ -41,7 +41,7 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
   try {
     console.log('\n[1] เล่นคนเดียวกับบอท 5 เกมติด (ผ่าน Socket.IO จริง)');
     for (let g = 0; g < 5; g++) {
-      const h = mk(A, 'solo'); await h.connected; h.emit('room:create', { name: 'solo', ch: 'boy', bg: 'gold' }); await until(() => h.joined, 3000, 'joined');
+      const h = mk(A, 'solo'); await h.connected; h.emit('room:create', { name: 'solo', ch: 'boy', bg: 'sakura' }); await until(() => h.joined, 3000, 'joined');
       ok(h.lob.shuffle.needed === false, 'flow ใหม่: ไม่ต้องกดสับไพ่เอง เซิร์ฟเวอร์สับให้ตอนเริ่มเกม');
       h.emit('game:start'); await until(() => h.S && h.S.over, 20000, 'solo game ' + g);
       assert(!h.errors.includes('STUCK')); h.sock.close();

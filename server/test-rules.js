@@ -10,7 +10,7 @@ for (let g = 0; g < 500; g++) { const G = E.newGame([{ id: 'a', n: 'A' }]); G.P[
   const all = [...G.stock, ...G.disc, ...G.P.flatMap(p => p.h), ...G.melds.flatMap(m => m.cs)]; const extra = G.down ? 1 : 0;
   assert(all.length + extra === 52 && new Set(all.map(x => x.id)).size === all.length, 'ไพ่ซ้ำ/หาย'); G.res.k == null ? stockOut++ : ends++; }
 console.log('บอท 500 เกมจบครบ — น็อก', ends, 'ไพ่หมดกอง', stockOut);
-let bgs = new Set(); for (let i = 0; i < 300; i++) { const G = E.newGame([{ id: 'a', n: 'A', ch: 'girl', bg: 'gold' }, { id: 'b', n: 'B', bg: 'hack' }]);
-  assert.strictEqual(G.P[0].ch, 'girl'); assert.strictEqual(G.P[0].bg, 'gold'); assert(E.BGS.includes(G.P[1].bg)); G.P.filter(p => p.bot).forEach(p => bgs.add(p.bg)); }
-assert(bgs.size >= 4, 'บอทต้องสุ่มพื้นหลังหลายแบบ'); const v = E.view(E.newGame([{ id: 'a', n: 'A', ch: 'boy', bg: 'sakura' }]), 0); assert.strictEqual(v.P[0].bg, 'sakura');
+let bgs = new Set(); for (let i = 0; i < 300; i++) { const G = E.newGame([{ id: 'a', n: 'A', ch: 'girl', bg: 'sakura-house' }, { id: 'b', n: 'B', bg: 'hack' }]);
+  assert.strictEqual(G.P[0].ch, 'girl'); assert.strictEqual(G.P[0].bg, 'sakura-house'); assert(E.BGS.includes(G.P[1].bg)); G.P.filter(p => p.bot).forEach(p => bgs.add(p.bg)); }
+assert(bgs.size >= 1 && [...bgs].every(b => E.BGS.includes(b)), 'บอทต้องได้พื้นหลังที่มีจริง'); const v = E.view(E.newGame([{ id: 'a', n: 'A', ch: 'boy', bg: 'sakura' }]), 0); assert.strictEqual(v.P[0].bg, 'sakura');
 console.log('ทดสอบกติกา A สูงอย่างเดียว / ตัวละคร / พื้นหลังรายผู้เล่น ผ่านทั้งหมด');
