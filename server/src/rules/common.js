@@ -1,10 +1,13 @@
 // ส่วนกลางที่ทุกกฎเกมใช้ร่วมกัน (ไม่มีกติกาของเกมใดเกมหนึ่งอยู่ในไฟล์นี้)
 const crypto = require('crypto');
 
-const CHARS = ['boy', 'girl', 'rina-01', 'arya-01', 'rena-01']; // ต้องตรงกับ id ใน client/public/skin/skins.json (characters)
-const BGS = ['room-night', 'room-day', 'room-sakura', 'sunset', 'sakura', 'night', 'forest', 'gold']; // ต้องตรงกับ skins.json (backgrounds)
+// ตัวละคร/พื้นหลังที่ผู้เล่นใช้ได้ — ต้องตรงกับ id ใน client/public/skin/skins.json (test-skins-ids ตรวจให้)
+const CHARS = ['boy', 'girl', 'rina-01', 'arya-01', 'rena-01', 'sakuya-ssr', 'rei-r', 'haru-r', 'ken-r', 'leo-r', 'yuna-r', 'miyu-r'];
+const BGS = ['sakura-house', 'room-night', 'room-day', 'room-sakura', 'sunset', 'sakura', 'night', 'forest', 'gold'];
+const BOT_CHARS = ['boy', 'girl', 'rina-01', 'arya-01', 'rena-01'];   // บอทสุ่มใช้เฉพาะชุดนี้ (ไม่ใช้ตัว SSR/Rare)
+const BOT_BGS = BGS.filter(b => b !== 'sakura-house');
 const rnd = n => crypto.randomInt(n);
-const rndBg = () => BGS[rnd(BGS.length)];
-const rndChar = () => CHARS[rnd(CHARS.length)];
+const rndBg = () => BOT_BGS[rnd(BOT_BGS.length)];
+const rndChar = () => BOT_CHARS[rnd(BOT_CHARS.length)];
 
 module.exports = { CHARS, BGS, rnd, rndBg, rndChar };
