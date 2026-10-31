@@ -114,7 +114,7 @@
 
   window.gcPull = async (id, n, cur) => {
     if (busy) return; busy = true; note = ''; render();
-    try { const r = await DB.pull(id, n, cur); busy = false; showResult(r); }
+    try { const r = await DB.pull(id, n, cur); busy = false; (window.gcShow || showResult)(r); }   // ผ่าน window.gcShow เพื่อให้ ssrfx.js / pack-loader.js ห่อได้
     catch (e) { busy = false; note = e.message; render(); }
   };
   // ตู้ตั๋ว: ถ้าต้องใช้เพชร ต้องแตะสองครั้ง (กันเสียเพชรโดยไม่ตั้งใจ)
