@@ -345,42 +345,6 @@
    "src": "folder"
   },
   {
-   "id": "room-night",
-   "name": "ห้องไม้ยามค่ำ (ซากุระ)",
-   "css": "",
-   "ink": "#ffffff",
-   "price": 250,
-   "asset": "./Item/Background/room-night.svg",
-   "src": "folder"
-  },
-  {
-   "id": "room-day",
-   "name": "ห้องไม้ยามเช้า",
-   "css": "",
-   "ink": "#ffffff",
-   "price": 250,
-   "asset": "./Item/Background/room-day.svg",
-   "src": "folder"
-  },
-  {
-   "id": "room-sakura",
-   "name": "ห้องไม้โทนชมพู",
-   "css": "",
-   "ink": "#ffffff",
-   "price": 250,
-   "asset": "./Item/Background/room-sakura.svg",
-   "src": "folder"
-  },
-  {
-   "id": "sunset",
-   "name": "พระอาทิตย์ตก",
-   "asset": "",
-   "css": "linear-gradient(160deg,#2b2160 0%,#7a3b78 55%,#d9774f 100%)",
-   "ink": "#ffffff",
-   "price": 150,
-   "src": "folder"
-  },
-  {
    "id": "sakura",
    "name": "ซากุระ",
    "asset": "",
@@ -388,33 +352,6 @@
    "ink": "#3a1020",
    "price": 150,
    "table": "./Item/Background/sakura-table.webp",
-   "src": "folder"
-  },
-  {
-   "id": "night",
-   "name": "ราตรีประดับดาว",
-   "asset": "",
-   "css": "radial-gradient(circle at 22% 24%,#ffffffaa 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 38%,#ffffff88 0 1px,transparent 2px),radial-gradient(circle at 48% 70%,#ffffff77 0 1px,transparent 2px),linear-gradient(160deg,#0c1226,#3b4a7a)",
-   "ink": "#ffffff",
-   "price": 150,
-   "src": "folder"
-  },
-  {
-   "id": "forest",
-   "name": "ป่าเขียว",
-   "asset": "",
-   "css": "linear-gradient(160deg,#2f9e63,#0b3d2a)",
-   "ink": "#ffffff",
-   "price": 150,
-   "src": "folder"
-  },
-  {
-   "id": "gold",
-   "name": "ทองคำ",
-   "asset": "",
-   "css": "linear-gradient(160deg,#ffe29a,#c9971c)",
-   "ink": "#33250a",
-   "price": 300,
    "src": "folder"
   },
   {

@@ -33,21 +33,14 @@ insert into public.catalog_items(kind, item_id, name, rarity, is_default, active
 ('tables', 'table-sakura02', 'Sakura Table', 'common', false, true),
 ('tables', 'table-sakura01', 'Sakura Table', 'common', false, true),
 ('backgrounds', 'sakura-house', 'ห้องญี่ปุ่นซากุระ', 'common', true, true),
-('backgrounds', 'room-night', 'ห้องไม้ยามค่ำ (ซากุระ)', 'rare', false, true),
-('backgrounds', 'room-day', 'ห้องไม้ยามเช้า', 'rare', false, true),
-('backgrounds', 'room-sakura', 'ห้องไม้โทนชมพู', 'rare', false, true),
-('backgrounds', 'sunset', 'พระอาทิตย์ตก', 'common', false, true),
 ('backgrounds', 'sakura', 'ซากุระ', 'common', false, true),
-('backgrounds', 'night', 'ราตรีประดับดาว', 'common', false, true),
-('backgrounds', 'forest', 'ป่าเขียว', 'common', false, true),
-('backgrounds', 'gold', 'ทองคำ', 'rare', false, true),
 ('backgrounds', 'sakuya-cardroom', 'ห้องไพ่ของราชินี', 'epic', false, true),
 ('backgrounds', 'sakuya-pond', 'ศาลาริมสระใต้จันทร์', 'epic', false, true),
 ('frames', 'none', 'ไม่ใส่กรอบ', 'common', true, true),
 ('frames', 'sakura-gem', 'ซากุระอัญมณี', 'epic', false, true)
 on conflict (kind, item_id) do update set name = excluded.name, rarity = excluded.rarity, is_default = excluded.is_default, active = true;
 
-update public.catalog_items set active = false where (kind, item_id) not in (('characters', 'boy'), ('characters', 'girl'), ('characters', 'rina-01'), ('characters', 'arya-01'), ('characters', 'rena-01'), ('characters', 'sakuya-ssr'), ('characters', 'rei-r'), ('characters', 'haru-r'), ('characters', 'ken-r'), ('characters', 'leo-r'), ('characters', 'yuna-r'), ('characters', 'miyu-r'), ('backs', 'sakura-navy'), ('backs', 'classic-red'), ('backs', 'midnight'), ('backs', 'paw-pink'), ('backs', 'gold'), ('backs', 'sakura-01'), ('tables', 'green-felt'), ('tables', 'sakura-felt'), ('tables', 'navy-felt'), ('tables', 'wood'), ('tables', 'table-sakura02'), ('tables', 'table-sakura01'), ('backgrounds', 'sakura-house'), ('backgrounds', 'room-night'), ('backgrounds', 'room-day'), ('backgrounds', 'room-sakura'), ('backgrounds', 'sunset'), ('backgrounds', 'sakura'), ('backgrounds', 'night'), ('backgrounds', 'forest'), ('backgrounds', 'gold'), ('backgrounds', 'sakuya-cardroom'), ('backgrounds', 'sakuya-pond'), ('frames', 'none'), ('frames', 'sakura-gem'));
+update public.catalog_items set active = false where (kind, item_id) not in (('characters', 'boy'), ('characters', 'girl'), ('characters', 'rina-01'), ('characters', 'arya-01'), ('characters', 'rena-01'), ('characters', 'sakuya-ssr'), ('characters', 'rei-r'), ('characters', 'haru-r'), ('characters', 'ken-r'), ('characters', 'leo-r'), ('characters', 'yuna-r'), ('characters', 'miyu-r'), ('backs', 'sakura-navy'), ('backs', 'classic-red'), ('backs', 'midnight'), ('backs', 'paw-pink'), ('backs', 'gold'), ('backs', 'sakura-01'), ('tables', 'green-felt'), ('tables', 'sakura-felt'), ('tables', 'navy-felt'), ('tables', 'wood'), ('tables', 'table-sakura02'), ('tables', 'table-sakura01'), ('backgrounds', 'sakura-house'), ('backgrounds', 'sakura'), ('backgrounds', 'sakuya-cardroom'), ('backgrounds', 'sakuya-pond'), ('frames', 'none'), ('frames', 'sakura-gem'));
 
 insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active, ticket, ticket_mcash, ticket_mcash10, grp) values
 ('sakura-ace', 'ตู้ธรรมดา', 'ตู้ตัวละครธรรมดา · SSR 0.01% · SR 1% · ใช้ตั๋วสุ่มระดับ 1 (สีฟ้า) · ได้ตัวละครซ้ำเอาไปอัพดาวได้', null, null, null, null, 0, 1, true, 'ticket-b', 30, 270, 'char'),
@@ -82,25 +75,18 @@ insert into public.gacha_pool(banner_id, kind, item_id, weight) values
 ('sakuya-up', 'characters', 'miyu-r', 156666),
 ('sakuya-up', 'backgrounds', 'sakuya-cardroom', 10000),
 ('sakuya-up', 'backgrounds', 'sakuya-pond', 10000),
-('cosm-sakura', 'backs', 'classic-red', 81250),
-('cosm-sakura', 'backs', 'midnight', 81250),
-('cosm-sakura', 'backs', 'paw-pink', 40000),
+('cosm-sakura', 'backs', 'classic-red', 130000),
+('cosm-sakura', 'backs', 'midnight', 130000),
+('cosm-sakura', 'backs', 'paw-pink', 93334),
 ('cosm-sakura', 'backs', 'gold', 70000),
-('cosm-sakura', 'tables', 'navy-felt', 40000),
-('cosm-sakura', 'tables', 'wood', 40000),
-('cosm-sakura', 'tables', 'table-sakura02', 81250),
-('cosm-sakura', 'tables', 'table-sakura01', 81250),
-('cosm-sakura', 'backgrounds', 'room-night', 40000),
-('cosm-sakura', 'backgrounds', 'room-day', 40000),
-('cosm-sakura', 'backgrounds', 'room-sakura', 40000),
-('cosm-sakura', 'backgrounds', 'sunset', 81250),
-('cosm-sakura', 'backgrounds', 'sakura', 81250),
-('cosm-sakura', 'backgrounds', 'night', 81250),
-('cosm-sakura', 'backgrounds', 'forest', 81250),
-('cosm-sakura', 'backgrounds', 'gold', 40000)
+('cosm-sakura', 'tables', 'navy-felt', 93333),
+('cosm-sakura', 'tables', 'wood', 93333),
+('cosm-sakura', 'tables', 'table-sakura02', 130000),
+('cosm-sakura', 'tables', 'table-sakura01', 130000),
+('cosm-sakura', 'backgrounds', 'sakura', 130000)
 on conflict (banner_id, kind, item_id) do update set weight = excluded.weight;
 
-update public.gacha_pool set weight = 0 where (banner_id, kind, item_id) not in (('sakura-ace', 'characters', 'rina-01'), ('sakura-ace', 'characters', 'arya-01'), ('sakura-ace', 'characters', 'rena-01'), ('sakura-ace', 'characters', 'sakuya-ssr'), ('sakura-ace', 'characters', 'rei-r'), ('sakura-ace', 'characters', 'haru-r'), ('sakura-ace', 'characters', 'ken-r'), ('sakura-ace', 'characters', 'leo-r'), ('sakura-ace', 'characters', 'yuna-r'), ('sakura-ace', 'characters', 'miyu-r'), ('sakuya-up', 'characters', 'rina-01'), ('sakuya-up', 'characters', 'arya-01'), ('sakuya-up', 'characters', 'rena-01'), ('sakuya-up', 'characters', 'sakuya-ssr'), ('sakuya-up', 'characters', 'rei-r'), ('sakuya-up', 'characters', 'haru-r'), ('sakuya-up', 'characters', 'ken-r'), ('sakuya-up', 'characters', 'leo-r'), ('sakuya-up', 'characters', 'yuna-r'), ('sakuya-up', 'characters', 'miyu-r'), ('sakuya-up', 'backgrounds', 'sakuya-cardroom'), ('sakuya-up', 'backgrounds', 'sakuya-pond'), ('cosm-sakura', 'backs', 'classic-red'), ('cosm-sakura', 'backs', 'midnight'), ('cosm-sakura', 'backs', 'paw-pink'), ('cosm-sakura', 'backs', 'gold'), ('cosm-sakura', 'tables', 'navy-felt'), ('cosm-sakura', 'tables', 'wood'), ('cosm-sakura', 'tables', 'table-sakura02'), ('cosm-sakura', 'tables', 'table-sakura01'), ('cosm-sakura', 'backgrounds', 'room-night'), ('cosm-sakura', 'backgrounds', 'room-day'), ('cosm-sakura', 'backgrounds', 'room-sakura'), ('cosm-sakura', 'backgrounds', 'sunset'), ('cosm-sakura', 'backgrounds', 'sakura'), ('cosm-sakura', 'backgrounds', 'night'), ('cosm-sakura', 'backgrounds', 'forest'), ('cosm-sakura', 'backgrounds', 'gold'));
+update public.gacha_pool set weight = 0 where (banner_id, kind, item_id) not in (('sakura-ace', 'characters', 'rina-01'), ('sakura-ace', 'characters', 'arya-01'), ('sakura-ace', 'characters', 'rena-01'), ('sakura-ace', 'characters', 'sakuya-ssr'), ('sakura-ace', 'characters', 'rei-r'), ('sakura-ace', 'characters', 'haru-r'), ('sakura-ace', 'characters', 'ken-r'), ('sakura-ace', 'characters', 'leo-r'), ('sakura-ace', 'characters', 'yuna-r'), ('sakura-ace', 'characters', 'miyu-r'), ('sakuya-up', 'characters', 'rina-01'), ('sakuya-up', 'characters', 'arya-01'), ('sakuya-up', 'characters', 'rena-01'), ('sakuya-up', 'characters', 'sakuya-ssr'), ('sakuya-up', 'characters', 'rei-r'), ('sakuya-up', 'characters', 'haru-r'), ('sakuya-up', 'characters', 'ken-r'), ('sakuya-up', 'characters', 'leo-r'), ('sakuya-up', 'characters', 'yuna-r'), ('sakuya-up', 'characters', 'miyu-r'), ('sakuya-up', 'backgrounds', 'sakuya-cardroom'), ('sakuya-up', 'backgrounds', 'sakuya-pond'), ('cosm-sakura', 'backs', 'classic-red'), ('cosm-sakura', 'backs', 'midnight'), ('cosm-sakura', 'backs', 'paw-pink'), ('cosm-sakura', 'backs', 'gold'), ('cosm-sakura', 'tables', 'navy-felt'), ('cosm-sakura', 'tables', 'wood'), ('cosm-sakura', 'tables', 'table-sakura02'), ('cosm-sakura', 'tables', 'table-sakura01'), ('cosm-sakura', 'backgrounds', 'sakura'));
 
 insert into public.character_defs(id, max_stars, star_costs, bonus_pct) values
 ('boy', 4, '{1}', null),
