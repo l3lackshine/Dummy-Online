@@ -63,7 +63,8 @@ function gxRoom(c) {
   // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
   const s5bg = p => { const x = p.s5 && gxChar(p.ch); return x && x.star5 ? ` style="background:url('${esc(x.star5)}') center/cover"` : ''; };
   // กรอบการ์ดที่ผู้เล่นใส่ (Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
-  const deco = fr => { const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
+  const deco = fr => { if (fr && /^ch-[a-z0-9-]+$/.test(fr)) return `<i class="rm-deco ch-fr" style="--deco:url('./Item/Frame/${esc(fr)}.webp')"></i>`;   // กรอบประจำตัวละคร (ปลด 4★)
+    const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
     return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(x.asset)}')"></i>` : ''; };
   const human = p => { const on = p.host || p.ready;
     return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
@@ -84,7 +85,7 @@ function gxRoom(c) {
   <aside class=rm-panel>
     <div class=rm-card>${soloRoom || M ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
       ${M ? row('สถานะ', M.state === 'countdown' ? '⏱ นับถอยหลัง' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่'))}${row('รางวัล', 'เหรียญตามอันดับ · แพ้ก็ได้')}${window.Farm && L.allowBots !== false ? row('ถ้ามีบอท', Farm.lobbyLine()) : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
-    ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}</div>`}
+    ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}${window.Emote ? `<button class=rm-emo-more onclick="Emote.toggle()" aria-label="สติกเกอร์ตัวละคร">🎴</button>` : ''}</div>`}
     <div class=rm-acts>${M ? '<button class=gray onclick=leave()>✖ ยกเลิกการค้นหา</button>' : ''}${!M && !isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${!M && isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom || M ? '' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}</div>
   </aside>
   ${M && M.state === 'countdown' ? `<div class=mm-cd><small>พบผู้เล่นครบแล้ว</small><b class=mm-cdn>${Math.max(1, Math.ceil((M.cdLeftMs || 0) / 1000))}</b></div>` : ''}

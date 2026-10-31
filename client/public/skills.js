@@ -18,6 +18,10 @@
   const maxStars = id => cfgOf(id).maxStars;
   window.skStar5 = id => !!id && starsOf(id) >= maxStars(id); // ปลดครบดาว → ใช้ฉาก 5 ดาวได้
   const starsOf = id => Math.min(maxStars(id), Math.max(1, dbOn() ? DB.stars(id) : (Number(stars0[id]) || 1)));
+  window.skStars = id => (id ? starsOf(id) : 0);   // ดาวปัจจุบันของตัวละคร (ใช้ปลดอีโมต 2★ / กรอบ 4★)
+  // กรอบประจำตัวละคร (ปลด 4★): เปิดอยู่ = ใช้แทนกรอบที่ใส่ · ค่าเริ่มต้นเปิด
+  window.skCharFrameOn = () => { const id = charId(); return !!id && starsOf(id) >= 4 && jget('dummyCharFrame', true) !== false; };
+  window.skCharFrameTog = () => { jset('dummyCharFrame', jget('dummyCharFrame', true) === false); const m = document.querySelector('.sk-modal.sk-main'); if (m) fill(m); render(); };
   const starCost = (id, st) => { const c = cfgOf(id).starCosts; return Math.max(1, Number(c[Math.min(st, c.length) - 1]) || 1); };
   const dupesOf = id => (dbOn() ? Math.max(0, DB.qty('characters', id) - 1) : Math.max(0, Number(dupes0[id]) || 0));
   const TIER = { common: 'Common', rare: 'Rare', sr: 'SR', ssr: 'SSR' };
@@ -210,7 +214,14 @@
     opt = opt || {}; const ch = (typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY.characters || [] : []).find(x => x.id === id), s = SkillCore.skillOf(SK, id);
     const st = starsOf(id), max = maxStars(id), full = st >= max, cost = full ? 0 : starCost(id, st), have = dupesOf(id), cc = full ? 0 : coinCost(st), can = !full && have >= cost && coinsNow() >= cc;
     const games = s ? Object.keys(GAME).filter(g => s.games && s.games[g]).map(g => `<div class=ck-g><b>${GAME[g]}</b><small>${E(s.games[g].desc || '')}</small></div>`).join('') : '';
-    const un = (SK.starUnlocks || []).filter(u => u.star <= max).map(u => `<li class="${st >= u.star ? 'on' : ''}">${'★'.repeat(u.star)} ${E(u.name)} <em>เร็ว ๆ นี้</em></li>`).join('');
+    // ของปลดดาว: 2★ สติกเกอร์อีโมต · 3★ เสียงพากย์ (มาพร้อมระบบเสียง) · 4★ กรอบประจำตัว · ดาวเต็ม ฉาก 5 ดาว
+    const isMine = id === charId(), frOn = jget('dummyCharFrame', true) !== false;
+    const unNote = u => { const got = st >= u.star || (u.star >= 5 && full);
+      if (u.star === 2) return got ? '<em class=ok>ปลดแล้ว · กด 😊 บนโต๊ะ</em>' : '<em>ล็อก</em>';
+      if (u.star === 3) return '<em>เร็ว ๆ นี้</em>';
+      if (u.star === 4) return got ? (isMine ? `<button class="ck-tg${frOn ? ' on' : ''}" onclick="skCharFrameTog()">${frOn ? 'ใช้อยู่' : 'ไม่ใช้'}</button>` : '<em class=ok>ปลดแล้ว</em>') : '<em>ล็อก</em>';
+      return got ? '<em class=ok>ปลดแล้ว</em>' : '<em>ล็อก</em>'; };
+    const un = (SK.starUnlocks || []).filter(u => u.star <= max || u.star === 5).map(u => ({ ...u, star: Math.min(u.star, max) })).map(u => `<li class="${st >= u.star ? 'on' : ''}">${'★'.repeat(u.star)} ${E(u.name)} ${unNote(u)}</li>`).join('');
     const up = full ? '<button class="sk-up" disabled>⭐ ดาวเต็มแล้ว</button>' : `<button class="sk-up" ${can ? '' : 'disabled'} onclick="skUpStar('${E(id)}')">⭐ อัพเป็น ${st + 1} ดาว · ตัวซ้ำ ${cost} (มี ${have}) + ${cc.toLocaleString('en-US')} 🪙</button>${!can && dbOn() ? `<button class="sk-up" onclick="document.querySelectorAll('.sk-modal').forEach(n=>n.remove());go('shop')">🎰 ไปสุ่มกาชาเพื่อหาตัวซ้ำ</button>` : ''}`;
     return `<div class="ck${opt.compact ? ' compact' : ''}"><div class=ck-h>${ch && ch.asset ? `<img src="${E(ch.asset)}" alt="">` : ''}<div><b>${E((ch && ch.name) || id || 'ตัวละคร')}</b><div class=ck-stars>${starsHtml(st, max)}</div></div></div>
       ${s ? `<div class=ck-sk2><span class="ck-tier ${E(s.tier)}">${TIER[s.tier] || ''}</span><b>${E(s.icon || '')} ${E(s.name)}</b><small>${E(s.desc || '')}</small></div>${opt.compact ? '' : games}` : '<small class=ck-none>ตัวละครนี้ยังไม่มีสกิล</small>'}

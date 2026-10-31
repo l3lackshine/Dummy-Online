@@ -18,7 +18,7 @@
   // ---------- อีโมจิลอยกลางโต๊ะ ----------
   function hook() {
     if (typeof sock === 'undefined' || !sock || sock._lb) return; sock._lb = 1;
-    sock.on('room:emote', d => { if (!d) return; const el = document.createElement('div'); el.className = 'lb-emote'; el.innerHTML = '<span>' + d.e + '</span><small></small>'; el.querySelector('small').textContent = d.from; el.style.left = (30 + Math.random() * 40) + '%'; document.body.appendChild(el); setTimeout(() => el.remove(), 2200); });
+    sock.on('room:emote', d => { if (!d) return; if (typeof screen !== 'undefined' && screen === 'game' && window.Emote && Emote.showTable(d)) return; const el = document.createElement('div'); el.className = 'lb-emote'; el.innerHTML = (window.Emote ? Emote.html(d) : '<span>' + d.e + '</span>') + '<small></small>'; el.querySelector('small').textContent = d.from; el.style.left = (30 + Math.random() * 40) + '%'; document.body.appendChild(el); setTimeout(() => el.remove(), 2200); });
   }
   setInterval(hook, 700);
   // ---------- ลิงก์เชิญ ?room=CODE → เปิดช่องใส่รหัสให้ (ผู้เล่นกดเข้าห้องเอง) ----------

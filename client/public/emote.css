@@ -1,0 +1,32 @@
+/* emote.css — อีโมตบนโต๊ะ + สติกเกอร์ตัวละคร (emote.js) · กรอบประจำตัวละคร */
+.em-btn{position:fixed;left:max(10px,1.6vh);bottom:44vh;z-index:8600;width:max(40px,8vh);height:max(40px,8vh);border-radius:50%;border:.3vh solid #ffd76a;
+  background:#2a1d3fcc;font-size:max(20px,4.2vh);line-height:1;cursor:pointer;box-shadow:0 .5vh 1.4vh #0007;display:flex;align-items:center;justify-content:center}
+.em-btn:active{transform:scale(.92)}
+.em-pal{position:fixed;left:calc(max(10px,1.6vh) + max(46px,9.5vh));bottom:max(20px,24vh);z-index:8700;background:#fffaf2;border:.3vh solid #e9c27a;border-radius:2vh;padding:1vh;
+  box-shadow:0 1vh 3vh #0008;display:flex;flex-direction:column;gap:.8vh;width:min(88vw,max(300px,58vh));animation:emIn .18s ease-out}
+@keyframes emIn{from{opacity:0;transform:translateY(8px)}}
+.em-row{display:grid;grid-template-columns:repeat(8,1fr);gap:.5vh}
+.em-row button{border:0;border-radius:1.2vh;background:#f3e9ff;font-size:max(18px,3.6vh);line-height:1.25;padding:.4vh 0;cursor:pointer}
+.em-row button:active{transform:scale(.9)}
+.em-st{grid-template-columns:repeat(4,1fr);position:relative}
+.em-st button{background:#fff0f6;min-height:max(52px,11vh);display:flex;align-items:center;justify-content:center}
+.em-st.lock button{filter:grayscale(1);opacity:.45;cursor:default}
+.em-st em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 max(11px,2.2vh) Sarabun,sans-serif;font-style:normal;color:#5a3b6e;background:#fffaf2b8;border-radius:1.2vh;text-align:center;padding:0 1vh}
+/* หน้าตาอีโมตหนึ่งอัน */
+.em-emo{font-size:max(30px,7vh);line-height:1;filter:drop-shadow(0 .4vh .5vh #0008)}
+.em-img{width:max(64px,15vh);height:max(64px,15vh);object-fit:contain;filter:drop-shadow(0 .5vh .8vh #0009)}
+.em-row .em-img{width:max(44px,9.5vh);height:max(44px,9.5vh)}
+.em-tmp{display:inline-flex;flex-direction:column;align-items:center;gap:.2vh;background:#fff;border:.3vh solid #ff8fb8;border-radius:1.6vh;padding:.5vh 1.2vh;box-shadow:0 .5vh 1vh #0005}
+.em-tmp i{font-style:normal;font-size:max(22px,5vh);line-height:1}.em-tmp b{font:800 max(11px,2.2vh) Sarabun,sans-serif;color:#c2185b;white-space:nowrap}
+.em-row .em-tmp{box-shadow:none;padding:.3vh .8vh}.em-row .em-tmp i{font-size:max(18px,3.6vh)}
+/* แสดงเหนือที่นั่งบนโต๊ะ */
+.em-pop{position:fixed;z-index:9150;transform:translate(-50%,-100%);pointer-events:none;animation:emPop 2.6s ease-out forwards}
+@keyframes emPop{0%{opacity:0;transform:translate(-50%,-80%) scale(.4)}12%{opacity:1;transform:translate(-50%,-100%) scale(1.12)}20%{transform:translate(-50%,-100%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-115%)}}
+@media (prefers-reduced-motion:reduce){.em-pop{animation:none}}
+.lb-emote .em-tmp,.lb-emote .em-img{margin-bottom:4px}
+/* ห้องรอ: ปุ่มเปิดสติกเกอร์ */
+.rm-emo-more{font-size:max(16px,calc(var(--u,1vh)*3.4))!important}
+/* การ์ดตัวละคร: สถานะของปลดดาว */
+.ck-un em.ok{color:#1f9d55;opacity:1;font-weight:700}
+.ck-tg{border:0;border-radius:99px;padding:1px 10px;margin-left:6px;font:700 11px Sarabun,sans-serif;background:#ddd;color:#555;cursor:pointer}
+.ck-tg.on{background:linear-gradient(#ffd76a,#f2a93b);color:#4a2a00}

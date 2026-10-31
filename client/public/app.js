@@ -35,7 +35,7 @@ const go=s=>{screen=s;shopNote='';render()};
 const wrap=b=>{$('app').innerHTML=`<div class=page><div class=box>${b}</div></div>`};
 const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'];
 const myChar=()=>equipped('characters')||null;
-const myFrame=()=>{const f=equipped('frames');return f&&f!=='none'?f:null;}; // กรอบการ์ดที่ใส่อยู่ (ทุกคนในห้องเห็น)
+const myFrame=()=>{if(typeof skCharFrameOn==='function'&&skCharFrameOn())return 'char';const f=equipped('frames');return f&&f!=='none'?f:null;}; // 'char' = ขอใช้กรอบประจำตัวละคร (ปลด 4★ · เซิร์ฟเวอร์ตรวจดาว) // กรอบการ์ดที่ใส่อยู่ (ทุกคนในห้องเห็น)
 const av=(n,ch)=>{const skin=(SKIN_REGISTRY.characters||[]).find(x=>x.id===ch);if(skin&&skin.asset)return `<img class=avatar-img src="${esc(skin.asset)}" alt="${esc(skin.name||'ตัวละคร')}">`;let h=0;for(const k of String(n))h=(h*31+k.charCodeAt(0))|0;return AV[Math.abs(h)%AV.length]};
 const myBg=()=>equipped('backgrounds')||null;
 const bgCss=id=>{const b=(SKIN_REGISTRY.backgrounds||[]).find(x=>x.id===id);if(!b)return '';return `background:${b.asset?`url('${b.asset}') center/cover`:(b.css||'none')};--ink:${b.ink||'#fff'};`};
@@ -178,8 +178,8 @@ const getSess = () => { try { const v = JSON.parse(localStorage.getItem('dummySe
 const setSess = v => { try { v ? localStorage.setItem('dummySession', JSON.stringify(v)) : localStorage.removeItem('dummySession'); } catch (e) {} };
 const emit = a => { if (!sock || !sock.connected) { hint = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; render(); return; } sock.emit('game:act', a); };
 const room = () => { conn(); if (!sock) return render(); };
-function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; if (window.NameFilter) nick = NameFilter.clean(nick, 'ผู้เล่น'); sv.name = nick; localStorage.setItem('dummyName', nick); const m = ruleMeta(createSel.rule); sock.emit('room:create', { name: nick, s5: (typeof skStar5 === 'function' ? skStar5(myChar()) : false), ch: myChar(), bg: myBg(), fr: myFrame(), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {}, bots: createMode === 'solo' ? true : createBots, farm: window.Farm ? Farm.get() : 'coins' }); }
-function jn() { const c = ($('cd').value || '').trim().toUpperCase(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, s5: (typeof skStar5 === 'function' ? skStar5(myChar()) : false), ch: myChar(), bg: myBg(), fr: myFrame(), farm: window.Farm ? Farm.get() : 'coins' }); } }
+function mk() { conn(); if (!sock) return; nick = ($('au')?.value || nick || 'ผู้เล่น').trim().slice(0,14) || 'ผู้เล่น'; if (window.NameFilter) nick = NameFilter.clean(nick, 'ผู้เล่น'); sv.name = nick; localStorage.setItem('dummyName', nick); const m = ruleMeta(createSel.rule); sock.emit('room:create', { name: nick, s5: (typeof skStar5 === 'function' ? skStar5(myChar()) : false), e2: (typeof skStars === 'function' && skStars(myChar()) >= 2), ch: myChar(), bg: myBg(), fr: myFrame(), rule: m ? m.id : undefined, options: m ? ruleOpts(m) : {}, bots: createMode === 'solo' ? true : createBots, farm: window.Farm ? Farm.get() : 'coins' }); }
+function jn() { const c = ($('cd').value || '').trim().toUpperCase(); nick = localStorage.getItem('dummyName') || nick || 'ผู้เล่น'; if (c) { conn(); sock.emit('room:join', { code: c, name: nick, s5: (typeof skStar5 === 'function' ? skStar5(myChar()) : false), e2: (typeof skStars === 'function' && skStars(myChar()) >= 2), ch: myChar(), bg: myBg(), fr: myFrame(), farm: window.Farm ? Farm.get() : 'coins' }); } }
 const begin = () => sock.emit('game:start');
 const doShuffle = () => { if (!sock || !sock.connected) { lerr = 'ยังไม่ได้เชื่อมต่อเซิร์ฟเวอร์'; return render(); } if (shufAnim) return; sock.emit('game:shuffle'); };
 // ส่วนสับไพ่ (ล็อบบี้ + หน้าจบตา): ผู้สับ = เจ้าของห้อง (ตาแรก) หรือผู้ชนะตาก่อนหน้า (ตาถัดไป)

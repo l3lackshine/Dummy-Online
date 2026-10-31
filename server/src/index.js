@@ -201,8 +201,8 @@ const DummyTutorial = require('./rules/dummy/tutorial');
 const cleanName = name => NameFilter.clean(name, 'ผู้เล่น'); // ตัดอักขระควบคุม · ยาวไม่เกิน 14 · ชื่อหยาบ/แอบอ้างทีมงาน → "ผู้เล่น"
 const cleanFrame = f => (typeof f === 'string' && /^[a-z0-9-]{1,40}$/.test(f) ? f : null); // กรอบการ์ด (ของแต่งเท่านั้น ไม่มีผลกับเกม)
 const cleanFarm = f => (Economy.FARM[f] ? f : 'coins');   // โหมดฟาร์มเมื่อเล่นกับบอท (ดู economy.js FARM)
-function joinRoom(socket, room, name, ch, bg, fr, s5, farm) {
-  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, fr: cleanFrame(fr), s5: s5 === true, farm: cleanFarm(farm), connected: true, token: newToken(), seat: null, ready: false };
+function joinRoom(socket, room, name, ch, bg, fr, s5, farm, e2) {
+  const p = { id: socket.id, uid: socket.data.uid || null, name: cleanName(socket.data.uname || name), ch: CHARS.includes(ch) ? ch : null, bg: BGS.includes(bg) ? bg : null, fr: cleanFrame(fr), s5: s5 === true, e2: e2 === true, farm: cleanFarm(farm), connected: true, token: newToken(), seat: null, ready: false };
   room.players.push(p);
   socket.data.roomCode = room.code;
   socket.join(room.code);
@@ -267,10 +267,13 @@ const on = (socket, ev, fn) => socket.on(ev, (...a) => { try { fn(...a); } catch
 // โหมดบัญชี: ตรวจว่าผู้เล่นมีตัวละคร/กรอบที่ส่งมาจริงก่อนเข้าห้อง (ไม่มี/ตรวจไม่ได้ = ใช้ค่าว่าง) · โหมดในเครื่อง = ผ่านทันที
 function withOwned(socket, raw, fn) {
   const d = obj(raw);
-  if (!(SB.enabled() && socket.data.uid)) return fn(Object.assign({}, d, { s5: d.s5 === true }));
-  Promise.all([Skills.verifyOwned(SB, socket.data.uid, 'characters', d.ch), Skills.verifyOwned(SB, socket.data.uid, 'frames', d.fr)])
-    .then(([ch, fr]) => Skills.verifyStar5(SB, socket.data.uid, ch, d.s5 === true).then(s5 => [ch, fr, s5]))
-    .then(([ch, fr, s5]) => { try { fn(Object.assign({}, d, { ch, fr, s5 })); } catch (e) { console.error('handler error:', e && e.message); } })
+  // fr === 'char' = ขอใช้กรอบประจำตัวละคร (ปลด 4★) → กลายเป็น 'ch-<ตัวละคร>' เมื่อดาวถึง
+  const claim = { s5: d.s5 === true, e2: d.e2 === true, cf: d.fr === 'char' };
+  const perkFrame = (ch, fr, pk) => (pk.cf && ch ? 'ch-' + ch : fr === 'char' ? null : fr);
+  if (!(SB.enabled() && socket.data.uid)) { const pk = { s5: claim.s5, e2: claim.e2, cf: claim.cf }; return fn(Object.assign({}, d, pk, { fr: perkFrame(d.ch, d.fr, pk) })); }
+  Promise.all([Skills.verifyOwned(SB, socket.data.uid, 'characters', d.ch), d.fr === 'char' ? null : Skills.verifyOwned(SB, socket.data.uid, 'frames', d.fr)])
+    .then(([ch, fr]) => Skills.verifyStarPerks(SB, socket.data.uid, ch, claim).then(pk => [ch, fr, pk]))
+    .then(([ch, fr, pk]) => { try { fn(Object.assign({}, d, { ch, fr: perkFrame(ch, fr, pk), s5: pk.s5, e2: pk.e2 })); } catch (e) { console.error('handler error:', e && e.message); } })
     .catch(e => console.error('verifyOwned error:', e && e.message));
 }
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});
@@ -323,7 +326,7 @@ io.on('connection', socket => {
     // bots: false เฉพาะห้องที่สร้างเอง (ไม่ใช่โหมดเล่นคนเดียว) — ปิดได้ = ไม่เติมบอทในที่นั่งว่าง ต้องรอผู้เล่นจริง
     const room = { code, rule: rid, options: Rules.cleanOptions(rid, tut ? {} : options), allowBots: tut || bots !== false, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0, tutorial: tut };
     rooms.set(code, room);
-    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm, d.e2);
   }));
   // Find Match: เข้าห้องจับคู่ที่เปิดอยู่ (กติกา+ตัวเลือกเดียวกัน เลือกห้องที่คนมากสุดก่อน) หรือสร้างห้องจับคู่ใหม่
   on(socket, 'match:find', raw => withOwned(socket, raw, d => { const { name, ch, bg, fr, rule, options } = d;
@@ -338,7 +341,7 @@ io.on('connection', socket => {
       room = { code, rule: rid, options: opts, allowBots: true, players: [], game: null, botTimer: null, emptyTimer: null, deck: null, shuffledBy: null, shuffleSeq: 0, lastWinner: null, round: 0, match: { key, state: 'searching', since: Date.now(), prompt: null, waitTimer: null, promptTimer: null, cdTimer: null, cdUntil: null } };
       rooms.set(code, room);
     }
-    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm, d.e2);
     const p = findPlayer(room, socket.id); if (p) p.ready = true;   // ห้องจับคู่ไม่มีปุ่มพร้อม
     matchTick(room, true);
   }));
@@ -356,7 +359,7 @@ io.on('connection', socket => {
     if (!room || room.match) return socket.emit('system:error', 'ไม่พบห้องนี้');
     if (active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
     if (connectedPlayers(room).length >= MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
-    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm);
+    joinRoom(socket, room, name, ch, bg, fr, d.s5, d.farm, d.e2);
   }));
   // เปลี่ยนโหมดฟาร์มของตัวเองในห้อง (มีผลตอนจบตาถัดไปที่ยังไม่จบ)
   on(socket, 'player:farm', d => { const room = rooms.get(socket.data.roomCode), p = room && room.players.find(x => x.id === socket.id); if (!p || !allow(socket)) return; p.farm = cleanFarm(obj(d).farm); emitLobby(room); });
@@ -396,11 +399,14 @@ io.on('connection', socket => {
     const p = findPlayer(room, socket.id); if (!p) return; p.ready = !!obj(raw).ready; emitLobby(room);
   });
   // อีโมจิสั้น ๆ ในล็อบบี้ (รายการตายตัว ส่งต่อให้ทุกคนในห้อง)
-  const EMOTES = ['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'];
+  // ใช้ได้ทั้งห้องรอและบนโต๊ะเล่น · สติกเกอร์ตัวละคร (c:*) ต้องปลด 2★ ของตัวที่ใช้อยู่ · กันกดรัว 1.5 วิ
+  const EMOTES = ['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'], CHAR_EMOTES = ['c:happy', 'c:laugh', 'c:wow', 'c:sad'];
   on(socket, 'room:emote', raw => {
     if (!allow(socket)) return; const room = rooms.get(socket.data.roomCode); if (!room) return;
-    const p = findPlayer(room, socket.id), e = String(obj(raw).e || ''); if (!p || !EMOTES.includes(e)) return;
-    io.to(room.code).emit('room:emote', { from: p.name, e });
+    const p = findPlayer(room, socket.id), e = String(obj(raw).e || ''); if (!p) return;
+    if (!EMOTES.includes(e) && !(CHAR_EMOTES.includes(e) && p.e2 && p.ch)) return;
+    const now = Date.now(); if (p.emAt && now - p.emAt < 1500) return; p.emAt = now;
+    io.to(room.code).emit('room:emote', { from: p.name, e, ch: p.ch || null });
   });
   // หน้าสรุป: กดเล่นต่อ (yes) หรือกดออก (no)
   on(socket, 'game:again', raw => {

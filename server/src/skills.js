@@ -30,4 +30,14 @@ async function verifyStar5(SB, uid, ch, claimed) {
   if (!SB || !SB.enabled() || !uid) return true;
   try { return (await SB.charStars(uid, ch)) >= (MAX_STARS_OF[ch] || 5); } catch (e) { return false; }
 }
-module.exports = { CHAR_SKILL, ACTION_SKILL, FREE, skillOf, actionBlocked, verifyOwned, verifyStar5, MAX_STARS_OF };
+// ของปลดดาว (ไม่มีผลกับเกม): 2★ สติกเกอร์อีโมตตัวละคร · 4★ กรอบการ์ดประจำตัวละคร · ครบดาว ฉาก 5 ดาว
+//   โหมดบัญชีอ่านดาวจริงครั้งเดียว · โหมดในเครื่องเชื่อค่าที่ส่งมา
+const STAR_EMOTE = 2, STAR_FRAME = 4;
+async function verifyStarPerks(SB, uid, ch, claim) {
+  const c = claim || {}, out = { s5: false, e2: false, cf: false };
+  if (!ch) return out;
+  if (!SB || !SB.enabled() || !uid) return { s5: c.s5 === true, e2: c.e2 === true, cf: c.cf === true };
+  let st = 0; try { st = await SB.charStars(uid, ch); } catch (e) { return out; }
+  return { s5: c.s5 === true && st >= (MAX_STARS_OF[ch] || 5), e2: st >= STAR_EMOTE, cf: c.cf === true && st >= STAR_FRAME };
+}
+module.exports = { CHAR_SKILL, ACTION_SKILL, FREE, skillOf, actionBlocked, verifyOwned, verifyStar5, verifyStarPerks, MAX_STARS_OF, STAR_EMOTE, STAR_FRAME };
