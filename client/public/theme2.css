@@ -501,10 +501,11 @@
 
 /* พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — ตัดเป็นช่องสามเหลี่ยมตามที่นั่ง */
 .gxl .gx-sb{position:absolute;inset:0;z-index:0;pointer-events:none;background:center/cover no-repeat;opacity:.9;transition:opacity .25s,filter .25s}
-.gxl .gx-sb-top{clip-path:polygon(0 0,100% 0,72% 28%,28% 28%);background-position:center top}
-.gxl .gx-sb-left{clip-path:polygon(0 0,28% 28%,28% 60%,0 100%);background-position:left center}
-.gxl .gx-sb-right{clip-path:polygon(100% 0,100% 100%,72% 60%,72% 28%);background-position:right center}
-.gxl .gx-sb-bottom{clip-path:polygon(0 100%,28% 60%,72% 60%,100% 100%);background-position:center bottom}
+/* แต่ละช่องย่อกรอบให้เท่าช่องของตัวเอง แล้ววางรูปแบบ cover ตรงกลาง → เห็นส่วนสวยกลางภาพ (ไม่ใช่แค่ขอบบน=เพดาน/ขอบล่าง=พื้น) */
+.gxl .gx-sb-top{inset:0 0 72% 0;clip-path:polygon(0 0,100% 0,72% 100%,28% 100%);background-position:center 45%}
+.gxl .gx-sb-left{inset:0 72% 0 0;clip-path:polygon(0 0,100% 28%,100% 60%,0 100%);background-position:center center}
+.gxl .gx-sb-right{inset:0 0 0 72%;clip-path:polygon(100% 0,100% 100%,0 60%,0 28%);background-position:center center}
+.gxl .gx-sb-bottom{inset:60% 0 0 0;clip-path:polygon(0 100%,28% 0,72% 0,100% 100%);background-position:center 55%}
 .gxl .gx-sb.on{opacity:1;filter:brightness(1.08)}
 .gxl .gx-bg{position:absolute;z-index:0}
 .gxl .gx-art{z-index:1}
