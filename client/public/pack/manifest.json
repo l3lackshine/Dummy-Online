@@ -5,8 +5,8 @@
    "id": "base",
    "file": "base.pak",
    "tier": "public",
-   "version": "8b20240600e831c4",
-   "bytes": 1171621,
+   "version": "276f678d608dcc5f",
+   "bytes": 1160050,
    "files": 14
   },
   {
@@ -73,8 +73,8 @@
    "id": "char-rena-01",
    "file": "char-rena-01.pak",
    "tier": "owner",
-   "version": "34d914910c29df5a",
-   "bytes": 3197809,
+   "version": "8b61c7d98553d2b9",
+   "bytes": 527279,
    "files": 2,
    "kind": "characters",
    "item": "rena-01"
