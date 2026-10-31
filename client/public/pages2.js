@@ -52,7 +52,7 @@
     const uname = DBON() ? '@' + E(DB.P.username) : 'เล่นแบบไม่ล็อกอิน';
     const body = `<div class=pv>
       <section class="pv-card pv-id">
-        <div class=pv-av><img src="${E(ch && ch.asset || '')}" alt=""><button class=pv-avbtn onclick="invOpen('characters')">เปลี่ยน</button></div>
+        <div class=pv-av>${typeof avFace === 'function' && ch ? avFace(nick, ch.id) : `<img src="${E(ch && ch.asset || '')}" alt="">`}<button class=pv-avbtn onclick="invOpen('characters')">เปลี่ยน</button></div>
         <b class=pv-nm>${E(nick)}</b>${window.Progress ? lvBar() : ''}<span class=pv-tt>${title ? E(title) : 'ยังไม่ได้ตั้งฉายา'}</span><small class=pv-un>${uname}</small>
         ${statsBox()}
       </section>

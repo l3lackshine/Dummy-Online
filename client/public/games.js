@@ -57,7 +57,7 @@ function gxOver() {
   if (resGid !== S.gid) { resGid = S.gid; resTab = 0; }
   const r = S.res, c = r.coin || { delta: [], lines: [], stake: S.stake }, my = S.my, md = (c.delta && c.delta[my]) || 0, win = md > 0, lose = md < 0;
   const medal = ['🥇', '🥈', '🥉', '4️⃣'], nm = i => (i === my ? 'คุณ' : esc(S.P[i].n));
-  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${h}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
+  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${typeof avFace === 'function' ? avFace(p.n, p.ch) : h}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
   // ข้อความผลของแต่ละคน (ใช้ร่วมกันทุกเกม — ดูจากฟิลด์ที่เกมนั้นส่งมา)
   const label = x => x.dealer ? '👑 เจ้ามือ' : x.result === 'win' ? '✅ ชนะ' + (x.mult > 1 ? ' ×' + x.mult : '') : x.result === 'lose' ? '❌ แพ้' + (x.mult > 1 ? ' ×' + x.mult : '') : x.result === 'tie' ? '🤝 เสมอ' : x.loser ? '💀 แพ้' : x.folded ? '🏳️ หมอบ' : x.win ? '🏆 ชนะ' : x.order ? 'รอดที่ ' + x.order : '';
   const rows = (r.rows || []).map(x => ({ x, cd: (c.delta && c.delta[x.i]) || 0 })).sort((a, b) => b.cd - a.cd);

@@ -134,11 +134,11 @@
     "scale": 1
    },
    "table": {
-    "top": 0.02,
-    "show": 0.53,
-    "x": 0.55
+    "top": 0,
+    "show": 0.34,
+    "x": 0.48
    },
-   "asset": "./Character/rena-01/Character.png",
+   "asset": "./Character/rena-01/Character.webp",
    "star5": "./Character/rena-01/Background/star5.webp",
    "src": "folder"
   },

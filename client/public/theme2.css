@@ -961,3 +961,8 @@
 .seat-fx.up{border-color:#5dff8f44}.seat-fx.down{border-color:#ff5d6c44}
 @keyframes seatFx{0%{opacity:0;transform:translate(-50%,-60%) scale(.8)}10%{opacity:1;transform:translate(-50%,-100%) scale(1.05)}18%{transform:translate(-50%,-100%) scale(1)}80%{opacity:1;transform:translate(-50%,-150%)}100%{opacity:0;transform:translate(-50%,-180%)}}
 @media (prefers-reduced-motion:reduce){.seat-fx{animation:none}}
+
+/* รูปหน้าแบบวงกลม (avFace ใน app.js): ซูมที่หน้าตามกรอบ table ของตัวละคร */
+.av-fc{position:absolute;inset:0;overflow:hidden;border-radius:50%;display:block}
+.av-fc .avatar-img{position:absolute!important;max-width:none!important;width:auto!important;height:calc(100% / var(--fz))!important;left:50%!important;top:calc(-100% * var(--fy) / var(--fz))!important;transform:translateX(calc(-100% * var(--fx)));object-fit:fill!important;border-radius:0!important}
+.hud-av,.pv-av,.rs-av{position:relative}

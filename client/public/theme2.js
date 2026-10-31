@@ -59,7 +59,7 @@
     const scene = app.querySelector('.scene'); if (!scene || scene.querySelector('.rv')) return;
     const P = DBP(), name = (P && P.display_name) || (typeof sv !== 'undefined' && sv.name) || 'ผู้เล่น';
     const coins = P ? P.coins : (typeof sv !== 'undefined' ? sv.coins : 0);
-    const av = (app.querySelector('.hud-av img') || {}).src || '';
+    const avEl = app.querySelector('.hud-av .av-fc'), av = (app.querySelector('.hud-av img') || {}).src || '';   // .av-fc = รูปซูมหน้า (avFace)
     const title = (P && P.title) || '';
     const lv = window.Progress ? Progress.level() : { level: 1, into: 0, need: 100 }, lvPct = Math.min(100, Math.round((lv.into / Math.max(1, lv.need)) * 100));
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
@@ -69,7 +69,7 @@
       <button class="rv-me rv-me2" onclick="go('profile')" aria-label="โปรไฟล์">
         <span class="rv-plate"><b>${E(name)}</b><small>${E(title || 'ยังไม่ได้ตั้งฉายา')}</small></span>
         <span class="rv-lvbar"><i><u style="width:${lvPct}%"></u></i><b><em>LV</em>${lv.level}</b><small>${N(lv.into)}/${N(lv.need)}</small></span>
-        <span class="rv-av2"><span>${av ? `<img src="${E(av)}" alt="">` : ''}</span></span></button>
+        <span class="rv-av2"><span>${avEl ? avEl.outerHTML : av ? `<img src="${E(av)}" alt="">` : ''}</span></span></button>
       <div class="rv-top">
         ${window.Stamina ? Stamina.pill() : ''}<span class="rv-cur"><img src="${KIT}coin.webp" alt="">${N(coins)}<i onclick="go('shop')">${ic('plus')}</i></span>
         ${P ? `<span class="rv-cur"><img src="${KIT}gem.webp" alt="">${N(P.mcash)}<i onclick="go('shop')">${ic('plus')}</i></span>` : ''}

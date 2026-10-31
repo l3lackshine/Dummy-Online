@@ -37,6 +37,8 @@ const AV=['😎','🤠','🧑‍🎤','👧','🦊','🐱','🐰','🐻'];
 const myChar=()=>equipped('characters')||null;
 const myFrame=()=>{if(typeof skCharFrameOn==='function'&&skCharFrameOn())return 'char';const f=equipped('frames');return f&&f!=='none'?f:null;}; // 'char' = ขอใช้กรอบประจำตัวละคร (ปลด 4★ · เซิร์ฟเวอร์ตรวจดาว) // กรอบการ์ดที่ใส่อยู่ (ทุกคนในห้องเห็น)
 const av=(n,ch)=>{const skin=(SKIN_REGISTRY.characters||[]).find(x=>x.id===ch);if(skin&&skin.asset)return `<img class=avatar-img src="${esc(skin.asset)}" alt="${esc(skin.name||'ตัวละคร')}">`;let h=0;for(const k of String(n))h=(h*31+k.charCodeAt(0))|0;return AV[Math.abs(h)%AV.length]};
+// รูปหน้าแบบวงกลม (HUD / โปรไฟล์ / หน้าสรุป): ซูมไปที่หน้าตามกรอบ "table" ใน Character.config — รูปเต็มตัวทุกขนาดได้หน้าขนาดใกล้กัน
+const avFace=(n,ch)=>{const s=(SKIN_REGISTRY.characters||[]).find(x=>x.id===ch);if(!(s&&s.asset))return av(n,ch);const t=s.table||{},c=(v,d,a,b)=>{v=Number(v);return Number.isFinite(v)?Math.min(b,Math.max(a,v)):d;};return `<span class=av-fc style="--fx:${c(t.x,.5,0,1)};--fy:${c(t.top,0,0,.9)};--fz:${c(t.show,.4,.15,1)}"><img class=avatar-img src="${esc(s.asset)}" alt="${esc(s.name||'ตัวละคร')}"></span>`;};
 const myBg=()=>equipped('backgrounds')||null;
 const bgCss=id=>{const b=(SKIN_REGISTRY.backgrounds||[]).find(x=>x.id===id);if(!b)return '';return `background:${b.asset?`url('${b.asset}') center/cover`:(b.css||'none')};--ink:${b.ink||'#fff'};`};
 
@@ -61,7 +63,7 @@ function prevBox(kind, x) {
   if (kind === 'tables') return `<span class=pv-table style="--t1:${esc(x.bg || '#0f3d2a')};--t2:${esc(x.bg2 || '#0b2e20')}${x.asset ? ';background-image:url(' + esc(x.asset) + ')' : ''}"></span>`;
   return `<span class=pv-bg style="${esc(bgCss(x.id))}"></span>`;
 }
-const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${av(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}${window.Stamina ? Stamina.pill() : ''}<span class=coin-pill>🪙 ${sv.coins}</span>${window.DB && DB.enabled ? `<span class="coin-pill mc-pill" title="MCash">💎 ${sv.mcash || 0}</span>` : ''}</div>`;
+const hud = back => `<div class=hud>${back ? `<button class=hud-back onclick="go('${back}')" aria-label="ย้อนกลับ">‹</button>` : `<button class=hud-who onclick="go('profile')"><span class=hud-av>${avFace(sv.name, myChar())}</span><b>${esc(sv.name || '')}</b></button>`}${window.Stamina ? Stamina.pill() : ''}<span class=coin-pill>🪙 ${sv.coins}</span>${window.DB && DB.enabled ? `<span class="coin-pill mc-pill" title="MCash">💎 ${sv.mcash || 0}</span>` : ''}</div>`;
 const pgKind = b => (b.includes('class=plank') ? 'play' : b.includes('gtiles') ? 'games' : b.includes('scoreSum') ? 'create' : b.includes('class=ksec') ? (b.includes('namebox') ? 'profile' : 'shop') : '');
 const page2 = (title, body, back = 'home') => { $('app').className = ''; $('app').innerHTML = `<div class=pg data-pg="${pgKind(body)}">${hud(back)}<div class=pg-title><span>${title}</span></div><div class=pg-body>${body}</div></div>`; };
 function homeView() {
@@ -298,7 +300,7 @@ function resultOverlay() {
   const rows = S.P.map(p => ({ p, pt: R.pts[p.i], cd: c && c.delta ? c.delta[p.i] : 0 })).sort((x, y) => y.pt - x.pt);
   const rank = rows.findIndex(r => r.p.i === my) + 1, medal = ['🥇', '🥈', '🥉', '4️⃣'];
   const nm = i => (i === my ? 'คุณ' : esc(S.P[i].n));
-  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${h}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
+  const ava = p => { const h = av(p.n, p.ch); return h.startsWith('<img') ? `<span class=rs-av>${avFace(p.n, p.ch)}</span>` : `<span class="rs-av rs-emo">${h}</span>`; };
   const board = rows.map(({ p, pt, cd }, i) => `<div class="rs-row${p.i === my ? ' me' : ''}${R.k === p.i ? ' knk' : ''}"><b class=rs-rk>${medal[i] || i + 1}</b>${ava(p)}<div class=rs-who><b>${nm(p.i)}${R.k === p.i ? ' 👑' : ''}</b><span class=rs-chips>${(R.nt[p.i] || []).map(x => `<i>${esc(x)}</i>`).join('')}</span></div><div class=rs-pt>${pt}<small>แต้ม</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)}<small>ชิป</small></div></div>`).join('');
   const pay = c && c.lines && c.lines.length ? `<div class=rs-pay><p class=rs-sub>ชิปในโต๊ะ (ใช้จัดอันดับเท่านั้น ไม่ใช่เหรียญ)</p>${c.lines.map(l => `<div><span>${nm(l.f)} → ${nm(l.t)}</span><em>${esc(l.w)}</em><b>${l.a} ชิป</b></div>`).join('')}</div>` : '<p class=rs-none>ไม่มีรายการชิปตานี้</p>';
   const shuf = shufflePanel(), sh = lob && lob.shuffle, need = !!(sh && sh.needed && !sh.ready);
