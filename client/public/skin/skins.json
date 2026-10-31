@@ -387,6 +387,7 @@
    "css": "linear-gradient(160deg,#ffd1e3,#f06595)",
    "ink": "#3a1020",
    "price": 150,
+   "table": "./Item/Background/sakura-table.webp",
    "src": "folder"
   },
   {

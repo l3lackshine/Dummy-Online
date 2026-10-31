@@ -16,7 +16,7 @@ const isWide = () => { try { return !!(window.matchMedia && window.matchMedia('(
 function gxStageStyle() {
   const id = typeof myBg === 'function' ? myBg() : null, b = id && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.backgrounds) || []).find(x => x.id === id);
   const u = b && (b.table || (/\.(webp|png|jpe?g)$/i.test(b.asset || '') ? b.asset : ''));
-  return u ? ` style="--stage-img:url('${String(u).replace(/'/g, '%27')}')"` : '';
+  return u ? ` data-bg style="--stage-img:url('${String(u).replace(/'/g, '%27')}')"` : '';   // data-bg = ลดสีทับช่องที่นั่งให้เห็นฉากชัด
 }
 function gxView(c) {
   const { top, left, right, pm, pd, h, fresh } = c, me = S.P[S.my];

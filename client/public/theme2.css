@@ -966,3 +966,7 @@
 .av-fc{position:absolute;inset:0;overflow:hidden;border-radius:50%;display:block}
 .av-fc .avatar-img{position:absolute!important;max-width:none!important;width:auto!important;height:calc(100% / var(--fz))!important;left:50%!important;top:calc(-100% * var(--fy) / var(--fz))!important;transform:translateX(calc(-100% * var(--fx)));object-fit:fill!important;border-radius:0!important}
 .hud-av,.pv-av,.rs-av{position:relative}
+
+/* ฉากโต๊ะจากพื้นหลังที่เลือก: สีทับช่องที่นั่งบางลงให้เห็นรูปชัด */
+#app.gxl .gx-stage[data-bg] .gx-q{fill-opacity:.16}
+#app.gxl .gx-stage[data-bg] .gx-q.on{fill-opacity:.3}
