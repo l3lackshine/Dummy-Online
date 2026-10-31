@@ -51,7 +51,9 @@ function loadCharacters() {
 function loadItems(kind) {
   const dn = KIND_DIR[kind], base = path.join(PUB, 'Item', dn), cfg = readJson(path.join(base, 'Item.config'), null);
   if (!cfg) return [];
-  return (cfg.items || []).map(x => { const { file, ...rest } = x; const e = { ...rest }; if (file) { needFile(path.join(base, file), `ไอเทม ${kind}/${x.id}`); e.asset = url('Item', dn, file); } e.src = 'folder'; return e; }).sort(byOrder);
+  // tableFile (พื้นหลัง): รูปแนวนอนสำหรับฉากหลังโต๊ะเล่น → e.table
+  return (cfg.items || []).map(x => { const { file, tableFile, ...rest } = x; const e = { ...rest }; if (file) { needFile(path.join(base, file), `ไอเทม ${kind}/${x.id}`); e.asset = url('Item', dn, file); }
+    if (tableFile) { needFile(path.join(base, tableFile), `ฉากโต๊ะ ${kind}/${x.id}`); e.table = url('Item', dn, tableFile); } e.src = 'folder'; return e; }).sort(byOrder);
 }
 function mergeLegacy(fresh, old) { // เก็บรายการเก่าที่ไม่ได้มาจากโฟลเดอร์
   const ids = new Set(fresh.map(x => x.id));

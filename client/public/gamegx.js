@@ -12,6 +12,12 @@ function gxCrop(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_R
   const n = (v, d, a, b) => { v = Number(v); return Number.isFinite(v) ? Math.min(b, Math.max(a, v)) : d; };
   return ` style="--tt:${n(t.top, 0, 0, .9)};--ts:${n(t.show, .5, .15, 1)};--tx:${n(t.x, .5, 0, 1)}"`; }
 const isWide = () => { try { return !!(window.matchMedia && window.matchMedia('(min-aspect-ratio:5/4)').matches); } catch (e) { return false; } };
+// ฉากหลังโต๊ะ = พื้นหลังที่ผู้เล่นเลือก (ช่อง "tableFile" ใน Item/Background/Item.config หรือรูปของพื้นหลังนั้น) · ไม่มีรูป = ห้องเริ่มต้น
+function gxStageStyle() {
+  const id = typeof myBg === 'function' ? myBg() : null, b = id && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.backgrounds) || []).find(x => x.id === id);
+  const u = b && (b.table || (/\.(webp|png|jpe?g)$/i.test(b.asset || '') ? b.asset : ''));
+  return u ? ` style="--stage-img:url('${String(u).replace(/'/g, '%27')}')"` : '';
+}
 function gxView(c) {
   const { top, left, right, pm, pd, h, fresh } = c, me = S.P[S.my];
   const meOn = S.cur === S.my && !S.over;
@@ -28,7 +34,7 @@ function gxView(c) {
   const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
   const on = pi => pi != null && S.cur === pi && !S.over;
   const last = S.disc.length ? S.disc[S.disc.length - 1] : null;
-  return `<div class=gx-stage>
+  return `<div class=gx-stage${gxStageStyle()}>
   <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(top))}${q('left', on(left))}${q('right', on(right))}${q('bottom', on(S.my))}</svg>
   ${seatBg(top, 'top')}${seatBg(left, 'left')}${seatBg(right, 'right')}${seatBg(S.my, 'bottom')}
   ${wedge(top, 'top')}${wedge(left, 'left')}${wedge(right, 'right')}${meArt}
