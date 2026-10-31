@@ -175,8 +175,8 @@ const until = async (fn, ms = 8000, what = '') => { const t = Date.now(); while 
         ok(S1.lob.next && S1.lob.next.leftMs === null && S1.lob.players.length === 1, 'เล่นกับบอท: หน้าสรุปไม่มีนับถอยหลัง ไม่ถูกเตะออก'); S1.S = null; S1.emit('game:again', { yes: true }); await until(() => S1.S && !S1.S.over, 3000, 'solo next'); ok(true, 'กดเล่นต่อ → เริ่มตาใหม่ทันที'); S1.sock.close(); }
     }
 const connectedPlayersCount = r => r.players.filter(p => p.connected && p.id).length;
-    console.log('\n[9] Find Match: จับคู่ · นับถอยหลัง · ยกเลิกนับ · โหวตเติมบอท · ออกแล้วกลับไปหาคน');
-    { const D = M.load({ NEXT_MS: 700, OPENING_MS: 0, BOT_DELAY_MS: 15, MATCH_WAIT_MS: 400, MATCH_PROMPT_MS: 400, MATCH_CD_MS: 300, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 }), roomsD = require.cache[require.resolve('./src/index.js')].exports.rooms;
+    console.log('\n[9] Find Match: จับคู่ · หน้าต่างกดพร้อม · ยกเลิก/หมดเวลา · โหวตเติมบอท · ออกแล้วกลับไปหาคน');
+    { const D = M.load({ NEXT_MS: 700, OPENING_MS: 0, BOT_DELAY_MS: 15, MATCH_WAIT_MS: 400, MATCH_PROMPT_MS: 400, MATCH_READY_MS: 500, EMPTY_ROOM_TTL_MS: 600, RATE_PER_SEC: 5000 }), roomsD = require.cache[require.resolve('./src/index.js')].exports.rooms;
       const cl = async nm => { const c = mk(D, nm, { auto: false }); c.autoReady = false; c.nm = nm; await c.connected; return c; };
       const find = (c, stake) => c.emit('match:find', { name: c.nm, rule: 'dummy', options: { stake } });
       const [A, B, C, E, F] = await Promise.all(['A9', 'B9', 'C9', 'E9', 'F9'].map(cl));
@@ -184,10 +184,14 @@ const connectedPlayersCount = r => r.players.filter(p => p.connected && p.id).le
       E.errors.length = 0; E.emit('room:join', { code: A.joined.code, name: 'E9' }); await sleep(80); ok(E.errors.length > 0 && !E.joined, 'ห้องจับคู่เข้าด้วยรหัสห้องไม่ได้');
       find(B, 20); await until(() => B.joined); ok(B.joined.code === A.joined.code && A.lob.match.humans === 2, 'ตัวเลือกเดียวกัน (เดิมพัน 20) → เข้าห้องเดียวกัน');
       C.emit('match:find', { name: C.nm, rule: 'dummy', options: { stake: 20, spetoMode: 'knocker' } }); await until(() => C.joined); ok(C.joined.code !== A.joined.code, 'ตัวเลือกกติกาต่างกัน (สเปโตเฉพาะคนน็อก) → คนละห้อง'); C.emit('room:leave'); await sleep(60);
-      find(E, 20); find(F, 20); await until(() => A.lob.match && A.lob.match.state === 'countdown', 3000, 'countdown'); ok(A.lob.match.cdLeftMs > 0 && A.lob.match.humans === 4, 'ครบ 4 คน → นับถอยหลังเริ่ม');
-      await until(() => A.S && B.S && E.S && F.S, 3000, 'auto start'); ok(roomsD.get(A.joined.code).game.P.length === 4 && A.lob.match.state === 'playing', 'หมดเวลานับ → เริ่มเกมเอง ไม่ต้องมีใครกด');
-      { const [G, H, I, J] = await Promise.all(['G9', 'H9', 'I9', 'J9'].map(cl)); [G, H, I, J].forEach(c => find(c, 30)); await until(() => G.lob && G.lob.match && G.lob.match.state === 'countdown', 3000, 'cd2');
-        J.emit('room:leave'); await until(() => G.lob.match.state === 'searching', 2000, 'cancel cd'); await sleep(450); ok(!G.S && G.lob.match.humans === 3, 'มีคนออกระหว่างนับถอยหลัง → ยกเลิกนับ กลับไปหาคน (ไม่เริ่มเกม)'); [G, H, I, J].forEach(c => c.sock.close()); }
+      find(E, 20); find(F, 20); await until(() => A.lob.match && A.lob.match.state === 'ready', 3000, 'ready'); ok(A.lob.match.readyLeftMs > 0 && A.lob.match.humans === 4 && A.lob.players.every(p => !p.acc), 'ครบ 4 คน → เปิดหน้าต่างกดพร้อม (ยังไม่มีใครพร้อม)');
+      A.emit('match:accept'); B.emit('match:accept'); E.emit('match:accept'); await until(() => A.lob.players.filter(p => p.acc).length === 3, 2000, 'acc3'); ok(!A.S && A.lob.match.youAccepted, 'กดพร้อม 3/4 → ยังไม่เริ่ม · สถานะพร้อมแสดงรายคน');
+      F.emit('match:accept'); await until(() => A.S && B.S && E.S && F.S, 2000, 'start'); ok(roomsD.get(A.joined.code).game.P.length === 4 && A.lob.match.state === 'playing', 'ทุกคนกดพร้อม → เริ่มเกมทันที');
+      { const [G, H, I, J] = await Promise.all(['G9', 'H9', 'I9', 'J9'].map(cl)); [G, H, I, J].forEach(c => find(c, 30)); await until(() => G.lob && G.lob.match && G.lob.match.state === 'ready', 3000, 'ready2');
+        G.emit('match:accept'); J.emit('room:leave'); await until(() => G.lob.match.state === 'searching', 2000, 'cancel ready'); await sleep(100); ok(!G.S && G.lob.match.humans === 3 && !G.lob.players.some(p => p.acc), 'มีคนออกระหว่างรอกดพร้อม → กลับไปหาคน (ล้างสถานะพร้อม)');
+        let kicked = null; I.sock.on('room:kicked', d => { kicked = d; }); find(J, 30); await until(() => G.lob.match.state === 'ready', 2000, 'ready3');
+        G.emit('match:accept'); H.emit('match:accept'); J.emit('match:accept'); await until(() => kicked, 2000, 'kick'); await sleep(80);
+        ok(!G.S && G.lob.match.state === 'searching' && G.lob.match.humans === 3 && !G.lob.players.some(p => p.name === 'I9'), 'ไม่กดพร้อมในเวลา → ถูกเชิญออก ที่เหลือกลับไปหาคน'); [G, H, I, J].forEach(c => c.sock.close()); }
       { const [K, L, M2] = await Promise.all(['K9', 'L9', 'M9'].map(cl)); find(K, 40); find(L, 40); await until(() => K.lob && K.lob.match && K.lob.match.prompt && L.lob.match.prompt, 3000, 'prompt');
         ok(K.lob.match.humans === 2 && K.lob.match.prompt.leftMs > 0, 'หาไม่ครบในเวลา → ถามผู้เล่นว่า รอต่อ/เติมบอท');
         K.emit('match:choice', { c: 'bots' }); L.emit('match:choice', { c: 'wait' }); await until(() => !K.lob.match.prompt, 2000, 'resolve'); ok(!K.S && K.lob.match.state === 'searching', 'คนหนึ่งเลือกรอ → ไม่เติมบอท ยังรอต่อ');

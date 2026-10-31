@@ -21,7 +21,8 @@
     users: '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     news: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/>',
-    medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8M12 13v4M10.5 15h3"/>'
+    medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8M12 13v4M10.5 15h3"/>',
+    trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v3M8 21h8M9 17h6v4H9z"/>'
   };
   const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[n] + '</svg>';
   window.thIcon = ic;
@@ -64,6 +65,7 @@
     const lv = window.Progress ? Progress.level() : { level: 1, into: 0, need: 100 }, lvPct = Math.min(100, Math.round((lv.into / Math.max(1, lv.need)) * 100));
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
     const nb = window.battlePass && battlePass.count ? battlePass.count() : 0;   // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
+    const nr = window.Ranked && P ? Ranked.count() : 0;   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
     const d = document.createElement('div'); d.className = 'rv';
     d.innerHTML = `
       <button class="rv-me rv-me2" onclick="go('profile')" aria-label="โปรไฟล์">
@@ -78,6 +80,7 @@
       </div>
       <div class="rv-side">
         <button class="rv-sb rv-pn" onclick="openPatchNotes()" aria-label="แพตช์โน้ต">${ic('news')}<small>อัปเดต</small></button>
+        ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="rankOpen()" aria-label="อันดับ">${ic('trophy')}<small>อันดับ</small>${nr ? '<em>' + nr + '</em>' : ''}</button>` : ''}
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>

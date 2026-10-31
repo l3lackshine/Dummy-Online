@@ -12,7 +12,7 @@ select pg_temp.ok(not exists (select 1 from public.gacha_banners b where b.activ
   (select sum(weight) from public.gacha_pool p where p.banner_id = b.id) <> 1000000), 'น้ำหนักทุกตู้รวมได้ 1,000,000 พอดี (อัตราที่แสดงตรงจริง)');
 select pg_temp.ok((select count(*) from public.gacha_pool gp join public.catalog_items ci using (kind, item_id)
   where gp.banner_id = 'cosm-sakura' and gp.weight > 0 and (ci.is_default or ci.kind = 'characters')) = 0, 'ตู้ของแต่ง: ไม่มีของเริ่มต้น ไม่มีตัวละคร');
-select pg_temp.ok((select count(*) from public.gacha_pool gp where gp.banner_id in ('sakura-ace','sakuya-up') and gp.weight > 0 and gp.kind <> 'characters') = 0, 'ตู้ตัวละคร: มีแต่ตัวละคร');
+select pg_temp.ok((select count(*) from public.gacha_pool gp where gp.banner_id in ('sakura-ace','sakuya-up') and gp.weight > 0 and gp.kind <> 'characters' and not (gp.banner_id = 'sakuya-up' and gp.item_id like 'sakuya-%')) = 0, 'ตู้ตัวละคร: มีแต่ตัวละคร (ยกเว้นพื้นหลังพิเศษของตู้ซากุยะ)');
 select pg_temp.ok((select count(*) from public.gacha_pool gp where gp.weight > 0 and (gp.kind, gp.item_id) in
   (('frames','sakura-gem'),('backs','sakura-01'),('tables','sakura-felt'))) = 0, 'ของพิเศษแบทเทิลพาสไม่อยู่ในตู้');
 
