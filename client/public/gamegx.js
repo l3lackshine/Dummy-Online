@@ -5,19 +5,16 @@
 function gxStar5(ch, name) { const l = (typeof lob !== 'undefined' && lob && lob.players) || []; const q = l.find(x => x.ch === ch && (name == null || x.name === name)); return !!(q && q.s5); }
 const gxChar = ch => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch);
 // พื้นหลังที่นั่งบนโต๊ะ: ฉาก 5 ดาว (ถ้าปลดแล้ว) → ฉากประจำตัว (seat) → ไม่มี
-function gxSeatImg(ch, name) { const x = gxChar(ch); if (!x) return ''; if (x.star5 && gxStar5(ch, name)) return x.star5; return x.seat || ''; }
+// รูปพื้นหลังที่ผู้เล่นซื้อจากร้าน (ช่อง tableFile ใน Item/Background/Item.config หรือรูปของพื้นหลังนั้น) — สีไล่เฉด/รูปง่าย ๆ ไม่ใช้
+function gxBgImg(bg) { const b = bg && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.backgrounds) || []).find(x => x.id === bg); return (b && (b.table || (/\.(webp|png|jpe?g)$/i.test(b.asset || '') ? b.asset : ''))) || ''; }
+// ช่องที่นั่งบนโต๊ะ (ของใครของมัน ทุกคนเห็น): ฉากประจำตัว 5★ → พื้นหลังที่ซื้อ → ฉากที่นั่งของตัวละคร → ห้องเริ่มต้น · บอทไม่ใช้พื้นหลัง
+function gxSeatImg(ch, name, bg) { const x = gxChar(ch); if (x && x.star5 && gxStar5(ch, name)) return x.star5; return gxBgImg(bg) || (x && x.seat) || ''; }
 // ครอปตัวละครบนโต๊ะให้เห็นครึ่งตัวและหัวขนาดใกล้กันทุกตัว: Character.config "table": {"top": 0, "show": 0.5, "x": 0.5}
 //   top = เริ่มตัดที่ความสูงเท่าไร (0–1) · show = แสดงกี่ส่วนของความสูงรูป · x = ตำแหน่งกลางหน้าแนวนอน (0–1)
 function gxCrop(ch) { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch), t = (x && x.table) || {};
   const n = (v, d, a, b) => { v = Number(v); return Number.isFinite(v) ? Math.min(b, Math.max(a, v)) : d; };
   return ` style="--tt:${n(t.top, 0, 0, .9)};--ts:${n(t.show, .5, .15, 1)};--tx:${n(t.x, .5, 0, 1)}"`; }
 const isWide = () => { try { return !!(window.matchMedia && window.matchMedia('(min-aspect-ratio:5/4)').matches); } catch (e) { return false; } };
-// ฉากหลังโต๊ะ = พื้นหลังที่ผู้เล่นเลือก (ช่อง "tableFile" ใน Item/Background/Item.config หรือรูปของพื้นหลังนั้น) · ไม่มีรูป = ห้องเริ่มต้น
-function gxStageStyle() {
-  const id = typeof myBg === 'function' ? myBg() : null, b = id && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.backgrounds) || []).find(x => x.id === id);
-  const u = b && (b.table || (/\.(webp|png|jpe?g)$/i.test(b.asset || '') ? b.asset : ''));
-  return u ? ` data-bg style="--stage-img:url('${String(u).replace(/'/g, '%27')}')"` : '';   // data-bg = ลดสีทับช่องที่นั่งให้เห็นฉากชัด
-}
 function gxView(c) {
   const { top, left, right, pm, pd, h, fresh } = c, me = S.P[S.my];
   const meOn = S.cur === S.my && !S.over;
@@ -30,11 +27,11 @@ function gxView(c) {
   const meArt = `<div class="gx-art gx-art-bottom${meOn ? ' on' : ''}">${art(me)}</div>`;
   const meBadge = `<div class="gx-me${meOn ? ' active' : ''}" data-seat=${S.my}><div class=gx-name>คุณ</div><div class=gx-stack><i></i><i></i><b data-pc=${S.my}>${me.n_cards}</b><i></i><i></i></div><small class=gx-pts>${me.pts} แต้ม</small>${meOn ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`;
   // พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — วางเต็มช่องสามเหลี่ยมของที่นั่งนั้น · ไม่มีรูป = ใช้สีเดิม
-  const seatBg = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch, S.P[pi].n); return u ? `<div class="gx-sb gx-sb-${pos}${S.cur === pi && !S.over ? ' on' : ''}" data-seat=${pi} style="background-image:url('${esc(u)}')"></div>` : ''; };
+  const seatBg = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch, S.P[pi].n, S.P[pi].bot ? null : S.P[pi].bg); return u ? `<div class="gx-sb gx-sb-${pos}${S.cur === pi && !S.over ? ' on' : ''}" data-seat=${pi} style="background-image:url('${esc(u)}')"></div>` : ''; };
   const q = (pos, on) => `<polygon class="gx-q gx-q-${pos}${on ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
   const on = pi => pi != null && S.cur === pi && !S.over;
   const last = S.disc.length ? S.disc[S.disc.length - 1] : null;
-  return `<div class=gx-stage${gxStageStyle()}>
+  return `<div class=gx-stage>
   <svg class=gx-bg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden=true>${q('top', on(top))}${q('left', on(left))}${q('right', on(right))}${q('bottom', on(S.my))}</svg>
   ${seatBg(top, 'top')}${seatBg(left, 'left')}${seatBg(right, 'right')}${seatBg(S.my, 'bottom')}
   ${wedge(top, 'top')}${wedge(left, 'left')}${wedge(right, 'right')}${meArt}

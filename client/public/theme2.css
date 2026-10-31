@@ -69,7 +69,7 @@
 .rm-acts button:disabled{filter:grayscale(.85) brightness(1.05);opacity:.75}
 
 /* ---------------- TABLE ---------------- */
-#app.gxl .gx-stage{background-image:var(--stage-img,url(./UI/Assets/kit2/bg-home.webp))!important}
+#app.gxl .gx-stage{background-image:url(./UI/Assets/kit2/bg-home.webp)!important}
 .gx-name{border-style:solid!important;border-color:transparent!important;border-width:0 2.2vh!important;border-image:var(--k-dark) 0 119 0 119 fill/0 2.2vh/0 stretch!important;
   background:none!important;box-shadow:none!important;color:#fff!important;height:4.4vh;display:flex!important;align-items:center;justify-content:center;padding:0 .3vw!important;border-radius:0!important;transform:none!important}
 .gx-me.active .gx-name{border-image-source:var(--k-pink)!important;color:#3a2748!important}
@@ -517,7 +517,7 @@
 #app.gxl .gx-dock{left:24%!important;right:19%!important}
 
 /* ===== เกมอื่น (ป๊อกเด้ง เก้าเก ผสมสิบ อีแก่) ใช้โต๊ะแบบเดียวกับดัมมี่ ===== */
-#app.gxo .gx-stage{background:var(--stage-img,url(./UI/Assets/kit2/bg-home.webp)) center/cover no-repeat}
+#app.gxo .gx-stage{background:url(./UI/Assets/kit2/bg-home.webp) center/cover no-repeat}
 #app.gxo .gx-hub.gxo-hub{left:24%!important;right:24%!important;top:13%!important;bottom:37%!important;display:flex;flex-direction:column;gap:1vh;overflow:auto;padding:1.4vh!important}
 #app.gxo .gx-hub .gx{flex:1;min-height:0;display:flex;flex-direction:column;gap:1vh;justify-content:center}
 #app.gxo .gx-hub .gx-hint{flex:none}
@@ -966,7 +966,3 @@
 .av-fc{position:absolute;inset:0;overflow:hidden;border-radius:50%;display:block}
 .av-fc .avatar-img{position:absolute!important;max-width:none!important;width:auto!important;height:calc(100% / var(--fz))!important;left:50%!important;top:calc(-100% * var(--fy) / var(--fz))!important;transform:translateX(calc(-100% * var(--fx)));object-fit:fill!important;border-radius:0!important}
 .hud-av,.pv-av,.rs-av{position:relative}
-
-/* ฉากโต๊ะจากพื้นหลังที่เลือก: สีทับช่องที่นั่งบางลงให้เห็นรูปชัด */
-#app.gxl .gx-stage[data-bg] .gx-q{fill-opacity:.16}
-#app.gxl .gx-stage[data-bg] .gx-q.on{fill-opacity:.3}

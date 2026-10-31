@@ -271,9 +271,10 @@ function withOwned(socket, raw, fn) {
   const claim = { s5: d.s5 === true, e2: d.e2 === true, cf: d.fr === 'char' };
   const perkFrame = (ch, fr, pk) => (pk.cf && ch ? 'ch-' + ch : fr === 'char' ? null : fr);
   if (!(SB.enabled() && socket.data.uid)) { const pk = { s5: claim.s5, e2: claim.e2, cf: claim.cf }; return fn(Object.assign({}, d, pk, { fr: perkFrame(d.ch, d.fr, pk) })); }
-  Promise.all([Skills.verifyOwned(SB, socket.data.uid, 'characters', d.ch), d.fr === 'char' ? null : Skills.verifyOwned(SB, socket.data.uid, 'frames', d.fr)])
-    .then(([ch, fr]) => Skills.verifyStarPerks(SB, socket.data.uid, ch, claim).then(pk => [ch, fr, pk]))
-    .then(([ch, fr, pk]) => { try { fn(Object.assign({}, d, { ch, fr: perkFrame(ch, fr, pk), s5: pk.s5, e2: pk.e2 })); } catch (e) { console.error('handler error:', e && e.message); } })
+  // พื้นหลังแสดงในช่องที่นั่งให้ทุกคนเห็น → ต้องมีของจริงด้วย
+  Promise.all([Skills.verifyOwned(SB, socket.data.uid, 'characters', d.ch), d.fr === 'char' ? null : Skills.verifyOwned(SB, socket.data.uid, 'frames', d.fr), Skills.verifyOwned(SB, socket.data.uid, 'backgrounds', d.bg)])
+    .then(([ch, fr, bg]) => Skills.verifyStarPerks(SB, socket.data.uid, ch, claim).then(pk => [ch, fr, bg, pk]))
+    .then(([ch, fr, bg, pk]) => { try { fn(Object.assign({}, d, { ch, bg, fr: perkFrame(ch, fr, pk), s5: pk.s5, e2: pk.e2 })); } catch (e) { console.error('handler error:', e && e.message); } })
     .catch(e => console.error('verifyOwned error:', e && e.message));
 }
 const obj = d => (d && typeof d === 'object' && !Array.isArray(d) ? d : {});

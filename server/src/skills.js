@@ -7,7 +7,7 @@ const CHAR_SKILL = { boy: 'quickeye', girl: 'quickhand', 'rina-01': 'notebook', 
 // คำสั่งเกมที่ต้องมีสกิล: rule → action.t → [skill ids ที่ใช้ได้]
 const ACTION_SKILL = { dummy: { autodep: ['quickhand', 'brave', 'helper', 'queeneye'] } };
 // ของฟรีที่ทุกคนมี (ไม่ต้องเช็กคลัง)
-const FREE = { characters: ['boy', 'girl'], frames: ['none'] };
+const FREE = { characters: ['boy', 'girl'], frames: ['none'], backgrounds: ['sakura-house'] };
 
 const skillOf = ch => (ch && CHAR_SKILL[ch]) || null;
 // คืนข้อความผิดพลาดถ้าคำสั่งนี้ต้องใช้สกิลที่ตัวละครไม่มี · null = ทำได้

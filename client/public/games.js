@@ -31,7 +31,7 @@ function gxFrame(o) {
   const n = S.P.length, opp = []; for (let k = 1; k < n; k++) opp.push((S.my + k) % n);
   const L = opp[0], T = opp[1], R = opp[2], on = pi => pi != null && S.cur === pi && !S.over;
   const art = (pi, pos) => { if (pi == null) return ''; const a = av(S.P[pi].n, S.P[pi].ch); return `<div class="gx-art gx-art-${pos}${on(pi) ? ' on' : ''}">${a.startsWith('<img') ? `<span class=gx-chr${gxCrop(S.P[pi].ch)}>${a}</span>` : `<span class=gx-emo>${a}</span>`}</div>`; };
-  const sb = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch, S.P[pi].n); return u ? `<div class="gx-sb gx-sb-${pos}${on(pi) ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
+  const sb = (pi, pos) => { if (pi == null) return ''; const u = gxSeatImg(S.P[pi].ch, S.P[pi].n, S.P[pi].bot ? null : S.P[pi].bg); return u ? `<div class="gx-sb gx-sb-${pos}${on(pi) ? ' on' : ''}" style="background-image:url('${esc(u)}')"></div>` : ''; };
   const seat = (pi, pos) => pi == null ? '' : `<div class="gx-seat gx-${pos}${on(pi) ? ' active' : ''}" data-seat=${pi}><div class=gx-name>${S.dealer === pi ? '👑 ' : ''}${esc(S.P[pi].n)}</div>${o.sub ? `<span class=gx-sub>${o.sub(pi)}</span>` : ''}${on(pi) ? '<em class=gx-turn>▶ ตา</em>' : ''}</div>`;
   const q = (pos, pi) => `<polygon class="gx-q gx-q-${pos}${on(pi) ? ' on' : ''}" points="${{ top: '0,0 100,0 72,28 28,28', right: '100,0 100,100 72,60 72,28', bottom: '0,100 28,60 72,60 100,100', left: '0,0 28,28 28,60 0,100' }[pos]}"/>`;
   const dock = String(o.dock || '').replace('<div class=acts>', '<div class="acts gx-acts">');
