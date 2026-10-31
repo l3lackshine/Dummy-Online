@@ -9,17 +9,21 @@
   const BASIC = ['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'];
   const STICKERS = [{ k: 'c:happy', f: 'happy', emo: '😊', t: 'เย้!' }, { k: 'c:laugh', f: 'laugh', emo: '😆', t: 'ฮ่า ๆ' }, { k: 'c:wow', f: 'wow', emo: '😲', t: 'ว้าว!' }, { k: 'c:sad', f: 'sad', emo: '🥺', t: 'งือ…' }];
   const NEED = 2;
-  const has = {};   // 'ch/f' → true/false (มีรูปจริงไหม)
-  const url = (ch, f) => './Item/Emote/' + ch + '/' + f + '.webp';
-  function probe(ch) { if (!ch) return; STICKERS.forEach(s => { const key = ch + '/' + s.f; if (key in has) return; has[key] = false; const i = new Image(); i.onload = () => { has[key] = true; }; i.src = url(ch, s.f); }); }
+  // รูปสติกเกอร์: ตัว SR/SSR ใช้ชุดของตัวเอง (Item/Emote/<ตัวละคร>/) · ตัวอื่นใช้ชุดตามระดับ แมวซากุระ (tier-rare = ตัว Rare · tier-common = ตัวฟรี)
+  const has = {};   // 'โฟลเดอร์/f' → true/false (มีรูปจริงไหม)
+  const url = (dir, f) => './Item/Emote/' + dir + '/' + f + '.webp';
+  const tierOf = ch => { const c = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(x => x.id === ch); return c && c.rarity === 'rare' ? 'tier-rare' : 'tier-common'; };
+  const OWN = ['sakuya-ssr', 'rina-01', 'arya-01', 'rena-01'];   // ตัวที่มีสติกเกอร์หน้าตัวเอง (เพิ่มชื่อเมื่อวาดชุดใหม่)
+  const dirOf = ch => (OWN.includes(ch) ? ch : tierOf(ch));
+  function probe(ch) { if (!ch) return; const dir = dirOf(ch); STICKERS.forEach(s => { const key = dir + '/' + s.f; if (key in has) return; has[key] = false; const i = new Image(); i.onload = () => { has[key] = true; }; i.src = url(dir, s.f); }); }
   const myCh = () => (typeof myChar === 'function' ? myChar() : '');
   const unlocked = () => typeof skStars === 'function' && skStars(myCh()) >= NEED;
   // หน้าตาอีโมตหนึ่งอัน (ใช้ทั้งบนโต๊ะและห้องรอ)
   function html(d) {
     const s = STICKERS.find(x => x.k === d.e);
     if (!s) return `<span class=em-emo>${E(d.e)}</span>`;
-    probe(d.ch);
-    return has[d.ch + '/' + s.f] ? `<img class=em-img src="${E(url(d.ch, s.f))}" alt="">` : `<span class=em-tmp><i>${s.emo}</i><b>${E(s.t)}</b></span>`;
+    probe(d.ch); const dir = dirOf(d.ch);
+    return has[dir + '/' + s.f] ? `<img class=em-img src="${E(url(dir, s.f))}" alt="">` : `<span class=em-tmp><i>${s.emo}</i><b>${E(s.t)}</b></span>`;
   }
   function send(e) { if (typeof sock !== 'undefined' && sock && sock.connected) sock.emit('room:emote', { e }); close(); }
   // ---------- แผงเลือกอีโมต ----------
