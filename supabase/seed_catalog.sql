@@ -51,7 +51,7 @@ update public.catalog_items set active = false where (kind, item_id) not in (('c
 
 insert into public.gacha_banners(id, name, description, single_coins, single_mcash, ten_coins, ten_mcash, pity, sort, active, ticket, ticket_mcash, ticket_mcash10, grp) values
 ('sakura-ace', 'ตู้ธรรมดา', 'ตู้ตัวละครธรรมดา · SSR 0.01% · SR 1% · ใช้ตั๋วสุ่มระดับ 1 (สีฟ้า) · ได้ตัวละครซ้ำเอาไปอัพดาวได้', null, null, null, null, 0, 1, true, 'ticket-b', 30, 270, 'char'),
-('sakuya-up', 'ราชินีไพ่ซากุยะ', 'ตู้เรทอัป — SSR ซากุยะ 1% · SR 3% (รวมพื้นหลังพิเศษของราชินี 2 แบบ) · การันตี SSR ใน 90 ครั้ง · ใช้ตั๋วสุ่มระดับ 2 (สีแดง)', null, null, null, null, 90, 2, true, 'ticket-r', 30, 270, 'char'),
+('sakuya-up', 'ราชินีไพ่ซากุยะ', 'ตู้เรทอัป — SSR ซากุยะ 1% · SR 5% (ตัวละคร SR ตัวละ 1% + พื้นหลังพิเศษของราชินี 2 แบบ แบบละ 1%) · การันตี SSR ใน 90 ครั้ง · ใช้ตั๋วสุ่มระดับ 2 (สีแดง)', null, null, null, null, 90, 2, true, 'ticket-r', 30, 270, 'char'),
 ('cosm-sakura', 'ตู้ของแต่งซากุระ', 'หลังไพ่ · ผ้าปูโต๊ะ · พื้นหลัง · กรอบการ์ด · สุ่มด้วยเหรียญ · ได้ของซ้ำแปลงเป็นเหรียญอัตโนมัติ', 500, null, 4500, null, 0, 3, true, null, null, null, 'cosm')
 on conflict (id) do update set name = excluded.name, description = excluded.description, single_coins = excluded.single_coins, single_mcash = excluded.single_mcash, ten_coins = excluded.ten_coins, ten_mcash = excluded.ten_mcash, pity = excluded.pity, sort = excluded.sort, active = true, ticket = excluded.ticket, ticket_mcash = excluded.ticket_mcash, ticket_mcash10 = excluded.ticket_mcash10, grp = excluded.grp;
 
@@ -70,18 +70,18 @@ insert into public.gacha_pool(banner_id, kind, item_id, weight) values
 ('sakura-ace', 'characters', 'leo-r', 164983),
 ('sakura-ace', 'characters', 'yuna-r', 164983),
 ('sakura-ace', 'characters', 'miyu-r', 164983),
-('sakuya-up', 'characters', 'rina-01', 6000),
-('sakuya-up', 'characters', 'arya-01', 6000),
-('sakuya-up', 'characters', 'rena-01', 6000),
+('sakuya-up', 'characters', 'rina-01', 10000),
+('sakuya-up', 'characters', 'arya-01', 10000),
+('sakuya-up', 'characters', 'rena-01', 10000),
 ('sakuya-up', 'characters', 'sakuya-ssr', 10000),
-('sakuya-up', 'characters', 'rei-r', 160000),
-('sakuya-up', 'characters', 'haru-r', 160000),
-('sakuya-up', 'characters', 'ken-r', 160000),
-('sakuya-up', 'characters', 'leo-r', 160000),
-('sakuya-up', 'characters', 'yuna-r', 160000),
-('sakuya-up', 'characters', 'miyu-r', 160000),
-('sakuya-up', 'backgrounds', 'sakuya-cardroom', 6000),
-('sakuya-up', 'backgrounds', 'sakuya-pond', 6000),
+('sakuya-up', 'characters', 'rei-r', 156667),
+('sakuya-up', 'characters', 'haru-r', 156667),
+('sakuya-up', 'characters', 'ken-r', 156667),
+('sakuya-up', 'characters', 'leo-r', 156667),
+('sakuya-up', 'characters', 'yuna-r', 156666),
+('sakuya-up', 'characters', 'miyu-r', 156666),
+('sakuya-up', 'backgrounds', 'sakuya-cardroom', 10000),
+('sakuya-up', 'backgrounds', 'sakuya-pond', 10000),
 ('cosm-sakura', 'backs', 'classic-red', 81250),
 ('cosm-sakura', 'backs', 'midnight', 81250),
 ('cosm-sakura', 'backs', 'paw-pink', 40000),
