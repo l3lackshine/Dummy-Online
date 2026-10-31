@@ -416,6 +416,28 @@
    "ink": "#33250a",
    "price": 300,
    "src": "folder"
+  },
+  {
+   "id": "sakuya-cardroom",
+   "name": "ห้องไพ่ของราชินี",
+   "price": 800,
+   "rarity": "epic",
+   "exclusive": "sakuya-up",
+   "css": "",
+   "ink": "#ffffff",
+   "asset": "./Item/Background/sakuya-cardroom.webp",
+   "src": "folder"
+  },
+  {
+   "id": "sakuya-pond",
+   "name": "ศาลาริมสระใต้จันทร์",
+   "price": 800,
+   "rarity": "epic",
+   "exclusive": "sakuya-up",
+   "css": "",
+   "ink": "#ffffff",
+   "asset": "./Item/Background/sakuya-pond.webp",
+   "src": "folder"
   }
  ],
  "cards": [

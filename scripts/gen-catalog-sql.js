@@ -27,7 +27,7 @@ function build(skins, skills, gacha) {
   for (const kind of KINDS) for (const x of (skins[kind] || [])) {
     if (!x || !x.id) continue;
     const r = rarityOf(x);
-    items.push({ kind, id: x.id, name: x.name || x.n || x.id, rarity: r, def: int(x.price) === 0 && !x.rarity ? true : !!x.default, inPool: x.gacha !== false });
+    items.push({ kind, id: x.id, name: x.name || x.n || x.id, rarity: r, def: int(x.price) === 0 && !x.rarity ? true : !!x.default, inPool: x.gacha !== false, excl: x.exclusive || null });   // exclusive = อยู่เฉพาะตู้นั้น
   }
   if (tiers.length) {
     out.push('insert into public.rarity_config(rarity, name, sell_coins, sort) values',
@@ -54,7 +54,7 @@ function build(skins, skills, gacha) {
     for (const b of banners) {
       const only = Array.isArray(b.pool) && b.pool.length ? b.pool : null, RW = b.rarityWeights || {}, up = (b.rateUp && b.rateUp.items) || [], mult = Number(b.rateUp && b.rateUp.multiplier) || 1;
       const kinds = Array.isArray(b.kinds) && b.kinds.length ? b.kinds : null;   // จำกัดชนิดของในตู้ (ตู้ตัวละคร / ตู้ของแต่ง)
-      const list = inPool.filter(i => (!only || only.some(p => hit(i, key(p)))) && (!kinds || kinds.includes(i.kind)) && !(b.noDefaults && i.def) && RW[i.rarity] !== 0), cnt = {};
+      const list = inPool.filter(i => (i.excl ? i.excl === b.id : (!only || only.some(p => hit(i, key(p)))) && (!kinds || kinds.includes(i.kind))) && !(b.noDefaults && i.def) && RW[i.rarity] !== 0), cnt = {};
       list.forEach(i => { cnt[i.rarity] = (cnt[i.rarity] || 0) + 1; });
       const seen = {};   // แบ่งน้ำหนักของระดับให้ลงตัว: เศษไปอยู่ชิ้นแรก ๆ (รวมทั้งระดับ = น้ำหนักระดับ × 100 พอดี → เปอร์เซ็นต์ตรงกับที่ประกาศ)
       for (const i of list) {

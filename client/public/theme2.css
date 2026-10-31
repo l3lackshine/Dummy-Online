@@ -967,3 +967,7 @@
 .av-fc{position:absolute;inset:0;overflow:hidden;border-radius:50%;display:block}
 .av-fc .avatar-img{position:absolute!important;max-width:none!important;width:auto!important;height:calc(100% / var(--fz))!important;left:50%!important;top:calc(-100% * var(--fy) / var(--fz))!important;transform:translateX(calc(-100% * var(--fx)));object-fit:fill!important;border-radius:0!important}
 .hud-av,.pv-av,.rs-av{position:relative}
+/* เส้นแบ่งช่องที่นั่ง: เส้นทองชัด + เงาเข้ม ให้แต่ละช่องแยกกันไม่ปนกัน (gx-bg อยู่เหนือรูปที่นั่ง) */
+#app.gxl .gx-bg{z-index:1;pointer-events:none}
+#app.gxl .gx-q{fill-opacity:.1!important;stroke:#ffe3a3;stroke-opacity:.95;stroke-width:3.2;stroke-linejoin:round;filter:drop-shadow(0 0 2px #000c) drop-shadow(0 0 6px #0008)}
+#app.gxl .gx-q.on{stroke:#2ff3ff;stroke-width:4.5;filter:drop-shadow(0 0 3px #000c) drop-shadow(0 0 9px #2ff3ffcc);fill-opacity:.06!important}
