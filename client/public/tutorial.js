@@ -51,7 +51,7 @@
     { text: '<b>เรียนจบแล้ว เยี่ยมมาก!</b> 🎉<br>ป้าน็อกยังโดน <b>ทิ้งโง่</b> −50 ด้วย เพราะทิ้งไพ่ให้เราเก็บแล้วน็อกได้<br>ดูกติกาเต็มได้ที่ 📖 กติกา ในหน้าสร้างห้อง', finish: true, when: () => !!(S && S.over), block: true },
   ];
 
-  let on = false, step = 0, waitT = 0, skipAsk = false, roomAsked = false, startedAt = 0;
+  let on = false, step = 0, waitT = 0, skipAsk = false, roomAsked = false, startedAt = 0, heldDaily = false;
   const ui = () => document.getElementById('tutUi');
   function mount() {
     if (ui()) return ui();
@@ -85,6 +85,8 @@
   }
   function tick() {
     if (!on) return;
+    // หน้าต่างที่เด้งเองตอนล็อกอิน (รางวัลรายวัน · แพตช์โน้ต) จะทับบทสอน → ปิดไว้ก่อน จบบทสอนแล้วค่อยเปิดรางวัลรายวันให้
+    document.querySelectorAll('.dl-modal,.pn-modal').forEach(n => { if (n.classList.contains('dl-modal')) heldDaily = true; n.remove(); });
     const st = STEPS[step];
     if (!st) return finish(false);
     if (st.done && S && (() => { try { return st.done(); } catch (e) { return false; } })()) { step++; skipAsk = false; }
@@ -120,6 +122,7 @@
     if (dbOn()) { try { const r = await DB.call('finish_tutorial', { p_skipped: !!skipped }); if (r && r.first && r.reward && r.reward.length) toast('🎓 รางวัลบทสอน: ' + r.reward.map(x => (window.Items ? Items.info(x.id).name : x.id) + ' ×' + x.qty).join(' · ')); DB.refresh().catch(() => {}); } catch (e) { toast(e.message); } }
     LS.set('dummyTutDone', '1');
     try { if (typeof code !== 'undefined' && code) leave(); else { screen = 'home'; render(); } } catch (e) {}
+    if (heldDaily) { heldDaily = false; setTimeout(() => { try { if (window.openDaily) openDaily(); } catch (e) {} }, 1200); }
   }
   window.tutNext = () => { step++; skipAsk = false; paint(); };
   window.tutDone = () => finish(false);
