@@ -70,7 +70,7 @@
 #app.gxl .zone .m .c{width:calc(var(--u)*6.2);height:calc(var(--u)*8.8);font-size:max(9px,calc(var(--u)*2.5));margin:0;transform:none}
 #app.gxl .zone .m .c+.c{margin-left:calc(var(--u)*-3.4);margin-top:0}
 #app.gxl .zone-top{left:30%;right:30%;top:calc(var(--u)*17)}
-#app.gxl .zone-left{left:calc(var(--u)*1.5);width:25%;top:calc(var(--u)*49);align-content:flex-start;justify-content:flex-start}
+#app.gxl .zone-left{left:calc(var(--u)*1.5);width:25%;top:calc(var(--u)*49);align-content:flex-start;justify-content:flex-start;flex-wrap:wrap-reverse}   /* เรียงชุดไพ่จากขอบโต๊ะออกไป (เหมือนฝั่งขวา) ไม่ชิดขอบจอที่กล้องหน้าบัง */
 #app.gxl .zone-right{right:calc(var(--u)*1.5);width:25%;top:calc(var(--u)*49);align-content:flex-start;justify-content:flex-end}
 #app.gxl .zone-bottom{left:30%;right:30%;bottom:calc(var(--cw)*1.0 + var(--u)*4.5)}
 

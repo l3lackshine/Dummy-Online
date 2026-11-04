@@ -1,8 +1,8 @@
 /* emote.css — อีโมตบนโต๊ะ + สติกเกอร์ตัวละคร (emote.js) · กรอบประจำตัวละคร */
-.em-btn{position:fixed;left:max(10px,1.6vh);bottom:44vh;z-index:8600;width:max(40px,8vh);height:max(40px,8vh);border-radius:50%;border:.3vh solid #ffd76a;
+.em-btn{position:fixed;left:23vw;bottom:2.4vh;z-index:8600;width:max(40px,8vh);height:max(40px,8vh);border-radius:50%;border:.3vh solid #ffd76a;
   background:#2a1d3fcc;font-size:max(20px,4.2vh);line-height:1;cursor:pointer;box-shadow:0 .5vh 1.4vh #0007;display:flex;align-items:center;justify-content:center}
 .em-btn:active{transform:scale(.92)}
-.em-pal{position:fixed;left:calc(max(10px,1.6vh) + max(46px,9.5vh));bottom:max(20px,24vh);z-index:8700;background:#fffaf2;border:.3vh solid #e9c27a;border-radius:2vh;padding:1vh;
+.em-pal{position:fixed;left:max(10px,calc(23vw - 12vh));bottom:calc(2.4vh + max(46px,9.5vh));z-index:8700;background:#fffaf2;border:.3vh solid #e9c27a;border-radius:2vh;padding:1vh;
   box-shadow:0 1vh 3vh #0008;display:flex;flex-direction:column;gap:.8vh;width:min(88vw,max(300px,58vh));animation:emIn .18s ease-out}
 @keyframes emIn{from{opacity:0;transform:translateY(8px)}}
 .em-row{display:grid;grid-template-columns:repeat(8,1fr);gap:.5vh}

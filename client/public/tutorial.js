@@ -63,13 +63,25 @@
     document.body.appendChild(el); return el;
   }
   function unmount() { const el = ui(); if (el) el.remove(); }
-  const rectOf = sel => { const r = []; $$(sel).forEach(n => { const b = n.getBoundingClientRect(); if (b.width && b.height) r.push(b); }); return r; };
+  // ไพ่ในมือวางเหลื่อมกัน: ตัดกรอบให้เหลือเฉพาะส่วนที่มองเห็น (ถึงขอบซ้ายของใบถัดไป) ไม่ให้กรอบไปทับใบข้าง ๆ
+  const rectOf = sel => { const r = []; $$(sel).forEach(n => { const b = n.getBoundingClientRect(); if (!b.width || !b.height) return;
+    const nx = n.closest('.hand') && n.nextElementSibling, nb = nx && nx.getBoundingClientRect(), right = nb && nb.left > b.left + 8 && nb.left < b.right ? nb.left : b.right;
+    r.push({ left: b.left, top: b.top, right, bottom: b.bottom, width: right - b.left, height: b.height }); }); return r; };
 
+  // รวมกรอบที่ซ้อน/ชิดกัน (ไพ่ในมือวางเหลื่อมกัน) เป็นกรอบเดียว — ไม่ให้เส้นไฮไลต์พาดทับหน้าไพ่ที่ต้องเลือก
+  function merge(rs) {
+    const out = rs.map(b => ({ left: b.left, top: b.top, right: b.right, bottom: b.bottom }));
+    for (let again = true; again;) { again = false;
+      for (let i = 0; i < out.length && !again; i++) for (let j = i + 1; j < out.length; j++) { const a = out[i], b = out[j];
+        if (a.left <= b.right + 4 && b.left <= a.right + 4 && a.top <= b.bottom + 4 && b.top <= a.bottom + 4) {
+          out[i] = { left: Math.min(a.left, b.left), top: Math.min(a.top, b.top), right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom) }; out.splice(j, 1); again = true; break; } } }
+    return out.map(b => ({ left: b.left, top: b.top, width: b.right - b.left, height: b.bottom - b.top }));
+  }
   function paint() {
     if (!on) return;
     const st = STEPS[step]; if (!st) return;
     const el = mount(), ready = !st.when || (() => { try { return st.when(); } catch (e) { return false; } })();
-    const spots = ready && st.spot ? st.spot().flatMap(rectOf) : [];
+    const spots = merge(ready && st.spot ? st.spot().flatMap(rectOf) : []);
     const pad = 6, holes = spots.map(b => `<rect x="${b.left - pad}" y="${b.top - pad}" width="${b.width + pad * 2}" height="${b.height + pad * 2}" rx="12" fill="black"/>`).join('');
     el.querySelector('.tut-holes').innerHTML = holes;
     el.querySelector('.tut-rings').innerHTML = spots.map(b => `<i style="left:${b.left - pad}px;top:${b.top - pad}px;width:${b.width + pad * 2}px;height:${b.height + pad * 2}px"></i>`).join('');
