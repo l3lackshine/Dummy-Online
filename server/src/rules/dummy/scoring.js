@@ -19,23 +19,34 @@ function pee(G, from, to, c) {
 
 // สรุปเหรียญตอนจบเกม (เรียกหลังคิดแต้มเสร็จ) — k = ที่นั่งคนน็อก หรือ null ถ้าไพ่หมดกอง
 function settle(G, k) {
-  const stake = G.stake, n = G.P.length, lines = G.ledger.slice();
-  const add = (f, t, a, w) => { if (a > 0 && f !== t) lines.push({ f, t, a, w }); };
+  const stake = G.stake,
+    n = G.P.length,
+    lines = G.ledger.slice();
+  const add = (f, t, a, w) => {
+    if (a > 0 && f !== t) lines.push({ f, t, a, w });
+  };
   if (k != null) {
-    const others = G.P.filter(p => p.i !== k).map(p => ({ i: p.i, pts: p.pts })).sort((a, b) => a.pts - b.pts); // แต้มน้อยสุดก่อน = อันดับท้าย
+    const others = G.P.filter(p => p.i !== k)
+      .map(p => ({ i: p.i, pts: p.pts }))
+      .sort((a, b) => a.pts - b.pts); // แต้มน้อยสุดก่อน = อันดับท้าย
     others.forEach(o => {
       const pos = others.findIndex(x => x.pts === o.pts); // แต้มเท่ากันนับอันดับเดียวกัน
       add(o.i, k, Math.round(stake * KNOCK_RATE[Math.min(pos, KNOCK_RATE.length - 1)]), 'แพ้น็อก อันดับ ' + (n - pos));
     });
   }
   G.P.forEach(p => {
-    const cnt = p.h.filter(sp).length; if (!cnt) return;
-    const mult = p.melded ? 1 : 2, amt = stake * mult * cnt;
+    const cnt = p.h.filter(sp).length;
+    if (!cnt) return;
+    const mult = p.melded ? 1 : 2,
+      amt = stake * mult * cnt;
     const to = G.spetoMode === 'knocker' && k != null ? [k] : G.P.filter(q => q.i !== p.i).map(q => q.i);
     to.forEach(t => add(p.i, t, amt, 'อมสเปโต' + (cnt > 1 ? ' ' + cnt + ' ใบ' : '') + (mult > 1 ? ' ไม่เคยเกิด ×2' : '')));
   });
   const delta = Array(n).fill(0);
-  lines.forEach(l => { delta[l.f] -= l.a; delta[l.t] += l.a; });
+  lines.forEach(l => {
+    delta[l.f] -= l.a;
+    delta[l.t] += l.a;
+  });
   return { stake, delta, lines };
 }
 

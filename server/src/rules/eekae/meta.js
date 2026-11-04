@@ -7,8 +7,26 @@ const meta = {
   minPlayers: 1,
   maxPlayers: 4,
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
-    { key: 'mode', label: 'ผู้แพ้จ่ายให้', type: 'select', default: 'all', choices: [{ v: 'all', label: 'ทุกคนที่รอด (คนละเท่ากัน)' }, { v: 'first', label: 'คนที่หมดไพ่ก่อน (ได้เต็ม)' }] },
+    {
+      key: 'stake',
+      label: 'เดิมพันต่อตัว (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [5, 10, 20, 50, 100],
+    },
+    {
+      key: 'mode',
+      label: 'ผู้แพ้จ่ายให้',
+      type: 'select',
+      default: 'all',
+      choices: [
+        { v: 'all', label: 'ทุกคนที่รอด (คนละเท่ากัน)' },
+        { v: 'first', label: 'คนที่หมดไพ่ก่อน (ได้เต็ม)' },
+      ],
+    },
   ],
   howto: [
     'ใช้ไพ่ 52 ใบ เอาควีนออก 1 ใบ (Q♣) เหลือ 51 ใบ แจกให้หมดทุกคน (มีบางคนได้มากกว่า 1 ใบ ไม่เป็นไร)',

@@ -27,10 +27,15 @@ function installMatchmaking(ctx) {
   // ---------- หาห้อง ----------
   // ห้องที่รอคนอยู่และเข้าได้ (เลือกห้องที่คนมากสุดก่อน) · บัญชีเดียวกันไม่ลงห้องเดียวกัน (กันเปิดหลายแท็บปั่นแต้ม)
   function findOpenRoom(key, uid) {
-    const candidates = [...rooms.values()].filter(room =>
-      room.match && room.match.key === key && room.match.state === 'searching' && !room.game
-      && ctx.connectedPlayers(room).length < config.MAX_PLAYERS
-      && !(uid && room.players.some(p => p.uid === uid)));
+    const candidates = [...rooms.values()].filter(
+      room =>
+        room.match &&
+        room.match.key === key &&
+        room.match.state === 'searching' &&
+        !room.game &&
+        ctx.connectedPlayers(room).length < config.MAX_PLAYERS &&
+        !(uid && room.players.some(p => p.uid === uid))
+    );
     candidates.sort((a, b) => ctx.connectedPlayers(b).length - ctx.connectedPlayers(a).length);
     return candidates[0] || null;
   }
@@ -44,7 +49,17 @@ function installMatchmaking(ctx) {
     const open = findOpenRoom(key, uid);
     if (open) return open;
     if (rooms.size >= config.MAX_ROOMS) return null;
-    const match = { key, ranked, state: 'searching', since: Date.now(), prompt: null, waitTimer: null, promptTimer: null, readyTimer: null, readyUntil: null };
+    const match = {
+      key,
+      ranked,
+      state: 'searching',
+      since: Date.now(),
+      prompt: null,
+      waitTimer: null,
+      promptTimer: null,
+      readyTimer: null,
+      readyUntil: null,
+    };
     return ctx.createRoom(ruleId, cleanOptions, !ranked, { match });
   }
 
@@ -89,7 +104,9 @@ function installMatchmaking(ctx) {
     match.prompt = null;
     match.state = 'ready';
     match.readyUntil = Date.now() + config.MATCH_READY_MS;
-    room.players.forEach(p => { p.accepted = false; });
+    room.players.forEach(p => {
+      p.accepted = false;
+    });
     setMatchTimer(match, 'readyTimer', config.MATCH_READY_MS, () => expireReady(room));
     ctx.emitLobby(room);
   }
@@ -100,7 +117,9 @@ function installMatchmaking(ctx) {
     match.readyTimer = null;
     match.state = 'searching';
     match.readyUntil = null;
-    room.players.forEach(p => { p.accepted = false; });
+    room.players.forEach(p => {
+      p.accepted = false;
+    });
   }
 
   function acceptReady(room, player) {
@@ -110,7 +129,9 @@ function installMatchmaking(ctx) {
     const humans = ctx.connectedPlayers(room);
     const everyoneReady = humans.length >= config.MAX_PLAYERS && humans.every(p => p.accepted);
     if (!everyoneReady) return ctx.emitLobby(room);
-    humans.forEach(p => { p.ready = true; });
+    humans.forEach(p => {
+      p.ready = true;
+    });
     ctx.startGame(room);
   }
 
@@ -118,7 +139,10 @@ function installMatchmaking(ctx) {
     const match = room.match;
     if (!ctx.alive(room) || !match || match.state !== 'ready' || room.game) return;
     match.readyTimer = null;
-    ctx.connectedPlayers(room).filter(p => !p.accepted).forEach(p => kickNotReady(room, p));
+    ctx
+      .connectedPlayers(room)
+      .filter(p => !p.accepted)
+      .forEach(p => kickNotReady(room, p));
     cancelReady(room);
     if (!room.players.length) {
       clearMatchTimers(room);
@@ -158,8 +182,11 @@ function installMatchmaking(ctx) {
     const humans = ctx.connectedPlayers(room);
     const votes = match.prompt.votes;
     match.prompt = null;
-    if (humans.length && humans.every(p => votes[p.id] === 'bots')) {   // ทุกคนเลือกเติมบอท
-      humans.forEach(p => { p.ready = true; });
+    if (humans.length && humans.every(p => votes[p.id] === 'bots')) {
+      // ทุกคนเลือกเติมบอท
+      humans.forEach(p => {
+        p.ready = true;
+      });
       ctx.startGame(room);
       return;
     }
@@ -178,7 +205,15 @@ function installMatchmaking(ctx) {
     else ctx.emitLobby(room);
   }
 
-  Object.assign(ctx, { findOrCreateMatchRoom, matchTick, acceptReady, voteFill, clearMatchTimers, backToSearching, markMatchPlaying });
+  Object.assign(ctx, {
+    findOrCreateMatchRoom,
+    matchTick,
+    acceptReady,
+    voteFill,
+    clearMatchTimers,
+    backToSearching,
+    markMatchPlaying,
+  });
 }
 
 module.exports = installMatchmaking;

@@ -57,9 +57,21 @@ const ctx = buildContext();
 
 // ---------- HTTP ----------
 // ส่งกุญแจแพ็กแอสเซ็ตตามสิทธิ์ผู้เล่น (ดู src/packkeys.js) — ต้องตั้ง PACK_MASTER ใน Environment
-app.get('/pack-key', require('./packkeys').route({ master: config.PACK_MASTER, verifyToken: SB.verifyToken, ownsItem: SB.ownsItem }));
+app.get(
+  '/pack-key',
+  require('./packkeys').route({ master: config.PACK_MASTER, verifyToken: SB.verifyToken, ownsItem: SB.ownsItem })
+);
 // db = ต่อฐานข้อมูลอยู่ไหม (ไม่บอกค่าคีย์)
-app.get('/health', (_req, res) => res.json({ ok: true, service: 'dummy-online-4p', version: VERSION, rules: Rules.list().map(r => r.id), rooms: ctx.rooms.size, db: SB.enabled() }));
+app.get('/health', (_req, res) =>
+  res.json({
+    ok: true,
+    service: 'dummy-online-4p',
+    version: VERSION,
+    rules: Rules.list().map(r => r.id),
+    rooms: ctx.rooms.size,
+    db: SB.enabled(),
+  })
+);
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
 
 // ---------- ตรวจตัวตน: เปิดใช้ Supabase แล้วต้องแนบ access token ตอนเชื่อมต่อ (client ส่งใน auth.token) ----------

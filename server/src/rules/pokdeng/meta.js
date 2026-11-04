@@ -7,10 +7,46 @@ const meta = {
   minPlayers: 1,
   maxPlayers: 4,
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
-    { key: 'dealer', label: 'เจ้ามือ', type: 'select', default: 'random', choices: [{ v: 'random', label: 'สุ่มทุกตา' }, { v: 'host', label: 'เจ้าของห้อง' }] },
-    { key: 'straights', label: 'ไพ่เรียง (3 ใบเรียงกัน = 3 เด้ง / เรียงฟลัช = 5 เด้ง)', type: 'select', default: 'on', choices: [{ v: 'on', label: 'เปิด' }, { v: 'off', label: 'ปิด' }] },
-    { key: 'tieRule', label: 'ประเภทและแต้มเท่ากัน', type: 'select', default: 'deng', choices: [{ v: 'deng', label: 'เทียบเด้ง (จ่ายส่วนต่าง)' }, { v: 'push', label: 'เสมอ คืนเดิมพัน' }] },
+    {
+      key: 'stake',
+      label: 'เดิมพันต่อตัว (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [5, 10, 20, 50, 100],
+    },
+    {
+      key: 'dealer',
+      label: 'เจ้ามือ',
+      type: 'select',
+      default: 'random',
+      choices: [
+        { v: 'random', label: 'สุ่มทุกตา' },
+        { v: 'host', label: 'เจ้าของห้อง' },
+      ],
+    },
+    {
+      key: 'straights',
+      label: 'ไพ่เรียง (3 ใบเรียงกัน = 3 เด้ง / เรียงฟลัช = 5 เด้ง)',
+      type: 'select',
+      default: 'on',
+      choices: [
+        { v: 'on', label: 'เปิด' },
+        { v: 'off', label: 'ปิด' },
+      ],
+    },
+    {
+      key: 'tieRule',
+      label: 'ประเภทและแต้มเท่ากัน',
+      type: 'select',
+      default: 'deng',
+      choices: [
+        { v: 'deng', label: 'เทียบเด้ง (จ่ายส่วนต่าง)' },
+        { v: 'push', label: 'เสมอ คืนเดิมพัน' },
+      ],
+    },
   ],
   howto: [
     'ทุกคนเดิมพันเท่ากัน แจกคนละ 2 ใบ เจ้ามือได้ 2 ใบเช่นกัน เล่นกับเจ้ามือเท่านั้น ไม่แข่งกันเอง',

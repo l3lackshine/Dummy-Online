@@ -13,8 +13,8 @@ function installGameFlow(ctx) {
     if (tutorial) {
       return { deck: tutorial.deck(), options: room.options, minSeats: config.MAX_PLAYERS, first: 0, script: tutorial.script() };
     }
-    const deck = room.deck || Shuffle.shuffle().ids;   // สับใหม่ทุกตาโดยเซิร์ฟเวอร์
-    const minSeats = room.allowBots === false ? humanCount : config.MAX_PLAYERS;   // ปิดบอท = เล่นเท่าจำนวนคนจริง
+    const deck = room.deck || Shuffle.shuffle().ids; // สับใหม่ทุกตาโดยเซิร์ฟเวอร์
+    const minSeats = room.allowBots === false ? humanCount : config.MAX_PLAYERS; // ปิดบอท = เล่นเท่าจำนวนคนจริง
     return { deck, options: room.options, minSeats };
   }
 
@@ -22,13 +22,17 @@ function installGameFlow(ctx) {
     const humans = ctx.connectedPlayers(room);
     if (humans.length < 1 || humans.length > config.MAX_PLAYERS) return false;
     clearBotTimer(room);
-    room.players = humans;   // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
-    room.players.forEach((p, i) => { p.seat = i; });
+    room.players = humans; // คนที่หลุดไปแล้วไม่ถูกนับในตาใหม่
+    room.players.forEach((p, i) => {
+      p.seat = i;
+    });
     const setup = gameSetup(room, humans.length);
-    room.deck = null;          // สำรับที่สับไว้ใช้ได้ครั้งเดียว
+    room.deck = null; // สำรับที่สับไว้ใช้ได้ครั้งเดียว
     room.shuffledBy = null;
     room.shuffleSeq = (room.shuffleSeq || 0) + 1;
-    room.players.forEach(p => { p.ready = false; });
+    room.players.forEach(p => {
+      p.ready = false;
+    });
     const seats = room.players.map(p => ({ id: p.id, n: p.name, ch: p.ch, bg: p.bg }));
     room.game = ctx.ruleOf(room).newGame(seats, setup);
     // ตัดสินตอนเริ่ม: คนหลุดกลางเกมแล้วบอทเล่นแทน ไม่ทำให้กลายเป็นเกมที่มีบอท
@@ -89,8 +93,8 @@ function installGameFlow(ctx) {
     game.settled = true;
     const seat = ctx.ruleOf(room).winner(game);
     const winner = seat == null ? null : room.players.find(p => p.seat === seat);
-    if (!room.tutorial) ctx.recordResults(room);   // ตาสอนเล่นไม่นับผล ไม่หักสตามิน่า
-    room.lastWinner = winner || null;               // ผู้ชนะเป็นบอท → เจ้าของห้องได้สิทธิ์สับแทน
+    if (!room.tutorial) ctx.recordResults(room); // ตาสอนเล่นไม่นับผล ไม่หักสตามิน่า
+    room.lastWinner = winner || null; // ผู้ชนะเป็นบอท → เจ้าของห้องได้สิทธิ์สับแทน
     room.round = (room.round || 0) + 1;
     ctx.openNext(room);
   }

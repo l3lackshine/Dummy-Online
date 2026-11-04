@@ -1,5 +1,6 @@
 // ตรวจว่ารายชื่อตัวละคร/พื้นหลังที่เซิร์ฟเวอร์ยอมรับ ตรงกับ client/public/skin/skins.json (กันตัวละครใหม่ถูกเปลี่ยนเป็นค่าว่างบนโต๊ะ)
-const assert = require('assert'), path = require('path');
+const assert = require('assert'),
+  path = require('path');
 const { CHARS, BGS } = require('./src/rules/common');
 const skins = require(path.join(__dirname, '../client/public/skin/skins.json'));
 const ids = k => (skins[k] || []).map(x => x.id).sort();

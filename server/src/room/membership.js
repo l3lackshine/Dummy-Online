@@ -20,7 +20,7 @@ function installMembership(ctx) {
     const player = {
       id: socket.id,
       uid: socket.data.uid || null,
-      name: cleanName(socket.data.uname || look.name),   // ล็อกอินแล้วใช้ชื่อจากบัญชีเสมอ
+      name: cleanName(socket.data.uname || look.name), // ล็อกอินแล้วใช้ชื่อจากบัญชีเสมอ
       ch: CHARS.includes(look.ch) ? look.ch : null,
       bg: BGS.includes(look.bg) ? look.bg : null,
       fr: cleanFrame(look.fr),
@@ -65,7 +65,8 @@ function installMembership(ctx) {
       ctx.emitLobby(room);
       return;
     }
-    if (ctx.active(room)) {   // ระหว่างตา: บอทเล่นแทน
+    if (ctx.active(room)) {
+      // ระหว่างตา: บอทเล่นแทน
       const seat = room.game.P[player.seat];
       seat.bot = true;
       seat.id = null;
@@ -88,7 +89,11 @@ function installMembership(ctx) {
 
   // เชื่อมต่อกลับ (รีเฟรชหน้า/เน็ตหลุด): ได้ที่นั่งเดิมคืน และบอทที่เล่นแทนอยู่ถูกปลดออก
   function rejoinRoom(socket, code, token) {
-    const room = rooms.get(String(code || '').trim().toUpperCase());
+    const room = rooms.get(
+      String(code || '')
+        .trim()
+        .toUpperCase()
+    );
     const player = room && token ? room.players.find(x => x.token && x.token === token) : null;
     if (!player) return false;
     detachOldSocket(room, player, socket);
@@ -103,7 +108,12 @@ function installMembership(ctx) {
       seat.n = player.name;
     }
     checkEmpty(room);
-    socket.emit('room:joined', { code: room.code, host: ctx.connectedPlayers(room)[0] === player, token: player.token, rejoined: true });
+    socket.emit('room:joined', {
+      code: room.code,
+      host: ctx.connectedPlayers(room)[0] === player,
+      token: player.token,
+      rejoined: true,
+    });
     ctx.emitStates(room);
     ctx.emitLobby(room);
     return true;

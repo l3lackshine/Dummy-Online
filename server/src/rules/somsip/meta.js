@@ -7,9 +7,36 @@ const meta = {
   minPlayers: 1,
   maxPlayers: 4,
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
-    { key: 'variant', label: 'รูปแบบ', type: 'select', default: 'phuket', choices: [{ v: 'phuket', label: 'ภูเก็ต (โจ๊กเกอร์ + ไพ่ไวลด์ + มือพิเศษ)' }, { v: 'simple', label: 'แบบง่าย (52 ใบ ไม่มีไวลด์)' }] },
-    { key: 'special', label: 'มือพิเศษ (A 3 ใบ / ดอกเดียว 6 ใบ) ชนะได้', type: 'select', default: 'x1', choices: [{ v: 'x1', label: '1 เท่า' }, { v: 'x2', label: '2 เท่า' }] },
+    {
+      key: 'stake',
+      label: 'เดิมพันต่อตัว (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [5, 10, 20, 50, 100],
+    },
+    {
+      key: 'variant',
+      label: 'รูปแบบ',
+      type: 'select',
+      default: 'phuket',
+      choices: [
+        { v: 'phuket', label: 'ภูเก็ต (โจ๊กเกอร์ + ไพ่ไวลด์ + มือพิเศษ)' },
+        { v: 'simple', label: 'แบบง่าย (52 ใบ ไม่มีไวลด์)' },
+      ],
+    },
+    {
+      key: 'special',
+      label: 'มือพิเศษ (A 3 ใบ / ดอกเดียว 6 ใบ) ชนะได้',
+      type: 'select',
+      default: 'x1',
+      choices: [
+        { v: 'x1', label: '1 เท่า' },
+        { v: 'x2', label: '2 เท่า' },
+      ],
+    },
   ],
   howto: [
     'ใช้ไพ่ 52 ใบ + โจ๊กเกอร์ 3 ใบ แจกคนละ 5 ใบ เปิดไพ่ 1 ใบเป็น "ตัวบอกไพ่ไวลด์" (หยิบไม่ได้) แบบง่ายใช้ 52 ใบ ไม่มีไวลด์',

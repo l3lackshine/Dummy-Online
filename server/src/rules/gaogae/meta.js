@@ -7,8 +7,26 @@ const meta = {
   minPlayers: 1,
   maxPlayers: 4,
   options: [
-    { key: 'stake', label: 'ค่าต๋งต่อคน (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
-    { key: 'raise', label: 'เกทับครั้งละ (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [10, 20, 50, 100] },
+    {
+      key: 'stake',
+      label: 'ค่าต๋งต่อคน (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [5, 10, 20, 50, 100],
+    },
+    {
+      key: 'raise',
+      label: 'เกทับครั้งละ (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [10, 20, 50, 100],
+    },
   ],
   howto: [
     'ทุกคนลงค่าต๋งเข้ากองกลาง (Jackpot) แล้วรับไพ่คนละ 3 ใบ (เห็นเฉพาะไพ่ของตัวเอง)',

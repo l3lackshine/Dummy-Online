@@ -9,7 +9,9 @@ function installPlayOn(ctx) {
     if (config.NEXT_MS <= 0 || room.next) return;
     const humans = ctx.connectedPlayers(room);
     if (!humans.length) return;
-    humans.forEach(p => { p.again = false; });
+    humans.forEach(p => {
+      p.again = false;
+    });
     const next = { until: humans.length > 1 ? Date.now() + config.NEXT_MS : null, n0: humans.length, timer: null };
     if (next.until) {
       next.timer = setTimeout(() => expireNext(room), config.NEXT_MS);

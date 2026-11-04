@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 // สร้าง supabase/name_filter.sql จากรายการคำใน server/src/namefilter.js (ให้ฐานข้อมูลตรวจชื่อด้วยกติกาเดียวกับเกม)
 // แก้รายการคำใน namefilter.js แล้วรัน: node scripts/gen-namefilter-sql.js → วางไฟล์ที่ได้ใน Supabase SQL Editor
-const fs = require('fs'), path = require('path');
-const ROOT = path.join(__dirname, '..'), FILE = path.join(ROOT, 'server/src/namefilter.js');
-const F = require(FILE), src = fs.readFileSync(FILE, 'utf8');
+const fs = require('fs'),
+  path = require('path');
+const ROOT = path.join(__dirname, '..'),
+  FILE = path.join(ROOT, 'server/src/namefilter.js');
+const F = require(FILE),
+  src = fs.readFileSync(FILE, 'utf8');
 const grab = k => Function('return ' + src.match(new RegExp('const ' + k + ' = (\\[[\\s\\S]*?\\]);'))[1])();
 const uniq = a => [...new Set(a.map(F.norm).filter(Boolean))];
 const arr = a => 'array[' + a.map(x => "'" + x.replace(/'/g, "''") + "'").join(',') + ']';
@@ -29,4 +32,5 @@ begin
 end $$;
 `;
 const out = path.join(ROOT, 'supabase/name_filter.sql');
-fs.writeFileSync(out, sql); console.log('✓ เขียน ' + path.relative(ROOT, out));
+fs.writeFileSync(out, sql);
+console.log('✓ เขียน ' + path.relative(ROOT, out));

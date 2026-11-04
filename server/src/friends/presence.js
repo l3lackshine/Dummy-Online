@@ -3,14 +3,14 @@
 // Public: installFriends(ctx) → ctx.online · friendCache · registerFriendEvents(socket)
 // EXTEND: สถานะใหม่ ให้เพิ่มใน presenceOf() และหน้า client (Code/Friends/friends.js → ST)
 
-const INVITE_COOLDOWN_MS = 5000;     // ชวนคนเดิมซ้ำได้ทุก 5 วินาที
-const MAX_CACHED_USERS = 5000;       // กันแคชโตไม่หยุด
+const INVITE_COOLDOWN_MS = 5000; // ชวนคนเดิมซ้ำได้ทุก 5 วินาที
+const MAX_CACHED_USERS = 5000; // กันแคชโตไม่หยุด
 const MAX_USERNAME_LENGTH = 30;
 
 function installFriends(ctx) {
   const { io, rooms, config, SB } = ctx;
-  const online = new Map();        // uid → Set(socket.id) ของผู้เล่นที่ล็อกอินและเชื่อมต่ออยู่
-  const friendCache = new Map();   // uid → { t, list: [{ id, username }] }
+  const online = new Map(); // uid → Set(socket.id) ของผู้เล่นที่ล็อกอินและเชื่อมต่ออยู่
+  const friendCache = new Map(); // uid → { t, list: [{ id, username }] }
 
   async function friendsOf(uid, fresh) {
     const cached = friendCache.get(uid);
@@ -23,7 +23,8 @@ function installFriends(ctx) {
   }
 
   // ห้องที่เพื่อนกดเข้าร่วมได้: ห้องสร้างเอง (ไม่ใช่ห้องจับคู่/บทสอน) ที่ยังไม่เริ่มและยังไม่เต็ม
-  const joinable = room => !!room && !room.match && !room.tutorial && !ctx.active(room) && ctx.connectedPlayers(room).length < config.MAX_PLAYERS;
+  const joinable = room =>
+    !!room && !room.match && !room.tutorial && !ctx.active(room) && ctx.connectedPlayers(room).length < config.MAX_PLAYERS;
 
   function presenceOf(uid) {
     const socketIds = online.get(uid);
@@ -62,7 +63,9 @@ function installFriends(ctx) {
     friendsOf(socket.data.uid, ctx.obj(raw).fresh === true)
       .then(list => {
         const out = {};
-        list.forEach(friend => { out[friend.username] = presenceOf(friend.id); });
+        list.forEach(friend => {
+          out[friend.username] = presenceOf(friend.id);
+        });
         socket.emit('friends:presence', out);
       })
       .catch(e => console.error('friends:presence', e && e.message));
@@ -70,7 +73,9 @@ function installFriends(ctx) {
 
   function invite(socket, raw) {
     if (!ctx.allow(socket) || !SB.enabled() || !socket.data.uid) return;
-    const username = String(ctx.obj(raw).username || '').toLowerCase().slice(0, MAX_USERNAME_LENGTH);
+    const username = String(ctx.obj(raw).username || '')
+      .toLowerCase()
+      .slice(0, MAX_USERNAME_LENGTH);
     const room = rooms.get(socket.data.roomCode);
     if (!joinable(room)) return socket.emit('system:error', 'ชวนเพื่อนได้เฉพาะห้องที่สร้างเอง ที่ยังไม่เริ่มเกมและยังไม่เต็ม');
     const lastInvites = socket.data.inv || (socket.data.inv = {});
@@ -85,7 +90,8 @@ function installFriends(ctx) {
     const friend = friends.find(x => x.username === username);
     if (!friend) return socket.emit('system:error', 'ชวนได้เฉพาะเพื่อนในรายชื่อ');
     const socketIds = online.get(friend.id);
-    if (!socketIds || !socketIds.size) return socket.emit('friend:invite-result', { username, ok: false, reason: 'เพื่อนออฟไลน์อยู่' });
+    if (!socketIds || !socketIds.size)
+      return socket.emit('friend:invite-result', { username, ok: false, reason: 'เพื่อนออฟไลน์อยู่' });
     const me = ctx.findPlayer(room, socket.id);
     const message = {
       from: (me && me.name) || socket.data.uname || 'เพื่อน',

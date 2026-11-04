@@ -10,7 +10,8 @@ function registerGameEvents(socket, ctx) {
   // เจ้าของห้องกดเริ่ม (ห้องจับคู่เริ่มเองเมื่อทุกคนกดพร้อม)
   on(socket, 'game:start', () => {
     const current = rooms.get(socket.data.roomCode);
-    if (current && current.match && !current.game) return socket.emit('system:error', 'ห้องจับคู่จะเริ่มเกมให้เองเมื่อผู้เล่นครบ');
+    if (current && current.match && !current.game)
+      return socket.emit('system:error', 'ห้องจับคู่จะเริ่มเกมให้เองเมื่อผู้เล่นครบ');
     if (!allow(socket)) return;
     const room = rooms.get(socket.data.roomCode);
     const error = startError(room);
@@ -39,7 +40,10 @@ function registerGameEvents(socket, ctx) {
     const shuffler = ctx.shufflerOf(room);
     if (!shuffler || shuffler.id !== socket.id) {
       const owner = shuffler ? shuffler.name : 'เจ้าของห้อง';
-      return socket.emit('system:error', 'สิทธิ์สับไพ่เป็นของ ' + owner + (room.round ? ' (ผู้ชนะตาก่อนหน้า)' : ' (เจ้าของห้อง)'));
+      return socket.emit(
+        'system:error',
+        'สิทธิ์สับไพ่เป็นของ ' + owner + (room.round ? ' (ผู้ชนะตาก่อนหน้า)' : ' (เจ้าของห้อง)')
+      );
     }
     const result = Shuffle.shuffle();
     room.deck = result.ids;

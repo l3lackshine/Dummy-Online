@@ -18,57 +18,125 @@
     user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4.5 4.5-6 8-6s6.5 1.5 8 6"/>',
     quest: '<path d="M6 3h10l3 3v15H6zM9 9h7M9 13h7M9 17h4"/>',
     search: '<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',
-    users: '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
+    users:
+      '<circle cx="9" cy="9" r="3.2"/><circle cx="17" cy="10" r="2.6"/><path d="M3 20c1-3.5 3.3-5 6-5s5 1.5 6 5M15 15.5c2.6 0 4.5 1.3 5.5 4.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     news: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/>',
     medal: '<circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8M12 13v4M10.5 15h3"/>',
-    users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.6 14.6c3 0 5.4 2 5.4 5"/>',
-    trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v3M8 21h8M9 17h6v4H9z"/>'
+    users:
+      '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.6 14.6c3 0 5.4 2 5.4 5"/>',
+    trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v3M8 21h8M9 17h6v4H9z"/>',
   };
-  const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + I[n] + '</svg>';
+  const ic = n =>
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+    I[n] +
+    '</svg>';
   window.thIcon = ic;
 
   // ---------- 1) หน้าแรก ----------
-  const ruleName = () => { try { const m = ruleMeta(createSel.rule); return m ? m.name : 'ดัมมี่'; } catch (e) { return 'ดัมมี่'; } };
+  const ruleName = () => {
+    try {
+      const m = ruleMeta(createSel.rule);
+      return m ? m.name : 'ดัมมี่';
+    } catch (e) {
+      return 'ดัมมี่';
+    }
+  };
   // ---------- ปุ่มเริ่มเล่น: บอกสตามิน่า · กดแล้วกลีบซากุระแตก · ลูกศรเปลี่ยนเกม ----------
   const rvStLine = () => {
-    const st = window.Stamina && Stamina.now(); if (!st) return '';
+    const st = window.Stamina && Stamina.now();
+    if (!st) return '';
     const ic = '<img class=st-ic src="./Assets/Item/Mats/stamina.webp" alt="">';
-    return st.stamina < st.cost ? `${ic} ไม่พอ · โหมดซ้อม` : `${ic} <b data-st>${N(st.stamina)}</b>/${N(st.max)} · ตาละ ${st.cost}`;
+    return st.stamina < st.cost
+      ? `${ic} ไม่พอ · โหมดซ้อม`
+      : `${ic} <b data-st>${N(st.stamina)}</b>/${N(st.max)} · ตาละ ${st.cost}`;
   };
   window.rvStart = e => {
-    const b = e && e.currentTarget; if (!b || b.dataset.go) return; b.dataset.go = '1'; b.classList.add('press');
-    const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const b = e && e.currentTarget;
+    if (!b || b.dataset.go) return;
+    b.dataset.go = '1';
+    b.classList.add('press');
+    const r = b.getBoundingClientRect(),
+      cx = r.left + r.width / 2,
+      cy = r.top + r.height / 2;
     for (let i = 0; i < 14; i++) {
-      const p = document.createElement('i'); p.className = 'rv-petal'; const a = Math.PI * 2 * i / 14 + Math.random() * .4, d = r.height * (1.2 + Math.random() * 1.1);
-      p.style.cssText = `background-image:url(./Assets/UI/Assets/fx/petal-${1 + (Math.random() * 7 | 0)}.webp);--sz:${(0.8 + Math.random() * 0.6).toFixed(2)};left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
-      document.body.appendChild(p); setTimeout(() => p.remove(), 950);
+      const p = document.createElement('i');
+      p.className = 'rv-petal';
+      const a = (Math.PI * 2 * i) / 14 + Math.random() * 0.4,
+        d = r.height * (1.2 + Math.random() * 1.1);
+      p.style.cssText = `background-image:url(./Assets/UI/Assets/fx/petal-${1 + ((Math.random() * 7) | 0)}.webp);--sz:${(0.8 + Math.random() * 0.6).toFixed(2)};left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * 0.7 - r.height * 0.3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
+      document.body.appendChild(p);
+      setTimeout(() => p.remove(), 950);
     }
-    setTimeout(() => { delete b.dataset.go; b.classList.remove('press'); goPlay(); }, 320);
+    setTimeout(() => {
+      delete b.dataset.go;
+      b.classList.remove('press');
+      goPlay();
+    }, 320);
   };
   window.rvPickGame = e => {
     if (e) e.stopPropagation();
-    const old = document.querySelector('.rv-gpick'); if (old) { old.remove(); return; }
-    const list = (typeof RULES !== 'undefined' && RULES.length ? RULES : []), cur = createSel.rule;
-    if (!list.length) { if (screen !== 'play') goPlay(); return; }
-    const m = document.createElement('div'); m.className = 'rv-gpick';
-    m.innerHTML = list.map(r => `<button class="${r.id === cur ? 'on' : ''}" onclick="setRule('${E(r.id)}');document.querySelector('.rv-gpick')?.remove()"><span>${E(r.icon || '🂠')}</span><b>${E(r.name)}</b>${r.id === cur ? '<em>✓</em>' : ''}</button>`).join('');
-    const host = (e && e.currentTarget && e.currentTarget.closest && e.currentTarget.closest('.gcur-w')) || document.querySelector('.rv-play'); if (host) host.appendChild(m);
-    setTimeout(() => document.addEventListener('click', function off(ev) { if (!m.contains(ev.target)) { m.remove(); document.removeEventListener('click', off); } }), 0);
+    const old = document.querySelector('.rv-gpick');
+    if (old) {
+      old.remove();
+      return;
+    }
+    const list = typeof RULES !== 'undefined' && RULES.length ? RULES : [],
+      cur = createSel.rule;
+    if (!list.length) {
+      if (screen !== 'play') goPlay();
+      return;
+    }
+    const m = document.createElement('div');
+    m.className = 'rv-gpick';
+    m.innerHTML = list
+      .map(
+        r =>
+          `<button class="${r.id === cur ? 'on' : ''}" onclick="setRule('${E(r.id)}');document.querySelector('.rv-gpick')?.remove()"><span>${E(r.icon || '🂠')}</span><b>${E(r.name)}</b>${r.id === cur ? '<em>✓</em>' : ''}</button>`
+      )
+      .join('');
+    const host =
+      (e && e.currentTarget && e.currentTarget.closest && e.currentTarget.closest('.gcur-w')) ||
+      document.querySelector('.rv-play');
+    if (host) host.appendChild(m);
+    setTimeout(
+      () =>
+        document.addEventListener('click', function off(ev) {
+          if (!m.contains(ev.target)) {
+            m.remove();
+            document.removeEventListener('click', off);
+          }
+        }),
+      0
+    );
   };
-  window.thMode = mode => { try { if (RULES.length) { chooseGame(createSel.rule || RULES[0].id); openCreate(mode); return; } } catch (e) {} goPlay(); };
+  window.thMode = mode => {
+    try {
+      if (RULES.length) {
+        chooseGame(createSel.rule || RULES[0].id);
+        openCreate(mode);
+        return;
+      }
+    } catch (e) {}
+    goPlay();
+  };
   function buildHome(app) {
-    const scene = app.querySelector('.scene'); if (!scene || scene.querySelector('.rv')) return;
-    const P = DBP(), name = (P && P.display_name) || (typeof sv !== 'undefined' && sv.name) || 'ผู้เล่น';
-    const coins = P ? P.coins : (typeof sv !== 'undefined' ? sv.coins : 0);
-    const avEl = app.querySelector('.hud-av .av-fc'), av = (app.querySelector('.hud-av img') || {}).src || '';   // .av-fc = รูปซูมหน้า (avFace)
+    const scene = app.querySelector('.scene');
+    if (!scene || scene.querySelector('.rv')) return;
+    const P = DBP(),
+      name = (P && P.display_name) || (typeof sv !== 'undefined' && sv.name) || 'ผู้เล่น';
+    const coins = P ? P.coins : typeof sv !== 'undefined' ? sv.coins : 0;
+    const avEl = app.querySelector('.hud-av .av-fc'),
+      av = (app.querySelector('.hud-av img') || {}).src || ''; // .av-fc = รูปซูมหน้า (avFace)
     const title = (P && P.title) || '';
-    const lv = window.Progress ? Progress.level() : { level: 1, into: 0, need: 100 }, lvPct = Math.min(100, Math.round((lv.into / Math.max(1, lv.need)) * 100));
+    const lv = window.Progress ? Progress.level() : { level: 1, into: 0, need: 100 },
+      lvPct = Math.min(100, Math.round((lv.into / Math.max(1, lv.need)) * 100));
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
-    const nb = window.battlePass && battlePass.count ? battlePass.count() : 0;   // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
+    const nb = window.battlePass && battlePass.count ? battlePass.count() : 0; // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
     const nr = window.Ranked && P ? Ranked.count() : 0;
-    const nf = window.Friends && P ? Friends.count() : 0;   // คำขอเป็นเพื่อนที่รอตอบ   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
-    const d = document.createElement('div'); d.className = 'rv';
+    const nf = window.Friends && P ? Friends.count() : 0; // คำขอเป็นเพื่อนที่รอตอบ   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
+    const d = document.createElement('div');
+    d.className = 'rv';
     d.innerHTML = `
       <button class="rv-me rv-me2" onclick="go('profile')" aria-label="โปรไฟล์">
         <span class="rv-plate"><b>${E(name)}</b><small>${E(title || 'ยังไม่ได้ตั้งฉายา')}</small></span>
@@ -103,13 +171,20 @@
 
   // ---------- 2) 🪙 → รูปเหรียญ ----------
   function swapCoin(root) {
-    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), hits = [];
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT),
+      hits = [];
     while (w.nextNode()) if (w.currentNode.nodeValue.includes('🪙')) hits.push(w.currentNode);
     hits.forEach(t => {
       if (t.parentNode && /^(INPUT|TEXTAREA|OPTION|SCRIPT|STYLE)$/.test(t.parentNode.nodeName)) return;
       const frag = document.createDocumentFragment();
       t.nodeValue.split('🪙').forEach((p, i) => {
-        if (i) { const im = document.createElement('img'); im.className = 'kicon'; im.src = KIT + 'coin.webp'; im.alt = ''; frag.appendChild(im); }
+        if (i) {
+          const im = document.createElement('img');
+          im.className = 'kicon';
+          im.src = KIT + 'coin.webp';
+          im.alt = '';
+          frag.appendChild(im);
+        }
         if (p) frag.appendChild(document.createTextNode(p));
       });
       t.parentNode.replaceChild(frag, t);
@@ -117,12 +192,20 @@
   }
 
   function pass() {
-    const app = document.getElementById('app'); if (!app) return;
+    const app = document.getElementById('app');
+    if (!app) return;
     obs.disconnect();
-    try { if (app.classList.contains('home')) buildHome(app); swapCoin(app); } catch (e) { console.warn('theme2', e); }
+    try {
+      if (app.classList.contains('home')) buildHome(app);
+      swapCoin(app);
+    } catch (e) {
+      console.warn('theme2', e);
+    }
     obs.observe(app, { childList: true, subtree: true, characterData: true });
   }
   const obs = new MutationObserver(pass);
-  const start = () => { pass(); };
+  const start = () => {
+    pass();
+  };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
 })();

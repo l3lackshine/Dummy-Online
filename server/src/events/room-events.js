@@ -11,26 +11,34 @@ function registerRoomEvents(socket, ctx) {
 
   // tutorial: true = ห้องสอนเล่นดัมมี่ (สำรับจัดไว้ บอทตามสคริปต์ ไม่บันทึกผล/ไม่หักสตามิน่า)
   // bots: false = ไม่เติมบอทในที่นั่งว่าง ต้องรอผู้เล่นจริง (ห้องสร้างเองเท่านั้น)
-  on(socket, 'room:create', raw => ctx.withOwned(socket, raw, data => {
-    if (!allow(socket)) return;
-    if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
-    if (rooms.size >= config.MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
-    const tutorial = data.tutorial === true;
-    const ruleId = tutorial ? 'dummy' : Rules.has(data.rule) ? data.rule : Rules.DEFAULT;
-    const options = Rules.cleanOptions(ruleId, tutorial ? {} : data.options);
-    const room = ctx.createRoom(ruleId, options, tutorial || data.bots !== false, { tutorial });
-    ctx.joinRoom(socket, room, lookOf(data));
-  }));
+  on(socket, 'room:create', raw =>
+    ctx.withOwned(socket, raw, data => {
+      if (!allow(socket)) return;
+      if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
+      if (rooms.size >= config.MAX_ROOMS) return socket.emit('system:error', 'เซิร์ฟเวอร์เต็มชั่วคราว ลองใหม่อีกครั้ง');
+      const tutorial = data.tutorial === true;
+      const ruleId = tutorial ? 'dummy' : Rules.has(data.rule) ? data.rule : Rules.DEFAULT;
+      const options = Rules.cleanOptions(ruleId, tutorial ? {} : data.options);
+      const room = ctx.createRoom(ruleId, options, tutorial || data.bots !== false, { tutorial });
+      ctx.joinRoom(socket, room, lookOf(data));
+    })
+  );
 
-  on(socket, 'room:join', raw => ctx.withOwned(socket, raw, data => {
-    if (!allow(socket)) return;
-    if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
-    const room = rooms.get(String(data.code || '').trim().toUpperCase());
-    if (!room || room.match) return socket.emit('system:error', 'ไม่พบห้องนี้');   // ห้องจับคู่เข้าด้วยรหัสไม่ได้
-    if (ctx.active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
-    if (ctx.connectedPlayers(room).length >= config.MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
-    ctx.joinRoom(socket, room, lookOf(data));
-  }));
+  on(socket, 'room:join', raw =>
+    ctx.withOwned(socket, raw, data => {
+      if (!allow(socket)) return;
+      if (socket.data.roomCode) return socket.emit('system:error', 'คุณอยู่ในห้องแล้ว');
+      const room = rooms.get(
+        String(data.code || '')
+          .trim()
+          .toUpperCase()
+      );
+      if (!room || room.match) return socket.emit('system:error', 'ไม่พบห้องนี้'); // ห้องจับคู่เข้าด้วยรหัสไม่ได้
+      if (ctx.active(room)) return socket.emit('system:error', 'เกมเริ่มแล้ว เข้าห้องไม่ได้');
+      if (ctx.connectedPlayers(room).length >= config.MAX_PLAYERS) return socket.emit('system:error', 'ห้องเต็มแล้ว (4 คน)');
+      ctx.joinRoom(socket, room, lookOf(data));
+    })
+  );
 
   // เปลี่ยนโหมดฟาร์มของตัวเอง (มีผลตอนจบตาที่ยังไม่จบ)
   on(socket, 'player:farm', raw => {

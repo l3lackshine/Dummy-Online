@@ -13,7 +13,7 @@ const crypto = require('crypto');
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const DECK_SIZE = ALPHABET.length; // 52
-const FRESH = ALPHABET;            // สำรับใหม่เรียงตาม id: ตัวที่ i = ไพ่ id i
+const FRESH = ALPHABET; // สำรับใหม่เรียงตาม id: ตัวที่ i = ไพ่ id i
 const defaultRnd = n => crypto.randomInt(n);
 
 const idToLetter = id => ALPHABET[id];
@@ -21,8 +21,13 @@ const letterToId = ch => ALPHABET.indexOf(ch);
 const toLetters = ids => ids.map(idToLetter).join('');
 const toIds = letters => Array.from(letters, letterToId);
 // สำรับที่ใช้ได้ต้องมี 52 ตัว ไม่ซ้ำ และมีครบทุกตัวอักษร
-const isValidLetters = s => typeof s === 'string' && s.length === DECK_SIZE && new Set(s).size === DECK_SIZE && [...s].every(ch => ALPHABET.includes(ch));
-const isValidIds = a => Array.isArray(a) && a.length === DECK_SIZE && a.every(n => Number.isInteger(n) && n >= 0 && n < DECK_SIZE) && new Set(a).size === DECK_SIZE;
+const isValidLetters = s =>
+  typeof s === 'string' && s.length === DECK_SIZE && new Set(s).size === DECK_SIZE && [...s].every(ch => ALPHABET.includes(ch));
+const isValidIds = a =>
+  Array.isArray(a) &&
+  a.length === DECK_SIZE &&
+  a.every(n => Number.isInteger(n) && n >= 0 && n < DECK_SIZE) &&
+  new Set(a).size === DECK_SIZE;
 
 // ตัดไพ่: ยกก้อนบน k ใบไปไว้ใต้สำรับ (k ไม่ใกล้ขอบเกินไป เหมือนคนตัดจริง)
 function cut(deck, rnd = defaultRnd) {
@@ -32,19 +37,34 @@ function cut(deck, rnd = defaultRnd) {
 
 // รีเฟรฟเฟิล (GSR): แบ่งซ้าย k ใบ (k ~ Binomial(52, ½)) แล้วปล่อยสลับ โดยความน่าจะเป็นปล่อยจากกองเท่ากับ (ใบที่เหลือในกอง)/(ใบที่เหลือทั้งหมด)
 function riffle(deck, rnd = defaultRnd) {
-  const n = deck.length; let k = 0; for (let i = 0; i < n; i++) k += rnd(2);
-  const L = deck.slice(0, k), R = deck.slice(k); let l = 0, r = 0, out = '';
+  const n = deck.length;
+  let k = 0;
+  for (let i = 0; i < n; i++) k += rnd(2);
+  const L = deck.slice(0, k),
+    R = deck.slice(k);
+  let l = 0,
+    r = 0,
+    out = '';
   while (l < L.length || r < R.length) {
-    const ll = L.length - l, rr = R.length - r;
-    if (rnd(ll + rr) < ll) out += L[l++]; else out += R[r++];
+    const ll = L.length - l,
+      rr = R.length - r;
+    if (rnd(ll + rr) < ll) out += L[l++];
+    else out += R[r++];
   }
   return { deck: out, step: { t: 'riffle', split: k } };
 }
 
 // โอเวอร์แฮนด์: ดึงก้อนบน 1..9 ใบทีละก้อนไปวางทับกองใหม่ → ลำดับก้อนกลับด้าน ภายในก้อนคงเดิม
 function overhand(deck, rnd = defaultRnd) {
-  let rest = deck, out = '', chunks = 0;
-  while (rest.length) { const c = Math.min(rest.length, 1 + rnd(9)); out = rest.slice(0, c) + out; rest = rest.slice(c); chunks++; }
+  let rest = deck,
+    out = '',
+    chunks = 0;
+  while (rest.length) {
+    const c = Math.min(rest.length, 1 + rnd(9));
+    out = rest.slice(0, c) + out;
+    rest = rest.slice(c);
+    chunks++;
+  }
   return { deck: out, step: { t: 'overhand', chunks } };
 }
 
@@ -55,12 +75,34 @@ const PLAN = Object.freeze(['cut', ...R3, 'overhand', ...R3, 'cut', ...R3, 'over
 // สับสำรับตัวอักษร → { letters, ids, steps }  (ids = ลำดับไพ่จากบนสุดถึงล่างสุด ใช้แจกได้ทันที)
 // opts.deck: สตริงตัวอักษรเริ่มต้น (ค่าเริ่มต้น = สำรับใหม่เรียงลำดับ) · opts.plan: ลำดับท่าสับ · opts.rnd: ตัวสุ่ม
 function shuffle(opts = {}) {
-  const rnd = opts.rnd || defaultRnd, plan = opts.plan || PLAN;
+  const rnd = opts.rnd || defaultRnd,
+    plan = opts.plan || PLAN;
   let deck = opts.deck == null ? FRESH : opts.deck;
   if (!isValidLetters(deck)) throw new Error('สำรับต้องมีตัวอักษร A-Z a-z ครบ 52 ตัวไม่ซ้ำ');
   const steps = [];
-  for (const name of plan) { const op = OPS[name]; if (!op) throw new Error('ไม่รู้จักท่าสับ: ' + name); const r = op(deck, rnd); deck = r.deck; steps.push(r.step); }
+  for (const name of plan) {
+    const op = OPS[name];
+    if (!op) throw new Error('ไม่รู้จักท่าสับ: ' + name);
+    const r = op(deck, rnd);
+    deck = r.deck;
+    steps.push(r.step);
+  }
   return { letters: deck, ids: toIds(deck), steps };
 }
 
-module.exports = { ALPHABET, DECK_SIZE, FRESH, PLAN, idToLetter, letterToId, toLetters, toIds, isValidLetters, isValidIds, cut, riffle, overhand, shuffle };
+module.exports = {
+  ALPHABET,
+  DECK_SIZE,
+  FRESH,
+  PLAN,
+  idToLetter,
+  letterToId,
+  toLetters,
+  toIds,
+  isValidLetters,
+  isValidIds,
+  cut,
+  riffle,
+  overhand,
+  shuffle,
+};

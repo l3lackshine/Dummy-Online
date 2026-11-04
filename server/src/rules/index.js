@@ -11,10 +11,10 @@ function register(mod) {
 }
 
 register(require('./dummy'));
-register(require('./pokdeng'));   // ป๊อกเด้ง
-register(require('./gaogae'));    // เก้าเก
-register(require('./somsip'));    // ผสมสิบ
-register(require('./eekae'));     // อีแก่
+register(require('./pokdeng')); // ป๊อกเด้ง
+register(require('./gaogae')); // เก้าเก
+register(require('./somsip')); // ผสมสิบ
+register(require('./eekae')); // อีแก่
 // register(require('./hearts'));   ← กฎใหม่ในอนาคตเพิ่มตรงนี้
 
 const DEFAULT = 'dummy';
@@ -22,15 +22,18 @@ const has = id => registry.has(id);
 const get = id => registry.get(has(id) ? id : DEFAULT);
 // ไม่มีระบบเดิมพันแล้ว: "stake" เป็นแค่ขนาดชิปในโต๊ะ (ใช้จัดอันดับในตานั้น ไม่ใช่เหรียญ) — ซ่อนจากหน้าสร้างห้องและบังคับเป็นค่าเริ่มต้น
 const HIDDEN = new Set(['stake']);
-const list = () => [...registry.values()].map(m => Object.assign({}, m.meta, { options: (m.meta.options || []).filter(o => !HIDDEN.has(o.key)) }));
+const list = () =>
+  [...registry.values()].map(m => Object.assign({}, m.meta, { options: (m.meta.options || []).filter(o => !HIDDEN.has(o.key)) }));
 
 // ตรวจ/ปัดค่าตัวเลือกจาก client ตามที่ meta.options ประกาศ — ค่าที่ไม่ถูกต้องใช้ค่าเริ่มต้น, ตัวเลขถูกบีบให้อยู่ในช่วง
 function cleanOptions(id, raw) {
-  const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}, out = {};
+  const src = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {},
+    out = {};
   for (const o of get(id).meta.options || []) {
     let v = src[o.key];
     if (o.type === 'number') {
-      v = Number(v); if (!Number.isFinite(v)) v = o.default;
+      v = Number(v);
+      if (!Number.isFinite(v)) v = o.default;
       v = Math.min(o.max, Math.max(o.min, v));
       if (o.step) v = o.min + Math.round((v - o.min) / o.step) * o.step;
     } else if (o.type === 'select') v = (o.choices || []).some(c => c.v === v) ? v : o.default;

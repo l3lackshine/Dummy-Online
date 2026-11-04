@@ -1,56 +1,440 @@
 /* friends.css — หน้าเพื่อน · หน้าต่างชวนเพื่อนในห้องรอ · ป้ายคำชวน (friends.js) */
-.fr-wrap{width:100%;display:grid;grid-template-columns:minmax(260px,36%) 1fr;gap:2vh;height:calc(100vh - 21vh);min-height:0;font-family:Sarabun,sans-serif}
-.fr-side{display:flex;flex-direction:column;gap:1.4vh;min-height:0;overflow:auto;scrollbar-width:thin}
-.fr-main{display:flex;flex-direction:column;min-height:0;border-radius:2vh;background:#fffaf2ee;box-shadow:0 .6vh 1.6vh #0004;border:.25vh solid #D4A537;overflow:hidden}
-.fr-empty{display:flex;align-items:center;justify-content:center;min-height:16vh;padding:2vh;text-align:center;color:#7a5a8c;font:700 max(12px,2.2vh) Sarabun,sans-serif}
-.pg[data-pg=friends] .pg-body>.fr-empty{color:#fff;text-shadow:0 1px 3px #0008;height:60vh}
-.fr-me{border-radius:2vh;padding:1.4vh 1.8vh;color:#fff;background:linear-gradient(150deg,#6E0A1Ef2,#2a1530f2);border:.25vh solid #D4A537;box-shadow:0 .6vh 1.6vh #0006;display:flex;flex-direction:column;gap:.9vh}
-.fr-me>small{font:700 max(10px,1.7vh) Sarabun,sans-serif;color:#ffd9a8}
-.fr-un{display:flex;align-items:center;gap:1vh}.fr-un b{font:900 max(16px,3.4vh) Mali,Sarabun,sans-serif;color:#ffe08a;word-break:break-all}
-.fr-un button,.fr-head button{border:0;border-radius:99px;padding:.5vh 1.4vh;font:800 max(10px,1.8vh) Sarabun,sans-serif;background:#ffffff26;color:#fff;cursor:pointer;white-space:nowrap}
-.fr-add{display:flex;gap:.8vh}
-.fr-add input{flex:1;min-width:0;border:0;border-radius:99px;padding:1vh 1.6vh;font:700 max(12px,2.1vh) Sarabun,sans-serif;background:#fffaf2;color:#3a2748;outline:none}
-.fr-add button{border:0;border-radius:99px;padding:1vh 1.6vh;font:800 max(11px,2vh) Sarabun,sans-serif;color:#4a2a00;background:linear-gradient(#fff2b8,#ffc94a);box-shadow:0 .3vh 0 #b4781c;cursor:pointer;white-space:nowrap}
-.fr-add button:disabled{opacity:.6}
-.fr-req{border-radius:2vh;padding:1.2vh 1.4vh;background:#fffaf2ee;box-shadow:0 .6vh 1.6vh #0004;display:flex;flex-direction:column;gap:.6vh;color:#3a2748}
-.fr-req>b{font:800 max(12px,2.1vh) Sarabun,sans-serif;color:#c2185b}.fr-req.out>b{color:#7a5a8c}
-.fr-tip{margin:0;padding:1vh 1.4vh;border-radius:1.6vh;background:#0007;color:#fff;font:600 max(10px,1.7vh)/1.45 Sarabun,sans-serif}
-.fr-head{display:flex;align-items:center;gap:1.4vh;padding:1.2vh 1.6vh;background:linear-gradient(#6E0A1E,#4a0d22);color:#fff}
-.fr-head b{font:800 max(13px,2.4vh) Sarabun,sans-serif}.fr-head small{font:700 max(10px,1.8vh) Sarabun,sans-serif;color:#b8ffcc;margin-right:auto}
-.fr-list{flex:1;min-height:0;overflow:auto;padding:.8vh 1.2vh;display:flex;flex-direction:column;gap:.6vh;scrollbar-width:thin}
-.fr-row{display:grid;grid-template-columns:5.6vh 1fr auto auto;align-items:center;gap:1.2vh;padding:.6vh 1.2vh;border-radius:1.4vh;background:#fff;box-shadow:0 .2vh .5vh #0001;color:#3a2748}
-.fr-req .fr-row{grid-template-columns:5vh 1fr auto;background:#fff7ef}
-.fr-row.off{background:#f4eee6}.fr-row.off .fr-av{filter:grayscale(.8);opacity:.75}
-.fr-av{position:relative;display:block;width:5.6vh;height:5.6vh;border-radius:50%;overflow:hidden;background:#f3e9ff;box-shadow:0 0 0 .25vh #e9c27a}
-.fr-req .fr-av{width:5vh;height:5vh}
-.fr-av>:not(.av-fc){width:100%;height:100%;object-fit:cover}
-.fr-nm{display:flex;flex-direction:column;min-width:0;line-height:1.2}
-.fr-nm b{font:800 max(12px,2.2vh) Sarabun,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fr-nm small{font:700 max(9px,1.6vh) Sarabun,sans-serif;color:#8a6fa3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fr-st{display:flex;align-items:center;gap:.6vh;font:700 max(9px,1.6vh) Sarabun,sans-serif;color:#8a7f90;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fr-st i{flex:none;width:1.3vh;height:1.3vh;min-width:7px;min-height:7px;border-radius:50%;background:#b9b0bf}
-.fr-st.on{color:#1f9d55}.fr-st.on i{background:#2fd06a;box-shadow:0 0 .8vh #2fd06a}
-.fr-st.rm{color:#2a7de1}.fr-st.rm i{background:#3d8bff;box-shadow:0 0 .8vh #3d8bff}
-.fr-st.mm,.fr-st.pl{color:#c46a00}.fr-st.mm i,.fr-st.pl i{background:#ffad33}
-.fr-acts{display:flex;gap:.6vh;justify-content:flex-end}
-.fr-b{border:0;border-radius:99px;padding:.6vh 1.4vh;font:800 max(10px,1.8vh) Sarabun,sans-serif;cursor:pointer;white-space:nowrap;background:#efe4f6;color:#5a3b6e}
-.fr-b.go{background:linear-gradient(#fff2b8,#ffc94a);color:#4a2a00;box-shadow:0 .3vh 0 #b4781c}
-.fr-b.join{background:linear-gradient(#7fb8ff,#3d7be0);color:#fff;box-shadow:0 .3vh 0 #2453a3}
-.fr-b.del{background:#f3e6ea;color:#a33a5a}.fr-b.del.on{background:#e5484d;color:#fff}
+.fr-wrap {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 36%) 1fr;
+  gap: 2vh;
+  height: calc(100vh - 21vh);
+  min-height: 0;
+  font-family: Sarabun, sans-serif;
+}
+.fr-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-width: thin;
+}
+.fr-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 2vh;
+  background: #fffaf2ee;
+  box-shadow: 0 0.6vh 1.6vh #0004;
+  border: 0.25vh solid #d4a537;
+  overflow: hidden;
+}
+.fr-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16vh;
+  padding: 2vh;
+  text-align: center;
+  color: #7a5a8c;
+  font:
+    700 max(12px, 2.2vh) Sarabun,
+    sans-serif;
+}
+.pg[data-pg='friends'] .pg-body > .fr-empty {
+  color: #fff;
+  text-shadow: 0 1px 3px #0008;
+  height: 60vh;
+}
+.fr-me {
+  border-radius: 2vh;
+  padding: 1.4vh 1.8vh;
+  color: #fff;
+  background: linear-gradient(150deg, #6e0a1ef2, #2a1530f2);
+  border: 0.25vh solid #d4a537;
+  box-shadow: 0 0.6vh 1.6vh #0006;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9vh;
+}
+.fr-me > small {
+  font:
+    700 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  color: #ffd9a8;
+}
+.fr-un {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+}
+.fr-un b {
+  font:
+    900 max(16px, 3.4vh) Mali,
+    Sarabun,
+    sans-serif;
+  color: #ffe08a;
+  word-break: break-all;
+}
+.fr-un button,
+.fr-head button {
+  border: 0;
+  border-radius: 99px;
+  padding: 0.5vh 1.4vh;
+  font:
+    800 max(10px, 1.8vh) Sarabun,
+    sans-serif;
+  background: #ffffff26;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fr-add {
+  display: flex;
+  gap: 0.8vh;
+}
+.fr-add input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-radius: 99px;
+  padding: 1vh 1.6vh;
+  font:
+    700 max(12px, 2.1vh) Sarabun,
+    sans-serif;
+  background: #fffaf2;
+  color: #3a2748;
+  outline: none;
+}
+.fr-add button {
+  border: 0;
+  border-radius: 99px;
+  padding: 1vh 1.6vh;
+  font:
+    800 max(11px, 2vh) Sarabun,
+    sans-serif;
+  color: #4a2a00;
+  background: linear-gradient(#fff2b8, #ffc94a);
+  box-shadow: 0 0.3vh 0 #b4781c;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fr-add button:disabled {
+  opacity: 0.6;
+}
+.fr-req {
+  border-radius: 2vh;
+  padding: 1.2vh 1.4vh;
+  background: #fffaf2ee;
+  box-shadow: 0 0.6vh 1.6vh #0004;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  color: #3a2748;
+}
+.fr-req > b {
+  font:
+    800 max(12px, 2.1vh) Sarabun,
+    sans-serif;
+  color: #c2185b;
+}
+.fr-req.out > b {
+  color: #7a5a8c;
+}
+.fr-tip {
+  margin: 0;
+  padding: 1vh 1.4vh;
+  border-radius: 1.6vh;
+  background: #0007;
+  color: #fff;
+  font:
+    600 max(10px, 1.7vh)/1.45 Sarabun,
+    sans-serif;
+}
+.fr-head {
+  display: flex;
+  align-items: center;
+  gap: 1.4vh;
+  padding: 1.2vh 1.6vh;
+  background: linear-gradient(#6e0a1e, #4a0d22);
+  color: #fff;
+}
+.fr-head b {
+  font:
+    800 max(13px, 2.4vh) Sarabun,
+    sans-serif;
+}
+.fr-head small {
+  font:
+    700 max(10px, 1.8vh) Sarabun,
+    sans-serif;
+  color: #b8ffcc;
+  margin-right: auto;
+}
+.fr-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.8vh 1.2vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  scrollbar-width: thin;
+}
+.fr-row {
+  display: grid;
+  grid-template-columns: 5.6vh 1fr auto auto;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 0.6vh 1.2vh;
+  border-radius: 1.4vh;
+  background: #fff;
+  box-shadow: 0 0.2vh 0.5vh #0001;
+  color: #3a2748;
+}
+.fr-req .fr-row {
+  grid-template-columns: 5vh 1fr auto;
+  background: #fff7ef;
+}
+.fr-row.off {
+  background: #f4eee6;
+}
+.fr-row.off .fr-av {
+  filter: grayscale(0.8);
+  opacity: 0.75;
+}
+.fr-av {
+  position: relative;
+  display: block;
+  width: 5.6vh;
+  height: 5.6vh;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f3e9ff;
+  box-shadow: 0 0 0 0.25vh #e9c27a;
+}
+.fr-req .fr-av {
+  width: 5vh;
+  height: 5vh;
+}
+.fr-av > :not(.av-fc) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.fr-nm {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
+}
+.fr-nm b {
+  font:
+    800 max(12px, 2.2vh) Sarabun,
+    sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fr-nm small {
+  font:
+    700 max(9px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #8a6fa3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fr-st {
+  display: flex;
+  align-items: center;
+  gap: 0.6vh;
+  font:
+    700 max(9px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #8a7f90;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fr-st i {
+  flex: none;
+  width: 1.3vh;
+  height: 1.3vh;
+  min-width: 7px;
+  min-height: 7px;
+  border-radius: 50%;
+  background: #b9b0bf;
+}
+.fr-st.on {
+  color: #1f9d55;
+}
+.fr-st.on i {
+  background: #2fd06a;
+  box-shadow: 0 0 0.8vh #2fd06a;
+}
+.fr-st.rm {
+  color: #2a7de1;
+}
+.fr-st.rm i {
+  background: #3d8bff;
+  box-shadow: 0 0 0.8vh #3d8bff;
+}
+.fr-st.mm,
+.fr-st.pl {
+  color: #c46a00;
+}
+.fr-st.mm i,
+.fr-st.pl i {
+  background: #ffad33;
+}
+.fr-acts {
+  display: flex;
+  gap: 0.6vh;
+  justify-content: flex-end;
+}
+.fr-b {
+  border: 0;
+  border-radius: 99px;
+  padding: 0.6vh 1.4vh;
+  font:
+    800 max(10px, 1.8vh) Sarabun,
+    sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  background: #efe4f6;
+  color: #5a3b6e;
+}
+.fr-b.go {
+  background: linear-gradient(#fff2b8, #ffc94a);
+  color: #4a2a00;
+  box-shadow: 0 0.3vh 0 #b4781c;
+}
+.fr-b.join {
+  background: linear-gradient(#7fb8ff, #3d7be0);
+  color: #fff;
+  box-shadow: 0 0.3vh 0 #2453a3;
+}
+.fr-b.del {
+  background: #f3e6ea;
+  color: #a33a5a;
+}
+.fr-b.del.on {
+  background: #e5484d;
+  color: #fff;
+}
 /* หน้าต่างเลือกเพื่อนในห้องรอ */
-.fr-pick{position:fixed;inset:0;z-index:9400;display:flex;align-items:center;justify-content:center;background:#000a;font-family:Sarabun,sans-serif}
-.fr-pbox{width:min(92vw,560px);max-height:86vh;display:flex;flex-direction:column;border-radius:2vh;background:#fffaf2;border:.3vh solid #D4A537;box-shadow:0 1vh 3vh #0008;overflow:hidden}
-.fr-pbox h3{margin:0;padding:1.2vh 1.6vh;background:linear-gradient(#6E0A1E,#4a0d22);color:#fff;font:800 max(14px,2.6vh) Sarabun,sans-serif}
-.fr-pbox .fr-list{max-height:60vh}
-.fr-pbox .fr-row{grid-template-columns:5.6vh 1fr auto}
-.fr-pact{display:flex;justify-content:flex-end;gap:1vh;padding:1vh 1.4vh;border-top:.2vh solid #ecd9b8}
-.fr-pact button{border:0;border-radius:99px;padding:.8vh 1.8vh;font:800 max(11px,2vh) Sarabun,sans-serif;background:#efe4f6;color:#5a3b6e;cursor:pointer}
+.fr-pick {
+  position: fixed;
+  inset: 0;
+  z-index: 9400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000a;
+  font-family: Sarabun, sans-serif;
+}
+.fr-pbox {
+  width: min(92vw, 560px);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 2vh;
+  background: #fffaf2;
+  border: 0.3vh solid #d4a537;
+  box-shadow: 0 1vh 3vh #0008;
+  overflow: hidden;
+}
+.fr-pbox h3 {
+  margin: 0;
+  padding: 1.2vh 1.6vh;
+  background: linear-gradient(#6e0a1e, #4a0d22);
+  color: #fff;
+  font:
+    800 max(14px, 2.6vh) Sarabun,
+    sans-serif;
+}
+.fr-pbox .fr-list {
+  max-height: 60vh;
+}
+.fr-pbox .fr-row {
+  grid-template-columns: 5.6vh 1fr auto;
+}
+.fr-pact {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1vh;
+  padding: 1vh 1.4vh;
+  border-top: 0.2vh solid #ecd9b8;
+}
+.fr-pact button {
+  border: 0;
+  border-radius: 99px;
+  padding: 0.8vh 1.8vh;
+  font:
+    800 max(11px, 2vh) Sarabun,
+    sans-serif;
+  background: #efe4f6;
+  color: #5a3b6e;
+  cursor: pointer;
+}
 /* ป้ายคำชวน (เด้งได้ทุกหน้า) */
-.fr-inv{position:fixed;z-index:9600;left:50%;top:2vh;transform:translateX(-50%);width:min(92vw,480px);display:flex;flex-direction:column;gap:.6vh;padding:1.4vh 1.8vh;border-radius:2vh;
-  background:linear-gradient(150deg,#2a1d55f5,#160f38f5);border:.3vh solid #ffd76a;box-shadow:0 1vh 3vh #000a;color:#fff;font-family:Sarabun,sans-serif;animation:frIn .3s cubic-bezier(.3,1.5,.5,1)}
-@keyframes frIn{from{transform:translate(-50%,-140%)}}
-.fr-inv b{font:800 max(13px,2.5vh) Sarabun,sans-serif;color:#ffe08a}.fr-inv small{font:700 max(10px,1.8vh) Sarabun,sans-serif;color:#d9d2ff}
-.fr-inv span{display:flex;gap:1vh;justify-content:flex-end}
-.fr-inv button{border:0;border-radius:99px;padding:.8vh 2vh;font:800 max(11px,2.1vh) Sarabun,sans-serif;background:#ffffff26;color:#fff;cursor:pointer}
-.fr-inv button.go{background:linear-gradient(#fff2b8,#ffc94a);color:#4a2a00;box-shadow:0 .3vh 0 #b4781c}
-@media (prefers-reduced-motion:reduce){.fr-inv{animation:none}}
+.fr-inv {
+  position: fixed;
+  z-index: 9600;
+  left: 50%;
+  top: 2vh;
+  transform: translateX(-50%);
+  width: min(92vw, 480px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  padding: 1.4vh 1.8vh;
+  border-radius: 2vh;
+  background: linear-gradient(150deg, #2a1d55f5, #160f38f5);
+  border: 0.3vh solid #ffd76a;
+  box-shadow: 0 1vh 3vh #000a;
+  color: #fff;
+  font-family: Sarabun, sans-serif;
+  animation: frIn 0.3s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+@keyframes frIn {
+  from {
+    transform: translate(-50%, -140%);
+  }
+}
+.fr-inv b {
+  font:
+    800 max(13px, 2.5vh) Sarabun,
+    sans-serif;
+  color: #ffe08a;
+}
+.fr-inv small {
+  font:
+    700 max(10px, 1.8vh) Sarabun,
+    sans-serif;
+  color: #d9d2ff;
+}
+.fr-inv span {
+  display: flex;
+  gap: 1vh;
+  justify-content: flex-end;
+}
+.fr-inv button {
+  border: 0;
+  border-radius: 99px;
+  padding: 0.8vh 2vh;
+  font:
+    800 max(11px, 2.1vh) Sarabun,
+    sans-serif;
+  background: #ffffff26;
+  color: #fff;
+  cursor: pointer;
+}
+.fr-inv button.go {
+  background: linear-gradient(#fff2b8, #ffc94a);
+  color: #4a2a00;
+  box-shadow: 0 0.3vh 0 #b4781c;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fr-inv {
+    animation: none;
+  }
+}

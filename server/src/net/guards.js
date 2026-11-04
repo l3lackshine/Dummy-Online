@@ -5,7 +5,7 @@
 // Public: installGuards(ctx) → ctx.on · allow · obj · cleanAction · withOwned
 const Skills = require('../skills');
 
-const MAX_ACTION_IDS = 24;   // ไพ่ที่ส่งมาในคำสั่งเดียวได้ไม่เกินนี้
+const MAX_ACTION_IDS = 24; // ไพ่ที่ส่งมาในคำสั่งเดียวได้ไม่เกินนี้
 
 const obj = data => (data && typeof data === 'object' && !Array.isArray(data) ? data : {});
 
@@ -19,13 +19,14 @@ function cleanAction(action) {
   return out;
 }
 
-const on = (socket, eventName, handler) => socket.on(eventName, (...args) => {
-  try {
-    handler(...args);
-  } catch (e) {
-    console.error('handler error:', eventName, e && e.message);
-  }
-});
+const on = (socket, eventName, handler) =>
+  socket.on(eventName, (...args) => {
+    try {
+      handler(...args);
+    } catch (e) {
+      console.error('handler error:', eventName, e && e.message);
+    }
+  });
 
 // fr === 'char' = ขอใช้กรอบประจำตัวละคร (ปลด 4★) → กลายเป็น 'ch-<ตัวละคร>' เมื่อดาวถึง
 function perkFrame(character, frame, perks) {
@@ -54,7 +55,8 @@ function installGuards(ctx) {
     const data = obj(raw);
     const claim = { s5: data.s5 === true, e2: data.e2 === true, cf: data.fr === 'char' };
     const uid = socket.data.uid;
-    if (!(SB.enabled() && uid)) {   // ไม่ใช้บัญชี: เชื่อตามที่ส่งมา (ของในเครื่องผู้เล่นเอง)
+    if (!(SB.enabled() && uid)) {
+      // ไม่ใช้บัญชี: เชื่อตามที่ส่งมา (ของในเครื่องผู้เล่นเอง)
       const perks = { ...claim };
       return handler({ ...data, ...perks, fr: perkFrame(data.ch, data.fr, perks) });
     }

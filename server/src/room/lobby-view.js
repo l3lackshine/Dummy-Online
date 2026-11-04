@@ -18,7 +18,7 @@ function installLobbyView(ctx) {
 
   function shuffleInfo(room, forPlayer, shuffler) {
     return {
-      ready: !!room.deck,   // บอกแค่ว่าสับแล้วหรือยัง ไม่ส่งลำดับไพ่
+      ready: !!room.deck, // บอกแค่ว่าสับแล้วหรือยัง ไม่ส่งลำดับไพ่
       needed: needShuffle(room),
       by: room.shuffledBy || null,
       shuffler: shuffler ? shuffler.name : null,
@@ -40,10 +40,12 @@ function installLobbyView(ctx) {
       humans: ctx.connectedPlayers(room).length,
       max: config.MAX_PLAYERS,
       waitedMs: Date.now() - (match.since || Date.now()),
-      prompt: match.prompt ? {
-        leftMs: Math.max(0, match.prompt.until - Date.now()),
-        voted: forPlayer ? (match.prompt.votes[forPlayer.id] || null) : null,
-      } : null,
+      prompt: match.prompt
+        ? {
+            leftMs: Math.max(0, match.prompt.until - Date.now()),
+            voted: forPlayer ? match.prompt.votes[forPlayer.id] || null : null,
+          }
+        : null,
     };
   }
 
@@ -58,9 +60,9 @@ function installLobbyView(ctx) {
       connected: player.connected,
       acc: !!player.accepted,
       host: player === host,
-      ready: player === host || !!player.ready,   // เจ้าของห้องถือว่าพร้อมเสมอ
+      ready: player === host || !!player.ready, // เจ้าของห้องถือว่าพร้อมเสมอ
       again: !!player.again,
-      farm: isMe ? player.farm : undefined,       // โหมดฟาร์มเป็นของส่วนตัว เห็นเฉพาะตัวเอง
+      farm: isMe ? player.farm : undefined, // โหมดฟาร์มเป็นของส่วนตัว เห็นเฉพาะตัวเอง
       shuffler: player === shuffler,
       seat: player.seat,
       you: isMe,
@@ -68,7 +70,7 @@ function installLobbyView(ctx) {
   }
 
   function publicLobby(room, forPlayer) {
-    ctx.settle(room);   // ทำซ้ำได้ไม่เป็นไร: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
+    ctx.settle(room); // ทำซ้ำได้ไม่เป็นไร: ให้ล็อบบี้สะท้อนผู้ชนะตาก่อนเสมอ
     const connected = ctx.connectedPlayers(room);
     const host = connected[0];
     const shuffler = shufflerOf(room);
@@ -82,7 +84,7 @@ function installLobbyView(ctx) {
       options: room.options,
       youHost: !!forPlayer && forPlayer === host,
       shuffle: shuffleInfo(room, forPlayer, shuffler),
-      allowBots: room.allowBots !== false,   // ตั้งตอนสร้างห้อง เปลี่ยนระหว่างเล่นไม่ได้
+      allowBots: room.allowBots !== false, // ตั้งตอนสร้างห้อง เปลี่ยนระหว่างเล่นไม่ได้
       allReady: others.every(p => p.ready),
       waitingFor: others.filter(p => !p.ready).map(p => p.name),
       match: matchInfo(room, forPlayer),

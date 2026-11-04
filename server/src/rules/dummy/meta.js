@@ -16,8 +16,26 @@ const meta = {
     'โทษ: ตีโต (ทิ้งสเปโตให้คนเก็บ) −50 · ตีปี้หัว · ทิ้งโง่ −50 · ตีเต็ม: ในกองทิ้งมีไพ่เข้าชุดกัน 2 ใบแล้วเราทิ้งใบที่ครบชุด จนอีกคนเก็บไปเกิด −50',
   ],
   options: [
-    { key: 'stake', label: 'เดิมพันต่อตัว (เหรียญ)', type: 'number', default: 20, min: 5, max: 10000, step: 1, presets: [5, 10, 20, 50, 100] },
-    { key: 'spetoMode', label: 'อมสเปโตแล้วจบเกม จ่ายให้', type: 'select', default: 'all', choices: [{ v: 'all', label: 'ทุกคนรอบวง' }, { v: 'knocker', label: 'เฉพาะคนน็อก' }] },
+    {
+      key: 'stake',
+      label: 'เดิมพันต่อตัว (เหรียญ)',
+      type: 'number',
+      default: 20,
+      min: 5,
+      max: 10000,
+      step: 1,
+      presets: [5, 10, 20, 50, 100],
+    },
+    {
+      key: 'spetoMode',
+      label: 'อมสเปโตแล้วจบเกม จ่ายให้',
+      type: 'select',
+      default: 'all',
+      choices: [
+        { v: 'all', label: 'ทุกคนรอบวง' },
+        { v: 'knocker', label: 'เฉพาะคนน็อก' },
+      ],
+    },
   ],
   // สรุปการนับเหรียญที่แสดงในหน้าสร้างห้อง — {stake} = เดิมพัน, {stake*0.75} = เดิมพันคูณ 0.75 (client แทนค่าให้)
   scoring: [

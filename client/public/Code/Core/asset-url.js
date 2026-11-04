@@ -10,7 +10,7 @@
     try {
       return new URL(assetPath, document.baseURI).href;
     } catch (e) {
-      return assetPath;   // พาธแปลก ๆ ที่แปลงไม่ได้ — ใช้ค่าเดิม ดีกว่าทำให้หน้าพัง
+      return assetPath; // พาธแปลก ๆ ที่แปลงไม่ได้ — ใช้ค่าเดิม ดีกว่าทำให้หน้าพัง
     }
   }
 

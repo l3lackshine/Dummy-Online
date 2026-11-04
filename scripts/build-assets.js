@@ -11,85 +11,203 @@
      Assets/Shop/Shopsetting.config · Assets/Shop/Gasha/gasha.config · Assets/Shop/Gasha/<id>/(banner.*, Config.config)
      Assets/Sounds/sounds.config · Assets/UI/ui.config + Assets/UI/Assets/
    รายการที่มาจากโฟลเดอร์จะถูกติดป้าย "src":"folder" · รายการเก่าที่ไม่มีป้าย (เช่นที่เพิ่มจาก Skin Studio) จะถูกเก็บไว้ไม่ลบ */
-const fs = require('fs'), path = require('path');
-const ROOT = path.join(__dirname, '..'), PUB = path.join(ROOT, 'client/public'), SKIN = path.join(PUB, 'skin');
-const ASSETS = path.join(PUB, 'Assets');   // รูป + ไฟล์ตั้งค่าของเกมทั้งหมดอยู่ใต้ Assets/<หมวด>/
+const fs = require('fs'),
+  path = require('path');
+const ROOT = path.join(__dirname, '..'),
+  PUB = path.join(ROOT, 'client/public'),
+  SKIN = path.join(PUB, 'skin');
+const ASSETS = path.join(PUB, 'Assets'); // รูป + ไฟล์ตั้งค่าของเกมทั้งหมดอยู่ใต้ Assets/<หมวด>/
 const CHECK = process.argv.includes('--check');
-const KIND_DIR = { themes: 'Theme', characters: null, tables: 'Table', backgrounds: 'Background', cards: 'Card', docks: 'Dock', backs: 'CardBack', frames: 'Frame' };
-const problems = [], warns = [];
+const KIND_DIR = {
+  themes: 'Theme',
+  characters: null,
+  tables: 'Table',
+  backgrounds: 'Background',
+  cards: 'Card',
+  docks: 'Dock',
+  backs: 'CardBack',
+  frames: 'Frame',
+};
+const problems = [],
+  warns = [];
 const rel = p => path.relative(ROOT, p);
 const exists = p => fs.existsSync(p);
-const dirs = p => (exists(p) ? fs.readdirSync(p, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name) : []);
+const dirs = p =>
+  exists(p)
+    ? fs
+        .readdirSync(p, { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => d.name)
+    : [];
 function readJson(p, fallback) {
   if (!exists(p)) return fallback;
-  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { problems.push(`อ่านไฟล์ไม่ได้ (JSON ผิดรูปแบบ): ${rel(p)} — ${e.message}`); return fallback; }
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch (e) {
+    problems.push(`อ่านไฟล์ไม่ได้ (JSON ผิดรูปแบบ): ${rel(p)} — ${e.message}`);
+    return fallback;
+  }
 }
 const byOrder = (a, b) => (Number(a.order) || 1e6) - (Number(b.order) || 1e6) || String(a.id).localeCompare(String(b.id));
 const url = (...parts) => './' + parts.join('/');
-const resolveMap = (m, base) => Object.fromEntries(Object.entries(m || {}).filter(([, v]) => v).map(([k, v]) => [k, url(base, v)]));
-function needFile(p, what) { // ไฟล์ต้องอยู่ในโฟลเดอร์ที่เว็บเสิร์ฟ หรือในต้นฉบับ assets-src/ (หลังแพ็กด้วย pack-assets.js --strip)
-  const alt = path.join(ROOT, 'assets-src', path.relative(PUB, p)); if (!exists(p) && !exists(alt)) warns.push(`ไม่พบไฟล์ ${what}: ${rel(p)}`); }
+const resolveMap = (m, base) =>
+  Object.fromEntries(
+    Object.entries(m || {})
+      .filter(([, v]) => v)
+      .map(([k, v]) => [k, url(base, v)])
+  );
+function needFile(p, what) {
+  // ไฟล์ต้องอยู่ในโฟลเดอร์ที่เว็บเสิร์ฟ หรือในต้นฉบับ assets-src/ (หลังแพ็กด้วย pack-assets.js --strip)
+  const alt = path.join(ROOT, 'assets-src', path.relative(PUB, p));
+  if (!exists(p) && !exists(alt)) warns.push(`ไม่พบไฟล์ ${what}: ${rel(p)}`);
+}
 
 function loadCharacters() {
   const out = [];
   for (const d of dirs(path.join(ASSETS, 'Character'))) {
-    const base = path.join(ASSETS, 'Character', d), cfg = readJson(path.join(base, 'Character.config'), null);
-    if (!cfg) { warns.push(`โฟลเดอร์ตัวละคร ${d} ไม่มี Character.config — ข้าม`); continue; }
+    const base = path.join(ASSETS, 'Character', d),
+      cfg = readJson(path.join(base, 'Character.config'), null);
+    if (!cfg) {
+      warns.push(`โฟลเดอร์ตัวละคร ${d} ไม่มี Character.config — ข้าม`);
+      continue;
+    }
     if (!cfg.id) cfg.id = d;
     if (cfg.id !== d) problems.push(`Character/${d}: id "${cfg.id}" ต้องตรงกับชื่อโฟลเดอร์`);
-    const { image, effects, sounds, background, seat, card, star5, ...rest } = cfg, e = { ...rest };
-    if (image) { needFile(path.join(base, image), `รูปตัวละคร ${d}`); e.asset = url('Assets/Character', d, image); }
-    const fx = resolveMap(effects, `Assets/Character/${d}`), sd = resolveMap(sounds, `Assets/Character/${d}`);
-    if (Object.keys(fx).length) e.effects = fx; if (Object.keys(sd).length) e.sounds = sd;
+    const { image, effects, sounds, background, seat, card, star5, ...rest } = cfg,
+      e = { ...rest };
+    if (image) {
+      needFile(path.join(base, image), `รูปตัวละคร ${d}`);
+      e.asset = url('Assets/Character', d, image);
+    }
+    const fx = resolveMap(effects, `Assets/Character/${d}`),
+      sd = resolveMap(sounds, `Assets/Character/${d}`);
+    if (Object.keys(fx).length) e.effects = fx;
+    if (Object.keys(sd).length) e.sounds = sd;
     if (background) e.background = url('Assets/Character', d, background);
-    if (seat) { needFile(path.join(base, seat), `พื้นหลังที่นั่ง ${d}`); e.seat = url('Assets/Character', d, seat); } // พื้นหลังที่นั่งบนโต๊ะเล่น
-    if (card) { needFile(path.join(base, card), `การ์ดตัวละคร ${d}`); e.card = url('Assets/Character', d, card); }      // รูปการ์ดสำเร็จ (ใช้ในตู้กาชา/ผลสุ่ม)
-    if (star5) { needFile(path.join(base, star5), `พื้นหลัง 5 ดาว ${d}`); e.star5 = url('Assets/Character', d, star5); } // ฉากพิเศษเมื่อปลด 5 ดาว (การ์ด + ที่นั่งบนโต๊ะ)
-    e.src = 'folder'; out.push(e);
+    if (seat) {
+      needFile(path.join(base, seat), `พื้นหลังที่นั่ง ${d}`);
+      e.seat = url('Assets/Character', d, seat);
+    } // พื้นหลังที่นั่งบนโต๊ะเล่น
+    if (card) {
+      needFile(path.join(base, card), `การ์ดตัวละคร ${d}`);
+      e.card = url('Assets/Character', d, card);
+    } // รูปการ์ดสำเร็จ (ใช้ในตู้กาชา/ผลสุ่ม)
+    if (star5) {
+      needFile(path.join(base, star5), `พื้นหลัง 5 ดาว ${d}`);
+      e.star5 = url('Assets/Character', d, star5);
+    } // ฉากพิเศษเมื่อปลด 5 ดาว (การ์ด + ที่นั่งบนโต๊ะ)
+    e.src = 'folder';
+    out.push(e);
   }
   return out.sort(byOrder);
 }
 function loadItems(kind) {
-  const dn = KIND_DIR[kind], base = path.join(ASSETS, 'Item', dn), cfg = readJson(path.join(base, 'Item.config'), null);
+  const dn = KIND_DIR[kind],
+    base = path.join(ASSETS, 'Item', dn),
+    cfg = readJson(path.join(base, 'Item.config'), null);
   if (!cfg) return [];
   // tableFile (พื้นหลัง): รูปแนวนอนสำหรับฉากหลังโต๊ะเล่น → e.table
-  return (cfg.items || []).map(x => { const { file, tableFile, ...rest } = x; const e = { ...rest }; if (file) { needFile(path.join(base, file), `ไอเทม ${kind}/${x.id}`); e.asset = url('Assets/Item', dn, file); }
-    if (tableFile) { needFile(path.join(base, tableFile), `ฉากโต๊ะ ${kind}/${x.id}`); e.table = url('Assets/Item', dn, tableFile); } e.src = 'folder'; return e; }).sort(byOrder);
+  return (cfg.items || [])
+    .map(x => {
+      const { file, tableFile, ...rest } = x;
+      const e = { ...rest };
+      if (file) {
+        needFile(path.join(base, file), `ไอเทม ${kind}/${x.id}`);
+        e.asset = url('Assets/Item', dn, file);
+      }
+      if (tableFile) {
+        needFile(path.join(base, tableFile), `ฉากโต๊ะ ${kind}/${x.id}`);
+        e.table = url('Assets/Item', dn, tableFile);
+      }
+      e.src = 'folder';
+      return e;
+    })
+    .sort(byOrder);
 }
-function mergeLegacy(fresh, old) { // เก็บรายการเก่าที่ไม่ได้มาจากโฟลเดอร์
+function mergeLegacy(fresh, old) {
+  // เก็บรายการเก่าที่ไม่ได้มาจากโฟลเดอร์
   const ids = new Set(fresh.map(x => x.id));
-  return [...fresh.map(x => { const { order, ...r } = x; return r; }), ...(old || []).filter(x => x && x.src !== 'folder' && !ids.has(x.id))];
+  return [
+    ...fresh.map(x => {
+      const { order, ...r } = x;
+      return r;
+    }),
+    ...(old || []).filter(x => x && x.src !== 'folder' && !ids.has(x.id)),
+  ];
 }
 function buildSkins() {
-  const old = readJson(path.join(SKIN, 'skins.json'), {}), out = {};
-  for (const kind of Object.keys(KIND_DIR)) out[kind] = mergeLegacy(kind === 'characters' ? loadCharacters() : loadItems(kind), old[kind]);
+  const old = readJson(path.join(SKIN, 'skins.json'), {}),
+    out = {};
+  for (const kind of Object.keys(KIND_DIR))
+    out[kind] = mergeLegacy(kind === 'characters' ? loadCharacters() : loadItems(kind), old[kind]);
   for (const k of Object.keys(old)) if (!(k in out)) out[k] = old[k];
-  for (const kind of Object.keys(KIND_DIR)) { const seen = new Set(); for (const x of out[kind]) { if (!x.id) problems.push(`${kind}: มีรายการที่ไม่มี id`); else if (seen.has(x.id)) problems.push(`${kind}: id ซ้ำ "${x.id}"`); seen.add(x.id); } }
+  for (const kind of Object.keys(KIND_DIR)) {
+    const seen = new Set();
+    for (const x of out[kind]) {
+      if (!x.id) problems.push(`${kind}: มีรายการที่ไม่มี id`);
+      else if (seen.has(x.id)) problems.push(`${kind}: id ซ้ำ "${x.id}"`);
+      seen.add(x.id);
+    }
+  }
   return out;
 }
 function buildGacha(skins) {
-  const base = readJson(path.join(ASSETS, 'Shop/Gasha/gasha.config'), {}), out = { ...base, banners: [] };
-  const R = base.rarities || {}, all = new Set(); for (const k of ['characters', 'backs', 'tables', 'backgrounds']) (skins[k] || []).forEach(x => all.add(k + ':' + x.id));
+  const base = readJson(path.join(ASSETS, 'Shop/Gasha/gasha.config'), {}),
+    out = { ...base, banners: [] };
+  const R = base.rarities || {},
+    all = new Set();
+  for (const k of ['characters', 'backs', 'tables', 'backgrounds']) (skins[k] || []).forEach(x => all.add(k + ':' + x.id));
   const idsOf = list => (list || []).map(i => (typeof i === 'string' ? i : i.id));
   const banners = [];
   for (const d of dirs(path.join(ASSETS, 'Shop/Gasha'))) {
-    const b = path.join(ASSETS, 'Shop/Gasha', d), cfg = readJson(path.join(b, 'Config.config'), null);
-    if (!cfg) { warns.push(`Shop/Gasha/${d} ไม่มี Config.config — ข้าม`); continue; }
-    if (!cfg.id) cfg.id = d; if (cfg.id !== d) problems.push(`Shop/Gasha/${d}: id "${cfg.id}" ต้องตรงกับชื่อโฟลเดอร์`);
+    const b = path.join(ASSETS, 'Shop/Gasha', d),
+      cfg = readJson(path.join(b, 'Config.config'), null);
+    if (!cfg) {
+      warns.push(`Shop/Gasha/${d} ไม่มี Config.config — ข้าม`);
+      continue;
+    }
+    if (!cfg.id) cfg.id = d;
+    if (cfg.id !== d) problems.push(`Shop/Gasha/${d}: id "${cfg.id}" ต้องตรงกับชื่อโฟลเดอร์`);
     if (cfg.enabled === false) continue;
-    const { image, ...rest } = cfg, e = { ...rest }; if (image) { needFile(path.join(b, image), `แบนเนอร์ ${d}`); e.image = url('Assets/Shop/Gasha', d, image); }
-    for (const [k, v] of Object.entries(e.rarityWeights || {})) if (!R[k] || !(Number(v) >= 0)) problems.push(`กาชา ${d}: rarityWeights.${k} ไม่ถูกต้อง`);
-    for (const f of ['singleCoins', 'tenCoins', 'singleMcash', 'tenMcash', 'pity']) if (e[f] != null && !(Number(e[f]) >= 0)) problems.push(`กาชา ${d}: ${f} ต้องเป็นตัวเลข ≥ 0`);
-    for (const list of [e.pool, e.rateUp && e.rateUp.items]) for (const it of list || []) { const id = typeof it === 'string' ? it : it.id; if (![...all].some(a => a.endsWith(':' + id))) problems.push(`กาชา ${d}: ไม่พบไอเทม "${id}" ในแคตตาล็อก`); }
+    const { image, ...rest } = cfg,
+      e = { ...rest };
+    if (image) {
+      needFile(path.join(b, image), `แบนเนอร์ ${d}`);
+      e.image = url('Assets/Shop/Gasha', d, image);
+    }
+    for (const [k, v] of Object.entries(e.rarityWeights || {}))
+      if (!R[k] || !(Number(v) >= 0)) problems.push(`กาชา ${d}: rarityWeights.${k} ไม่ถูกต้อง`);
+    for (const f of ['singleCoins', 'tenCoins', 'singleMcash', 'tenMcash', 'pity'])
+      if (e[f] != null && !(Number(e[f]) >= 0)) problems.push(`กาชา ${d}: ${f} ต้องเป็นตัวเลข ≥ 0`);
+    for (const list of [e.pool, e.rateUp && e.rateUp.items])
+      for (const it of list || []) {
+        const id = typeof it === 'string' ? it : it.id;
+        if (![...all].some(a => a.endsWith(':' + id))) problems.push(`กาชา ${d}: ไม่พบไอเทม "${id}" ในแคตตาล็อก`);
+      }
     banners.push(e);
   }
-  out.banners = banners.sort(byOrder).map(b => { const { order, enabled, ...r } = b; return r; });
+  out.banners = banners.sort(byOrder).map(b => {
+    const { order, enabled, ...r } = b;
+    return r;
+  });
   if (!Object.keys(R).length) problems.push('Shop/Gasha/gasha.config ไม่มี rarities');
   return out;
 }
-const skins = buildSkins(), gacha = buildGacha(skins);
+const skins = buildSkins(),
+  gacha = buildGacha(skins);
 warns.forEach(w => console.warn('⚠ ' + w));
-if (problems.length) { problems.forEach(p => console.error('✗ ' + p)); console.error(`\nพบปัญหา ${problems.length} รายการ — ไม่เขียนไฟล์`); process.exit(1); }
-const w = (f, o) => { if (CHECK) return; fs.writeFileSync(f, JSON.stringify(o, null, 1) + '\n'); console.log('✓ เขียน ' + rel(f)); };
-w(path.join(SKIN, 'skins.json'), skins); w(path.join(SKIN, 'gacha.json'), gacha);
-console.log(`${CHECK ? '✓ ตรวจผ่าน' : '✓ เสร็จ'} — ตัวละคร ${skins.characters.length} · หลังไพ่ ${skins.backs.length} · โต๊ะ ${skins.tables.length} · พื้นหลัง ${skins.backgrounds.length} · ตู้กาชา ${gacha.banners.length}`);
+if (problems.length) {
+  problems.forEach(p => console.error('✗ ' + p));
+  console.error(`\nพบปัญหา ${problems.length} รายการ — ไม่เขียนไฟล์`);
+  process.exit(1);
+}
+const w = (f, o) => {
+  if (CHECK) return;
+  fs.writeFileSync(f, JSON.stringify(o, null, 1) + '\n');
+  console.log('✓ เขียน ' + rel(f));
+};
+w(path.join(SKIN, 'skins.json'), skins);
+w(path.join(SKIN, 'gacha.json'), gacha);
+console.log(
+  `${CHECK ? '✓ ตรวจผ่าน' : '✓ เสร็จ'} — ตัวละคร ${skins.characters.length} · หลังไพ่ ${skins.backs.length} · โต๊ะ ${skins.tables.length} · พื้นหลัง ${skins.backgrounds.length} · ตู้กาชา ${gacha.banners.length}`
+);
