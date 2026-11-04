@@ -21,10 +21,10 @@
 2. repo variable `BACKEND_URL` (Settings → Secrets and variables → Actions → **Variables**)
 3. ค่าใน `client/public/config.js`
 
-เซิร์ฟเวอร์ (`server/src/index.js`) อนุญาต origin ของแอป (`https://localhost`, `capacitor://localhost`) ไว้เสมอ แม้ตั้ง `CLIENT_ORIGIN` เจาะจงเว็บ — **ต้อง deploy เซิร์ฟเวอร์เวอร์ชันนี้** ถ้าเซิร์ฟเวอร์ที่ Render ยังเป็นรุ่นเก่าและตั้ง `CLIENT_ORIGIN` ไว้ ให้เพิ่ม `https://localhost` ต่อท้ายในค่านั้นเอง
+เซิร์ฟเวอร์ (`server/src/config.js`) อนุญาต origin ของแอป (`https://localhost`, `capacitor://localhost`) ไว้เสมอ แม้ตั้ง `CLIENT_ORIGIN` เจาะจงเว็บ — **ต้อง deploy เซิร์ฟเวอร์เวอร์ชันนี้** ถ้าเซิร์ฟเวอร์ที่ Render ยังเป็นรุ่นเก่าและตั้ง `CLIENT_ORIGIN` ไว้ ให้เพิ่ม `https://localhost` ต่อท้ายในค่านั้นเอง
 
 ## ที่แอปทำเพิ่มจากเว็บ
-- ปุ่ม Back ของเครื่อง: ปิดหน้าต่างเลือกไพ่ → ถามก่อนออกจากห้อง → ย้อนหน้า → ที่หน้าแรกปิดแอป (`client/public/native.js`)
+- ปุ่ม Back ของเครื่อง: ปิดหน้าต่างเลือกไพ่ → ถามก่อนออกจากห้อง → ย้อนหน้า → ที่หน้าแรกปิดแอป (`client/public/Code/Core/native.js`)
 - แพ็ก `socket.io` ไว้ในแอป ไม่พึ่ง CDN
 - ไอคอนแอปจากตัวละคร (`mobile/res/` สร้างใหม่ได้ ดูหัวข้อด้านล่าง)
 - เลขเวอร์ชันในแอป = `client/public/version.js` (versionCode = เลขรอบของ workflow)

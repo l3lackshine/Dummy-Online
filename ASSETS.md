@@ -1,4 +1,7 @@
-# โครงสร้างแอสเซ็ตของเกม (client/public/)
+# โครงสร้างแอสเซ็ตของเกม (client/public/Assets/)
+
+> ไฟล์รูป/เสียงทั้งหมดของเกมอยู่ใต้ `client/public/Assets/` แยกตามหมวด (Character · Item · Shop · UI · Sounds · Concept) · ต้นฉบับที่ต้องเข้ารหัสอยู่ใต้ `assets-src/Assets/` (Character · Item/Emote-keep · Item/Shards-src) · โค้ดอยู่ใต้ `client/public/Code/<หมวด>/` ไม่ปนกับรูป
+
 
 ```
 Character/<id>/            ตัวละครแต่ละตัว (1 โฟลเดอร์ = 1 ตัว, ชื่อโฟลเดอร์ = id)
@@ -17,7 +20,7 @@ UI/ui.config + UI/Assets/            ปุ่ม กรอบหน้าต่
 ไฟล์ `.config` คือ JSON ธรรมดา (เปิดแก้ด้วยโปรแกรมแก้ข้อความได้)
 
 ## เพิ่มตัวละคร
-1. สร้าง `Character/<id>/` ใส่ `Character.webp` และ `Character.config`:
+1. สร้าง `Assets/Character/<id>/` ใส่ `Character.webp` และ `Character.config`:
 ```json
 { "id": "mina-01", "name": "มินะ", "price": 1500, "order": 6, "image": "Character.webp",
   "rarity": "legendary", "effects": {"win": "Effect/win.webp"}, "sounds": {"win": "Sounds/win.mp3"}, "background": "Background/room.webp" }
@@ -26,10 +29,10 @@ UI/ui.config + UI/Assets/            ปุ่ม กรอบหน้าต่
 2. รัน `node scripts/build-assets.js`
 
 ## เพิ่มไอเทม
-ใส่ไฟล์ใน `Item/<ชนิด>/` แล้วเพิ่มรายการใน `Item.config` ของชนิดนั้น เช่น `{ "id": "wood2", "file": "wood2.webp", "name": "โต๊ะไม้ 2", "price": 400, "order": 7, "bg": "#8a5a2e", "bg2": "#5a3718" }` แล้วรัน build
+ใส่ไฟล์ใน `Assets/Item/<ชนิด>/` แล้วเพิ่มรายการใน `Item.config` ของชนิดนั้น เช่น `{ "id": "wood2", "file": "wood2.webp", "name": "โต๊ะไม้ 2", "price": 400, "order": 7, "bg": "#8a5a2e", "bg2": "#5a3718" }` แล้วรัน build
 
 ## เพิ่มตู้กาชา + แบนเนอร์
-สร้าง `Shop/Gasha/<id>/` ใส่ `banner.webp` และ `Config.config`:
+สร้าง `Assets/Shop/Gasha/<id>/` ใส่ `banner.webp` และ `Config.config`:
 ```json
 { "id": "sakura-ace", "name": "SAKURA ACE", "description": "...", "order": 2, "enabled": true, "image": "banner.webp",
   "singleCoins": 300, "tenCoins": 2700, "singleMcash": 30, "tenMcash": 270, "pity": 50,
@@ -61,10 +64,10 @@ client/public/pack/base.pak          ตัวละครฟรี + ภาพ�
 client/public/pack/char-<id>.pak     ภาพเต็ม/เอฟเฟกต์/เสียงของตัวละครที่ต้องซื้อ 1 ตัว     (ได้กุญแจเมื่อมีตัวละครในคลัง)
 client/public/pack/manifest.json     รายการแพ็ก + เวอร์ชัน
 ```
-- **ต้นฉบับ** (รูปจริง) อยู่ใน `assets-src/Character/<id>/...` (ไฟล์ `.config` อยู่ที่ `client/public/Character/<id>/` เหมือนเดิม) · ตัวที่ `price` > 0 ในไฟล์ `Character.config` = ต้องซื้อ
+- **ต้นฉบับ** (รูปจริง) อยู่ใน `assets-src/Assets/Character/<id>/...` (ไฟล์ `.config` อยู่ที่ `client/public/Assets/Character/<id>/`) · ตัวที่ `price` > 0 ในไฟล์ `Character.config` = ต้องซื้อ
 - **กุญแจไม่ได้อยู่ใน repo หรือในเกม:** คำนวณจากความลับ `PACK_MASTER` (HKDF + ชื่อแพ็ก) — GitHub Actions ใช้ตอนแพ็ก, เซิร์ฟเวอร์บน Render ใช้ตอนส่งกุญแจที่ `/pack-key`
 - **GitHub Actions** (`.github/workflows/pack-assets.yml`) แพ็กให้อัตโนมัติเมื่อแก้ `assets-src/` หรือ config ตัวละคร แล้ว commit ผลกลับ · สร้างภาพตัวอย่างขนาดเล็ก (`Preview.webp`) ให้เองถ้ายังไม่มี
-- **เพิ่มตัวละครที่ต้องซื้อ:** วางรูปใน `assets-src/Character/<id>/Character.webp` + ตั้ง `price` ใน config → push → รอ Actions แพ็กให้ (ลำดับ: `build-assets.js` → push)
+- **เพิ่มตัวละครที่ต้องซื้อ:** วางรูปใน `assets-src/Assets/Character/<id>/Character.webp` + ตั้ง `price` ใน config → push → รอ Actions แพ็กให้ (ลำดับ: `build-assets.js` → push)
 - **ตอนผู้เล่นเข้าเกม:** หน้าโหลดขอกุญแจ → โหลดแพ็กเก็บในเครื่อง → ถอดรหัสในหน่วยความจำ · ซื้อ/สุ่มได้ตัวละครใหม่ = ปลดล็อกภาพเต็มอัตโนมัติ · ไม่มีสิทธิ์ = เห็นภาพตัวอย่างขนาดเล็ก
 - ไม่มีโฟลเดอร์ `pack/` = เกมใช้ไฟล์ตรงตามเดิม (โหมดพัฒนา)
 - ทดสอบในเครื่อง: `node scripts/pack-assets.js --dev` (ใช้ master ทดสอบ ห้ามนำไปใช้จริง)
