@@ -345,7 +345,46 @@ function recordResults(room) {
   }
 }
 const rulesPayload = () => ({ version: VERSION, default: Rules.DEFAULT, rules: Rules.list() });
+// ===== เพื่อน: สถานะออนไลน์ + ชวนเข้าห้อง (รายชื่อเพื่อนมาจากฐานข้อมูล friend_ids · แคช 30 วินาที) =====
+const online = new Map();        // uid → Set(socket.id) ของผู้เล่นที่ล็อกอินและเชื่อมต่ออยู่
+const friendCache = new Map();   // uid → { t, list: [{ id, username }] }
+const FRIEND_TTL = Number(process.env.FRIEND_TTL_MS || 30000);
+async function friendsOf(uid, fresh) {
+  const c = friendCache.get(uid); if (c && !fresh && Date.now() - c.t < FRIEND_TTL) return c.list;
+  const list = await SB.rpc('friend_ids', { p_user: uid }); const v = Array.isArray(list) ? list : [];
+  friendCache.set(uid, { t: Date.now(), list: v }); if (friendCache.size > 5000) friendCache.delete(friendCache.keys().next().value);
+  return v;
+}
+// ห้องที่เพื่อนกดเข้าร่วมได้: ห้องสร้างเอง (ไม่ใช่ห้องจับคู่/บทสอน) ที่ยังไม่เริ่มและยังไม่เต็ม
+const joinable = room => !!room && !room.match && !room.tutorial && !active(room) && connectedPlayers(room).length < MAX_PLAYERS;
+function presenceOf(uid) {
+  const ids = online.get(uid); if (!ids || !ids.size) return { st: 'off' };
+  for (const sid of ids) {
+    const sk = io.sockets.sockets.get(sid), room = sk && rooms.get(sk.data.roomCode); if (!room) continue;
+    const rule = ruleOf(room).meta.name;
+    if (active(room)) return { st: 'playing', rule, ranked: !!(room.match && room.match.ranked) };
+    if (room.match) return { st: 'matching', rule };
+    return joinable(room) ? { st: 'room', rule, code: room.code, n: connectedPlayers(room).length, max: MAX_PLAYERS } : { st: 'room', rule };
+  }
+  return { st: 'online' };
+}
 io.on('connection', socket => {
+  if (socket.data.uid) { const u = socket.data.uid; if (!online.has(u)) online.set(u, new Set()); online.get(u).add(socket.id);
+    socket.on('disconnect', () => { const set = online.get(u); if (set) { set.delete(socket.id); if (!set.size) online.delete(u); } }); }
+  // สถานะของเพื่อนทุกคน → { username: { st: off|online|room|matching|playing, rule, code? } }
+  on(socket, 'friends:presence', raw => { if (!allow(socket) || !SB.enabled() || !socket.data.uid) return;
+    friendsOf(socket.data.uid, obj(raw).fresh === true).then(list => { const out = {}; list.forEach(f => { out[f.username] = presenceOf(f.id); }); socket.emit('friends:presence', out); })
+      .catch(e => console.error('friends:presence', e && e.message)); });
+  // ชวนเพื่อนที่ออนไลน์เข้าห้องที่ตัวเองอยู่ (เฉพาะห้องสร้างเองที่ยังไม่เริ่ม/ไม่เต็ม) · คนเดิมชวนซ้ำได้ทุก 5 วินาที
+  on(socket, 'friend:invite', raw => { if (!allow(socket) || !SB.enabled() || !socket.data.uid) return;
+    const un = String(obj(raw).username || '').toLowerCase().slice(0, 30), room = rooms.get(socket.data.roomCode);
+    if (!joinable(room)) return socket.emit('system:error', 'ชวนเพื่อนได้เฉพาะห้องที่สร้างเอง ที่ยังไม่เริ่มเกมและยังไม่เต็ม');
+    const inv = socket.data.inv || (socket.data.inv = {}); if (Date.now() - (inv[un] || 0) < 5000) return; inv[un] = Date.now();
+    friendsOf(socket.data.uid).then(list => { const f = list.find(x => x.username === un); if (!f) return socket.emit('system:error', 'ชวนได้เฉพาะเพื่อนในรายชื่อ');
+      const ids = online.get(f.id); if (!ids || !ids.size) return socket.emit('friend:invite-result', { username: un, ok: false, reason: 'เพื่อนออฟไลน์อยู่' });
+      const me = findPlayer(room, socket.id), msg = { from: (me && me.name) || socket.data.uname || 'เพื่อน', code: room.code, rule: ruleOf(room).meta.name, n: connectedPlayers(room).length, max: MAX_PLAYERS };
+      ids.forEach(sid => io.to(sid).emit('friend:invite', msg)); socket.emit('friend:invite-result', { username: un, ok: true });
+    }).catch(e => console.error('friend:invite', e && e.message)); });
   socket.emit('system:notice', 'เชื่อมต่อเซิร์ฟเวอร์แล้ว');
   socket.emit('rules:list', rulesPayload()); // รายการกฎ + ตัวเลือกของแต่ละกฎ ให้ client สร้างหน้าตั้งค่าห้องเอง
   on(socket, 'rules:get', () => { if (allow(socket)) socket.emit('rules:list', rulesPayload()); });
@@ -477,4 +516,4 @@ io.on('connection', socket => {
   on(socket, 'disconnect', () => leaveRoom(socket, true));
 });
 if (require.main === module) server.listen(PORT, () => console.log(`Dummy Online backend listening on ${PORT}`));
-module.exports = { server, io, rooms };
+module.exports = { server, io, rooms, online, friendCache };
