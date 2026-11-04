@@ -46,9 +46,9 @@ jobs:
 
       - name: ตรวจไวยากรณ์โค้ด client (ต้องผ่านก่อนสร้างแอป)
         run: |
-          node --check client/public/app.js
-          node --check client/public/games.js
-          node --check client/public/native.js
+          node --check client/public/Code/Core/app.js
+          node --check client/public/Code/Table/games.js
+          node --check client/public/Code/Core/native.js
           node --check mobile/prepare.js
 
       - name: ติดตั้ง Capacitor

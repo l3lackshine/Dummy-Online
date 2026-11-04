@@ -1,6 +1,6 @@
 // ตรวจระบบสกิล v3: ตารางฝั่งเซิร์ฟเวอร์ตรงกับ skin/skills.json · ฝากออโต้ต้องมีสกิลมือไว · ป่วนสายตาถูกปิด · ไม่มีโบนัสเหรียญ
 const fs = require('fs'), path = require('path'), assert = require('assert'), M = require('./test-mock-sio');
-const Core = require('../client/public/skills-core.js'), Sk = require('./src/skills');
+const Core = require('../client/public/Code/Shared/skills-core.js'), Sk = require('./src/skills');
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../client/public/skin/skills.json'), 'utf8'));
 let passed = 0; const ok = (c, m) => { assert(c, m); passed++; console.log('  ✓', m); };
 const sleep = ms => new Promise(r => setTimeout(r, ms));

@@ -9,7 +9,7 @@ ok(staff.every(n => /ทีมงาน/.test(F.check(n) || '')), 'ชื่อ�
 const fp = good.filter(n => F.check(n)); ok(!fp.length, 'ชื่อปกติผ่านทั้งหมด' + (fp.length ? ' — ติด: ' + fp.join(', ') : ''));
 ok(F.check('') && F.check('   ') && F.check('...'), 'ชื่อว่าง/มีแต่สัญลักษณ์ใช้ไม่ได้');
 ok(F.clean('ควย', 'ผู้เล่น') === 'ผู้เล่น' && F.clean('สมชาย') === 'สมชาย' && F.clean('ชื่อยาวมากกกกกกกกกกกกกก').length === 14, 'clean(): ชื่อหยาบ → ค่าแทน · ชื่อปกติคงเดิม · ตัดที่ 14 ตัว');
-ok(fs.readFileSync(path.join(__dirname, 'src/namefilter.js'), 'utf8') === fs.readFileSync(path.join(__dirname, '../client/public/namefilter.js'), 'utf8'), 'สำเนาฝั่ง client ตรงกับฝั่งเซิร์ฟเวอร์');
+ok(fs.readFileSync(path.join(__dirname, 'src/namefilter.js'), 'utf8') === fs.readFileSync(path.join(__dirname, '../client/public/Code/Shared/namefilter.js'), 'utf8'), 'สำเนาฝั่ง client ตรงกับฝั่งเซิร์ฟเวอร์');
 const sql = fs.readFileSync(path.join(__dirname, '../supabase/name_filter.sql'), 'utf8');
 ok(['ควย', 'fuck', 'แอดมิน', 'หีบ'].every(w => sql.includes("'" + F.norm(w) + "'")), 'name_filter.sql สร้างจากรายการคำล่าสุด (รัน node scripts/gen-namefilter-sql.js)');
 // เซิร์ฟเวอร์: ชื่อหยาบตอนสร้างห้อง → "ผู้เล่น"

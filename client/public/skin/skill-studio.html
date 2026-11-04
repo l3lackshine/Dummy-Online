@@ -26,7 +26,7 @@ table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:3px 4px;t
 <div class="row"><select id="neff"><option value="hawkeye">hawkeye — ไฮไลต์ไพ่ที่เก็บแล้วเกิดได้</option><option value="cardcount">cardcount — ตัวนับไพ่</option><option value="coinbonus">coinbonus — โบนัสเหรียญ</option><option value="scramble">scramble — ป่วนสายตา</option></select><button class="g" onclick="addSkill()">＋ เพิ่มสกิล</button></div>
 <h2>SQL สำหรับฐานข้อมูล (character_defs)</h2><textarea id="sql" readonly></textarea>
 <div class="bar"><button class="g" onclick="dl()">⬇ skills.json</button><button onclick="cp()">คัดลอก JSON</button><button class="g" onclick="dlSql()">⬇ character_defs.sql</button><button onclick="cpSql()">คัดลอก SQL</button><button class="o" onclick="test()">ทดสอบในเครื่องนี้</button><button class="r" onclick="clr()">ล้างการทดสอบ</button></div>
-<script src="../skills-core.js"></script>
+<script src="../Code/Shared/skills-core.js"></script>
 <script>
 const EFF={hawkeye:{uses:2,cooldown:20,duration:6},cardcount:{ranks:3},coinbonus:{pct:3},scramble:{uses:1,cooldown:25,duration:5}};
 const LIM={uses:[1,4],cooldown:[8,60],duration:[3,10],ranks:[2,8],pct:[0,20]};

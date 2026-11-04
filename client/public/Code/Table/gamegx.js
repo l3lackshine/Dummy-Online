@@ -76,9 +76,9 @@ function gxRoom(c) {
   // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
   const s5bg = p => { const x = p.s5 && gxChar(p.ch); return x && x.star5 ? ` style="background:url('${esc(x.star5)}') center/cover"` : ''; };
   // กรอบการ์ดที่ผู้เล่นใส่ (Assets/Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
-  const deco = fr => { if (fr && /^ch-[a-z0-9-]+$/.test(fr)) return `<i class="rm-deco ch-fr" style="--deco:url('./Assets/Item/Frame/${esc(fr)}.webp')"></i>`;   // กรอบประจำตัวละคร (ปลด 4★)
+  const deco = fr => { if (fr && /^ch-[a-z0-9-]+$/.test(fr)) return `<i class="rm-deco ch-fr" style="--deco:url('${esc(assetUrl('./Assets/Item/Frame/' + fr + '.webp'))}')"></i>`;   // กรอบประจำตัวละคร (ปลด 4★)
     const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
-    return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(x.asset)}')"></i>` : ''; };
+    return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(assetUrl(x.asset))}')"></i>` : ''; };
   const human = p => { const on = p.host || p.ready;
     return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`; };

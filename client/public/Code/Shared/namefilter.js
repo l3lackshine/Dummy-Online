@@ -1,5 +1,5 @@
 /* namefilter.js — ตรวจชื่อผู้เล่น (คำหยาบ / แอบอ้างเป็นทีมงาน) ใช้ไฟล์เดียวกันทั้งเซิร์ฟเวอร์และเกม
-   สำเนาเดียวกันอยู่ที่ client/public/namefilter.js (เทสต์ test-namefilter.js ตรวจว่าตรงกัน) · ฐานข้อมูลมีตัวตรวจของตัวเองใน supabase/name_filter.sql
+   สำเนาเดียวกันอยู่ที่ client/public/Code/Shared/namefilter.js (เทสต์ test-namefilter.js ตรวจว่าตรงกัน) · ฐานข้อมูลมีตัวตรวจของตัวเองใน supabase/name_filter.sql
    Public: NameFilter.check(name) → null (ผ่าน) | ข้อความเหตุผล · NameFilter.clean(name, fallback) → ชื่อที่ใช้ได้
    เพิ่มคำ: ใส่ใน BAD (ตัวพิมพ์เล็ก ไม่มีช่องว่าง) · คำปกติที่บังเอิญมีคำต้องห้ามอยู่ข้างใน ใส่ใน OK */
 (function (root, factory) { if (typeof module === 'object' && module.exports) module.exports = factory(); else root.NameFilter = factory(); })(typeof self !== 'undefined' ? self : this, function () {

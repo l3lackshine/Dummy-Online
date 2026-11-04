@@ -26,7 +26,7 @@
         const a = new Audio(f); a.volume = Math.min(1, Math.max(0, Number(st.snd.master) || 0.8)); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
   };
   function applyUi(ui) { // ตัวแปร CSS --ui-<กลุ่ม>-<ชื่อ> เฉพาะช่องที่ใส่ไฟล์ไว้
-    const root = document.documentElement.style, put = (k, v) => { if (v) root.setProperty('--ui-' + k, 'url("./Assets/UI/' + v + '")'); };
+    const root = document.documentElement.style, put = (k, v) => { if (v) root.setProperty('--ui-' + k, 'url("' + assetUrl('./Assets/UI/' + v) + '")'); };
     for (const [g, v] of Object.entries(ui || {})) { if (g === 'note') continue; if (v && typeof v === 'object') for (const [n, f] of Object.entries(v)) put(g + '-' + n, f); else put(g, v); }
   }
   Promise.all([J('./Assets/Shop/Shopsetting.config'), J('./Assets/UI/ui.config'), J('./Assets/Sounds/sounds.config'), J('./skin/gacha.json')]).then(([shop, ui, snd, g]) => {

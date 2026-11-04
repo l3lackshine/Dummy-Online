@@ -2,7 +2,7 @@
 const fs = require('fs'), path = require('path');
 const E = require('./src/economy');
 let passed = 0; const ok = (c, m) => { if (!c) { console.error('✗', m); process.exit(1); } passed++; console.log('✓', m); };
-const a = fs.readFileSync(path.join(__dirname, 'src/economy.js'), 'utf8'), b = fs.readFileSync(path.join(__dirname, '../client/public/economy.js'), 'utf8');
+const a = fs.readFileSync(path.join(__dirname, 'src/economy.js'), 'utf8'), b = fs.readFileSync(path.join(__dirname, '../client/public/Code/Shared/economy.js'), 'utf8');
 ok(a === b, 'economy.js ฝั่งเซิร์ฟเวอร์กับตัวเกมเหมือนกันทุกตัวอักษร');
 ok(JSON.stringify(E.ranks([30, 10, 30, -5])) === '[1,3,1,4]', 'จัดอันดับแบบแข่งขัน (เสมอได้อันดับเดียวกัน)');
 ok(E.reward(1, 4, 1) === 60 && E.reward(4, 4, 1) === 15, '4 ที่นั่ง: ที่ 1 = 60 · ที่สุดท้าย = 15');
