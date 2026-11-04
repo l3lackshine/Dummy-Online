@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""make-shards.py — สร้างไอคอนเศษตัวละคร (หน้าตัวละครอยู่ในคริสตัล) → client/public/Item/Shards/<id>.webp
-   กรอบเศษ: assets-src/shards/shard-r.png (Rare) · shard-s.png (SR)
-   หน้า: assets-src/Character/<id>/Character.* ตัดตามกรอบใน FACE (สัดส่วนของความกว้างภาพ: x0, y0, x1, y1)
+"""make-shards.py — สร้างไอคอนเศษตัวละคร (หน้าตัวละครอยู่ในคริสตัล) → client/public/Assets/Item/Shards/<id>.webp
+   กรอบเศษ: assets-src/Assets/Item/Shards-src/shard-r.png (Rare) · shard-s.png (SR)
+   หน้า: assets-src/Assets/Character/<id>/Character.* ตัดตามกรอบใน FACE (สัดส่วนของความกว้างภาพ: x0, y0, x1, y1)
    เพิ่มตัวละครใหม่: ใส่กรอบหน้าใน FACE แล้วรัน python3 scripts/make-shards.py"""
 import glob, os, json
 from PIL import Image, ImageFilter, ImageChops
@@ -17,13 +17,13 @@ cat = open(os.path.join(ROOT, 'supabase/seed_catalog.sql')).read()
 def rarity(cid):
   import re
   m = re.search(r"\('characters', '%s', '[^']*', '(\w+)'" % re.escape(cid), cat); return m.group(1) if m else 'rare'
-out = os.path.join(ROOT, 'client/public/Item/Shards'); os.makedirs(out, exist_ok=True)
-frames = {k: Image.open(os.path.join(ROOT, 'assets-src/shards/shard-%s.png' % k)).convert('RGBA') for k in ('r', 's')}
+out = os.path.join(ROOT, 'client/public/Assets/Item/Shards'); os.makedirs(out, exist_ok=True)
+frames = {k: Image.open(os.path.join(ROOT, 'assets-src/Assets/Item/Shards-src/shard-%s.png' % k)).convert('RGBA') for k in ('r', 's')}
 for cid, (x0, y0, x1, y1) in FACE.items():
   fr = frames['s' if rarity(cid) == 'epic' else 'r']; S = fr.size[0]
   body = fr.split()[3].point(lambda v: 255 if v > 235 else 0).filter(ImageFilter.MinFilter(31)).filter(ImageFilter.GaussianBlur(6))
   bb = body.getbbox()
-  src = Image.open(glob.glob(os.path.join(ROOT, 'assets-src/Character/%s/Character.*' % cid))[0]).convert('RGBA'); w = src.size[0]
+  src = Image.open(glob.glob(os.path.join(ROOT, 'assets-src/Assets/Character/%s/Character.*' % cid))[0]).convert('RGBA'); w = src.size[0]
   face = Image.new('RGBA', (round((x1 - x0) * w), round((y1 - y0) * w)), (0, 0, 0, 0))
   crop = src.crop((round(x0 * w), round(y0 * w), round(x1 * w), round(y1 * w))); face.alpha_composite(crop)
   bw, bh = bb[2] - bb[0], bb[3] - bb[1]; side = round(bw * 1.1)

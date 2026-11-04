@@ -4,7 +4,7 @@
    ไม่แก้ app.js: ทำงานหลัง render() ทุกครั้ง ผ่าน MutationObserver */
 (function () {
   'use strict';
-  const KIT = './UI/Assets/kit2/';
+  const KIT = './Assets/UI/Assets/kit2/';
   const N = n => Number(n || 0).toLocaleString('en-US');
   const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
   const DBP = () => (window.DB && DB.enabled && DB.P) || null;
@@ -33,7 +33,7 @@
   // ---------- ปุ่มเริ่มเล่น: บอกสตามิน่า · กดแล้วกลีบซากุระแตก · ลูกศรเปลี่ยนเกม ----------
   const rvStLine = () => {
     const st = window.Stamina && Stamina.now(); if (!st) return '';
-    const ic = '<img class=st-ic src="./Item/Mats/stamina.webp" alt="">';
+    const ic = '<img class=st-ic src="./Assets/Item/Mats/stamina.webp" alt="">';
     return st.stamina < st.cost ? `${ic} ไม่พอ · โหมดซ้อม` : `${ic} <b data-st>${N(st.stamina)}</b>/${N(st.max)} · ตาละ ${st.cost}`;
   };
   window.rvStart = e => {
@@ -41,7 +41,7 @@
     const r = b.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     for (let i = 0; i < 14; i++) {
       const p = document.createElement('i'); p.className = 'rv-petal'; const a = Math.PI * 2 * i / 14 + Math.random() * .4, d = r.height * (1.2 + Math.random() * 1.1);
-      p.style.cssText = `background-image:url(./UI/Assets/fx/petal-${1 + (Math.random() * 7 | 0)}.webp);--sz:${(0.8 + Math.random() * 0.6).toFixed(2)};left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
+      p.style.cssText = `background-image:url(./Assets/UI/Assets/fx/petal-${1 + (Math.random() * 7 | 0)}.webp);--sz:${(0.8 + Math.random() * 0.6).toFixed(2)};left:${cx}px;top:${cy}px;--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d * .7 - r.height * .3}px;--rot:${(Math.random() * 540 - 270) | 0}deg`;
       document.body.appendChild(p); setTimeout(() => p.remove(), 950);
     }
     setTimeout(() => { delete b.dataset.go; b.classList.remove('press'); goPlay(); }, 320);
@@ -86,7 +86,7 @@
         ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="friendsOpen()" aria-label="เพื่อน">${ic('users')}<small>เพื่อน</small>${nf ? '<em>' + nf + '</em>' : ''}</button>` : ''}
       </div>
       <div class="rv-ev">
-        <button class="rv-card big" onclick="go('shop')"><img src="./Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
+        <button class="rv-card big" onclick="go('shop')"><img src="./Assets/Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
         <button class="rv-card rv-bp" onclick="bpOpen()"><i>${ic('medal')}</i><span>แบทเทิลพาส<small>${nb ? nb + ' รางวัลรอรับ' : 'ฤดู ราชินีซากุระ'}</small></span>${nb ? '<em>' + nb + '</em>' : ''}</button>
         <button class="rv-card" onclick="openQuests()"><i>${ic('quest')}</i><span>เควสประจำวัน<small>${nq ? nq + ' รายการรอรับ' : 'ทำเควสรับเหรียญ'}</small></span>${nq ? '<em>' + E(nq) + '</em>' : ''}</button>
       </div>

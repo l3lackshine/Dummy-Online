@@ -75,8 +75,8 @@ function gxRoom(c) {
     return ` style="--chr-al:${al};--chr-h:${Math.round(sc * 100)}%"`; };
   // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
   const s5bg = p => { const x = p.s5 && gxChar(p.ch); return x && x.star5 ? ` style="background:url('${esc(x.star5)}') center/cover"` : ''; };
-  // กรอบการ์ดที่ผู้เล่นใส่ (Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
-  const deco = fr => { if (fr && /^ch-[a-z0-9-]+$/.test(fr)) return `<i class="rm-deco ch-fr" style="--deco:url('./Item/Frame/${esc(fr)}.webp')"></i>`;   // กรอบประจำตัวละคร (ปลด 4★)
+  // กรอบการ์ดที่ผู้เล่นใส่ (Assets/Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
+  const deco = fr => { if (fr && /^ch-[a-z0-9-]+$/.test(fr)) return `<i class="rm-deco ch-fr" style="--deco:url('./Assets/Item/Frame/${esc(fr)}.webp')"></i>`;   // กรอบประจำตัวละคร (ปลด 4★)
     const x = fr && ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.frames) || []).find(y => y.id === fr);
     return x && x.asset ? `<i class=rm-deco style="--deco:url('${esc(x.asset)}')"></i>` : ''; };
   const human = p => { const on = p.host || p.ready;

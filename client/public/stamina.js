@@ -17,7 +17,7 @@
   const rerender = () => { if (typeof render === 'function') render(); };
 
   /* ---------------- ไอเทม ---------------- */
-  const ICON = id => './Item/Mats/' + id + '.webp';
+  const ICON = id => './Assets/Item/Mats/' + id + '.webp';
   const Items = {
     info: id => Object.assign({ id, name: id, desc: '' }, EC.ITEMS[id] || {}, { icon: ICON(id) }),
     icon: (id, cls) => `<img class="${cls || 'it-ic'}" src="${ICON(id)}" alt="">`,
@@ -25,7 +25,7 @@
     list: () => Object.keys(EC.ITEMS),
   };
   window.Items = Items;
-  const STICON = cls => `<img class="${cls || 'st-ic'}" src="./Item/Mats/stamina.webp" alt="">`;
+  const STICON = cls => `<img class="${cls || 'st-ic'}" src="./Assets/Item/Mats/stamina.webp" alt="">`;
 
   /* ---------------- สตามิน่า ---------------- */
   let base = null, seen = null;
@@ -89,7 +89,7 @@
     if (!dbOn()) return '';
     const cur = getFarm(), st = now(), cost = (st && st.cost) || EC.STAMINA.COST;
     const card = f => { const top = EC.farmReward(f, 1, 4), low = EC.farmReward(f, 4, 4);
-      const icon = f === 'coins' ? '<img class=it-ic src="./UI/Assets/kit2/coin.webp" alt="">' : f === 'pexp' ? Items.icon('pexp') : Items.icon('exp-m');
+      const icon = f === 'coins' ? '<img class=it-ic src="./Assets/UI/Assets/kit2/coin.webp" alt="">' : f === 'pexp' ? Items.icon('pexp') : Items.icon('exp-m');
       const val = r => (f === 'coins' ? `<b>${N(r.coins)}</b> 🪙` : f === 'pexp' ? `EXP <b>+${N(r.exp)}</b>` : itemsLine(r.items));
       const what = `<i class=fm-row><em>ที่ 1</em>${val(top)}</i><i class=fm-row><em>ที่สุดท้าย</em>${val(low)}</i>`;
       return `<button class="fm-card${cur === f ? ' on' : ''}" onclick="farmSet('${f}')">${icon}<span><b>${E(EC.FARM[f].name)}</b><small>${what}</small></span></button>`; };
@@ -124,7 +124,7 @@
     const slots = Object.keys(EC.CHAR.SLOTS).map(k => { const need = EC.CHAR.SLOTS[k], open = L.level >= need, cur = L.loadout[k];
       return `<button class="cl-slot${open ? '' : ' lock'}${cur ? ' set' : ''}" ${open ? `onclick="clSlotOpen('${E(id)}','${k}')"` : 'disabled'}><small>${SLOT_NAME[k]}</small><b>${open ? (cur ? E(regName(k, cur)) : '+ ว่าง') : '🔒 Lv.' + need}</b></button>`; }).join('');
     const sh = DB.qty ? DB.qty('shards', id) : 0, SN = EC.SHARD_NEED || 50;
-    return `<div class=cl>${sh ? `<div class=cl-sh><img src="./Item/Shards/${E(id)}.webp" alt="" onerror="this.remove()">เศษตัวละคร <b>${N(sh)}/${SN}</b><i><u style="width:${Math.min(100, Math.round(sh / SN * 100))}%"></u></i></div>` : ''}<div class=cl-top><b>Lv.${L.level}<small>/${EC.CHAR.MAX}</small></b><i><u style="width:${pct}%"></u></i><small>${L.max ? 'เลเวลสูงสุดแล้ว' : `${N(L.into)}/${N(L.need)} EXP`}</small></div>
+    return `<div class=cl>${sh ? `<div class=cl-sh><img src="./Assets/Item/Shards/${E(id)}.webp" alt="" onerror="this.remove()">เศษตัวละคร <b>${N(sh)}/${SN}</b><i><u style="width:${Math.min(100, Math.round(sh / SN * 100))}%"></u></i></div>` : ''}<div class=cl-top><b>Lv.${L.level}<small>/${EC.CHAR.MAX}</small></b><i><u style="width:${pct}%"></u></i><small>${L.max ? 'เลเวลสูงสุดแล้ว' : `${N(L.into)}/${N(L.need)} EXP`}</small></div>
       ${L.max ? '' : `<div class=cl-bks>${books}</div><button class=cl-go ${add && coins >= cost && !busyCl ? '' : 'disabled'} onclick="clLevelUp('${E(id)}')">${add ? `อัปเป็น Lv.${to} · +${N(use)} EXP · ${N(cost)} 🪙` : 'เลือกคัมภีร์เพื่ออัปเลเวล'}</button>${add && coins < cost ? '<small class=cl-warn>เหรียญไม่พอ</small>' : ''}`}
       <h4>ชุดแต่งประจำตัวละคร <small>เลือกตัวนี้แล้วใส่ให้อัตโนมัติ</small></h4><div class=cl-slots>${slots}</div></div>`;
   }

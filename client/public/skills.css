@@ -21,7 +21,7 @@
 .sk-rule{display:block;margin-top:8px;opacity:.8}
 /* หน้าสกิลตัวละคร (⚡) ใช้แผงครีมแบบเดียวกับหน้าอื่น */
 .sk-modal.sk-main .sk-box{background:none!important;color:#3b4255!important;border-style:solid!important;border-color:transparent!important;border-width:3vh!important;
-  border-image:url(./UI/Assets/kit2/panel-cream.webp) 90 fill/3vh stretch!important;box-shadow:0 2vh 5vh #0006!important;border-radius:0!important;padding:0!important;max-height:92vh;overflow:auto}
+  border-image:url(./Assets/UI/Assets/kit2/panel-cream.webp) 90 fill/3vh stretch!important;box-shadow:0 2vh 5vh #0006!important;border-radius:0!important;padding:0!important;max-height:92vh;overflow:auto}
 .sk-modal.sk-main .sk-box h3,.sk-modal.sk-main .ck-h b,.sk-modal.sk-main .ck-g b{color:#3b4255!important}
 .sk-modal.sk-main .ck-h small,.sk-modal.sk-main .ck-g small,.sk-modal.sk-main .sk-rule,.sk-modal.sk-main .ck-un{color:#5b6274!important}
 .sk-modal.sk-main h4{color:#8a6d3b!important}

@@ -85,7 +85,7 @@
    "ticket": "ticket-b",
    "ticketMcash": 30,
    "ticketMcash10": 270,
-   "image": "./Shop/Gasha/sakura-ace/banner.webp"
+   "image": "./Assets/Shop/Gasha/sakura-ace/banner.webp"
   },
   {
    "id": "sakuya-up",
@@ -111,7 +111,7 @@
    "ticket": "ticket-r",
    "ticketMcash": 30,
    "ticketMcash10": 270,
-   "image": "./Shop/Gasha/sakuya-up/banner.webp"
+   "image": "./Assets/Shop/Gasha/sakuya-up/banner.webp"
   },
   {
    "id": "cosm-sakura",
@@ -134,7 +134,7 @@
     "common": 6500
    },
    "noDefaults": true,
-   "image": "./Shop/Gasha/cosm-sakura/banner.webp"
+   "image": "./Assets/Shop/Gasha/cosm-sakura/banner.webp"
   }
  ]
 }

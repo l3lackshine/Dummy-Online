@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - 'assets-src/**'
-      - 'client/public/Character/**'
+      - 'client/public/Assets/Character/**'
       - 'scripts/pack-assets.js'
       - 'scripts/make-previews.js'
       - '.github/workflows/pack-assets.yml'

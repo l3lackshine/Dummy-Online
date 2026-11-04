@@ -1,7 +1,7 @@
 /* emote.js — อีโมตบนโต๊ะเล่น + สติกเกอร์ตัวละคร (ของปลด 2★)
    - อีโมจิพื้นฐาน 8 อัน: ทุกคนใช้ได้ · สติกเกอร์ตัวละคร 4 แบบ: ตัวที่ใช้อยู่ต้องถึง 2★ (เซิร์ฟเวอร์ตรวจซ้ำ)
    - บนโต๊ะ: ขึ้นเหนือที่นั่งของคนส่ง · ห้องรอ: ลอยกลางจอ (lobby-ui.js เรียก Emote.html)
-   รูปสติกเกอร์: Item/Emote/<ตัวละคร>/<happy|laugh|wow|sad>.webp (ไม่มีรูป = ป้ายคำพูดชั่วคราว)
+   รูปสติกเกอร์: Assets/Item/Emote/<ตัวละคร>/<happy|laugh|wow|sad>.webp (ไม่มีรูป = ป้ายคำพูดชั่วคราว)
    Public: Emote.html(d) · Emote.send(e) · Emote.toggle() · Emote.BASIC · Emote.STICKERS */
 (function () {
   'use strict';
@@ -9,9 +9,9 @@
   const BASIC = ['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'];
   const STICKERS = [{ k: 'c:happy', f: 'happy', emo: '😊', t: 'เย้!' }, { k: 'c:laugh', f: 'laugh', emo: '😆', t: 'ฮ่า ๆ' }, { k: 'c:wow', f: 'wow', emo: '😲', t: 'ว้าว!' }, { k: 'c:sad', f: 'sad', emo: '🥺', t: 'งือ…' }];
   const NEED = 2;
-  // รูปสติกเกอร์: ตัว SR/SSR ใช้ชุดของตัวเอง (Item/Emote/<ตัวละคร>/) · ตัวอื่นใช้ชุดตามระดับ แมวซากุระ (tier-rare = ตัว Rare · tier-common = ตัวฟรี)
+  // รูปสติกเกอร์: ตัว SR/SSR ใช้ชุดของตัวเอง (Assets/Item/Emote/<ตัวละคร>/) · ตัวอื่นใช้ชุดตามระดับ แมวซากุระ (tier-rare = ตัว Rare · tier-common = ตัวฟรี)
   const has = {};   // 'โฟลเดอร์/f' → true/false (มีรูปจริงไหม)
-  const url = (dir, f) => './Item/Emote/' + dir + '/' + f + '.webp';
+  const url = (dir, f) => './Assets/Item/Emote/' + dir + '/' + f + '.webp';
   const tierOf = ch => { const c = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(x => x.id === ch); return c && c.rarity === 'rare' ? 'tier-rare' : 'tier-common'; };
   const OWN = ['sakuya-ssr', 'rina-01', 'arya-01', 'rena-01'];   // ตัวที่มีสติกเกอร์หน้าตัวเอง (เพิ่มชื่อเมื่อวาดชุดใหม่)
   const dirOf = ch => (OWN.includes(ch) ? ch : tierOf(ch));

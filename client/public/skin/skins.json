@@ -71,8 +71,8 @@
     "show": 0.52,
     "x": 0.4
    },
-   "asset": "./Character/boy/Character.webp",
-   "star5": "./Character/boy/Background/star5.webp",
+   "asset": "./Assets/Character/boy/Character.webp",
+   "star5": "./Assets/Character/boy/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -87,8 +87,8 @@
     "show": 0.52,
     "x": 0.42
    },
-   "asset": "./Character/girl/Character.webp",
-   "star5": "./Character/girl/Background/star5.webp",
+   "asset": "./Assets/Character/girl/Character.webp",
+   "star5": "./Assets/Character/girl/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -104,8 +104,8 @@
     "show": 0.35,
     "x": 0.55
    },
-   "asset": "./Character/rina-01/Character.webp",
-   "star5": "./Character/rina-01/Background/star5.webp",
+   "asset": "./Assets/Character/rina-01/Character.webp",
+   "star5": "./Assets/Character/rina-01/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -121,8 +121,8 @@
     "show": 0.37,
     "x": 0.5
    },
-   "asset": "./Character/arya-01/Character.webp",
-   "star5": "./Character/arya-01/Background/star5.webp",
+   "asset": "./Assets/Character/arya-01/Character.webp",
+   "star5": "./Assets/Character/arya-01/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -138,8 +138,8 @@
     "show": 0.34,
     "x": 0.48
    },
-   "asset": "./Character/rena-01/Character.webp",
-   "star5": "./Character/rena-01/Background/star5.webp",
+   "asset": "./Assets/Character/rena-01/Character.webp",
+   "star5": "./Assets/Character/rena-01/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -157,9 +157,9 @@
     "show": 0.36,
     "x": 0.46
    },
-   "asset": "./Character/sakuya-ssr/Character.webp",
-   "seat": "./Character/sakuya-ssr/Background/seat.webp",
-   "star5": "./Character/sakuya-ssr/Background/star5.webp",
+   "asset": "./Assets/Character/sakuya-ssr/Character.webp",
+   "seat": "./Assets/Character/sakuya-ssr/Background/seat.webp",
+   "star5": "./Assets/Character/sakuya-ssr/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -176,9 +176,9 @@
     "show": 0.34,
     "x": 0.62
    },
-   "asset": "./Character/rei-r/Character.webp",
-   "card": "./Character/rei-r/Card.webp",
-   "star5": "./Character/rei-r/Background/star5.webp",
+   "asset": "./Assets/Character/rei-r/Character.webp",
+   "card": "./Assets/Character/rei-r/Card.webp",
+   "star5": "./Assets/Character/rei-r/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -195,9 +195,9 @@
     "show": 0.36,
     "x": 0.6
    },
-   "asset": "./Character/haru-r/Character.webp",
-   "card": "./Character/haru-r/Card.webp",
-   "star5": "./Character/haru-r/Background/star5.webp",
+   "asset": "./Assets/Character/haru-r/Character.webp",
+   "card": "./Assets/Character/haru-r/Card.webp",
+   "star5": "./Assets/Character/haru-r/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -214,9 +214,9 @@
     "show": 0.33,
     "x": 0.38
    },
-   "asset": "./Character/ken-r/Character.webp",
-   "card": "./Character/ken-r/Card.webp",
-   "star5": "./Character/ken-r/Background/star5.webp",
+   "asset": "./Assets/Character/ken-r/Character.webp",
+   "card": "./Assets/Character/ken-r/Card.webp",
+   "star5": "./Assets/Character/ken-r/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -233,9 +233,9 @@
     "show": 0.33,
     "x": 0.55
    },
-   "asset": "./Character/leo-r/Character.webp",
-   "card": "./Character/leo-r/Card.webp",
-   "star5": "./Character/leo-r/Background/star5.webp",
+   "asset": "./Assets/Character/leo-r/Character.webp",
+   "card": "./Assets/Character/leo-r/Card.webp",
+   "star5": "./Assets/Character/leo-r/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -252,9 +252,9 @@
     "show": 0.34,
     "x": 0.45
    },
-   "asset": "./Character/yuna-r/Character.webp",
-   "card": "./Character/yuna-r/Card.webp",
-   "star5": "./Character/yuna-r/Background/star5.webp",
+   "asset": "./Assets/Character/yuna-r/Character.webp",
+   "card": "./Assets/Character/yuna-r/Card.webp",
+   "star5": "./Assets/Character/yuna-r/Background/star5.webp",
    "src": "folder"
   },
   {
@@ -271,9 +271,9 @@
     "show": 0.38,
     "x": 0.45
    },
-   "asset": "./Character/miyu-r/Character.webp",
-   "card": "./Character/miyu-r/Card.webp",
-   "star5": "./Character/miyu-r/Background/star5.webp",
+   "asset": "./Assets/Character/miyu-r/Character.webp",
+   "card": "./Assets/Character/miyu-r/Card.webp",
+   "star5": "./Assets/Character/miyu-r/Background/star5.webp",
    "src": "folder"
   }
  ],
@@ -321,7 +321,7 @@
    "price": 100,
    "bg": "#ffffff",
    "bg2": "#ffffff",
-   "asset": "./Item/Table/table-sakura02.webp",
+   "asset": "./Assets/Item/Table/table-sakura02.webp",
    "src": "folder"
   },
   {
@@ -330,7 +330,7 @@
    "price": 100,
    "bg": "#ffffff",
    "bg2": "#ffffff",
-   "asset": "./Item/Table/table-sakura01.webp",
+   "asset": "./Assets/Item/Table/table-sakura01.webp",
    "src": "folder"
   }
  ],
@@ -341,7 +341,7 @@
    "price": 0,
    "css": "",
    "ink": "#ffffff",
-   "asset": "./Item/Background/sakura-house.webp",
+   "asset": "./Assets/Item/Background/sakura-house.webp",
    "src": "folder"
   },
   {
@@ -351,7 +351,7 @@
    "css": "linear-gradient(160deg,#ffd1e3,#f06595)",
    "ink": "#3a1020",
    "price": 150,
-   "table": "./Item/Background/sakura-table.webp",
+   "table": "./Assets/Item/Background/sakura-table.webp",
    "src": "folder"
   },
   {
@@ -362,7 +362,7 @@
    "exclusive": "sakuya-up",
    "css": "",
    "ink": "#ffffff",
-   "asset": "./Item/Background/sakuya-cardroom.webp",
+   "asset": "./Assets/Item/Background/sakuya-cardroom.webp",
    "src": "folder"
   },
   {
@@ -373,7 +373,7 @@
    "exclusive": "sakuya-up",
    "css": "",
    "ink": "#ffffff",
-   "asset": "./Item/Background/sakuya-pond.webp",
+   "asset": "./Assets/Item/Background/sakuya-pond.webp",
    "src": "folder"
   }
  ],
@@ -506,7 +506,7 @@
    "price": 0,
    "b1": "#1d2650",
    "b2": "#141b3a",
-   "asset": "./Item/CardBack/sakura-navy.svg",
+   "asset": "./Assets/Item/CardBack/sakura-navy.svg",
    "src": "folder"
   },
   {
@@ -515,7 +515,7 @@
    "price": 100,
    "b1": "#7a1f2b",
    "b2": "#5d1520",
-   "asset": "./Item/CardBack/classic-red.svg",
+   "asset": "./Assets/Item/CardBack/classic-red.svg",
    "src": "folder"
   },
   {
@@ -524,7 +524,7 @@
    "price": 200,
    "b1": "#4057a3",
    "b2": "#2b3b72",
-   "asset": "./Item/CardBack/midnight.svg",
+   "asset": "./Assets/Item/CardBack/midnight.svg",
    "src": "folder"
   },
   {
@@ -533,7 +533,7 @@
    "price": 300,
    "b1": "#f06595",
    "b2": "#c2255c",
-   "asset": "./Item/CardBack/paw-pink.svg",
+   "asset": "./Assets/Item/CardBack/paw-pink.svg",
    "src": "folder"
   },
   {
@@ -542,7 +542,7 @@
    "price": 700,
    "b1": "#c9971c",
    "b2": "#8a6508",
-   "asset": "./Item/CardBack/gold.svg",
+   "asset": "./Assets/Item/CardBack/gold.svg",
    "src": "folder"
   },
   {
@@ -552,7 +552,7 @@
    "b1": "#a58fff",
    "b2": "#5d1520",
    "gacha": false,
-   "asset": "./Item/CardBack/sakura-01.webp",
+   "asset": "./Assets/Item/CardBack/sakura-01.webp",
    "src": "folder"
   }
  ],
@@ -569,7 +569,7 @@
    "name": "ซากุระอัญมณี",
    "price": 700,
    "gacha": false,
-   "asset": "./Item/Frame/sakura-gem.webp",
+   "asset": "./Assets/Item/Frame/sakura-gem.webp",
    "src": "folder"
   }
  ]

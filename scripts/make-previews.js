@@ -7,11 +7,11 @@ const ROOT = path.join(__dirname, '..'), PUB = path.join(ROOT, 'client/public'),
 let sharp; try { sharp = require('sharp'); } catch (e) { console.warn('⚠ ไม่พบ sharp — ข้ามการสร้างภาพตัวอย่าง (ติดตั้งด้วย npm i sharp)'); process.exit(0); }
 const W = 300;
 (async () => {
-  const dir = path.join(PUB, 'Character'); let made = 0;
+  const dir = path.join(PUB, 'Assets/Character'); let made = 0;
   for (const id of fs.existsSync(dir) ? fs.readdirSync(dir) : []) {
     let price = 0; try { price = Number(JSON.parse(fs.readFileSync(path.join(dir, id, 'Character.config'), 'utf8')).price) || 0; } catch (e) {} if (price <= 0) continue;
-    const out = path.join(SRC, 'Character', id, 'Preview.webp'); if (fs.existsSync(out) && !FORCE) continue;
-    const src = ['webp', 'png', 'jpg', 'jpeg'].map(x => path.join(SRC, 'Character', id, 'Character.' + x)).concat(['webp', 'png', 'jpg', 'jpeg'].map(x => path.join(dir, id, 'Character.' + x))).find(fs.existsSync);
+    const out = path.join(SRC, 'Assets/Character', id, 'Preview.webp'); if (fs.existsSync(out) && !FORCE) continue;
+    const src = ['webp', 'png', 'jpg', 'jpeg'].map(x => path.join(SRC, 'Assets/Character', id, 'Character.' + x)).concat(['webp', 'png', 'jpg', 'jpeg'].map(x => path.join(dir, id, 'Character.' + x))).find(fs.existsSync);
     if (!src) { console.warn(`⚠ ${id}: ไม่พบรูปต้นฉบับ`); continue; }
     fs.mkdirSync(path.dirname(out), { recursive: true });
     await sharp(src).resize(W).webp({ quality: 60 }).toFile(out); made++; console.log('✓ ' + path.relative(ROOT, out));

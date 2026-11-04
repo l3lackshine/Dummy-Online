@@ -6,7 +6,7 @@
    ใช้:   PACK_MASTER=<ข้อความลับ ≥16 ตัวอักษร> node scripts/pack-assets.js [--strip] [--check]
           node scripts/pack-assets.js --dev     ทดสอบในเครื่อง (ใช้ master ทดสอบ ห้ามใช้จริง)
    ปกติรันอัตโนมัติด้วย GitHub Actions (.github/workflows/pack-assets.yml) ที่ใช้ Secret ชื่อ PACK_MASTER
-   ต้นฉบับ: assets-src/Character/<id>/... (หรือ client/public/Character/<id>/...) · ภาพตัวอย่าง: assets-src/Character/<id>/Preview.webp
+   ต้นฉบับ: assets-src/Assets/Character/<id>/... (หรือ client/public/Assets/Character/<id>/...) · ภาพตัวอย่าง: assets-src/Assets/Character/<id>/Preview.webp
    ผลลัพธ์เหมือนเดิมทุกครั้งถ้าไฟล์ไม่เปลี่ยน (IV คำนวณจากเนื้อหา) จึงไม่เกิดไฟล์ใหม่ให้ commit โดยไม่จำเป็น
    รูปแบบไฟล์: 'DMP1' | iv(12) | ความยาวดัชนี(u32) | ดัชนีที่เข้ารหัส | ข้อมูลไฟล์ */
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
@@ -21,15 +21,15 @@ const keyOf = id => Buffer.from(crypto.hkdfSync('sha256', Buffer.from(master, 'u
 // ---- สำรวจไฟล์ ----
 function walk(dir, base, cb) { if (!fs.existsSync(dir)) return; for (const e of fs.readdirSync(dir, { withFileTypes: true })) { const p = path.join(dir, e.name); if (e.isDirectory()) walk(p, base, cb); else if (MIME[ext(e.name)]) cb(path.relative(base, p).split(path.sep).join('/'), p); } }
 const files = new Map(), served = [];
-walk(path.join(PUB, 'Character'), PUB, (n, p) => { files.set(n, p); served.push([n, p]); });
-walk(path.join(SRC, 'Character'), SRC, (n, p) => files.set(n, p)); // assets-src ทับ
-const chars = new Set([...files.keys()].map(n => n.split('/')[1]).filter(Boolean));
-const priceOf = id => { try { return Number(JSON.parse(fs.readFileSync(path.join(PUB, 'Character', id, 'Character.config'), 'utf8')).price) || 0; } catch (e) { return 0; } };
+walk(path.join(PUB, 'Assets/Character'), PUB, (n, p) => { files.set(n, p); served.push([n, p]); });
+walk(path.join(SRC, 'Assets/Character'), SRC, (n, p) => files.set(n, p)); // assets-src ทับ
+const chars = new Set([...files.keys()].map(n => n.split('/')[2]).filter(Boolean));   // Assets/Character/<id>/...
+const priceOf = id => { try { return Number(JSON.parse(fs.readFileSync(path.join(PUB, 'Assets/Character', id, 'Character.config'), 'utf8')).price) || 0; } catch (e) { return 0; } };
 // ---- จัดกลุ่มเป็นแพ็ก ----
 const packs = new Map(); const add = (pid, meta, name, p) => { if (!packs.has(pid)) packs.set(pid, { id: pid, ...meta, files: new Map() }); packs.get(pid).files.set(name, p); };
 const warns = [];
 for (const id of [...chars].sort()) {
-  const paid = priceOf(id) > 0, mine = [...files.keys()].filter(n => n.startsWith(`Character/${id}/`));
+  const paid = priceOf(id) > 0, mine = [...files.keys()].filter(n => n.startsWith(`Assets/Character/${id}/`));
   for (const n of mine) {
     const base = n.split('/').pop();
     if (/^Preview\.(webp|png|jpe?g)$/i.test(base)) { if (paid) add('base', { tier: 'public' }, `Preview/${id}.webp`, files.get(n)); continue; } // ภาพตัวอย่างอยู่แพ็กฟรีเสมอ

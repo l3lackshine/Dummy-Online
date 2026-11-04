@@ -22,14 +22,14 @@
     bannerImage: id => (A.gachaDisplay() === 'image' && st.banners[id]) || '',
     char: id => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(c => c.id === id) || null,
     play(name, charId) { // เสียงเฉพาะตัวละครก่อน แล้วค่อยเสียงหลักของเกม
-      try { const c = charId && A.char(charId), f = (c && c.sounds && c.sounds[name]) || ((st.snd.events || {})[name] ? './Sounds/' + st.snd.events[name] : ''); if (!f) return;
+      try { const c = charId && A.char(charId), f = (c && c.sounds && c.sounds[name]) || ((st.snd.events || {})[name] ? './Assets/Sounds/' + st.snd.events[name] : ''); if (!f) return;
         const a = new Audio(f); a.volume = Math.min(1, Math.max(0, Number(st.snd.master) || 0.8)); const p = a.play(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
   };
   function applyUi(ui) { // ตัวแปร CSS --ui-<กลุ่ม>-<ชื่อ> เฉพาะช่องที่ใส่ไฟล์ไว้
-    const root = document.documentElement.style, put = (k, v) => { if (v) root.setProperty('--ui-' + k, 'url("./UI/' + v + '")'); };
+    const root = document.documentElement.style, put = (k, v) => { if (v) root.setProperty('--ui-' + k, 'url("./Assets/UI/' + v + '")'); };
     for (const [g, v] of Object.entries(ui || {})) { if (g === 'note') continue; if (v && typeof v === 'object') for (const [n, f] of Object.entries(v)) put(g + '-' + n, f); else put(g, v); }
   }
-  Promise.all([J('./Shop/Shopsetting.config'), J('./UI/ui.config'), J('./Sounds/sounds.config'), J('./skin/gacha.json')]).then(([shop, ui, snd, g]) => {
+  Promise.all([J('./Assets/Shop/Shopsetting.config'), J('./Assets/UI/ui.config'), J('./Assets/Sounds/sounds.config'), J('./skin/gacha.json')]).then(([shop, ui, snd, g]) => {
     st.shop = shop || {}; st.ui = ui || {}; st.snd = snd || {};
     ((g && g.banners) || []).forEach(b => { if (b.image) st.banners[b.id] = b.image; });
     applyUi(st.ui); if (typeof render === 'function') try { render(); } catch (e) {}

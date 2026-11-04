@@ -6,7 +6,13 @@
    Public: PackLoader.url(path) · PackLoader.ready (Promise) · PackLoader.refresh() — เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ เพื่อปลดล็อกภาพเต็ม */
 (function () {
   'use strict';
-  const urls = new Map(), loaded = new Set(), L = window.PackLoader = { url: p => urls.get(String(p).replace(/^\.\//, '')) || null, ready: null, refresh: null, packs: [] };
+  // ชื่อไฟล์ในแพ็กตรงกับพาธในเว็บ (Assets/Character/...) · ช่วงเปลี่ยนผ่าน: แพ็กเก่าที่ยังไม่สร้างใหม่ใช้ชื่อแบบไม่มี Assets/ นำหน้า
+  // EXTEND: ลบการลองชื่อเก่าออกได้เมื่อ GitHub Actions สร้างแพ็กใหม่ (pack/manifest.json ใช้ชื่อ Assets/...) แล้ว
+  function packUrl(p) {
+    const name = String(p).replace(/^\.\//, '');
+    return urls.get(name) || urls.get(name.replace(/^Assets\//, '')) || null;
+  }
+  const urls = new Map(), loaded = new Set(), L = window.PackLoader = { url: p => packUrl(p), ready: null, refresh: null, packs: [] };
   const T = { title: 'กำลังเตรียมเกม', s1: 'ตรวจเวอร์ชันไฟล์', s2: 'ดาวน์โหลดทรัพยากร', s3: 'ถอดรหัสไฟล์', s4: 'เตรียมภาพ', tip: 'ครั้งแรกอาจใช้เวลาสักครู่ ครั้งต่อไปจะเร็วขึ้นมาก', fail: 'โหลดไม่สำเร็จ', retry: 'ลองอีกครั้ง' };
   const LOCKED = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 420"><rect width="300" height="420" rx="24" fill="#2a1230"/><circle cx="150" cy="170" r="52" fill="#4a2a55"/><rect x="70" y="240" width="160" height="120" rx="60" fill="#4a2a55"/><text x="150" y="388" text-anchor="middle" font-size="30" fill="#ffd978">🔒</text></svg>');
   // ---------- หน้าโหลด ----------

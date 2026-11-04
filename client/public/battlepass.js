@@ -67,7 +67,7 @@
       <header class=bp-top>
         <div class=bp-ttl><small>ฤดูที่ 1 · ${leftTxt(st.left)}</small><h3>${E(s.name)}</h3></div>
         <div class=bp-lvl><b>Lv.${st.lv}<small>/${s.max_level}</small></b><i><u style="width:${Math.round(st.into / st.L * 100)}%"></u></i><small>${N(st.into)} / ${N(st.L)} EXP${st.bonus ? ` · โบนัส EXP +${st.bonus}%` : ''}</small></div>
-        ${me.vacation_cap ? `<div class=bp-vac title="ตั๋วพักร้อน"><img src="./Item/Mats/vacation.webp" alt=""><span><b>${N(me.vacation)}<small>/${N(me.vacation_cap)}</small></b><small>ตั๋วพักร้อน</small></span></div>` : ''}
+        ${me.vacation_cap ? `<div class=bp-vac title="ตั๋วพักร้อน"><img src="./Assets/Item/Mats/vacation.webp" alt=""><span><b>${N(me.vacation)}<small>/${N(me.vacation_cap)}</small></b><small>ตั๋วพักร้อน</small></span></div>` : ''}
         <button class="bp-claim${claim ? ' on' : ''}" ${claim && !busy ? '' : 'disabled'} onclick="bpClaim()">${claim ? `รับรางวัล (${claim})` : 'ยังไม่มีรางวัลใหม่'}</button>
       </header>
       <nav class=bp-tabs>${[['rw', '🎖 รางวัล', 0], ['speedup', '⚡ ภารกิจเร่ง', mReady('speedup')], ['horizon', '🧭 ภารกิจระยะยาว', mReady('horizon')]].map(([k, l, n]) => `<button class="${tab === k ? 'on' : ''}" onclick="bpTab('${k}')">${l}${n ? `<i>${n}</i>` : ''}</button>`).join('')}</nav>
@@ -110,7 +110,7 @@
   const SHARD_NEED = (window.Economy && Economy.SHARD_NEED) || 50;
   const charReg = id => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(x => x.id === id) || {};
   const optName = o => o.kind === 'coins' ? 'เหรียญ' : o.kind === 'mcash' ? 'เพชร' : o.kind === 'shards' ? (o.name || charReg(o.id).name || o.id) : itemName(o.kind, o.id);
-  const optImg = o => o.kind === 'coins' ? './UI/Assets/kit2/coin.webp' : o.kind === 'mcash' ? '' : o.kind === 'shards' ? './Item/Shards/' + o.id + '.webp' : itemImg(o.kind, o.id);
+  const optImg = o => o.kind === 'coins' ? './Assets/UI/Assets/kit2/coin.webp' : o.kind === 'mcash' ? '' : o.kind === 'shards' ? './Assets/Item/Shards/' + o.id + '.webp' : itemImg(o.kind, o.id);
   let crOpts = {}, crBusy = false;
   window.crateOpen = async (id, pick) => {
     const it = window.Items && Items.info(id); if (!it) return;

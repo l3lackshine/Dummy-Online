@@ -11,7 +11,7 @@
   const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
   const LS = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
   const dbOn = () => !!(window.DB && DB.enabled && DB.P);
-  const coachImg = () => { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(c => c.id === 'girl'); return (x && (x.asset || x.card)) || './Character/girl/Character.webp'; };
+  const coachImg = () => { const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(c => c.id === 'girl'); return (x && (x.asset || x.card)) || './Assets/Character/girl/Character.webp'; };
   const toast = m => { if (window.dbToast) dbToast(m); };
   const $$ = sel => [...document.querySelectorAll(sel)];
   const card = id => `.hand [data-id="${id}"]`;
