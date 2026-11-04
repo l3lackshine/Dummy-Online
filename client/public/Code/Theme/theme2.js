@@ -1,7 +1,7 @@
 /* theme2.js — ส่วน JS ของธีมใหม่ (คู่กับ theme2.css)
    1) หน้าแรกแบบ RoV: วางชั้น .rv ทับหน้าแรกเดิม (ปุ่มเดิมยังอยู่ แค่ซ่อนไว้ — ฟังก์ชันเดิมทำงานเหมือนเดิมทุกอย่าง)
    2) เปลี่ยนอีโมจิเหรียญ 🪙 เป็นรูปเหรียญจากชุด UI
-   ไม่แก้ app.js: ทำงานหลัง render() ทุกครั้ง ผ่าน MutationObserver */
+   ไม่แก้ไฟล์แกน (Code/Core): ทำงานหลัง render() ทุกครั้ง ผ่าน MutationObserver */
 (function () {
   'use strict';
   const KIT = './Assets/UI/Assets/kit2/';

@@ -318,7 +318,7 @@
           render();
         } catch (e) {}
       if (++t > 40) clearInterval(iv);
-    }, 500); // ถ้า app.js โหลดทะเบียนใหม่ภายหลัง ให้แทนที่ซ้ำ
+    }, 500); // ถ้า Code/Core/skins.js โหลดทะเบียนใหม่ภายหลัง ให้แทนที่ซ้ำ
     await preload([...urls.entries()].filter(([n]) => /\.(png|webp|jpe?g|gif|svg)$/i.test(n)).map(([, u]) => u));
     prog(1, T.s4);
     return true;

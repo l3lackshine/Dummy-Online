@@ -1,11 +1,11 @@
-/* quests.js — เควสรายวัน / รายสัปดาห์
+/* quests-local.js — เควสรายวัน / รายสัปดาห์ ของโหมดเล่นไม่ล็อกอิน (โหมดบัญชีใช้ Code/Quests/quests-account.js)
    - ฝั่ง client ล้วน เก็บใน localStorage เหมือนเหรียญและสกิลตอนนี้ (ไม่แตะกติกา/เซิร์ฟเวอร์)
    - นับความคืบหน้าจาก "จบตา" (S.over) ครั้งละ 1 ตา อ้างอิง S.gid กันนับซ้ำเมื่อรีเฟรช
    - รีเซ็ตรายวันทุกเที่ยงคืน · รายสัปดาห์ทุกวันจันทร์ 00:00 (เวลาเครื่องผู้เล่น)
    - ปรับรางวัล/เป้าหมายได้ที่ตาราง DAILY / WEEKLY ด้านล่าง */
 (function () {
   'use strict';
-  if (window.DB && DB.enabled) return; // โหมดบัญชี: เควสอยู่ในฐานข้อมูล ดู account.js
+  if (window.DB && DB.enabled) return; // โหมดบัญชี: เควสอยู่ในฐานข้อมูล ดู Code/Quests/quests-account.js
   const LS = window.localStorage,
     KEY = 'dummyQuests',
     GKEY = 'dummyQuestGid';

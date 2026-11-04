@@ -5826,7 +5826,7 @@ small.hint {
   }
 }
 
-/* รูปหน้าแบบวงกลม (avFace ใน app.js): ซูมที่หน้าตามกรอบ table ของตัวละคร */
+/* รูปหน้าแบบวงกลม (avFace ใน Code/Core/skins.js): ซูมที่หน้าตามกรอบ table ของตัวละคร */
 .av-fc {
   position: absolute;
   inset: 0;

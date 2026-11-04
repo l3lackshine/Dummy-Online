@@ -77,7 +77,7 @@
       }
       applyTheme();
     } catch (e) {
-      /* app.js ยังโหลดไม่เสร็จ */
+      /* ไฟล์แกนหน้าเกม (Code/Core) ยังโหลดไม่เสร็จ */
     }
   }
   DB.sync = sync;
@@ -313,6 +313,6 @@
       repaint();
     }
   });
-  // app.js โหลดหลัง db.js → เริ่มตรวจเซสชันหลังโหลดสคริปต์ทั้งหมด
+  // ไฟล์แกนหน้าเกม (Code/Core/state.js …) โหลดหลัง db.js → เริ่มตรวจเซสชันหลังโหลดสคริปต์ทั้งหมด
   window.addEventListener('load', start);
 })();

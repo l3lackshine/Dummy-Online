@@ -1,5 +1,5 @@
 /* profile-equip.js — หน้าโปรไฟล์แบบเดิม: ชื่อเล่น + เลือกของแต่งที่ใส่
-   หน้าโปรไฟล์แบบใหม่เขียนทับฟังก์ชันนี้ใน Code/Account/profile.js และ pages2.js
+   หน้าโปรไฟล์แบบใหม่เขียนทับฟังก์ชันนี้ใน Code/Account/profile.js และ Code/Account/profile-page.js
    Public: profileView() */
 function profileView() {
   const secs = KINDS.map(([kind, label, , ic]) => {

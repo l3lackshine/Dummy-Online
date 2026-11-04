@@ -1,7 +1,7 @@
 /* ranked.js — ตารางอันดับรายสัปดาห์ (แยกเกม) + แรงก์รายเดือน (screen === 'rank', เปิดด้วย rankOpen())
    ข้อมูลทั้งหมดมาจากฐานข้อมูล: get_leaderboard / get_rank / claim_rank_rewards / set_badge (supabase/v11_ranked.sql)
    - แต้มได้จากห้องแรงก์เท่านั้น (หาแมตช์แรงก์: คนจริงล้วน ไม่มีบอท) (เซิร์ฟเวอร์เกมส่งผลเข้า record_rank) · หลังจบตาเซิร์ฟเวอร์ส่ง 'rank:update' มาแจ้ง
-   ไม่แก้ app.js: ห่อ render() เหมือน battlepass.js
+   ไม่แก้ไฟล์แกน (Code/Core): ห่อ render() เหมือน battlepass.js
    Public: rankOpen() · Ranked.count() · Ranked.emblem(tier) */
 (function () {
   'use strict';

@@ -1,7 +1,7 @@
 /* profile.js — จัดหน้าโปรไฟล์ใหม่ตามภาพอ้างอิง (แนวนอน 3 ช่อง)
    ซ้าย: ตัวละคร + ชื่อ / ฉายา · กลาง: สกิน (ตัวละคร/หลังไพ่/โต๊ะ/พื้นหลัง) · ขวา: ความสามารถ
    ล่าง: ปุ่มไปร้านค้า
-   - ไม่แก้ app.js / skills.js: เขียนทับฟังก์ชัน profileView() ที่ app.js เรียกอยู่แล้ว
+   - ไม่แก้ไฟล์แกน / skills.js: เขียนทับฟังก์ชัน profileView() ที่ Code/Account/profile-equip.js เรียกอยู่แล้ว
    - ใช้ป้ายไม้ UI/Assets/sign-blank.webp เดิมทำหัวข้อ · ฉายาเก็บในเครื่อง (localStorage: dummyTitle) */
 (function () {
   'use strict';

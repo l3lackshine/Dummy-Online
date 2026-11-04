@@ -1,7 +1,7 @@
 /* battlepass.js — หน้าแบทเทิลพาส (screen === 'bp', เปิดด้วย bpOpen()) · ข้อมูลทั้งหมดมาจากฐานข้อมูล (get_bp) ต้องล็อกอิน
    รางวัล 3 สาย (แบบ Arknights: Endfield): ฟรี · สายเพชร (ปลดด้วยเพชร คืนทุนได้) · พรีเมียม (ล็อกไว้ "เร็วๆ นี้")
    ปลดสายเพิ่ม EXP สายละ % · กดรับครั้งเดียวรับทุกเลเวลที่ถึง · เลยเลเวลสูงสุดได้รางวัลวน
-   ไม่แก้ app.js: ห่อ render() เหมือน pages2.js */
+   ไม่แก้ไฟล์แกน: ห่อ render() เหมือน Inventory/inventory.js */
 (function () {
   'use strict';
   const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => '&#' + c.charCodeAt(0) + ';');
