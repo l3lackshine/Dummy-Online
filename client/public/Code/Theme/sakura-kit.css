@@ -11,10 +11,13 @@
 :root {
   --wf-u: clamp(0.07px, 0.022vh, 0.12px);
 }
-.q-modal .sk-box,
-.set-modal .st-box,
+.sk-modal .sk-box,
+.st-modal .st-box,
 .pn-box,
-.gc-box {
+.gc-box,
+.cr-box,
+.mm-box,
+.panel {
   border-style: solid !important;
   border-color: transparent !important;
   border-width: 0 !important;
@@ -29,10 +32,27 @@
   filter: drop-shadow(0 1vh 1.6vh #0007);
 }
 /* กรอบยื่นออกนอกกล่อง — กันไม่ให้หน้าต่างชิดขอบจอจนกรอบล้น */
-.q-modal .sk-box,
-.set-modal .st-box,
-.pn-box {
+.sk-modal .sk-box,
+.st-modal .st-box,
+.pn-box,
+.cr-box,
+.mm-box {
   max-height: 84vh !important;
+}
+/* แผงเนื้อหาในหน้าย่อย (.panel): เดิมเว้นขอบด้วย border กว้าง 3vh — ใช้ padding แทน เพราะกรอบใหม่วาดยื่นออกนอกกล่อง */
+.panel {
+  padding: 1.6vh 1.8vh !important;
+}
+/* หน้าต่างที่เดิมเป็นธีมม่วงเข้ม (สกิล · รางวัลล็อกอิน · แบทเทิลพาส · หาแมตช์) → พื้นครีม ตัวอักษรเข้ม */
+.sk-modal .sk-box,
+.cr-box,
+.mm-box {
+  color: #3b4255 !important;
+}
+.sk-modal .sk-box h3,
+.cr-box h3,
+.mm-box h3 {
+  color: #8a6d3b !important;
 }
 .gc-box:has(.gc-res) {
   max-height: 92vh;
@@ -311,4 +331,161 @@
   width: 9.6vh !important;
   height: 9.6vh !important;
   padding: 1.4vh !important;
+}
+
+/* ======================================================================
+   หน้าต่างที่เปลี่ยนจากธีมม่วงเป็นครีม — ปรับสีข้างในให้อ่านออกบนพื้นสว่าง
+   ====================================================================== */
+/* รางวัลล็อกอินรายวัน (Account/daily-login.css) */
+.dl-streak small,
+.dl-cell small,
+.dl-note {
+  color: #6b7285 !important;
+}
+.dl-streak b {
+  color: #e07a1f !important;
+}
+.dl-cell {
+  background: #ffffffcc !important;
+  border-color: #e8dcc4 !important;
+}
+.dl-cell.big {
+  background: linear-gradient(#fff4d6, #ffe9b8) !important;
+  border-color: #e3c06a !important;
+}
+.dl-cell.today {
+  border-color: #f0659a !important;
+  background: #fff0f6 !important;
+  box-shadow: 0 0 0 3px #f0659a55 !important;
+}
+.dl-r i {
+  color: #b8860b !important;
+}
+.dl-r i.mc {
+  color: #2f7fc0 !important;
+}
+.dl-ms {
+  color: #6b7285 !important;
+  border-color: #d9cfbd !important;
+}
+.dl-ms.got {
+  color: #fff !important;
+}
+.dl-flash {
+  color: #c06a12 !important;
+}
+.dl-claim:disabled {
+  background: #b9bfcc !important;
+}
+/* กล่องเลือกของจากหีบ (BattlePass/battle-pass.theme-2.css) */
+.cr-box > small {
+  color: #6b7285 !important;
+}
+.cr-opt {
+  background: #ffffffcc !important;
+  border-color: #e8dcc4 !important;
+  color: #3b4255 !important;
+}
+.cr-opt em {
+  color: #b8860b !important;
+}
+.cr-opt.on {
+  border-color: #f0659a !important;
+  background: #fff0f6 !important;
+}
+/* หน้าต่างพบผู้เล่น/กดพร้อม (Lobby/match.css) */
+.mm-box p {
+  color: #4a5266 !important;
+}
+.mm-box small {
+  color: #6b7285 !important;
+}
+.mm-face i {
+  background: #efe6f5 !important;
+}
+
+/* ======================================================================
+   แถบบนหน้าย่อย: ปุ่มย้อนกลับ · ชื่อหน้า · ปุ่มเควส/รางวัลล็อกอิน
+   ====================================================================== */
+.hud-back,
+.hud-sk {
+  background: url(../../Assets/UI/Assets/kit3/btn-round.webp) center / 100% 100% no-repeat !important;
+  border: 0 !important;
+  border-image: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+  color: #4a5266 !important;
+  filter: drop-shadow(0 0.4vh 0.6vh #0004);
+}
+.hud-sk {
+  width: max(30px, 5.6vh) !important;
+  height: max(30px, 5.6vh) !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  justify-content: center;
+}
+/* ชื่อหน้า: แถบเทาเพชรทอง (bar-title.webp 435×50) ตัด 3 ช่วง ซ้าย 40 · ขวา 30 */
+.pg-title {
+  border-image: url(../../Assets/UI/Assets/kit3/bar-title.webp) 0 30 0 40 fill / 0 calc(var(--pt-h) * 0.6) 0 calc(var(--pt-h) * 0.8) stretch !important;
+  border-width: 0 calc(var(--pt-h) * 0.6) 0 calc(var(--pt-h) * 0.8) !important;
+  --pt-h: 7vh;
+  filter: drop-shadow(0 0.4vh 0.6vh #0004);
+}
+.pg-title span {
+  color: #fffaf2 !important;
+  text-shadow: 0 0.2vh 0.3vh #0005 !important;
+}
+
+/* ===== แท็บหมวด (ร้าน · ช่องเก็บของ · กาชา ฯลฯ): ครีมขอบทอง · แท็บที่เลือกเป็นชมพูซากุระ ===== */
+.chip,
+.catbtn {
+  border-image: none !important;
+  border: 0.25vh solid #d8b46a !important;
+  border-radius: 99px !important;
+  background: linear-gradient(#fffdf8, #f5ecdc) !important;
+  color: #3b4255 !important;
+  padding: 0.7vh 1.8vh !important;
+  box-shadow: 0 0.3vh 0.6vh #0002 !important;
+}
+.chip.on,
+.catbtn.on {
+  background: linear-gradient(#ff9cc2, #e8578f) !important;
+  border-color: #fff3 !important;
+  color: #fff !important;
+  text-shadow: 0 0.15vh 0.2vh #0004;
+}
+
+/* ======================================================================
+   หน้าเล่นเกม: ปุ่มใหญ่ (plank) → ปุ่มลูกศรดอกซากุระ 4 สี (ซ้าย 60 · ขวา 66 ของรูป ~265×73)
+   ลำดับใน Home/home.js: ลูกที่ 2 เล่นคนเดียว (ทอง) · 3 สร้างห้อง (ครีม) · 4 หาแมตช์ (ชมพู) · 5 แรงก์ (ฟ้า) · 6 เข้าห้อง (ครีม) — ลูกแรกคือป้ายเกม
+   ====================================================================== */
+[data-pg='play'] .plank {
+  --pk-h: 17vh;
+  border-image: var(--pk-img, url(../../Assets/UI/Assets/kit3/btn-cream.webp)) 0 66 0 60 fill / 0 calc(var(--pk-h) * 0.9) 0 calc(var(--pk-h) * 0.82) stretch !important;
+  border-width: 0 calc(var(--pk-h) * 0.9) 0 calc(var(--pk-h) * 0.82) !important;
+  border-image-width: 0 calc(var(--pk-h) * 0.9) 0 calc(var(--pk-h) * 0.82) !important;
+}
+/* กฎเดิมระบุรูปทีละปุ่มด้วย :nth-child (shared-ui.theme-3.css) — ต้องเฉพาะเจาะจงเท่ากันถึงจะทับได้ */
+[data-pg='play'] .plank:nth-child(n) {
+  border-image-source: var(--pk-img, url(../../Assets/UI/Assets/kit3/btn-cream.webp)) !important;
+}
+[data-pg='play'] .plank::before {
+  display: none !important;
+}
+[data-pg='play'] .plank b,
+[data-pg='play'] .plank small {
+  color: #3b4255 !important;
+}
+[data-pg='play'] .plank:nth-child(2) {
+  --pk-img: url(../../Assets/UI/Assets/kit3/btn-gold.webp);
+}
+[data-pg='play'] .plank:nth-child(4) {
+  --pk-img: url(../../Assets/UI/Assets/kit3/btn-pink.webp);
+}
+[data-pg='play'] .plank:nth-child(5) {
+  --pk-img: url(../../Assets/UI/Assets/kit3/btn-blue.webp);
+}
+[data-pg='play'] .plank:nth-child(5) b,
+[data-pg='play'] .plank:nth-child(5) small {
+  color: #2c3550 !important;
 }
