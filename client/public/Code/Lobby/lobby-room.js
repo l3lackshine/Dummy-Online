@@ -44,7 +44,10 @@ function gxRoom(c) {
     M
       ? searching(k)
       : `<button class="rm-slot empty" onclick=copyInvite()><div class=rm-plus>＋</div><div class=rm-plate><b>ว่าง</b><small>${noBots ? 'รอเพื่อน' : 'บอทจะเล่นแทน'}</small></div></button>`;
-  const slots = Array.from({ length: total }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty(k))).join('');
+  // ห้องไม่มีบอท (แรงก์ · หาแมตช์ · ห้องปิดบอท) ยังแสดงครบทุกที่นั่ง — การ์ดจะได้ขนาดเท่าห้องปกติ 4 คน ไม่ขยายเต็มจอ
+  const MAX_SEATS = 4;
+  const seats = Math.max(total, Math.min(MAX_SEATS, Number(M ? M.max : L.maxPlayers) || MAX_SEATS));
+  const slots = Array.from({ length: seats }, (_, k) => (people[k] ? human(people[k]) : soloRoom ? bot(k) : empty(k))).join('');
   const wait = esc((L.waitingFor || []).join(', ')),
     isMe = !!mine;
   const status = M
@@ -69,7 +72,7 @@ function gxRoom(c) {
   <div class=rm-hint>${esc(M || !h || /^รอผู้เล่น|^ห้องเล่นกับบอท/.test(h) ? status : h)}</div>
   <aside class=rm-panel>
     <div class=rm-card>${soloRoom || M ? '' : `<div class=rm-code><small>รหัสห้อง</small><b>${esc(code)}</b><button onclick=copyInvite()>🔗 คัดลอก</button></div>`}
-      ${M ? (M.ranked ? row('โหมด', '🏆 แรงก์ · คนจริงล้วน') : '') + row('สถานะ', M.state === 'ready' ? '✋ รอกดพร้อม' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่') + (M && M.ranked ? ' (มาตรฐาน)' : ''))}${row('รางวัล', M && M.ranked ? 'เหรียญ + แต้มอันดับ' : 'เหรียญตามอันดับ · แพ้ก็ได้')}${window.Farm && L.allowBots !== false ? row('ถ้ามีบอท', Farm.lobbyLine()) : ''}${row('ผู้เล่น', ps.length + '/' + total)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
+      ${M ? (M.ranked ? row('โหมด', '🏆 แรงก์ · คนจริงล้วน') : '') + row('สถานะ', M.state === 'ready' ? '✋ รอกดพร้อม' : '🔍 กำลังค้นหา') + row('เวลาค้นหา', '<span class=mm-el>00:00</span>') : ''}${row('กติกา', esc(rule.name || 'ดัมมี่') + (M && M.ranked ? ' (มาตรฐาน)' : ''))}${row('รางวัล', M && M.ranked ? 'เหรียญ + แต้มอันดับ' : 'เหรียญตามอันดับ · แพ้ก็ได้')}${window.Farm && L.allowBots !== false ? row('ถ้ามีบอท', Farm.lobbyLine()) : ''}${row('ผู้เล่น', ps.length + '/' + seats)}${row('ที่ว่าง', noBots ? 'ไม่มีบอท' : 'บอทเล่นแทน')}</div>
     ${soloRoom ? '' : `<div class=rm-emotes>${['👍', '😀', '😂', '😎', '🔥', '👋', '🙏', '❤️'].map(e => `<button onclick="sendEmote('${e}')">${e}</button>`).join('')}${window.Emote ? `<button class=rm-emo-more onclick="Emote.toggle()" aria-label="สติกเกอร์ตัวละคร">🎴</button>` : ''}</div>`}
     <div class=rm-acts>${M ? '<button class=gray onclick=leave()>✖ ยกเลิกการค้นหา</button>' : ''}${!M && !isHost && !soloRoom && isMe ? `<button class="${meP.ready ? 'g' : 'org'}" onclick=toggleReady()>${meP.ready ? '✓ พร้อมแล้ว (ยกเลิก)' : '✋ พร้อม'}</button>` : ''}${!M && isHost ? `<button class=blue onclick=begin() ${blocked ? 'disabled' : ''}>▶ เริ่มเกม</button>` : ''}${soloRoom || M ? '' : `${window.Friends && window.DB && DB.enabled && DB.P ? '<button class=blue onclick="Friends.picker()">👥 ชวนเพื่อนออนไลน์</button>' : '<button class=gray onclick=copyInvite()>🔗 ชวนเพื่อน</button>'}`}</div>
   </aside>
