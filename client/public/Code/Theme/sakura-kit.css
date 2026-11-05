@@ -139,3 +139,176 @@
 .gc-box.gc-top4:has(.gc-res) {
   filter: drop-shadow(0 0 1.8vh #ffc83dcc) drop-shadow(0 1vh 1.6vh #0007);
 }
+
+/* ======================================================================
+   หน้าแรก (Code/Home/home-rov.js) — ป้ายโปรไฟล์ · ปุ่มด้านข้าง · เมนูล่าง · การ์ดกิจกรรม · ปุ่มเริ่มเล่น
+   ====================================================================== */
+
+/* ===== ป้ายโปรไฟล์: รูปเดียว (profile-frame.webp 706×266) วงรูป + แผ่นชื่อ + แถบเข้มสำหรับเลเวล
+   ตำแหน่งลูกเป็น % ของรูป: วงรูปขาว x62–267 y41–239 · แผ่นชื่อ x300–680 y66–166 · แถบเข้ม x295–640 y168–203 */
+.rv-me2 {
+  width: calc(var(--D) * 2.654) !important;
+  background: url(../../Assets/UI/Assets/kit3/profile-frame.webp) 0 0 / 100% 100% no-repeat !important;
+  filter: drop-shadow(0 0.6vh 1vh #0005);
+}
+.rv-av2 {
+  left: 8.8%;
+  top: 15.4%;
+  width: 29%;
+  height: 74.4%;
+  background: none !important;
+  box-shadow: none !important;
+}
+.rv-av2::before {
+  display: none;
+}
+.rv-av2 > span {
+  inset: 0;
+  background: #f4eef5;
+  box-shadow: none;
+}
+.rv-plate {
+  left: 43%;
+  top: 24.8%;
+  width: 52%;
+  height: 37.6%;
+  padding: 0 2% 0 1%;
+  background: none !important;
+  box-shadow: none !important;
+  border-radius: 0;
+}
+.rv-plate::before {
+  display: none;
+}
+.rv-plate b {
+  color: #3b4255 !important;
+  text-shadow: none;
+}
+.rv-plate small {
+  color: #8a6d3b !important;
+}
+.rv-lvbar {
+  left: 42.5%;
+  top: 63.2%;
+  width: 47%;
+  height: 13.2%;
+  padding: 0;
+  background: none;
+  clip-path: none;
+}
+.rv-lvbar b {
+  left: 3%;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  font-size: calc(var(--D) * 0.12);
+  color: #ffd36b !important;
+  text-shadow: none;
+}
+.rv-lvbar i {
+  left: 26%;
+  right: 38%;
+  top: 50%;
+  height: 32%;
+  transform: translateY(-50%);
+  background: #2c3242;
+}
+.rv-lvbar i u {
+  background: linear-gradient(90deg, #ff9cc2, #f0659a);
+}
+.rv-lvbar small {
+  right: 9%; /* ปลายแถบในรูปเป็นสีชมพูอ่อน ตัวเลขสีขาวจะจม — เลื่อนเข้ามาในส่วนสีเข้ม */
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  font-size: calc(var(--D) * 0.075);
+  color: #f4eef5 !important;
+  text-shadow: none;
+}
+
+/* ===== ปุ่มกลม (ด้านข้าง · เมนูล่าง · ไอคอนในการ์ด): พื้นปุ่มกลมครีมขอบทอง (btn-round.webp) + ไอคอนเส้นเดิมสีเข้ม ===== */
+.rv-sb,
+.rv-nav svg,
+.rv-card i {
+  background: url(../../Assets/UI/Assets/kit3/btn-round.webp) center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+  color: #4a5266 !important;
+  border-radius: 50%;
+  filter: drop-shadow(0 0.4vh 0.6vh #0004);
+}
+.rv-sb.rv-pn small {
+  color: #4a5266;
+}
+.rv-sb.rv-pn svg {
+  width: 3.6vh !important;
+  height: 3.6vh !important;
+}
+.rv-nav svg {
+  width: 7vh;
+  height: 7vh;
+  padding: 1.7vh;
+}
+.rv-nav span {
+  color: #fff;
+}
+
+/* ===== การ์ดกิจกรรม (ตู้กาชา · แบทเทิลพาส · เควส): กรอบ card-panel.webp 473×182 แบบ 9-slice
+   ค่าตัด บน 40 · ขวา 150 · ล่าง 100 · ซ้าย 60 (ดอกซากุระมุมขวาล่างไม่ยืด) */
+.rv-card {
+  border-image: url(../../Assets/UI/Assets/kit3/card-panel.webp) 40 150 100 60 fill / calc(40 * var(--cp-u)) calc(150 * var(--cp-u)) calc(100 * var(--cp-u)) calc(60 * var(--cp-u)) stretch !important;
+  border-width: calc(40 * var(--cp-u)) calc(150 * var(--cp-u)) calc(100 * var(--cp-u)) calc(60 * var(--cp-u)) !important;
+  --cp-u: 0.055vh;
+  padding: 0 !important;
+  filter: drop-shadow(0 0.5vh 0.8vh #0004);
+}
+.rv-card > * {
+  margin: 0 !important;
+}
+.rv-card:not(.big) > span {
+  margin: calc(-30 * var(--cp-u)) calc(-110 * var(--cp-u)) calc(-70 * var(--cp-u)) 0 !important;
+}
+.rv-card.big > img {
+  margin: calc(-14 * var(--cp-u)) calc(-128 * var(--cp-u)) 0 calc(-38 * var(--cp-u)) !important;
+  width: calc(100% + 166 * var(--cp-u));
+}
+.rv-card.big > span {
+  margin: 0 calc(-120 * var(--cp-u)) calc(-70 * var(--cp-u)) 0 !important;
+}
+.rv-card small {
+  color: #8a6d3b;
+}
+
+/* ===== ปุ่มเริ่มเล่น: ปุ่มทองดอกซากุระ + ลูกศร (btn-gold.webp 267×82) ตัดเป็น 3 ช่วง ซ้าย 62 · ขวา 72 ===== */
+.rv-start {
+  border-image: url(../../Assets/UI/Assets/kit3/btn-gold.webp) 0 72 0 62 fill / 0 calc(var(--sb-h) * 0.88) 0 calc(var(--sb-h) * 0.76) stretch !important;
+  border-width: 0 calc(var(--sb-h) * 0.88) 0 calc(var(--sb-h) * 0.76) !important;
+  border-image-width: 0 calc(var(--sb-h) * 0.88) 0 calc(var(--sb-h) * 0.76) !important;
+  --sb-h: 11.6vh;
+  color: #6b3f12 !important;
+}
+.rv-start::before {
+  display: none !important;
+}
+.rv-start b {
+  color: #6b3f12 !important;
+  text-shadow: 0 0.2vh 0 #fff8 !important;
+}
+.rv-start small,
+.rv-start small b {
+  color: #7a5527 !important;
+}
+/* ป้ายเปลี่ยนเกมเหนือปุ่มเริ่มเล่น: ครีมขอบทองให้เข้าชุด */
+.rv-swap {
+  background: linear-gradient(#fffaf2, #f4ead8) !important;
+  border-color: #d8b46a !important;
+  color: #3b4255 !important;
+}
+.rv-swap i {
+  color: #b8860b !important;
+}
+/* ปุ่มด้านข้างมีป้ายชื่อในวง — ขยายวงให้ตัวอักษรไม่ชนขอบทอง */
+.rv-sb.rv-pn {
+  width: 9.6vh !important;
+  height: 9.6vh !important;
+  padding: 1.4vh !important;
+}
