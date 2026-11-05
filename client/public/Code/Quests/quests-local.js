@@ -353,7 +353,7 @@
 
   const css = document.createElement('style');
   css.textContent = `.hud-q{position:relative;font-size:18px;line-height:1.5}.hud-q i{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;border-radius:9px;background:#e8383d;color:#fff;font:700 11px/17px Sarabun,sans-serif;text-align:center;font-style:normal;padding:0 4px;box-shadow:0 0 0 2px #0008}
-.q-toast{top:22%!important;max-width:88vw;text-align:center;white-space:normal}.q-x{position:absolute;right:10px;top:8px;border:0;background:#0006;color:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer}
+.q-toast{top:12%!important;max-width:88vw;text-align:center;white-space:normal}.q-x{position:absolute;right:10px;top:8px;border:0;background:#0006;color:#fff;border-radius:50%;width:30px;height:30px;font-size:15px;cursor:pointer}
 .q-tabs{display:flex;gap:8px;margin:8px 0 4px}.q-tab{flex:1;border:2px solid #cdbcff55;border-radius:99px;padding:7px 0;background:#0004;color:#cfd3ff;font:700 14px Sarabun,sans-serif;cursor:pointer}.q-tab.on{background:linear-gradient(#a487f0,#5b3cb3);color:#fff;border-color:#cdbcff}
 .q-left{font-size:12px;color:#9fe8ff;margin:4px 0 6px;text-align:center}.q-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #ffffff1f}
 .q-ic{font-size:26px;width:38px;text-align:center;flex:none}.q-mid{flex:1;min-width:0}.q-mid b{display:block;font-size:15px}.q-mid small{display:block;color:#cfd3ff;font-size:12px}

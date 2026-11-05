@@ -1,6 +1,7 @@
 /* quests.css — หน้าต่างเควสรายวัน/สัปดาห์ · คู่กับ quests-account.js */
+/* ป้ายแจ้ง (dbToast ทุกระบบใช้ร่วม) อยู่ใต้แถบด้านบน เหนือหัวหน้าต่าง — เดิม 22% ทับแท็บ/หัวข้อในหน้าต่าง (รายงานปัญหา v0.14.0) */
 .q-toast {
-  top: 22% !important;
+  top: 12% !important;
   max-width: 88vw;
   text-align: center;
   white-space: normal;
