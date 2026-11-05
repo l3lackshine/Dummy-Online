@@ -27,7 +27,7 @@
 - ต้องแก้ไฟล์ที่ **ห้ามแก้ด้วยมือ** (ดูหมวด 7) หรือลบ/ย้าย/เปลี่ยนชื่อไฟล์
 - ต้องเพิ่ม library ใหม่ (npm) หรือเปลี่ยนเวอร์ชัน library เดิม
 - เอกสารกับโค้ดไม่ตรงกัน (ดูหมวด 9 — มีตัวอย่างที่รู้อยู่แล้ว)
-- ต้องแก้ไฟล์ใหญ่ที่เป็นแกนกลาง: `client/public/app.js`, `server/src/index.js`
+- ต้องแก้ไฟล์แกนกลาง: `client/public/Code/Core/*` (state · router · connection · boot), `server/src/index.js`, `server/src/room/*`
 - เห็นบั๊กหรือจุดเสี่ยงนอกขอบเขตงาน → **แจ้งผม แล้วถามว่าจะให้แก้ไหม** อย่าแก้แทรกไปเลย
 
 **วิธีถามที่ดี:** บอกว่าสงสัยอะไร, มีกี่ทางเลือก, แต่ละทางต่างกันยังไง, แนะนำทางไหน เพราะอะไร — สั้น ๆ ให้ตอบได้ในประโยคเดียว
@@ -57,15 +57,20 @@
 ## 2. แผนที่โปรเจค — อะไรอยู่ที่ไหน
 
 ```
-client/public/     หน้าเว็บทั้งหมด (JS/CSS/ภาพ/ไฟล์ตั้งค่า)
-server/src/        เซิร์ฟเวอร์เกม + กติกาเกม (rules/)
+client/public/
+   index.html · config.js · version.js   หน้าเดียวของเกม (ลำดับ <script>/<link> มีผล) · ค่าตั้ง · เลขเวอร์ชัน
+   Code/<หมวด>/     โค้ด JS/CSS แยกตามหมวด 1 หมวด = 1 โฟลเดอร์ (ดูหมวด 3)
+   Assets/<หมวด>/   รูป/เสียง/ไฟล์ .config ทั้งหมด: Character · Item · Shop · UI · Sounds · Concept
+   skin/ · BattlePass/ · patchnotes.json   ข้อมูล JSON (บางไฟล์สร้างจากสคริปต์ — หมวด 7)
+   pack/            แพ็กรูปเข้ารหัส (GitHub Actions สร้าง ห้ามแก้)
+server/src/        เซิร์ฟเวอร์เกม: index.js (จุดเริ่ม) + config · room/ · match/ · results/ · net/ · friends/ · events/ + กติกาเกม (rules/)
 server/test-*.js   ชุดทดสอบ (รัน node ทีละไฟล์ หรือ npm test)
 supabase/          SQL ฐานข้อมูล + ชุดทดสอบ SQL
 scripts/           สคริปต์สร้างไฟล์อัตโนมัติ/ตรวจสอบ
-assets-src/        รูปต้นฉบับตัวละคร (ก่อนเข้ารหัสเป็น pack)
+assets-src/Assets/ รูปต้นฉบับตัวละคร (ก่อนเข้ารหัสเป็น pack) · Item/Emote-keep · Item/Shards-src
 mobile/            ตัวห่อแอป Android
 tools/skin-studio/ แอปแก้สกินบนมือถือ
-docs/              ROADMAP.md, PATCHNOTES.md
+docs/              ROADMAP.md, PATCHNOTES.md, WORKLOG.md
 ```
 
 เอกสารที่ **ต้องอ่านก่อนแตะงานที่เกี่ยวข้อง**:
@@ -89,46 +94,51 @@ docs/              ROADMAP.md, PATCHNOTES.md
 
 | เรื่อง | ไฟล์ |
 |---|---|
-| ข้อมูลตัวละคร 1 ตัว (ชื่อ ราคา ความหายาก ตำแหน่งภาพ) | `client/public/Character/<id>/Character.config` |
-| รูปต้นฉบับ (ก่อนเข้ารหัส) | `assets-src/Character/<id>/` |
+| ข้อมูลตัวละคร 1 ตัว (ชื่อ ราคา ความหายาก ตำแหน่งภาพ) | `client/public/Assets/Character/<id>/Character.config` |
+| รูปต้นฉบับ (ก่อนเข้ารหัส) | `assets-src/Assets/Character/<id>/` |
 | ตัวละคร/สกินรวม (**สร้างอัตโนมัติ**) | `client/public/skin/skins.json` |
 | สกิลประจำตัวละคร (ข้อมูล) | `client/public/skin/skills.json` |
-| อ่านข้อมูลสกิล (ไม่แตะหน้าจอ ใช้ร่วม client/สคริปต์/เทส) | `client/public/skills-core.js` |
-| หน้าจอสกิล | `client/public/skills.js` + `skills.css` |
+| อ่านข้อมูลสกิล (ไม่แตะหน้าจอ ใช้ร่วม client/สคริปต์/เทส) | `Code/Shared/skills-core.js` |
+| หน้าจอสกิล | `Code/Skills/` (`skills.js` + CSS) |
 | ตรวจสิทธิ์สกิลฝั่งเซิร์ฟเวอร์ | `server/src/skills.js` |
 | รายชื่อ id ที่เซิร์ฟเวอร์ยอมรับ | `CHARS` / `BGS` ใน `server/src/rules/common.js` |
-| โหลด/ถอดรหัสรูปตามสิทธิ์ | `client/public/pack-loader.js` |
-| เอฟเฟกต์ SSR | `ssrfx.js` + `ssrfx.css` |
-| อีโมต/สติกเกอร์ | `emote.js` + `emote.css` |
+| โหลด/ถอดรหัสรูปตามสิทธิ์ | `Code/AssetPack/pack-loader.js` |
+| เอฟเฟกต์ SSR | `Code/Table/ssrfx.js` + `ssrfx.css` |
+| อีโมต/สติกเกอร์ | `Code/Table/emote.js` + `emote.css` · ส่ง/รับอีโมจิ `emote-socket.js` |
+| เลเวลตัวละคร + ช่องชุดแต่ง | `Code/Characters/char-level.js` |
 
 > เพิ่มตัวละครใหม่แล้วต้องรัน `node scripts/build-assets.js` และ `node server/test-skin-ids.js`
 > (เทสนี้เทียบ `CHARS` ใน `common.js` กับ `skins.json` — ถ้าไม่ตรงจะแจ้ง)
 
 ### 3.2 UI / หน้าจอ
 
-| หน้าจอ | ไฟล์ |
+ไฟล์ทั้งหมดอยู่ใต้ `client/public/Code/<หมวด>/` — โฟลเดอร์ = หมวด
+
+| หมวด (โฟลเดอร์) | มีอะไร |
 |---|---|
-| โครงหลัก, หน้าแรก, ฟังก์ชัน `render()` | `app.js` |
-| โต๊ะเล่นเกมอื่นนอกจากดัมมี่ | `games.js` (`GX[<id>]`) |
-| โต๊ะแนวนอน 4 ฝั่ง | `gamegx.js` + `gamegx.css` |
-| ล็อบบี้ห้อง (พร้อม/ชวนเพื่อน/อนิเมชันสับไพ่) | `lobby-ui.js` |
-| หาแมตช์ + หน้าต่างกดพร้อม | `match-ui.js` |
-| หน้าสรุปผลจบตา + ปุ่มเล่นต่อ | `playon.js` (+ `resultOverlay()` ใน `app.js`) |
-| โปรไฟล์ / ช่องเก็บของ | `profile.js`, `pages2.js` |
-| เข้าสู่ระบบ / ล็อกอินรายวัน | `account.js` + `account.css` |
-| เควส | `quests.js` (โหมดไม่ล็อกอิน) / `account.js` (โหมดบัญชี) |
-| แบทเทิลพาส | `battlepass.js` |
-| อันดับ/แรงก์ | `ranked.js` + `ranked.css` |
-| บทสอนเล่น | `tutorial.js` + `tutorial.css` |
-| แพตช์โน้ตในเกม | `patchnotes.js` + `patchnotes.json` |
-| ตกแต่งภาพล้วน (กลีบซากุระ ฯลฯ) | `polish.js` + `polish.css` |
-| ธีมหน้าแรก | `theme2.js` + `theme2.css` |
-| สไตล์ทั่วไป | `style.css`, `ui.css`, `layout.css` |
+| `Core` | `state.js` (ตัวแปรกลาง) · `router.js` (`render()`, เปลี่ยนหน้า) · `connection.js` (Socket.IO) · `db.js` (Supabase) · `skins.js` · `ui-kit.js` (ตัวช่วย escape/ตัวเลข/localStorage/ไอคอน) · `boot.js` · `native.js` (ปุ่ม Back แอป) · `shared-ui.*.css` (HUD ปุ่ม แผง หน้าย่อยที่ทุกหน้าใช้) |
+| `Shared` | ไฟล์ที่ต้องเหมือนฝั่งเซิร์ฟเวอร์: `economy.js` · `namefilter.js` · `skills-core.js` |
+| `Home` | หน้าแรก/หน้าเล่นเกม `home.js` · หน้าแรกแบบ RoV `home-rov.js` |
+| `Lobby` | สร้างห้อง · ห้องรอ `lobby-room.js` · ปุ่มพร้อม/ชวน `lobby-ui.js` · หาแมตช์ `match-ui.js` + หน้าต่างกดพร้อม `match-ready.js` · เล่นต่อ `playon.js` |
+| `Table` | โต๊ะดัมมี่ `dummy-table.js` · โต๊ะเกมอื่น `games.js` (`GX[<id>]`) · โต๊ะแนวนอน `gamegx.js` · ไพ่ · แจกไพ่ · สับไพ่ · ผลจบตา `result.js` · กติกา · อีโมต · เอฟเฟกต์ |
+| `Account` | ล็อกอิน · โปรไฟล์ · รางวัลล็อกอิน · ลบบัญชี · ปุ่ม HUD · เลเวลผู้เล่น `progress.js` |
+| `Settings` · `Inventory` · `Shop` · `Gacha` | ตั้งค่า · ช่องเก็บของ · ร้านค้า (โหมดไม่ล็อกอิน) · กาชา |
+| `Items` · `Stamina` · `Farm` · `Characters` | ไอเทม · สตามิน่า · โหมดฟาร์มกับบอท · เลเวลตัวละคร |
+| `Quests` | เควสโหมดไม่ล็อกอิน `quests-local.js` · โหมดบัญชี `quests-account.js` |
+| `BattlePass` · `Ranked` · `Friends` · `Skills` · `Tutorial` · `PatchNotes` | ระบบละโฟลเดอร์ |
+| `AssetPack` | โหลด/ถอดรหัสแพ็กรูป |
+| `Theme` | ชั้นตกแต่ง `polish.js` · เปลี่ยน 🪙 เป็นรูป `coin-icons.js` |
+
+**ชื่อไฟล์ CSS แบบมีชั้น:** `<หมวด>.<ชั้น>.css` เช่น `table.base.css`, `home.theme-2.css`
+- ชั้นเรียงตามลำดับโหลด: `base` → `ui` → `layout` → `polish` → `theme` (ชั้นหลังทับชั้นก่อน)
+- เลขต่อท้าย (`-2`, `-3`) = ส่วนถัดไปของชั้นเดียวกัน ต้องโหลดหลังไฟล์อื่นที่อยู่ก่อนหน้าใน `index.html` เพราะกฎในนั้นทับกฎของไฟล์ก่อนหน้า
+- **แก้สไตล์ของหมวดไหน แก้ในไฟล์ของหมวดนั้น** · เพิ่มกฎใหม่ → ใส่ไฟล์ส่วนสุดท้ายของหมวดในชั้นที่ถูก
+- ลำดับ `<link>` ใน `index.html` มีผล **ห้ามสลับโดยไม่ถาม**
 
 **กฎ UI:**
-- ไฟล์ CSS ของระบบไหน แก้เฉพาะระบบนั้น (เช่น สไตล์กาชาห้ามไปอยู่ใน `ranked.css`)
+- ไฟล์ CSS ของระบบไหน แก้เฉพาะระบบนั้น (เช่น สไตล์กาชาห้ามไปอยู่ใน `Ranked/ranked.css`)
 - ระบบใหม่ที่เป็นหน้าจอใหม่ → **สร้างไฟล์ `.js` + `.css` ใหม่ของตัวเอง** แล้วเพิ่ม `<script>`/`<link>` ใน `index.html` (ถามก่อนทุกครั้ง เพราะ **ลำดับการโหลดมีผล**)
-- ข้อความจากผู้เล่น/ฐานข้อมูลที่แสดงบนหน้า ต้อง escape เสมอ (ไฟล์เดิมใช้ฟังก์ชัน `E(...)` / `esc(...)`)
+- ข้อความจากผู้เล่น/ฐานข้อมูลที่แสดงบนหน้า ต้อง escape เสมอ (`UiKit.escape(...)` · ไฟล์เดิมใช้ `E(...)` / `esc(...)`)
 
 ### 3.3 ร้านค้า / กาชา
 
@@ -136,12 +146,12 @@ docs/              ROADMAP.md, PATCHNOTES.md
 
 | เรื่อง | ไฟล์ |
 |---|---|
-| หน้ากาชา (แสดงผลอย่างเดียว) | `client/public/gacha.js` |
-| ตั้งค่ากลาง: ความหายาก เรท ราคาขายคืน | `client/public/Shop/Gasha/gasha.config` |
-| ตู้กาชา 1 ตู้ | `client/public/Shop/Gasha/<id>/Config.config` + `banner.webp` |
-| ตั้งค่าหน้าร้าน | `client/public/Shop/Shopsetting.config` |
-| ไอเทม (หลังไพ่ โต๊ะ พื้นหลัง ฯลฯ) | `client/public/Item/<ชนิด>/Item.config` |
-| ตัวเลขเศรษฐกิจ (รางวัล เลเวล ไอเทม) | `server/src/economy.js` ↔ `client/public/economy.js` |
+| หน้ากาชา (แสดงผลอย่างเดียว) | `Code/Gacha/gacha.js` |
+| ตั้งค่ากลาง: ความหายาก เรท ราคาขายคืน | `client/public/Assets/Shop/Gasha/gasha.config` |
+| ตู้กาชา 1 ตู้ | `client/public/Assets/Shop/Gasha/<id>/Config.config` + `banner.webp` |
+| ตั้งค่าหน้าร้าน | `client/public/Assets/Shop/Shopsetting.config` |
+| ไอเทม (หลังไพ่ โต๊ะ พื้นหลัง ฯลฯ) | `client/public/Assets/Item/<ชนิด>/Item.config` |
+| ตัวเลขเศรษฐกิจ (รางวัล เลเวล ไอเทม) | `server/src/economy.js` ↔ `Code/Shared/economy.js` |
 | **ตัดสินการสุ่มจริง** | `supabase/v8_gacha.sql`, `supabase/schema.sql` (`gacha_pull`, `sell_dupes`) |
 | ตัวเลขแบทเทิลพาส | `client/public/BattlePass/*.json` |
 
@@ -166,12 +176,14 @@ server/src/shuffle.js       เอนจิ้นสับไพ่ (ทุก�
 - `server/src/index.js` **ต้องไม่รู้จักกติกาเกมใดเกมหนึ่งโดยตรง** — เรียกผ่านทะเบียน `Rules.get(...)` เท่านั้น
 - `view(G, seat)` **ห้ามส่งไพ่ในมือคนอื่น**
 - ผลเหรียญของเกมใส่ที่ `G.res.coin` ตามสัญญาใน `rules/README.md`
-- `server/legacy/` และ `rules/korat/` = ของเก่า/ปิดไว้ **ห้ามนำกลับมาใช้โดยไม่ถาม**
+- `server/legacy/` และ `rules/korat/` ถูกลบแล้วใน Beta 0.13.0 (ดูย้อนหลังใน git) **ห้ามนำกลับมาใช้โดยไม่ถาม**
 
 ### 3.5 เซิร์ฟเวอร์ (ห้อง / การเชื่อมต่อ)
 
-- `server/src/index.js` — ห้อง, Socket.IO events (`room:*`, `game:*`, `match:*`, `skill:use`, `player:farm`)
-- `wallet.js` — กระเป๋าเหรียญฝั่งเซิร์ฟเวอร์ (**ยังไม่ได้ต่อกับ index.js** ตาม `RULES-SPEC.md`)
+- `server/src/index.js` — จุดเริ่ม: สร้างเซิร์ฟเวอร์ แล้วติดตั้งโมดูลด้านล่าง (ไม่มี logic เกม)
+- `config.js` ค่าจาก env · `room/` ห้อง ห้องรอ เริ่ม/จบตา เล่นต่อ เข้า-ออก · `match/` หาแมตช์/แรงก์ · `results/` บันทึกผลลงฐานข้อมูล · `net/` กันสแปม/ตรวจ payload · `friends/` สถานะเพื่อน + ชวนเข้าห้อง
+- `events/` — Socket.IO events แยกตามเรื่อง: `room-events.js` (`room:*`) · `match-events.js` (`match:*`) · `game-events.js` (`game:*`, `skill:use`, `player:farm`) · `emote-events.js`
+- `wallet.js` — กระเป๋าเหรียญฝั่งเซิร์ฟเวอร์ (**ยังไม่ได้ต่อกับเซิร์ฟเวอร์** ตาม `RULES-SPEC.md`)
 - `supabase.js` — คุยกับฐานข้อมูลด้วย secret key
 - `namefilter.js`, `packkeys.js`, `env.js`
 
@@ -214,7 +226,7 @@ function getCoinsAfterRename(user) {
 
 ### 4.3 ไฟล์เดิมเขียนแน่นมาก — อย่าลอกสไตล์
 
-`app.js` มี 360 บรรทัด แต่ ~64 KB และ **121 บรรทัดยาวเกิน 200 ตัวอักษร** (บีบหลายคำสั่งในบรรทัดเดียว)
+ไฟล์เดิมหลายไฟล์ (เช่นที่แยกมาจาก `app.js` เดิม) ยังมีบรรทัดยาวมาก บีบหลายคำสั่งในบรรทัดเดียว
 ไฟล์อื่นหลายไฟล์ก็เป็นแบบเดียวกัน กฎคือ:
 
 - **โค้ดใหม่ที่เขียน → ใช้สไตล์ข้อ 4.1 เสมอ** แม้ไฟล์รอบข้างจะแน่นแค่ไหน
@@ -229,15 +241,15 @@ function getCoinsAfterRename(user) {
 
 | อยากเพิ่ม | ทำยังไง | ไม่ต้องแก้ |
 |---|---|---|
-| ตัวละคร | สร้าง `Character/<id>/Character.config` + รูปใน `assets-src/` → `node scripts/build-assets.js` → เช็ก `CHARS` ใน `common.js` | `app.js` |
-| ไอเทม (หลังไพ่/โต๊ะ ฯลฯ) | ใส่ไฟล์ใน `Item/<ชนิด>/` + เพิ่มรายการใน `Item.config` → build | `app.js` |
-| ตู้กาชา | สร้าง `Shop/Gasha/<id>/Config.config` + `banner.webp` → build → `gen-catalog-sql.js` | `gacha.js` |
-| เกมไพ่ใหม่ | สร้าง `rules/<เกม>/` + `register(...)` ใน `rules/index.js` + โต๊ะใน `games.js` (`GX[<id>]`) | `index.js` ของเซิร์ฟเวอร์ |
+| ตัวละคร | สร้าง `Assets/Character/<id>/Character.config` + รูปใน `assets-src/Assets/Character/<id>/` → `node scripts/build-assets.js` → เช็ก `CHARS` ใน `common.js` | โค้ดใน `Code/` |
+| ไอเทม (หลังไพ่/โต๊ะ ฯลฯ) | ใส่ไฟล์ใน `Assets/Item/<ชนิด>/` + เพิ่มรายการใน `Item.config` → build | โค้ดใน `Code/` |
+| ตู้กาชา | สร้าง `Assets/Shop/Gasha/<id>/Config.config` + `banner.webp` → build → `gen-catalog-sql.js` | `gacha.js` |
+| เกมไพ่ใหม่ | สร้าง `rules/<เกม>/` + `register(...)` ใน `rules/index.js` + โต๊ะใน `Code/Table/games.js` (`GX[<id>]`) | โมดูลห้องของเซิร์ฟเวอร์ |
 | ฤดูแบทเทิลพาส | แก้ `BattlePass/*.json` → `node scripts/gen-bp-sql.js` | โค้ดหน้าจอ |
 | สกิล | แก้ผ่าน `skill-studio.html` หรือ `skills.json` | — |
-| หน้าจอ/ระบบใหม่ | **สร้างไฟล์ใหม่** (`<ระบบ>.js` + `.css`) | ไฟล์ระบบอื่น |
+| หน้าจอ/ระบบใหม่ | **สร้างโฟลเดอร์/ไฟล์ใหม่** `Code/<ระบบ>/<ระบบ>.js` + `.css` | ไฟล์ระบบอื่น |
 
-**ถ้าต้องต่อยอดฟังก์ชันของไฟล์เดิม** ไฟล์ในโปรเจคใช้วิธี "เขียนทับฟังก์ชันจากไฟล์ที่โหลดทีหลัง" (เช่น `pages2.js` เขียนทับ `profileView()`, `profile.js` เขียนทับ `profileView()` จาก `app.js`) — วิธีนี้ทำให้ `app.js` ไม่บวม แต่ **ขึ้นกับลำดับ `<script>` ใน `index.html`** ดังนั้น:
+**ถ้าต้องต่อยอดฟังก์ชันของไฟล์เดิม** ไฟล์ในโปรเจคใช้วิธี "เขียนทับฟังก์ชันจากไฟล์ที่โหลดทีหลัง" (เช่น `Account/profile-page.js` เขียนทับ `profileView()` ของ `Account/profile.js` · หลายไฟล์ห่อ `render()` ของ `Core/router.js`) — วิธีนี้ทำให้ไฟล์แกนไม่บวม แต่ **ขึ้นกับลำดับ `<script>` ใน `index.html`** ดังนั้น:
 
 - จะใช้วิธีเขียนทับ → **ถามก่อน** และบอกว่าจะเขียนทับฟังก์ชันอะไร
 - ห้ามสลับลำดับ `<script>` ใน `index.html` โดยไม่ถาม
@@ -272,20 +284,19 @@ function getCoinsAfterRename(user) {
 
 | ไฟล์ปลายทาง | ต้นทาง | สคริปต์ |
 |---|---|---|
-| `client/public/skin/skins.json`, `skin/gacha.json` | `Character/`, `Item/`, `Shop/` | `node scripts/build-assets.js` |
+| `client/public/skin/skins.json`, `skin/gacha.json` | `Assets/Character/`, `Assets/Item/`, `Assets/Shop/` | `node scripts/build-assets.js` |
 | `supabase/seed_catalog.sql` | `skins.json`, `gacha.json`, `skills.json` | `node scripts/gen-catalog-sql.js` |
 | `supabase/v7_config.sql` | `server/src/economy.js` | `node scripts/gen-economy-sql.js` |
 | `supabase/bp_seed.sql` | `BattlePass/*.json` | `node scripts/gen-bp-sql.js` |
-| `client/public/pack/*.pak` + `manifest.json` | `assets-src/` | GitHub Actions (`pack-assets.yml`) |
-| `docs/PATCHNOTES.md` | `client/public/patchnotes.json` | (ยังไม่พบสคริปต์ → **ถามก่อน** ว่าสร้างยังไง) |
+| `client/public/pack/*.pak` + `manifest.json` | `assets-src/Assets/` | GitHub Actions (`pack-assets.yml`) |
+| `docs/PATCHNOTES.md` | `client/public/patchnotes.json` | เขียนมือคู่กัน ให้เนื้อหาตรงกัน (เจ้าของโปรเจคอนุมัติแล้ว) |
 | `supabase/name_filter.sql` | `server/src/namefilter.js` | `node scripts/gen-namefilter-sql.js` |
 
-`repomix-output.xml` = ภาพสแนปช็อตเก่าของโค้ด **ห้ามใช้เป็นแหล่งข้อมูลจริง** — อ่านจากไฟล์จริงเสมอ
 
 ### ต้องเหมือนกันทุกตัวอักษร (เทสตรวจให้)
 
-- `server/src/economy.js` ≡ `client/public/economy.js`
-- `server/src/namefilter.js` ≡ `client/public/namefilter.js`
+- `server/src/economy.js` ≡ `client/public/Code/Shared/economy.js`
+- `server/src/namefilter.js` ≡ `client/public/Code/Shared/namefilter.js`
 
 แก้ไฟล์หนึ่งแล้วต้อง **คัดลอกไปอีกไฟล์** ทันที แล้วรัน `test-economy.js` / `test-namefilter.js`
 
@@ -309,13 +320,11 @@ function getCoinsAfterRename(user) {
 
 | เรื่อง | ที่พบ |
 |---|---|
-| **เลขเวอร์ชัน** | `client/public/version.js` = `Beta 0.12.0` แต่ `package.json` ทั้ง client/server = `7.1.0` (คอมเมนต์ใน `version.js` บอกให้ตรงกัน) |
 | **`RULES-SPEC.md`** | เป็นฉบับร่างเก่า (บอกผู้เล่น 2–6 คน, `oldmaid`) แต่โค้ดตอนนี้ `MAX_PLAYERS = 4` และอีแก่คือ `eekae` — ใช้โค้ดเป็นหลัก |
 | **README ส่วนร้านค้า** | บางส่วนยังเล่าถึง "ร้านค้า" ที่ตอนนี้กลายเป็นกาชาแล้ว |
 | **ที่โฮสต์หน้าเว็บ** | README บอก Render Static Site, ROADMAP บอกย้ายไป Cloudflare Pages |
-| **ลำดับรัน SQL** | `supabase/README.md` เขียนลำดับถึง v7 + `bp_seed.sql` เท่านั้น แต่ในโฟลเดอร์มี `v8_gacha`, `v9_bp_extra`, `v10_tutorial`, `v11_ranked` ด้วย → ลำดับของ v8–v11 ต้องถามก่อน |
 | **`needShuffle()`** | คืน `false` เสมอ (เซิร์ฟเวอร์สับเอง) แต่ README ยังเล่าว่าต้องกดสับ |
-| **`server/src/wallet.js`** | ผ่านเทสของตัวเอง แต่ไม่ได้ต่อกับ `index.js` |
+| **`server/src/wallet.js`** | ผ่านเทสของตัวเอง แต่ไม่ได้ต่อกับเซิร์ฟเวอร์ |
 
 ---
 
@@ -346,12 +355,13 @@ sh supabase/test/run.sh
 
 | แก้อะไร | รันอะไร |
 |---|---|
-| กติกาเกม | `test-rules.js`, `test-fuzz.js`, `test-games.js`, `test-simple-rules.js`, `test-scoring.js` |
-| ห้อง/เครือข่าย (`index.js`) | `test-online.js`, `test-client.js` |
+| กติกาเกม | `test-rules.js`, `test-fuzz.js`, `test-games.js`, `test-simple-rules.js`, `test-scoring.js`, `test-pokdeng-rank.js` |
+| ห้อง/เครือข่าย (`server/src/room/*`, `events/*`) | `test-online.js`, `test-client.js`, `test-simple-online.js`, `test-friends.js`, `test-ranked.js` |
 | สกิล/ตัวละคร | `test-skills.js`, `test-skills-account.js`, `test-skin-ids.js` |
 | ตัวเลขเศรษฐกิจ | `test-economy.js` |
 | ชื่อผู้เล่น | `test-namefilter.js` |
-| `onclick=...` ใน `app.js` | `node scripts/check-handlers.js` |
+| `onclick=...` ในโค้ดหน้าเว็บ | `node scripts/check-handlers.js` |
+| ไฟล์ที่ `index.html` โหลดมีครบ | `node server/test-client-files.js` (อยู่ใน npm test ผ่านเทสอื่น) |
 | ข้อมูลตัวละคร/ไอเทม/กาชา | `node scripts/build-assets.js --check` |
 | SQL | `sh supabase/test/run.sh` |
 
@@ -513,7 +523,7 @@ sh supabase/test/run.sh
 git status                              # ต้องสะอาด
 git switch -c ai/gacha-banner-fix       # แตก branch งาน
 # ... แก้ + ตรวจ (หมวด 10) ...
-git add client/public/gacha.js          # เฉพาะไฟล์ที่ตั้งใจ
+git add client/public/Code/Gacha/gacha.js   # เฉพาะไฟล์ที่ตั้งใจ
 git diff --staged                       # ดูก่อน commit
 git commit -m "แก้แบนเนอร์กาชาไม่ขึ้นเมื่อไม่มีภาพ (gacha.js: renderBanner)"
 # หยุดตรงนี้ → รายงานผม + เขียน WORKLOG → รอผมสั่ง push/merge
