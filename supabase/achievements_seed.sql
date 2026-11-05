@@ -14,9 +14,9 @@ insert into public.achievement_defs(id, grp, game_id, metric, feat, icon, name, 
 ('dm-wins', 'dummy', 'dummy', 'wins', null, '🏅', 'ชนะดัมมี่', 'ชนะดัมมี่ {n} ตา', 100),
 ('dm-knock', 'dummy', 'dummy', 'feat', 'knock', '👊', 'มือน็อก', 'น็อก {n} ครั้ง', 110),
 ('dm-melds', 'dummy', 'dummy', 'melds', null, '🧩', 'นักสร้างชุด', 'เกิดชุด {n} ชุด', 120),
-('dm-head', 'dummy', 'dummy', 'feat', 'head', '👑', 'เกิดหัว', 'เกิดหัว {n} ครั้ง', 130),
+('dm-head', 'dummy', 'dummy', 'feat', 'head', '👑', 'เกิดหัว', 'เกิดหัวได้ใน {n} ตา', 130),
 ('dm-dark', 'dummy', 'dummy', 'feat', 'knock_dark', '🌑', 'น็อกมืด', 'น็อกมืด {n} ครั้ง', 140),
-('dm-speto', 'dummy', 'dummy', 'feat', 'speto', '♠️', 'สเปโต', 'เกิดชุดที่มีสเปโต {n} ครั้ง', 150),
+('dm-speto', 'dummy', 'dummy', 'feat', 'speto', '♠️', 'สเปโต', 'เกิดชุดที่มีสเปโตได้ใน {n} ตา', 150),
 ('pd-plays', 'pokdeng', 'pokdeng', 'plays', null, '🎴', 'นักป๊อกเด้ง', 'เล่นป๊อกเด้ง {n} ตา', 160),
 ('pd-wins', 'pokdeng', 'pokdeng', 'wins', null, '🏅', 'ชนะป๊อกเด้ง', 'ชนะป๊อกเด้ง {n} ตา', 170),
 ('pd-pok', 'pokdeng', 'pokdeng', 'feat', 'pok', '✨', 'ป๊อก!', 'ได้ป๊อก 8 หรือ 9 {n} ครั้ง', 180),
@@ -41,15 +41,15 @@ insert into public.achievement_defs(id, grp, game_id, metric, feat, icon, name, 
 ('ss-cast', 'somsip', 'somsip', 'chars_used', null, '🎭', 'เพื่อนร่วมวง', 'เล่นผสมสิบด้วยตัวละครต่างกัน {n} ตัว', 370),
 ('ek-plays', 'eekae', 'eekae', 'plays', null, '👵', 'นักอีแก่', 'เล่นอีแก่ {n} ตา', 380),
 ('ek-wins', 'eekae', 'eekae', 'wins', null, '🏅', 'ชนะอีแก่', 'ชนะอีแก่ {n} ตา', 390),
-('ek-first', 'eekae', 'eekae', 'feat', 'first', '🏃', 'หมดไพ่คนแรก', 'หมดไพ่เป็นคนแรก {n} ครั้ง', 400),
+('ek-close', 'eekae', 'eekae', 'feat', 'close', '😮‍💨', 'รอดหวุดหวิด', 'เหลือสองคนสุดท้ายแล้วรอดจากอีแก่ {n} ครั้ง', 400),
 ('ek-safe', 'eekae', 'eekae', 'feat', 'safe', '🛡️', 'รอดจากอีแก่', 'ไม่ถืออีแก่ตอนจบ {n} ตา', 410),
 ('ek-maid', 'eekae', 'eekae', 'feat', 'oldmaid', '🧓', 'เพื่อนรักอีแก่', 'ถืออีแก่ตอนจบ {n} ครั้ง', 420),
 ('ek-streak', 'eekae', 'eekae', 'streak', null, '🔥', 'ชนะติด', 'ชนะอีแก่ติดกัน {n} ตา', 430),
 ('ek-cast', 'eekae', 'eekae', 'chars_used', null, '🎭', 'เพื่อนร่วมวง', 'เล่นอีแก่ด้วยตัวละครต่างกัน {n} ตัว', 440)
 on conflict (id) do update set grp = excluded.grp, game_id = excluded.game_id, metric = excluded.metric, feat = excluded.feat,
   icon = excluded.icon, name = excluded.name, descr = excluded.descr, sort = excluded.sort, active = true;
-update public.achievement_defs set active = false where id not in ('gen-plays', 'gen-wins', 'gen-rules', 'gen-login', 'gen-chars', 'gen-stars', 'gen-rank', 'gen-level', 'dm-plays', 'dm-wins', 'dm-knock', 'dm-melds', 'dm-head', 'dm-dark', 'dm-speto', 'pd-plays', 'pd-wins', 'pd-pok', 'pd-pok9', 'pd-tong', 'pd-flush', 'pd-dealer', 'gg-plays', 'gg-wins', 'gg-tong', 'gg-seq', 'gg-sean', 'gg-colour', 'gg-bluff', 'ss-plays', 'ss-wins', 'ss-special', 'ss-aces', 'ss-suit', 'ss-pure', 'ss-streak', 'ss-cast', 'ek-plays', 'ek-wins', 'ek-first', 'ek-safe', 'ek-maid', 'ek-streak', 'ek-cast');
-delete from public.achievement_tiers where ach_id in ('gen-plays', 'gen-wins', 'gen-rules', 'gen-login', 'gen-chars', 'gen-stars', 'gen-rank', 'gen-level', 'dm-plays', 'dm-wins', 'dm-knock', 'dm-melds', 'dm-head', 'dm-dark', 'dm-speto', 'pd-plays', 'pd-wins', 'pd-pok', 'pd-pok9', 'pd-tong', 'pd-flush', 'pd-dealer', 'gg-plays', 'gg-wins', 'gg-tong', 'gg-seq', 'gg-sean', 'gg-colour', 'gg-bluff', 'ss-plays', 'ss-wins', 'ss-special', 'ss-aces', 'ss-suit', 'ss-pure', 'ss-streak', 'ss-cast', 'ek-plays', 'ek-wins', 'ek-first', 'ek-safe', 'ek-maid', 'ek-streak', 'ek-cast');
+update public.achievement_defs set active = false where id not in ('gen-plays', 'gen-wins', 'gen-rules', 'gen-login', 'gen-chars', 'gen-stars', 'gen-rank', 'gen-level', 'dm-plays', 'dm-wins', 'dm-knock', 'dm-melds', 'dm-head', 'dm-dark', 'dm-speto', 'pd-plays', 'pd-wins', 'pd-pok', 'pd-pok9', 'pd-tong', 'pd-flush', 'pd-dealer', 'gg-plays', 'gg-wins', 'gg-tong', 'gg-seq', 'gg-sean', 'gg-colour', 'gg-bluff', 'ss-plays', 'ss-wins', 'ss-special', 'ss-aces', 'ss-suit', 'ss-pure', 'ss-streak', 'ss-cast', 'ek-plays', 'ek-wins', 'ek-close', 'ek-safe', 'ek-maid', 'ek-streak', 'ek-cast');
+delete from public.achievement_tiers where ach_id in ('gen-plays', 'gen-wins', 'gen-rules', 'gen-login', 'gen-chars', 'gen-stars', 'gen-rank', 'gen-level', 'dm-plays', 'dm-wins', 'dm-knock', 'dm-melds', 'dm-head', 'dm-dark', 'dm-speto', 'pd-plays', 'pd-wins', 'pd-pok', 'pd-pok9', 'pd-tong', 'pd-flush', 'pd-dealer', 'gg-plays', 'gg-wins', 'gg-tong', 'gg-seq', 'gg-sean', 'gg-colour', 'gg-bluff', 'ss-plays', 'ss-wins', 'ss-special', 'ss-aces', 'ss-suit', 'ss-pure', 'ss-streak', 'ss-cast', 'ek-plays', 'ek-wins', 'ek-close', 'ek-safe', 'ek-maid', 'ek-streak', 'ek-cast');
 insert into public.achievement_tiers(ach_id, tier, target, title, level, reward_coins, reward_mcash) values
 ('gen-plays', 1, 10, 'นักไพ่หน้าใหม่', 1, 200, 0),
 ('gen-plays', 2, 100, 'ขาประจำโต๊ะ', 2, 500, 0),
@@ -164,9 +164,9 @@ insert into public.achievement_tiers(ach_id, tier, target, title, level, reward_
 ('ek-wins', 1, 5, 'ผู้ชนะวงอีแก่', 1, 200, 0),
 ('ek-wins', 2, 50, 'เซียนอีแก่', 2, 500, 0),
 ('ek-wins', 3, 300, 'เทพอีแก่', 3, 1000, 20),
-('ek-first', 1, 5, 'ตัวไว', 1, 200, 0),
-('ek-first', 2, 50, 'ลมกรด', 2, 500, 0),
-('ek-first', 3, 300, 'สายฟ้าแลบ', 3, 1000, 20),
+('ek-close', 1, 3, 'เฉียดฉิว', 1, 200, 0),
+('ek-close', 2, 30, 'ดวงแข็ง', 2, 500, 0),
+('ek-close', 3, 150, 'เทพแห่งการหนีรอด', 3, 1000, 20),
 ('ek-safe', 1, 10, 'รอดตัว', 1, 200, 0),
 ('ek-safe', 2, 100, 'หนีเก่ง', 2, 500, 0),
 ('ek-safe', 3, 500, 'ไม่มีวันถืออีแก่', 3, 1000, 20),

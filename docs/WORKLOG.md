@@ -17,7 +17,7 @@
 - คำสั่งที่ได้รับ: เริ่มข้อ 1 (ความสำเร็จ) · เจ้าของเลือก: รางวัล = ฉายา + เหรียญ + เพชรขั้นทอง · ทางเข้า = บัตรโปรไฟล์ + หน้าแรก · "เพิ่มให้เยอะกว่านี้ แยกเป็นเกม เกมละ 20" (นับรวมขั้น) · เพิ่มการบันทึกท่าพิเศษที่เซิร์ฟเวอร์
 - branch: `ai/achievements` (แตกจาก `ai/profile-avatar-fix`) · commit `add88ef` → `f9359fd` + WORKLOG
 - สร้างใหม่:
-  - `server/src/rules/<เกม>/feats.js` ×5 — ท่าพิเศษของที่นั่งตอนจบตา (ดัมมี่: knock knock_dark knock_suit head speto · ป๊อกเด้ง: pok pok9 tong sflush straight sam dealer_win · เก้าเก: tong seq sean colour allfold · ผสมสิบ: special sp_aces sp_suit nojoker · อีแก่: first safe oldmaid) — อ่านสถานะอย่างเดียว ไม่แตะกติกา
+  - `server/src/rules/<เกม>/feats.js` ×5 — ท่าพิเศษของที่นั่งตอนจบตา (ดัมมี่: knock knock_dark knock_suit head speto · ป๊อกเด้ง: pok pok9 tong sflush straight sam dealer_win · เก้าเก: tong seq sean colour allfold · ผสมสิบ: special sp_aces sp_suit nojoker · อีแก่: first safe close oldmaid — ek-first เปลี่ยนเป็น ek-close "รอดหวุดหวิด" เพราะหมดไพ่คนแรก = ชนะอันดับ 1 ซ้ำกับ ek-wins) · v14 นับน็อกย้อนหลังจากคอลัมน์ knock · head/speto นับเป็นจำนวนตา — อ่านสถานะอย่างเดียว ไม่แตะกติกา
   - `server/test-feats.js` (เพิ่มใน npm test) — บอทเล่น 1,500 ตาต่อเกม ตรวจรูปแบบ + ท่าที่ความสำเร็จใช้เกิดได้จริง
   - `client/public/skin/achievements.json` — รายการ 44 ความสำเร็จ 128 ขั้น (ทั่วไป 24 · ดัมมี่ 21 · ป๊อกเด้ง 21 · เก้าเก 21 · ผสมสิบ 20 · อีแก่ 21) + รางวัลตามระดับ (ทองแดง 200 · เงิน 500 · ทอง 1,000 + 💎20) · รวมทั้งหมด 73,400 เหรียญ · 880 เพชร
   - `scripts/gen-achievements-sql.js` → `supabase/achievements_seed.sql` (สร้างอัตโนมัติ ห้ามแก้มือ · `--check` ตรวจอย่างเดียว)
@@ -34,7 +34,7 @@
   - เอกสาร: `server/src/rules/README.md` (สัญญา feats) · `supabase/README.md` (ลำดับ v13 → v14 → seed)
   - เลขเวอร์ชัน 0.14.0 + patchnotes.json + docs/PATCHNOTES.md
 - ไม่ได้แตะ: กติกาเกม (engine.js ทุกเกม ยกเว้น export wildFn) · server/src/index.js · room/* · record_game_result (SQL เดิม)
-- ตรวจแล้ว: `npm test` ผ่านทั้งชุด (รอบแรก exit 1 แต่รันทีละไฟล์ผ่านหมด และรันซ้ำผ่าน — น่าจะเทสออนไลน์ชนเวลา) · `sh supabase/test/run.sh` ผ่าน (รวม test_v14) · check-handlers · test-client-files · build-assets --check · gen-achievements-sql --check · screenshot จำลอง 915×412 + 1280×720: หน้าต่างความสำเร็จ (แท็บดัมมี่/ป๊อกเด้ง) · กดรับ · ปุ่มหน้าแรก · บัตรโปรไฟล์
+- ตรวจแล้ว: `npm test` เต็มชุด 1 ใน 3 รอบ exit 1 (หาสาเหตุไม่เจอ รันซ้ำไม่เกิด) · รันทีละไฟล์ผ่านทุกไฟล์ · `sh supabase/test/run.sh` ผ่าน (รวม test_v14) · check-handlers · test-client-files · build-assets --check · gen-achievements-sql --check · screenshot จำลอง 915×412 + 1280×720: หน้าต่างความสำเร็จ (แท็บดัมมี่/ป๊อกเด้ง) · กดรับ · ปุ่มหน้าแรก · บัตรโปรไฟล์
 - ยังไม่ได้ทดสอบ: ฐานข้อมูลจริง (ยังไม่รัน v14) · เซิร์ฟเวอร์จริงส่งท่าพิเศษ · มือถือจริง
 - สถานะ: เสร็จ — รออนุมัติ
 - ขั้นต่อไป: 1) รัน `v14_achievements.sql` แล้ว `achievements_seed.sql` บน Supabase **ก่อน** อัปเซิร์ฟเวอร์ 2) push + merge `ai/achievements` (Render deploy เซิร์ฟเวอร์ · Cloudflare deploy หน้าเว็บ) 3) ทดสอบบนเว็บจริงด้วยบัญชีทดสอบ

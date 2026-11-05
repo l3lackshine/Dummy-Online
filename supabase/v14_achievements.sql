@@ -6,6 +6,8 @@
 -- ท่าพิเศษของแต่ละตา (ป๊อก 9 · ตอง · น็อกมืด ฯลฯ) เซิร์ฟเวอร์เกมส่งมาที่ record_game_feats หลัง record_game_result — นับเฉพาะตาที่เล่นหลังอัปเดตนี้
 
 alter table public.game_log add column if not exists feats text[] not null default '{}';
+-- น็อกดัมมี่มีบันทึกอยู่แล้ว (คอลัมน์ knock) → ความสำเร็จ "มือน็อก" นับย้อนหลังได้ · รันซ้ำได้ (แตะเฉพาะแถวที่ยังไม่มีท่าพิเศษ)
+update public.game_log set feats = array['knock'] where knock and feats = '{}';
 
 create table if not exists public.achievement_defs (
   id       text primary key,
