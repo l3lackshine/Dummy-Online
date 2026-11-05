@@ -210,6 +210,7 @@
     if (v && typeof v === 'object') for (const k of Object.keys(v)) v[k] = swapDeep(v[k]);
     return v;
   };
+  const CHAR_PATH = /^\.?\/?(Assets\/)?Character\//; // พาธรูปตัวละคร (ชื่อใหม่ Assets/Character/… และชื่อเก่า Character/…)
   function patchRegistry() {
     try {
       const R = typeof SKIN_REGISTRY !== 'undefined' ? SKIN_REGISTRY : null;
@@ -217,8 +218,11 @@
       let changed = false;
       for (const c of R.characters) {
         if (!c._a0) {
-          if (!c.asset || !/^\.?\/?Character\//.test(c.asset)) continue;
+          if (!c.asset || !CHAR_PATH.test(c.asset)) continue;
           Object.defineProperty(c, '_a0', { value: c.asset.replace(/^\.\//, ''), enumerable: false });
+          // รูปการ์ด/พื้นหลัง 5 ดาวอยู่ในแพ็กเดียวกับรูปตัวละคร — เก็บพาธเดิมไว้แทนที่ทุกครั้ง
+          for (const f of ['card', 'star5'])
+            if (c[f] && CHAR_PATH.test(c[f])) Object.defineProperty(c, '_' + f + '0', { value: c[f].replace(/^\.\//, ''), enumerable: false });
         }
         const full = L.url(c._a0),
           prev = L.url('Preview/' + c.id + '.webp'),
@@ -226,6 +230,16 @@
         if (c.asset !== want) {
           c.asset = want;
           changed = true;
+        }
+        // ยังไม่ปลดล็อก = ไม่มีรูปการ์ด/พื้นหลัง (หน้าจอใช้รูปตัวอย่างแทน) · เดิมชี้ไฟล์ที่ไม่มีบนเว็บ รูปจึงไม่ขึ้น
+        for (const f of ['card', 'star5']) {
+          const orig = c['_' + f + '0'];
+          if (!orig) continue;
+          const url = L.url(orig) || (full ? './' + orig : ''); // ปลดล็อกแล้วแต่ไฟล์ไม่ได้อยู่ในแพ็ก = ไฟล์บนเว็บตามเดิม
+          if (c[f] !== url) {
+            c[f] = url;
+            changed = true;
+          }
         }
         Object.defineProperty(c, '_locked', { value: !full, enumerable: false, configurable: true });
         for (const f of ['effects', 'sounds'])

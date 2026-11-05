@@ -101,6 +101,9 @@ function newGame(humans, opts) {
   return G;
 }
 
+// ความแรงของไพ่ในมือ ใช้จัดอันดับเมื่อได้ชิปเท่ากัน: ประเภทไพ่ก่อน (ป๊อก > ตอง > … > ธรรมดา) แล้วแต้ม
+const handPower = e => e.rank * 10 + e.taem;
+
 function finish(G) {
   G.over = true;
   G.phase = 'over';
@@ -131,9 +134,13 @@ function finish(G) {
     rows.push(row);
   }
   const coin = cr.done();
+  // อันดับ: ชิปที่ได้มากกว่าอยู่ก่อน · ชิปเท่ากัน → ไพ่ในมือดีกว่าอยู่ก่อน (ประเภทไพ่ แล้วแต้ม)
+  const power = ev.map(handPower);
+  const better = (a, b) => coin.delta[a] > coin.delta[b] || (coin.delta[a] === coin.delta[b] && power[a] > power[b]);
+  for (const row of rows) row.place = 1 + rows.filter(other => better(other.i, row.i)).length;
   G.res = { k: null, title: 'เจ้ามือ ' + G.P[G.dealer].n + ' — ' + dl.name, rows, coin };
-  const m = Math.max(...coin.delta);
-  G.res.k = m > 0 ? coin.delta.indexOf(m) : null;
+  const first = rows.find(row => row.place === 1);
+  G.res.k = first && coin.delta[first.i] > 0 ? first.i : null;
   G.logs.push('จบตา — เปิดไพ่เทียบเจ้ามือ');
 }
 
@@ -169,7 +176,7 @@ function botTurn(G) {
 }
 
 function winner(G) {
-  return G && G.over ? S.topWinner(G) : null;
+  return G && G.over && G.res ? G.res.k : null;
 }
 
 function view(G, seat) {

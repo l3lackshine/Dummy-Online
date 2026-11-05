@@ -146,7 +146,10 @@ function gxOver() {
                   : x.order
                     ? 'รอดที่ ' + x.order
                     : '';
-  const rows = (r.rows || []).map(x => ({ x, cd: (c.delta && c.delta[x.i]) || 0 })).sort((a, b) => b.cd - a.cd);
+  // เรียงตามอันดับที่เซิร์ฟเวอร์ส่งมา (place) ถ้ามี · ไม่มีก็เรียงตามชิปที่ได้
+  const rows = (r.rows || [])
+    .map(x => ({ x, cd: (c.delta && c.delta[x.i]) || 0 }))
+    .sort((a, b) => (a.x.place && b.x.place ? a.x.place - b.x.place : b.cd - a.cd));
   const rank = rows.findIndex(o => o.x.i === my) + 1;
   const board = rows
     .map(({ x, cd }, k) => {

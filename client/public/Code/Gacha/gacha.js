@@ -292,6 +292,16 @@
     filt = k;
   };
 
+  // ได้ตัวละครใหม่ → ขอกุญแจแพ็กของตัวนั้นก่อนเปิดผลสุ่ม ไม่งั้นรูปการ์ดยังเป็นไฟล์ที่ล็อกอยู่ (รูปไม่ขึ้น — รายงานปัญหา v0.12.0)
+  // รอไม่เกิน 5 วินาที · ไม่มีระบบแพ็ก (โหมดพัฒนา) = ข้าม
+  async function unlockNewCharacters(r) {
+    const gotNew = (r.results || []).some(x => x.kind === 'characters' && x.new);
+    if (!gotNew || !window.PackLoader || !PackLoader.refresh) return;
+    try {
+      await Promise.race([PackLoader.refresh(), new Promise(done => setTimeout(done, 5000))]);
+    } catch (e) {}
+  }
+
   window.gcPull = async (id, n, cur) => {
     if (busy) return;
     busy = true;
@@ -299,6 +309,7 @@
     render();
     try {
       const r = await DB.pull(id, n, cur);
+      await unlockNewCharacters(r);
       busy = false;
       (window.gcShow || showResult)(r);
     } catch (e) {

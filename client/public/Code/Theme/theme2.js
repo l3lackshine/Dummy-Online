@@ -120,9 +120,23 @@
     } catch (e) {}
     goPlay();
   };
+  // ตัวเลขแจ้งเตือนบนหน้าแรก (เควส · แบทเทิลพาส · อันดับ · เพื่อน) — เปลี่ยนเมื่อไหร่ต้องวาดหน้าแรกใหม่
+  // ทำไม: เดิมวาดครั้งเดียว กดรับเควสแล้วตัวเลขค้าง จนกว่าจะเปลี่ยนหน้า (รายงานปัญหา v0.12.0)
+  function badgeKey(P) {
+    return [
+      (document.querySelector('.hud-q i') || {}).textContent || '',
+      window.battlePass && battlePass.count ? battlePass.count() : 0,
+      window.Ranked && P ? Ranked.count() : 0,
+      window.Friends && P ? Friends.count() : 0,
+    ].join('|');
+  }
   function buildHome(app) {
     const scene = app.querySelector('.scene');
-    if (!scene || scene.querySelector('.rv')) return;
+    if (!scene) return;
+    const old = scene.querySelector('.rv');
+    const key = badgeKey(DBP());
+    if (old && old.dataset.badges === key) return;
+    if (old) old.remove();
     const P = DBP(),
       name = (P && P.display_name) || (typeof sv !== 'undefined' && sv.name) || 'ผู้เล่น';
     const coins = P ? P.coins : typeof sv !== 'undefined' ? sv.coins : 0;
@@ -137,6 +151,7 @@
     const nf = window.Friends && P ? Friends.count() : 0; // คำขอเป็นเพื่อนที่รอตอบ   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
     const d = document.createElement('div');
     d.className = 'rv';
+    d.dataset.badges = key;
     d.innerHTML = `
       <button class="rv-me rv-me2" onclick="go('profile')" aria-label="โปรไฟล์">
         <span class="rv-plate"><b>${E(name)}</b><small>${E(title || 'ยังไม่ได้ตั้งฉายา')}</small></span>

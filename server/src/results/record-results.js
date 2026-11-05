@@ -8,11 +8,16 @@ function installRecordResults(ctx) {
   const { io, SB } = ctx;
 
   // อันดับใช้ผลชิป/แต้มในโต๊ะของตานั้น (G.res.coin.delta) · เสมอกัน: ผู้ชนะตามกติกาได้อันดับดีกว่า
+  // ถ้ากติกาใส่ place ให้ทุกแถวใน G.res.rows แล้ว ใช้อันดับนั้นเลย
   function standings(room) {
     const game = room.game;
     const delta = (game.res && game.res.coin && game.res.coin.delta) || game.P.map(() => 0);
     const winner = ctx.ruleOf(room).winner(game);
-    const ranks = Economy.ranks(delta.map((v, i) => (Number(v) || 0) + (i === winner ? 0.5 : 0)));
+    const rows = (game.res && game.res.rows) || [];
+    const placed = rows.length === game.P.length && rows.every(row => row.place);   // กติกาจัดอันดับเอง (เช่น ป๊อกเด้ง: ชิปเท่ากันดูไพ่)
+    const ranks = placed
+      ? game.P.map((_, seat) => rows.find(row => row.i === seat).place)
+      : Economy.ranks(delta.map((v, i) => (Number(v) || 0) + (i === winner ? 0.5 : 0)));
     const humans =
       game.humans0 != null
         ? game.humans0
