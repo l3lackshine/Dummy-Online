@@ -1,8 +1,11 @@
 // results/record-results.js — จบตา: ส่งผลของผู้เล่นที่ล็อกอินเข้าฐานข้อมูล แล้วแจ้งยอดใหม่กลับไปที่ client
 // - record_game_result: เหรียญตามอันดับ (ไม่มีเดิมพัน — ดู economy.js) · ฐานข้อมูลตัดเพดานรายวัน/คิด EXP/สตามิน่า/แบทเทิลพาส
 // - record_rank: ตารางอันดับรายสัปดาห์ + แรงก์ — เฉพาะห้องแรงก์ (คนจริงล้วน) · อันดับคิดในหมู่ผู้เล่นที่ล็อกอิน
+// - record_game_feats: ท่าพิเศษของตา (rules/<เกม>/feats.js) เก็บคู่กับบันทึกการเล่น ใช้นับความสำเร็จ — เรียกหลัง record_game_result เสมอ
 // Public: installRecordResults(ctx) → ctx.recordResults
 const Economy = require('../economy');
+
+const MAX_FEATS = 12; // ท่าพิเศษต่อที่นั่งต่อตา (ตรงกับที่ฐานข้อมูลรับใน record_game_feats)
 
 function installRecordResults(ctx) {
   const { io, SB } = ctx;
@@ -41,9 +44,30 @@ function installRecordResults(ctx) {
     }
   }
 
+  // ท่าพิเศษของที่นั่งนี้ (คำนวณทันทีตอนจบตา ก่อนห้องเริ่มตาใหม่) · กติกาไหนไม่มี feats หรือพัง = ไม่ส่ง ไม่กระทบการบันทึกผล
+  function featsOf(room, seat) {
+    const rule = ctx.ruleOf(room);
+    if (typeof rule.feats !== 'function') return [];
+    try {
+      const list = rule.feats(room.game, seat);
+      return Array.isArray(list) ? list.filter(name => /^[a-z0-9_]{1,24}$/.test(name)).slice(0, MAX_FEATS) : [];
+    } catch (e) {
+      console.error('feats failed', room.rule, e && e.message);
+      return [];
+    }
+  }
+
+  function recordFeats(player, gameId, feats) {
+    if (!feats.length) return;
+    SB.rpcRetry('record_game_feats', { p_user: player.uid, p_gid: gameId, p_feats: feats }).catch(e =>
+      console.error('record_game_feats failed', e && e.message)
+    );
+  }
+
   function recordPlayerResult(room, player, gameId, result) {
     const game = room.game;
     const seat = player.seat;
+    const feats = featsOf(room, seat);
     const rank = result.ranks[seat];
     const reward = Economy.reward(rank, result.seats, result.bots ? 1 : result.humans); // โต๊ะมีบอท: ไม่มีโบนัสคนจริง
     const isDummy = room.rule === 'dummy';
@@ -63,6 +87,7 @@ function installRecordResults(ctx) {
     };
     SB.rpcRetry('record_game_result', args)
       .then(r => {
+        recordFeats(player, gameId, feats); // ต้องรอให้มีแถวบันทึกการเล่นก่อน จึงส่งหลังบันทึกผลสำเร็จ
         if (r && player.id)
           io.to(player.id).emit('wallet:update', {
             gid: gameId,

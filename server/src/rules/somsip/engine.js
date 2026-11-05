@@ -263,4 +263,4 @@ function view(G, seat) {
   };
 }
 
-module.exports = { newGame, act, botTurn, view, winner, canPair, pairing, winKind };
+module.exports = { newGame, act, botTurn, view, winner, canPair, pairing, winKind, wildFn };

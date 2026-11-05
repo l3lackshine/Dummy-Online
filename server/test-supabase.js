@@ -28,6 +28,7 @@ global.fetch = async (url, opt = {}) => {
       mcash: 0,
     });
   if (u.pathname === '/rest/v1/rpc/touch_last_game') return res(null, 204);
+  if (u.pathname === '/rest/v1/rpc/record_game_feats') return res(1);
   return res({ message: 'unexpected ' + u.pathname }, 404);
 };
 const M = require('./test-mock-sio');
@@ -107,6 +108,12 @@ const M = require('./test-mock-sio');
     'ส่งผลถูก: ที่ 1 จาก 4 ที่นั่ง → รางวัล 60 เหรียญ (ไม่ใช่ชิปในโต๊ะ 120), ชนะ, เกิด 2 ชุด, น็อก, ตัวละคร boy · มีบอท → ฐานข้อมูลหักสตามิน่า โหมดฟาร์มเหรียญ'
   );
   ok(a.p_gid === G.gid, 'ใช้ gid ของเกมกันบันทึกซ้ำ');
+  const featIndex = calls.findIndex(x => x.path.endsWith('record_game_feats'));
+  const resultIndex = calls.findIndex(x => x.path.endsWith('record_game_result'));
+  ok(
+    featIndex > resultIndex && calls[featIndex].body.p_gid === G.gid && calls[featIndex].body.p_feats.includes('knock'),
+    'ส่งท่าพิเศษ (น็อก) ตามหลังบันทึกผล ด้วย gid เดียวกัน (ใช้นับความสำเร็จ)'
+  );
   c.emit('game:shuffle');
   await sleep(60);
   ok(calls.filter(x => x.path.endsWith('record_game_result')).length === 1, 'event ต่อมาไม่บันทึกซ้ำ');

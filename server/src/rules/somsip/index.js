@@ -1,3 +1,4 @@
 const { meta } = require('./meta');
 const engine = require('./engine');
-module.exports = { meta, ...engine };
+const { feats } = require('./feats'); // ท่าพิเศษตอนจบตา (ใช้นับความสำเร็จ ไม่มีผลกับเกม)
+module.exports = { meta, ...engine, feats };
