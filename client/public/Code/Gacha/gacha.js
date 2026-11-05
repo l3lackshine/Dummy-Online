@@ -10,7 +10,7 @@
       c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
     );
   const N = n => Number(n || 0).toLocaleString('en-US');
-  const RICON = { common: '', rare: '', epic: '', legendary: '' }; // ระดับแสดงเป็นกรอบสีแทนอีโมจิ (theme2.css)
+  const RICON = { common: '', rare: '', epic: '', legendary: '' }; // ระดับแสดงเป็นกรอบสีแทนอีโมจิ (Gacha/gacha.theme*.css)
   const RNAME = { common: 'Common', rare: 'Rare', epic: 'SR', legendary: 'SSR' }; // ชื่อระดับฝั่งหน้าจอ (ใช้แทนชื่อในฐานข้อมูลเดิม)
   const toast = t => {
     if (window.dbToast) dbToast(t);
@@ -52,7 +52,9 @@
     if (DB.G || loading || failed || !DB.P) return;
     loading = true;
     DB.gacha()
-      .then(() => {
+      .then(G => {
+        // ฐานข้อมูลตอบว่างเปล่า → หยุดลองใหม่ (เดิมโหลดซ้ำไม่จบจนหน้าค้าง)
+        if (!G) throw new Error('โหลดตู้กาชาไม่สำเร็จ');
         const R = (DB.G && DB.G.rarities) || {};
         for (const k of Object.keys(R)) if (RNAME[k]) R[k].name = RNAME[k];
       })

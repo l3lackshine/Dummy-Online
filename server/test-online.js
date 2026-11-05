@@ -243,7 +243,11 @@ const until = async (fn, ms = 8000, what = '') => {
     await q1b.connected;
     q1b.emit('room:rejoin', { code: code2, token: tok });
     await until(() => q1b.S, 3000, 'rejoin state');
-    ok(q1b.S.my === 0 && q1b.S.hand.length > 0 && q1b.joined.rejoined === true, 'เชื่อมต่อกลับได้ที่นั่งและไพ่เดิม');
+    // ไพ่เดิม = ไพ่ของที่นั่งนั้นบนเซิร์ฟเวอร์ (บอทเล่นแทนระหว่างหลุด ไพ่อาจหมดมือถ้าบอทน็อกจบตา — เดิมเช็ค > 0 จึงล้มบางครั้ง)
+    // รอให้สถานะล่าสุดมาถึงก่อนเทียบ: บอทตาอื่นอาจเล่นต่อหลังส่งสถานะตอนเชื่อมกลับ
+    const seatHand = () => roomsA.get(code2).game.P[0].h.length;
+    await until(() => q1b.S.hand.length === seatHand(), 2000, 'rejoin hand').catch(() => {});
+    ok(q1b.S.my === 0 && q1b.S.hand.length === seatHand() && q1b.joined.rejoined === true, 'เชื่อมต่อกลับได้ที่นั่งและไพ่เดิม');
     await sleep(100);
     ok(q2.S.P[0].bot === false && q2.S.P[0].n === 'Q1', 'บอทถูกปลด ที่นั่งกลับเป็นคนจริง ชื่อเดิม');
     const thief = mk(A, 'Thief');

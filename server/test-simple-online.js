@@ -1,81 +1,59 @@
+// เทสเกมไพ่ไทยอื่นนอกจากดัมมี่ (ป๊อกเด้ง · เก้าเก · ผสมสิบ · อีแก่) เล่นผ่านเซิร์ฟเวอร์จริงจนจบตา
+// ขั้นตอน: สร้างห้อง (เติมบอท) → สับไพ่ → เริ่มเกม → ผู้เล่นหลุด ให้บอทเล่นแทนจนจบ → ตรวจผลชิปที่เซิร์ฟเวอร์คิด
+// ทำไม: เดิมไฟล์นี้ทดสอบระบบกระเป๋าเหรียญผ่าน socket (wallet:spend) กับเกมอีแก่รุ่นแรก ซึ่งถูกเอาออกแล้ว จึงล้มทุกครั้ง
 'use strict';
-const assert = require('assert'),
-  M = require('./test-mock-sio');
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const until = async (fn, ms = 10000) => {
-  const t = Date.now();
-  while (Date.now() - t < ms) {
-    if (fn()) return;
+const assert = require('assert');
+const M = require('./test-mock-sio');
+const Rules = require('./src/rules');
+
+const sleep = ms => new Promise(done => setTimeout(done, ms));
+async function until(check, ms = 10000, step = '') {
+  const start = Date.now();
+  while (Date.now() - start < ms) {
+    if (check()) return;
     await sleep(10);
   }
-  throw Error('timeout');
-};
-function client(srv, name, rule, walletId) {
-  const c = { name, joined: null, state: null, wallet: null, errors: [], sock: M.client(srv) };
-  c.sock.on('room:joined', d => (c.joined = d));
-  c.sock.on('game:state', s => {
-    c.state = s;
-    if (!s.over && s.cur === s.my) {
-      if (s.rule === 'pokdeng') c.sock.emit('game:act', { t: 'stand' });
-      else if (s.rule === 'gaogae') c.sock.emit('game:act', { t: 'fight' });
-      else if (s.rule === 'oldmaid') c.sock.emit('game:act', { t: 'draw' });
-    }
-  });
-  c.sock.on('wallet:state', w => (c.wallet = w));
-  c.sock.on('system:error', e => c.errors.push(e));
-  c.sock.emit('room:create', { name, rule, options: { stake: 10 }, walletId });
-  return c;
+  throw Error('timeout ' + step);
 }
+
 (async () => {
   const srv = M.load({ OPENING_MS: 0, BOT_DELAY_MS: 2, EMPTY_ROOM_TTL_MS: 30000, RATE_PER_SEC: 1000 });
-  {
-    const s = M.client(srv),
-      id = 'd'.repeat(32);
-    let state = null,
-      results = [];
-    s.on('wallet:state', w => (state = w));
-    s.on('wallet:spend-result', r => results.push(r));
-    s.emit('wallet:open', { walletId: id, name: 'shop-test' });
-    await until(() => state);
-    s.emit('wallet:spend', { amount: 1, transactionId: 'tx-price', itemId: 'backs:midnight' });
-    await until(() => results.length === 1);
-    assert.equal(results[0].ok, false, 'server rejects a spoofed shop price');
-    s.emit('wallet:spend', { amount: 200, transactionId: 'tx-price', itemId: 'backs:midnight' });
-    await until(() => results.length === 2);
-    assert.equal(results[1].ok, true, 'server accepts catalog price');
-    s.emit('wallet:spend', { amount: 200, transactionId: 'tx-price', itemId: 'backs:midnight' });
-    await until(() => results.length === 3);
-    assert.equal(results[2].duplicate, true, 'shop retry cannot double-charge');
-    assert.equal(state.balance, 4800, 'shop balance is server authoritative');
-    console.log('  ✓ shop purchase validates server catalog price and is idempotent');
-    s.close();
-  }
-  for (const rule of ['pokdeng', 'gaogae', 'oldmaid']) {
-    const id = { pokdeng: 'a', gaogae: 'b', oldmaid: 'c' }[rule].repeat(32),
-      c = client(srv, rule, rule, id);
-    await until(() => c.joined && c.wallet);
-    const start = c.wallet.balance;
-    c.sock.emit('game:shuffle');
-    await until(() => {
-      const l = [...srv.sockets.sockets.values()].find(x => x.id === c.sock.id);
-      return l;
-    });
-    await until(() => {
-      const room = require.cache[require.resolve('./src/index.js')].exports.rooms.get(c.joined.code);
-      return room && room.deck;
-    });
-    c.sock.emit('game:start');
-    await until(() => c.state, 5000);
-    await until(() => c.state && c.state.over, 15000);
-    await until(() => c.wallet && c.wallet.balance !== start, 5000).catch(() => {});
-    assert(c.state.res && c.state.res.coin, 'result must include server-calculated coin settlement: ' + rule);
-    assert(!c.errors.some(e => /ชำระเหรียญไม่สำเร็จ/.test(e)), 'settlement succeeds: ' + rule);
-    assert(c.wallet && Number.isInteger(c.wallet.balance), 'wallet state sent by server: ' + rule);
-    console.log(
-      '  ✓ ' + rule + ' completes online and settles through server wallet; balance ' + start + ' → ' + c.wallet.balance
+  const rooms = require.cache[require.resolve('./src/index.js')].exports.rooms;
+  const games = Rules.list()
+    .map(rule => rule.id)
+    .filter(id => id !== 'dummy');
+  assert.ok(games.length >= 4, 'มีเกมอื่นอย่างน้อย 4 เกม: ' + games);
+
+  for (const rule of games) {
+    const sock = M.client(srv);
+    let joined = null;
+    let state = null;
+    const errors = [];
+    sock.on('room:joined', data => (joined = data));
+    sock.on('game:state', data => (state = data));
+    sock.on('system:error', message => errors.push(message));
+    sock.emit('room:create', { name: 'ทดสอบ ' + rule, rule, options: {} });
+    await until(() => joined, 10000, rule + ' joined');
+
+    const room = rooms.get(joined.code);
+    sock.emit('game:shuffle');
+    await until(() => room.deck || room.game, 10000, rule + ' shuffled');
+    sock.emit('game:start');
+    await until(() => state, 10000, rule + ' started'); // บางตาจบทันทีหลังแจก (เช่น ป๊อกเด้งได้ป๊อก) — ถือว่าปกติ
+
+    sock.close(); // หลุดกลางเกม → บอทรับช่วงเล่นจนจบ
+    await until(() => room.game && room.game.over, 15000, rule + ' finished');
+
+    const coin = room.game.res && room.game.res.coin;
+    assert.ok(coin && Array.isArray(coin.delta), rule + ': มีผลชิปที่เซิร์ฟเวอร์คิด');
+    assert.strictEqual(coin.delta.length, room.game.P.length, rule + ': ผลชิปครบทุกที่นั่ง');
+    assert.strictEqual(
+      coin.delta.reduce((sum, v) => sum + v, 0),
+      0,
+      rule + ': ชิปรวมทั้งโต๊ะเป็นศูนย์'
     );
-    c.sock.close();
-    await sleep(20);
+    assert.deepStrictEqual(errors, [], rule + ': ไม่มีข้อความผิดพลาด');
+    console.log(`  ✓ ${rule}: สร้างห้อง → สับ → เริ่ม → บอทเล่นแทนจนจบ · ชิป ${coin.delta.join(' / ')}`);
   }
   console.log('simple online tests passed');
   process.exit(0);

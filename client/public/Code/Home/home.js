@@ -1,13 +1,16 @@
 /* home.js — หน้าแรกแบบเดิม + หน้าเล่นเกม (เลือกเกม · เล่นคนเดียว · สร้างห้อง · หาแมตช์ · แรงก์ · เข้าห้องด้วยรหัส)
-   หน้าแรกแบบใหม่วาดทับโดย Code/Theme/theme2.js
+   หน้าแรกแบบใหม่วาดทับโดย Code/Home/home-rov.js
    Public: homeView() · goPlay() · chooseGame(id) · toggleJoin() · playView() */
+// เลขเวอร์ชันไม่รวมคำว่า Beta (client = 'Beta 0.13.0' · เซิร์ฟเวอร์ package.json = '0.13.0' ถือว่าตรงกัน)
+const bareVersion = v => String(v || '').replace(/^beta\s*/i, '');
+
 let joinOpen = false,
   joinCode = ''; // ช่องใส่รหัสห้องในหน้าเล่นเกม
 function homeView() {
   const ch = (SKIN_REGISTRY.characters || []).find(x => x.id === myChar());
   $('app').className = 'home';
   $('app').innerHTML =
-    `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./Assets/UI/Assets/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./Assets/UI/Assets/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./Assets/UI/Assets/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && SRV_VER !== APP_VER ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
+    `<div class=scene>${hud()}${ch && ch.asset ? `<img class=hero src="${esc(ch.asset)}" alt="">` : ''}<nav class=signs aria-label="เมนูหลัก"><button class="sign s-play" onclick="goPlay()" aria-label="เล่นเกม"><img src="./Assets/UI/Assets/sign-play.webp" alt="เล่นเกม"></button><button class="sign s-shop" onclick="go('shop')" aria-label="ร้านค้า"><img src="./Assets/UI/Assets/sign-shop.webp" alt="ร้านค้า"></button><button class="sign s-prof" onclick="go('profile')" aria-label="โปรไฟล์"><img src="./Assets/UI/Assets/sign-profile.webp" alt="โปรไฟล์"></button></nav>${connStatus()}<span class=ver>v${esc(APP_VER || '?')}${SRV_VER && bareVersion(SRV_VER) !== bareVersion(APP_VER) ? ' · เซิร์ฟเวอร์ v' + esc(SRV_VER) : ''}</span></div>`;
 }
 // ปุ่มเริ่มเล่น → หน้าเล่นเกมของเกมที่เลือกไว้ทันที (เปลี่ยนเกมได้จากป้ายบนปุ่มเริ่มเล่น หรือปุ่ม "เปลี่ยนเกม" ในหน้าเล่นเกม)
 function goPlay() {
@@ -17,7 +20,7 @@ function goPlay() {
   if (RULES.length && !ruleMeta(createSel.rule)) setRule(RULES[0].id);
   go('play');
 }
-// ===== เลือกเกม: รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา (เปลี่ยนได้จากป้ายบนปุ่มเริ่มเล่น / ปุ่มเปลี่ยนเกม → rvPickGame ใน theme2.js) =====
+// ===== เลือกเกม: รายการเกมมาจาก RULES ที่เซิร์ฟเวอร์ส่งมา (เปลี่ยนได้จากป้ายบนปุ่มเริ่มเล่น / ปุ่มเปลี่ยนเกม → rvPickGame ใน home-rov.js) =====
 function chooseGame(id) {
   if (!ruleMeta(id)) return;
   setRule(id);

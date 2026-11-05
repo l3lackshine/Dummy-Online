@@ -313,3 +313,16 @@
     color: #fff;
   }
 }
+
+/* ช่องรหัสห้อง: รหัสตัวกว้าง (เช่น 8F5CBD) เคยดันคำว่า "รหัสห้อง" / "คัดลอก" ตกเป็น 2 บรรทัด
+   ป้ายกับปุ่มไม่ตัดบรรทัด · รหัสย่อระยะห่างตัวอักษรลงให้พอดีช่อง */
+.rmv .rm-code small,
+.rmv .rm-code button {
+  white-space: nowrap;
+  flex: none;
+}
+.rmv .rm-code b {
+  min-width: 0;
+  white-space: nowrap;
+  letter-spacing: 0.12em;
+}
