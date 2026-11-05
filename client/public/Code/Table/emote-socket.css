@@ -1,0 +1,54 @@
+/* emote-socket.css — ปุ่มอีโมจิในห้อง + อีโมจิลอยกลางจอ · คู่กับ emote-socket.js */
+.gxl .gx-emotes {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--u, 6px) * 0.6);
+  flex-wrap: wrap;
+  margin-top: calc(var(--u, 6px) * 0.3);
+}
+.gxl .gx-emotes button {
+  border: 0;
+  background: #ffffff1f;
+  border-radius: 99px;
+  padding: 0 calc(var(--u, 6px) * 1.2);
+  font-size: max(14px, calc(var(--u, 6px) * 3));
+  line-height: 1.5;
+  cursor: pointer;
+}
+.lb-emote {
+  position: fixed;
+  bottom: 36%;
+  z-index: 9400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  animation: lbrise 2.2s ease-out forwards;
+}
+.lb-emote span {
+  font-size: 44px;
+  filter: drop-shadow(0 3px 4px #0008);
+}
+.lb-emote small {
+  background: #000a;
+  color: #fff;
+  border-radius: 99px;
+  padding: 0 10px;
+  font:
+    700 12px Sarabun,
+    sans-serif;
+}
+@keyframes lbrise {
+  0% {
+    transform: translateY(20px) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(0) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120px) scale(1);
+    opacity: 0;
+  }
+}

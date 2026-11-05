@@ -1,5 +1,5 @@
 /* room-actions.js — สร้าง/เข้า/ออกห้อง · เริ่มเกม · สับไพ่ · หน้าห้องรอแบบเดิม (จอแคบ)
-   หน้าห้องรอแบบใหม่ (จอกว้าง) อยู่ใน Code/Table/gamegx.js → gxRoom()
+   หน้าห้องรอแบบใหม่ (จอกว้าง) อยู่ใน Code/Lobby/lobby-room.js → gxRoom()
    Public: mk() · jn() · begin() · doShuffle() · shufflePanel() · startBtn(label) · leave() · tableView() · botChar(i) */
 function mk() {
   conn();
@@ -148,7 +148,7 @@ function tableView() {
           : 'รอผู้เล่น ' + ps.length + '/4 · ที่ว่างบอทจะเล่นแทน';
   const who = youSh ? 'คุณ' : esc(sh.shuffler || '-');
   const gx = isWide();
-  $('app').className = gx ? 'rmv' : ''; // ห้องล็อบบี้แยกจากหน้าโต๊ะ (gamegx.js → gxRoom)
+  $('app').className = gx ? 'rmv' : ''; // ห้องล็อบบี้แยกจากหน้าโต๊ะ (lobby-room.js → gxRoom)
   if (gx) {
     $('app').innerHTML = gxRoom({ ps, total, L, h, stake, blocked, meP });
     return;

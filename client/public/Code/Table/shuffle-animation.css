@@ -1,0 +1,36 @@
+/* shuffle-animation.css — ภาพสับไพ่ก่อนแจก · คู่กับ shuffle-animation.js */
+#shfx {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 46px;
+  background: #120a24d9;
+  backdrop-filter: blur(3px);
+  transition: opacity 0.25s;
+}
+#shfx.out {
+  opacity: 0;
+}
+#shfx b {
+  color: #ffd978;
+  font:
+    800 20px Sarabun,
+    sans-serif;
+  text-shadow: 0 2px 0 #0008;
+}
+#shfx .deckbox {
+  transform: scale(1.7);
+}
+#shfx .deckbox.go i {
+  animation: riff 0.85s ease-in-out 2 both;
+  animation-delay: calc(var(--i) * 25ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  #shfx {
+    display: none;
+  }
+}

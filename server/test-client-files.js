@@ -2,6 +2,7 @@
 // ทำไม: ไฟล์หน้าเว็บอยู่ใน client/public/Code/<หมวด>/ — ถ้าย้ายหมวดภายหลัง เทสไม่ต้องแก้พาธตาม ขอแค่ index.html ถูก
 // Public: pathOf(name) · read(names) — ต่อเนื้อหาไฟล์ตามลำดับที่ส่งมา คั่นด้วยบรรทัดว่าง
 //   ชื่อ 'app.js' = แกนหน้าเกมที่แยกจาก app.js เดิม (ตั้งแต่ state.js ถึง boot.js ตามลำดับใน index.html)
+//   ชื่อ 'gamegx.js' = gamegx.js + ห้องล็อบบี้/หน้าต่างกดพร้อมที่แยกออกไป (lobby-room.js · match-ready.js)
 const fs = require('fs');
 const path = require('path');
 
@@ -24,8 +25,10 @@ function pathOf(name) {
 const SCRIPT_ORDER = [...INDEX_HTML.matchAll(/<script src="\.\/([^"]+\.js)"/g)].map(match => path.basename(match[1]));
 const APP_PARTS = SCRIPT_ORDER.slice(SCRIPT_ORDER.indexOf('state.js'), SCRIPT_ORDER.indexOf('boot.js') + 1);
 
+const GX_PARTS = ['gamegx.js', 'lobby-room.js', 'match-ready.js'];
+
 function expand(names) {
-  return names.flatMap(name => (name === 'app.js' ? APP_PARTS : [name]));
+  return names.flatMap(name => (name === 'app.js' ? APP_PARTS : name === 'gamegx.js' ? GX_PARTS : [name]));
 }
 
 function read(names) {

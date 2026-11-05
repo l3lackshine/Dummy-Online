@@ -1,0 +1,144 @@
+/* profile.css — หน้าโปรไฟล์: แท็บ · ตาราง · ปุ่มย่อย · คู่กับ profile.js / profile-page.js */
+.pf-tabs {
+  display: flex;
+  gap: 5px;
+  flex: none;
+  margin: 0 0 6px;
+}
+.pf-tabs button {
+  flex: 1;
+  border: 2px solid #7a5530;
+  border-radius: 99px;
+  padding: 5px 2px;
+  background: #00000040;
+  color: #e8d3b3;
+  font:
+    700 max(11px, calc(var(--u) * 2.4)) Sarabun,
+    sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pf-tabs button.on {
+  border-color: #ffd75e;
+  background: #5a371888;
+  color: #ffd75e;
+}
+.pf-ch {
+  position: relative;
+  border: 2px solid #ffffff22;
+  border-radius: 14px;
+  background: #0003;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+}
+.pf-ch.on {
+  border-color: #ffd75e;
+}
+.pf-cur {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 11px;
+  color: #ffd75e;
+  font-weight: 700;
+}
+.pf-use {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  border: 0;
+  border-radius: 99px;
+  padding: 3px 10px;
+  background: linear-gradient(#a487f0, #5b3cb3);
+  color: #fff;
+  font:
+    700 11px Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+.pf-tb {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: max(11px, calc(var(--u) * 2.3));
+}
+.pf-tb th {
+  color: #ffd9a0;
+  font-weight: 700;
+  padding: 3px 2px;
+  border-bottom: 1px solid #ffffff33;
+  text-align: right;
+}
+.pf-tb th:first-child,
+.pf-tb td:first-child {
+  text-align: left;
+}
+.pf-tb td {
+  padding: 5px 2px;
+  text-align: right;
+  border-bottom: 1px solid #ffffff14;
+}
+.pf-tb .w {
+  color: #6ee08a;
+}
+.pf-tb .l {
+  color: #ff8a98;
+}
+.pf-tb tr.tot td {
+  font-weight: 800;
+  border-top: 2px solid #ffffff44;
+}
+.pf-it {
+  padding: 6px 0;
+  border-bottom: 1px solid #ffffff1f;
+  font-size: max(12px, calc(var(--u) * 2.6));
+}
+.pf-it small {
+  display: block;
+  color: #e8d3b3;
+  font-size: max(10px, calc(var(--u) * 2.1));
+}
+.pf-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: max(11px, calc(var(--u) * 2.4));
+  color: #e8d3b3;
+  margin-top: 2px;
+  min-width: 0;
+}
+.pf-info b {
+  color: #fff4dc;
+}
+.pf-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-un {
+  color: #ffd9a0aa;
+}
+.pf-acts {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.pf-mini {
+  border: 2px solid #7a5530;
+  border-radius: 99px;
+  padding: 3px 9px;
+  background: #00000040;
+  color: #fff4dc;
+  font:
+    700 max(10px, calc(var(--u) * 2.2)) Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+.pf-mini.out {
+  border-color: #c0504d;
+  color: #ffb3b3;
+}
+.pf-me {
+  overflow-y: auto !important;
+  align-items: start;
+}

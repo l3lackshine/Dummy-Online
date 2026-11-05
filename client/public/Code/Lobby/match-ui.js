@@ -1,5 +1,5 @@
 /* match-ui.js — Find Match ฝั่งไคลเอนต์: ส่งคำขอหาแมตช์ · โหวตรอต่อ/เติมบอท · นับเวลา (ค้นหา/นับถอยหลัง/โหวต)
-   ตัวห้องล็อบบี้ที่แสดงสถานะอยู่ใน gamegx.js (gxRoom) · ฝั่งเซิร์ฟเวอร์: match:find / match:choice ใน server/src/index.js
+   ตัวห้องล็อบบี้ที่แสดงสถานะอยู่ใน Code/Lobby/lobby-room.js (gxRoom) · หน้าต่างกดพร้อมใน Code/Lobby/match-ready.js · ฝั่งเซิร์ฟเวอร์: server/src/events/match-events.js
    ห้องแรงก์ (matchFind(true)): ต้องล็อกอิน · กติกามาตรฐาน · ไม่มีบอท · ครบ 4 คนมีหน้าต่างกดพร้อม (ห้องธรรมดาก็ใช้หน้าต่างนี้)
    Public: matchFind(ranked) · rankedFind(rule) · matchAccept() · matchVote('wait'|'bots') */
 (function () {

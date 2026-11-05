@@ -1,0 +1,315 @@
+/* lobby-room.css — ห้องล็อบบี้ (หน้าแยก แนวนอน) · คู่กับ lobby-room.js */
+@media (min-aspect-ratio: 5/4) {
+  #app.rmv {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    --u: min(1vh, 0.62vw);
+    color: #fff;
+    font-family: Sarabun, system-ui, sans-serif;
+    background: transparent;
+  }
+  @supports (height: 1dvh) {
+    #app.rmv {
+      --u: min(1dvh, 0.62vw);
+    }
+  }
+  .rmv::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, #0000 0, #0b0620aa 85%), linear-gradient(#0b062055, #0b0620b8);
+    pointer-events: none;
+  }
+  .rmv .rm-stage {
+    position: absolute;
+    inset: 0;
+  }
+  .rmv .rm-top {
+    position: absolute;
+    z-index: 5;
+    left: calc(var(--u) * 2);
+    right: calc(var(--u) * 2);
+    top: calc(var(--u) * 1.6);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 1.4);
+  }
+  .rmv .rm-back {
+    width: calc(var(--u) * 8);
+    height: calc(var(--u) * 8);
+    min-width: 34px;
+    min-height: 34px;
+    border-radius: 50%;
+    border: 2px solid #f2b84b;
+    background: #1a1236;
+    color: #ffd978;
+    font-size: calc(var(--u) * 5);
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #0006;
+  }
+  .rmv .rm-title {
+    display: flex;
+    flex-direction: column;
+    margin-right: auto;
+    text-shadow: 0 2px 3px #000a;
+  }
+  .rmv .rm-title b {
+    font-size: max(15px, calc(var(--u) * 4));
+    color: #ffd978;
+  }
+  .rmv .rm-title small {
+    font-size: max(11px, calc(var(--u) * 2.4));
+    color: #e6dcff;
+  }
+  .rmv .pill {
+    font-size: max(11px, calc(var(--u) * 2.5));
+    padding: 0 calc(var(--u) * 1.8);
+    background: #0009;
+  }
+  /* ช่องผู้เล่น */
+  .rmv .rm-slots {
+    position: absolute;
+    z-index: 3;
+    left: calc(var(--u) * 2.5);
+    top: calc(var(--u) * 13);
+    bottom: calc(var(--u) * 13);
+    width: calc(100% - var(--u) * 2.5 - 33%);
+    display: flex;
+    gap: calc(var(--u) * 1.6);
+  }
+  .rmv .rm-slot {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: calc(var(--u) * 2.4);
+    overflow: hidden;
+    border: 3px solid #ffffff3a;
+    background: linear-gradient(#3b2a8688, #1b1240cc);
+    box-shadow: 0 6px 16px #0008;
+    transition:
+      transform 0.2s,
+      box-shadow 0.2s;
+    padding: 0;
+    color: #fff;
+    font-family: inherit;
+  }
+  .rmv .rm-slot.me {
+    border-color: #ffd978;
+  }
+  .rmv .rm-slot.host {
+    background: linear-gradient(#6b4a1aaa, #2a1a40e0);
+  }
+  .rmv .rm-slot.on {
+    border-color: #2ff3ff;
+    box-shadow:
+      0 0 0 1px #2ff3ff,
+      0 0 18px #2ff3ffaa,
+      0 6px 16px #0008;
+  }
+  .rmv .rm-slot.on.me {
+    border-color: #2ff3ff;
+  }
+  .rmv .rm-art {
+    position: absolute;
+    inset: 0 0 calc(var(--u) * 9) 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .rmv .rm-chr {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .rmv .rm-chr img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    filter: drop-shadow(0 4px 6px #0009);
+  }
+  .rmv .rm-emo {
+    font-size: calc(var(--u) * 24);
+    line-height: 1;
+    align-self: center;
+    filter: drop-shadow(0 4px 6px #0008);
+  }
+  .rmv .rm-chip {
+    position: absolute;
+    top: calc(var(--u) * 1.2);
+    right: calc(var(--u) * 1.2);
+    font-style: normal;
+    font-weight: 800;
+    font-size: max(10px, calc(var(--u) * 2.2));
+    padding: 0 calc(var(--u) * 1.4);
+    border-radius: 99px;
+    background: #000b;
+    border: 2px solid #ffffff44;
+  }
+  .rmv .rm-slot.on .rm-chip {
+    border-color: #2ff3ff;
+    color: #bff9ff;
+  }
+  .rmv .rm-slot.host .rm-chip {
+    border-color: #f2b84b;
+    color: #ffe49a;
+  }
+  .rmv .rm-plate {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(var(--u) * 9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(#0000, #0a0618ee 40%);
+    text-shadow: 0 1px 3px #000;
+  }
+  .rmv .rm-plate b {
+    font-size: max(13px, calc(var(--u) * 3.3));
+    max-width: 92%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rmv .rm-plate small {
+    font-size: max(10px, calc(var(--u) * 2.1));
+    color: #cfd3ff;
+  }
+  .rmv .rm-slot.empty {
+    border: 3px dashed #ffffff55;
+    background: #ffffff10;
+    cursor: pointer;
+  }
+  .rmv .rm-slot.empty:active {
+    transform: scale(0.98);
+  }
+  .rmv .rm-plus {
+    position: absolute;
+    inset: 0 0 calc(var(--u) * 9) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--u) * 14);
+    color: #ffffff66;
+  }
+  .rmv .rm-slot.bot {
+    opacity: 0.9;
+  }
+  .rmv .rm-hint {
+    position: absolute;
+    z-index: 4;
+    left: calc(var(--u) * 2.5);
+    width: calc(100% - var(--u) * 2.5 - 33%);
+    bottom: calc(var(--u) * 4);
+    text-align: center;
+    font-weight: 700;
+    font-size: max(12px, calc(var(--u) * 2.9));
+    color: #ffd978;
+    text-shadow: 0 2px 3px #000;
+  }
+  /* แผงข้อมูลห้อง */
+  .rmv .rm-panel {
+    position: absolute;
+    z-index: 4;
+    right: calc(var(--u) * 2);
+    top: calc(var(--u) * 13);
+    bottom: calc(var(--u) * 3);
+    width: calc(29% - var(--u) * 2);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 1.4);
+  }
+  .rmv .rm-card {
+    background: #120a2ae6;
+    border: 3px solid #f2b84b;
+    border-radius: calc(var(--u) * 2.2);
+    padding: calc(var(--u) * 1.4) calc(var(--u) * 2);
+    box-shadow: 0 5px 14px #0008;
+  }
+  .rmv .rm-code {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 1.2);
+    padding-bottom: calc(var(--u) * 1);
+    margin-bottom: calc(var(--u) * 0.6);
+    border-bottom: 1px dashed #ffffff40;
+  }
+  .rmv .rm-code small {
+    color: #cfd3ff;
+    font-size: max(10px, calc(var(--u) * 2.1));
+  }
+  .rmv .rm-code b {
+    font-size: max(18px, calc(var(--u) * 5));
+    letter-spacing: 3px;
+    color: #ffd978;
+    margin-right: auto;
+  }
+  .rmv .rm-code button {
+    border: 0;
+    border-radius: 99px;
+    padding: calc(var(--u) * 0.6) calc(var(--u) * 1.6);
+    background: linear-gradient(#ffa13a, #f0640d);
+    color: #fff;
+    font:
+      700 max(11px, calc(var(--u) * 2.3)) Sarabun,
+      sans-serif;
+    cursor: pointer;
+  }
+  .rmv .rm-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: calc(var(--u) * 0.5) 0;
+    font-size: max(11px, calc(var(--u) * 2.5));
+  }
+  .rmv .rm-row span {
+    color: #cfd3ff;
+  }
+  .rmv .rm-row b {
+    color: #fff;
+    text-align: right;
+  }
+  .rmv .rm-emotes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: calc(var(--u) * 0.8);
+  }
+  .rmv .rm-emotes button {
+    border: 0;
+    border-radius: calc(var(--u) * 1.4);
+    background: #ffffff1f;
+    padding: calc(var(--u) * 0.4) 0;
+    font-size: max(18px, calc(var(--u) * 4));
+    line-height: 1.3;
+    cursor: pointer;
+  }
+  .rmv .rm-acts {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--u) * 1);
+  }
+  .rmv .rm-acts button {
+    width: 100%;
+    padding: calc(var(--u) * 1.5) 0;
+    font-size: max(14px, calc(var(--u) * 3.6));
+    border-radius: calc(var(--u) * 2);
+  }
+  .rmv .rm-acts button.gray {
+    background: linear-gradient(#6b7bbf, #3d4a8a);
+    box-shadow: 0 3px 0 #252f66;
+    color: #fff;
+  }
+}

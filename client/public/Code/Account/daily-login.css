@@ -1,0 +1,135 @@
+/* daily-login.css — หน้าต่างรางวัลล็อกอินรายวัน · คู่กับ daily-login.js */
+.dl-box {
+  width: min(94vw, 620px);
+}
+.dl-streak {
+  text-align: center;
+  font:
+    700 16px Sarabun,
+    sans-serif;
+  margin: 4px 0 8px;
+}
+.dl-streak b {
+  font-size: 26px;
+  color: #ffb347;
+}
+.dl-streak small {
+  display: block;
+  color: #cfd3ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+.dl-cell {
+  position: relative;
+  border: 2px solid #ffffff2a;
+  border-radius: 12px;
+  background: #ffffff10;
+  padding: 7px 4px;
+  text-align: center;
+  min-height: 68px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.dl-cell small {
+  color: #cfd3ff;
+  font-size: 11px;
+}
+.dl-r {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.dl-r i {
+  font-style: normal;
+  font:
+    700 14px Sarabun,
+    sans-serif;
+  color: #ffe08a;
+}
+.dl-r i.mc {
+  color: #8fe3ff;
+}
+.dl-cell.big {
+  grid-column: span 2;
+  background: linear-gradient(#ffd97822, #f0a02022);
+  border-color: #ffd97866;
+}
+.dl-cell.today {
+  border-color: #ffd75e;
+  background: #ffd75e22;
+  box-shadow: 0 0 0 3px #ffd75e66;
+  animation: dlp 1.4s ease-in-out infinite;
+}
+.dl-cell.past {
+  opacity: 0.55;
+}
+.dl-ok {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  color: #4cd36f;
+  font-weight: 800;
+}
+@keyframes dlp {
+  50% {
+    box-shadow: 0 0 0 6px #ffd75e33;
+  }
+}
+.dl-claim {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+  padding: 12px;
+  border: 0;
+  border-radius: 99px;
+  background: linear-gradient(#4cd36f, #1f9c4a);
+  box-shadow: 0 4px 0 #14703a;
+  color: #fff;
+  font:
+    700 16px Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+.dl-claim:disabled {
+  background: #4a5886;
+  box-shadow: none;
+  opacity: 0.8;
+  cursor: default;
+}
+.dl-flash {
+  margin: 8px 0 0;
+  text-align: center;
+  color: #ffe08a;
+  font-weight: 700;
+}
+.dl-mss {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.dl-ms {
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid #ffffff3a;
+  font-size: 12px;
+  color: #cfd3ff;
+}
+.dl-ms.got {
+  background: #1f9c4a;
+  border-color: #4cd36f;
+  color: #fff;
+}
+.dl-note {
+  display: block;
+  margin-top: 8px;
+  color: #9aa3d6;
+  font-size: 11.5px;
+  line-height: 1.4;
+}

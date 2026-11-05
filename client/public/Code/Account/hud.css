@@ -1,0 +1,75 @@
+/* hud.css — ปุ่มบนแถบ HUD ของโหมดบัญชี (เควส 📜 · รางวัลล็อกอิน 🎁 · MCash) และการจัดปุ่มชิดขวา · คู่กับ hud-buttons.js */
+.hud-q {
+  position: relative;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.hud-q i {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  background: #e8383d;
+  color: #fff;
+  font:
+    700 11px/17px Sarabun,
+    sans-serif;
+  text-align: center;
+  font-style: normal;
+  padding: 0 4px;
+  box-shadow: 0 0 0 2px #0008;
+}
+.hud-dl {
+  position: relative;
+  font-size: 18px;
+  line-height: 1.5;
+}
+.hud-dl i {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  background: #e8383d;
+  color: #fff;
+  font:
+    700 11px/17px Sarabun,
+    sans-serif;
+  text-align: center;
+  font-style: normal;
+  padding: 0 4px;
+  box-shadow: 0 0 0 2px #0008;
+}
+.mc-pill {
+  cursor: default;
+  color: #bff0ff;
+}
+.hud {
+  flex-wrap: nowrap;
+}
+.hud-sk {
+  flex: none;
+}
+.wbtn.mc {
+  background: linear-gradient(#6fd6ff, #1c8fd1);
+  border-color: #0f5f8f;
+  box-shadow: 0 3px 0 #0f5f8f;
+  text-shadow: 0 1px 0 #0f5f8f;
+  margin-top: 6px;
+}
+/* HUD: ปุ่มไอคอน/เหรียญชิดขวา ไม่ทับชื่อหน้า */
+.hud {
+  justify-content: flex-start;
+}
+.hud-who + .hud-sk,
+.hud-back + .hud-sk {
+  margin-left: auto;
+}
+/* 0.8.0 เอาปุ่ม ⚡ ออกจาก HUD: ดันปุ่มที่เหลือไปชิดขวาเหมือนเดิม */
+.hud > .hud-back + *,
+.hud > .hud-who + * {
+  margin-left: auto;
+}

@@ -1,6 +1,6 @@
 /* friends.js — เพื่อน (screen === 'friends', เปิดด้วย friendsOpen())
    - รายชื่อ/คำขอ: ฐานข้อมูล get_friends · friend_request · friend_respond · friend_remove (supabase/v12_friends.sql)
-   - สถานะออนไลน์ + ชวนเข้าห้อง: เซิร์ฟเวอร์เกม 'friends:presence' · 'friend:invite' (server/src/index.js)
+   - สถานะออนไลน์ + ชวนเข้าห้อง: เซิร์ฟเวอร์เกม 'friends:presence' · 'friend:invite' (server/src/friends/presence.js)
    - คำชวนเด้งขึ้นได้ทุกหน้า: กด "เข้าร่วม" = ออกจากห้องเดิม (ถ้ามี) แล้วเข้าห้องเพื่อน
    ไม่แก้ไฟล์แกน (Code/Core): ห่อ render() เหมือน battlepass.js / ranked.js
    Public: friendsOpen() · Friends.count() · Friends.picker() */

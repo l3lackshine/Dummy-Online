@@ -25,15 +25,20 @@
   5. `e6505eb` แยก `app.js` → 16 ไฟล์ใน Core/Table/Account/Home/Lobby/Shop (ลำดับโหลดตรงตำแหน่ง app.js เดิม) · จัดรูปโค้ดด้วย Prettier
   6. `64ff5dd` แยก pages2.js / account.js / stamina.js → Settings · Account · Inventory · Quests · Items · Stamina · Farm · Characters · เพิ่ม `Code/Core/ui-kit.js` (ตัวช่วยที่ทุกไฟล์เคยเขียนซ้ำ)
   7. `8f192d7` แยก lobby-ui.js → Lobby/lobby-ui.js · Table/emote-socket.js · Table/shuffle-animation.js
-  8. (commit นี้) อัปเดตเอกสาร README · ASSETS.md · supabase/README.md (ลำดับ v8–v12) · RULES-SPEC.md · mobile/README.md · rules/README.md · แพตช์โน้ต 0.13.0 · WORKLOG
+  8. `fa11a62` อัปเดตเอกสาร README · ASSETS.md · supabase/README.md (ลำดับ v8–v12) · RULES-SPEC.md · mobile/README.md · rules/README.md · แพตช์โน้ต 0.13.0 · WORKLOG
+  9. (commit ถัดไป) แยก CSS ที่ปนหมวด: `Account/account.css` → Account/hud.css · Quests/quests.css · Account/login.css · Account/daily-login.css · Skills/skill-card.css · Account/profile.css · Gacha/gacha.css · `Table/gamegx.css` → เหลือโต๊ะ + Core/landscape.css · Skills/skills-table.css · Table/emote-socket.css · Table/shuffle-animation.css · Lobby/lobby-room.css · Lobby/playon.css · Lobby/match.css · `Table/gamegx.js` → ห้องล็อบบี้ไป Lobby/lobby-room.js (gxRoom) · หน้าต่างกดพร้อมไป Lobby/match-ready.js (gxReadyBox)
+     - CSS ใหม่โหลดตรงตำแหน่งไฟล์เดิม เรียงตามลำดับเดิม (gamegx.css ตัดเป็นช่วงต่อกัน ลำดับกฎเหมือนเดิมทุกบรรทัด · account.css รวมกฎ HUD/เควส/โปรไฟล์ที่กระจายอยู่ไว้ไฟล์เดียวกัน — ตัวเลือกไม่ชนกับหมวดอื่น)
+     - เทียบภาพหน้าจอก่อน/หลังทีละพิกเซล 24 หน้า: เหมือนเดิม ยกเว้นตัวเลขนับเวลา · ไพ่/บอทที่สุ่ม
 - ลำดับ `<script>` ใน index.html: ไฟล์ที่แยกออกโหลดตรงตำแหน่งไฟล์เดิม · ยกเว้น `ui-kit.js` วางต่อจาก `asset-url.js` (ไม่พึ่งไฟล์อื่น และ stamina/farm ที่โหลดก่อน state.js ต้องใช้)
-- ไม่แยก: `Theme/theme2.js` (หน้าแรกธีมใหม่ + เปลี่ยน 🪙 เป็นรูป ใช้ MutationObserver ตัวเดียวกัน ทั้งคู่เป็นงานธีม — แยกแล้วเสี่ยงวนลูป)
+- ยังไม่แยก (รอถามเจ้าของ): `Theme/theme2.css` (5,871 บรรทัด · 86 ส่วน ปนทุกหน้า) · `Core/style.css` · `Core/ui.css` · `Theme/polish.css` · `Theme/theme2.js` — เป็นชั้นธีม/แกนที่ทับกันตามลำดับ ถ้าย้ายกฎข้ามไฟล์ลำดับการทับเปลี่ยน หน้าตาอาจเพี้ยน · ถ้าแยกต้องตัดเป็นช่วงต่อกันหลายไฟล์ (หมวดเดียวอาจได้หลายไฟล์)
+- เดิมบันทึกว่าไม่แยก: `Theme/theme2.js` (หน้าแรกธีมใหม่ + เปลี่ยน 🪙 เป็นรูป ใช้ MutationObserver ตัวเดียวกัน ทั้งคู่เป็นงานธีม — แยกแล้วเสี่ยงวนลูป)
 - ไม่ได้แตะ: ตัวเลข economy · กติกาเกม · SQL ทุกไฟล์ · `CLAUDE.md` · ข้อมูลใน skin/ และ BattlePass/ (เป็น JSON ไม่ใช่รูป)
 - ตรวจแล้ว: `npm test` ผ่านทั้งหมด · `sh supabase/test/run.sh` ผ่าน · `check-handlers` · `build-assets --check` · `node --check` ทุกไฟล์ใน Code/ · ภาพหน้าจอ Playwright: หน้าแรก · สตามิน่า · ตั้งค่าห้อง/ฟาร์ม · ช่องเก็บของ · เลเวลตัวละคร · โปรไฟล์ · ตั้งค่า · รางวัลล็อกอิน · เควส · ห้องรอ+อีโมจิ · โต๊ะ · หาแมตช์ · แรงก์ · เพื่อน · บทสอน — ไม่มี error ไม่มีไฟล์หาย
 - **ยังไม่ได้ทดสอบ:** เว็บจริงบน Cloudflare · แพ็กที่ GitHub Actions สร้างใหม่ · แอป Android
 - พบระหว่างทำ (ยังไม่แก้ — รอสั่ง):
   1. `Code/Core/native.js` (ปุ่ม Back ของแอป Android) ไม่ได้ถูกโหลดใน index.html มาตั้งแต่ก่อนงานนี้
   2. `client/index.html` เป็นสำเนาเก่าของ vite ไม่ได้ใช้ (ไม่ได้ลบเพราะไม่ได้สั่ง)
+  4. ช่อง "รหัสห้อง" ในห้องล็อบบี้: รหัสที่ตัวกว้าง (เช่น 8F5CBD) ดันคำว่า "รหัสห้อง" / "คัดลอก" ตกเป็น 2 บรรทัด — เป็นมาก่อนงานนี้
   3. `server/test-simple-online.js` ล้มทั้งก่อนและหลังงานนี้ (ไม่ได้อยู่ใน npm test) · `test-online.js` มีจุดจับเวลาที่ล้มสุ่มบางครั้ง รันซ้ำผ่าน
 - เสนอแก้ CLAUDE.md (ไม่ได้แก้เอง): หมวด 2–3 พาธ `Character/` → `client/public/Assets/Character/` · ตารางไฟล์ → `client/public/Code/<หมวด>/` · `app.js` / `server index.js` ในรายการไฟล์แกน → `Code/Core/*` และ `server/src/index.js` + `server/src/room/*` · economy.js/namefilter.js ฝั่ง client → `client/public/Code/Shared/`
 - วิธีย้อนกลับ: ยังไม่ได้ push → ทิ้ง branch `ai/refactor-structure` แล้วใช้ `ai/friends-system` ตามเดิม · หรือ `git revert` ทีละ commit จากล่างขึ้นบน
