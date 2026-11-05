@@ -40,3 +40,7 @@ psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v11.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v12.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v13.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v14.sql"
+# v15 เปลี่ยนกติกาฉายา (พิมพ์เองไม่ได้) — รันหลังเทสเดิม เพราะ test_v6 ทดสอบพฤติกรรมเดิมก่อนอัปเดต
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v15_title_select.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v15_title_select.sql"   # รันซ้ำต้องไม่พัง
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v15.sql"
