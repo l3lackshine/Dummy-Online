@@ -6,7 +6,7 @@
 1. **Supabase → Authentication → Providers → Email** : ปิด **Confirm email** (ผู้เล่นสมัครด้วย "ชื่อผู้ใช้" ระบบสร้างอีเมลภายในให้ `<ชื่อ>@example.com` — เปลี่ยนโดเมนได้ที่ `AUTH_EMAIL_DOMAIN` ใน `client/public/config.js`)
 2. **SQL Editor** : วางและรัน `supabase/name_filter.sql` (ตัวตรวจชื่อ) ตามด้วย `supabase/schema.sql` ทั้งไฟล์ แล้วตามด้วย `supabase/seed_catalog.sql` (รันซ้ำได้ ปลอดภัย)
    แล้วรันต่อตามลำดับนี้ (Beta 0.6 ขึ้นไป): `supabase/v6_progression.sql` → `supabase/v7_stamina.sql` → `supabase/v7_config.sql` → `supabase/bp_seed.sql`
-   แล้วต่อ (Beta 0.8 ขึ้นไป ตามลำดับ): `supabase/v8_gacha.sql` → `supabase/v9_bp_extra.sql` → `supabase/v10_tutorial.sql` → `supabase/v11_ranked.sql` → `supabase/v12_friends.sql` · ลบบัญชี: `supabase/account_delete.sql`
+   แล้วต่อ (Beta 0.8 ขึ้นไป ตามลำดับ): `supabase/v8_gacha.sql` → `supabase/v9_bp_extra.sql` → `supabase/v10_tutorial.sql` → `supabase/v11_ranked.sql` → `supabase/v12_friends.sql` → `supabase/v13_profile_card.sql` → `supabase/v14_achievements.sql` → `supabase/achievements_seed.sql` (สร้างจาก `client/public/skin/achievements.json` ด้วย `node scripts/gen-achievements-sql.js`) · ลบบัญชี: `supabase/account_delete.sql`
    - v6 = รางวัลตามอันดับ/เลเวลผู้เล่น/แบทเทิลพาส · v7 = สตามิน่า/ชา/ฟาร์มกับบอท/เลเวลตัวละคร · v7_config = ตัวเลขจาก economy.js · bp_seed = ข้อมูลฤดูแบทเทิลพาส
    - **รัน v6 ซ้ำเมื่อไหร่ ต้องรัน v7 ตามทุกครั้ง** (v7 แทนที่ฟังก์ชันบันทึกผลเกมของ v6) · แก้ตัวเลขใน economy.js แล้ว `node scripts/gen-economy-sql.js` · แก้ฤดูแล้ว `node scripts/gen-bp-sql.js`
    - รัน SQL ให้เสร็จก่อนอัปโค้ดเซิร์ฟเวอร์ใหม่ (เซิร์ฟเวอร์ใหม่ส่งค่าที่ฐานข้อมูลเก่าไม่รู้จัก)
