@@ -49,3 +49,25 @@
 .pv {
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr) !important;
 }
+/* ฉายาเลือกจากรายการที่ปลดล็อก (profile-page.js titleField) — หน้าตาเดียวกับช่องพิมพ์ชื่อ */
+.pv-f select.pv-sel {
+  height: 6.6vh;
+  border-radius: 3.3vh;
+  border: 0.3vh solid #e3d3ec;
+  background: #fff;
+  padding: 0 2vh;
+  font: 800 2.5vh Sarabun;
+  color: var(--k-ink);
+  box-shadow: inset 0 0.3vh 0.6vh #3a274814;
+  cursor: pointer;
+}
+/* รูปโปรไฟล์ใช้กรอบจาก Code/AvatarFrame/ แทนวงทองเดิม */
+.pv-av:has(.af) {
+  background: none;
+}
+.pv-av:has(.af)::after {
+  display: none;
+}
+.pv-av .pv-avbtn {
+  z-index: 3;
+}

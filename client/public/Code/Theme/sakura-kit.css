@@ -17,7 +17,8 @@
 .gc-box,
 .cr-box,
 .mm-box,
-.panel {
+.panel,
+.pg[data-pg='pv'] .pv-card {
   border-style: solid !important;
   border-color: transparent !important;
   border-width: 0 !important;
@@ -42,6 +43,10 @@
 /* แผงเนื้อหาในหน้าย่อย (.panel): เดิมเว้นขอบด้วย border กว้าง 3vh — ใช้ padding แทน เพราะกรอบใหม่วาดยื่นออกนอกกล่อง */
 .panel {
   padding: 1.6vh 1.8vh !important;
+}
+/* หน้าแก้ชื่อ/ฉายา (Account/profile-page.js): แผงใช้กรอบเดียวกับหน้าต่าง · เว้นขอบให้เนื้อหาไม่ชิดเส้นทอง */
+.pg[data-pg='pv'] .pv-card {
+  padding: 3.4vh 3vh 2.4vh !important;
 }
 /* หน้าต่างที่เดิมเป็นธีมม่วงเข้ม (สกิล · รางวัลล็อกอิน · แบทเทิลพาส · หาแมตช์) → พื้นครีม ตัวอักษรเข้ม */
 .sk-modal .sk-box,
