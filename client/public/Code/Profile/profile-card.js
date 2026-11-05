@@ -95,8 +95,9 @@
   }
 
   function avatarHtml(card) {
-    const id = card.featured || (card.showcase[0] || {}).id;
-    if (typeof avFace === 'function' && id) return avFace(card.name, id);
+    const id = card.featured || (card.showcase[0] || {}).id || null;
+    // ยังไม่ตั้งตัวละครเด่น/ตู้โชว์ (บัญชีใหม่) → avFace ใช้อีโมจิตามชื่อแทน เหมือนรูปที่แถบด้านบน
+    if (typeof avFace === 'function') return avFace(card.name, id);
     return '<span class=pc-av-empty>?</span>';
   }
 
