@@ -306,3 +306,38 @@
   object-fit: contain;
   object-position: center bottom;
 }
+/* ผลสุ่มตู้ของแต่ง: รูปตัวอย่าง (หลังไพ่/โต๊ะ/พื้นหลัง/กรอบ) ขนาดตายตัวของหน้าร้าน กว้างกว่าการ์ด — ย่อให้พอดีความกว้างการ์ด */
+.gc-res .gc-card > :is(.pv-back, .pv-table, .pv-bg, .pv-frame) {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  height: auto;
+  margin: auto auto 4px;
+}
+.gc-res .gc-card > .pv-back {
+  width: 74%;
+  aspect-ratio: 18 / 25;
+}
+.gc-res .gc-card > .pv-table {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+}
+.gc-res .gc-card > .pv-bg {
+  width: 100%;
+  aspect-ratio: 7 / 5;
+}
+.gc-res .gc-card > .pv-frame {
+  width: 90%;
+  aspect-ratio: 1;
+}
+/* การ์ด Common/Rare ที่ไม่มีรูปการ์ด: ใส่พื้นเข้มเดิมไว้ใต้กรอบ (พื้นหน้าต่างเป็นครีมแล้ว ตัวอักษรขาวจะจาง) */
+.gc-res .gc-card.common:not(.has-card),
+.gc-res .gc-card.rare:not(.has-card) {
+  background-color: #241a4a;
+}
+/* ป้าย NEW / ซ้ำ บนการ์ดเล็ก: บรรทัดเดียว ไม่ล้นทับการ์ดข้าง ๆ */
+.gc-res .gc-new,
+.gc-res .gc-dup {
+  white-space: nowrap;
+  font-size: 9px;
+  padding: 1px 5px;
+}
