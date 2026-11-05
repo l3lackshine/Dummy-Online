@@ -1,4 +1,4 @@
-/* coin-icons.js — เปลี่ยนอีโมจิเหรียญ 🪙 ในหน้าเกมเป็นรูปเหรียญจากชุด UI (Assets/UI/Assets/kit2/coin.webp)
+/* coin-icons.js — เปลี่ยนอีโมจิเหรียญ 🪙 ในหน้าเกมเป็นรูปเหรียญจากชุด UI (Assets/UI/Assets/kit2/coin.webp) · 💎 ในตัวนับเพชรบน HUD เป็นรูปเพชร
    ทำงานหลัง render() ทุกครั้งผ่าน MutationObserver · ไม่แตะช่องพิมพ์ข้อความ */
 (function () {
   'use strict';
@@ -25,12 +25,28 @@
     });
   }
 
+  // ตัวนับเพชรบน HUD หน้าย่อย: เปลี่ยน 💎 เป็นรูปเพชร เพื่อให้ Theme/sakura-kit.css ซ่อนไอคอนเดิมได้ (แถบรูปใหม่มีไอคอนเพชรในตัว)
+  // ทำเฉพาะใน .mc-pill — 💎 ที่อื่น (ราคา ข้อความ) คงเป็นอีโมจิตามเดิม
+  function swapGemInHud(root) {
+    root.querySelectorAll('.hud .mc-pill').forEach(pill => {
+      const textNode = [...pill.childNodes].find(n => n.nodeType === 3 && n.nodeValue.includes('💎'));
+      if (!textNode) return;
+      const icon = document.createElement('img');
+      icon.className = 'kicon';
+      icon.src = KIT + 'gem.webp';
+      icon.alt = '';
+      textNode.nodeValue = textNode.nodeValue.replace('💎', '');
+      pill.insertBefore(icon, textNode);
+    });
+  }
+
   function pass() {
     const app = document.getElementById('app');
     if (!app) return;
     obs.disconnect();
     try {
       swapCoin(app);
+      swapGemInHud(app);
     } catch (e) {
       console.warn('coin-icons', e);
     }

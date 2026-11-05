@@ -1,0 +1,140 @@
+/* sakura-kit.css — ชุด UI ซากุระ (Assets/UI/Assets/kit3/) ช่วงทดลอง: กรอบหน้าต่าง 9-slice · ตัวนับเหรียญ/เพชร/สตามิน่า · ปุ่มกลมตั้งค่า/ของขวัญ
+   โหลดท้ายสุดใน index.html จึงทับธีมเดิมได้โดยไม่ต้องแก้ไฟล์ CSS ของหมวดอื่น · ลบ <link> ไฟล์นี้ = กลับเป็นหน้าตาเดิมทั้งหมด
+   รูปทั้งหมดตัดพื้นขาวจากไฟล์ที่เจ้าของโปรเจคออกแบบ (sakura_nine_slice_pack + minimal_sakura_ui_assets)
+   Extend: หน้าต่างบานอื่นที่อยากได้กรอบนี้ → เพิ่มตัวเลือกของกล่องหน้าต่างใน "กรอบหน้าต่าง" ด้านล่าง (พื้นต้องเป็นสีอ่อน ตัวอักษรสีเข้ม) */
+
+/* ===== กรอบหน้าต่างซากุระ (9-slice) =====
+   ค่าตัด (หน่วยพิกเซลของรูป 1493×755): บน 235 · ขวา 401 · ล่าง 375 · ซ้าย 546 — มุมและดอกไม้ไม่ยืด ยืดเฉพาะขอบกับตรงกลาง
+   (ล่าง 375 เพราะดอกซากุระมุมซ้ายล่างสูงขึ้นไปถึงแถว 385 ของรูป ถ้าตัดต่ำกว่านี้ดอกจะถูกยืดเป็นริ้ว)
+   --wf-u = ขนาดจอ 1 พิกเซลต่อรูป 1 พิกเซล (ย่อตามความสูงจอ) · outset ดันกรอบออกนอกกล่อง ให้เส้นทองด้านในตรงกับขอบกล่อง
+   เนื้อหาเดิมในหน้าต่างจึงอยู่ที่เดิม ไม่ต้องแก้ padding ของแต่ละหน้าต่าง */
+:root {
+  --wf-u: clamp(0.07px, 0.022vh, 0.12px);
+}
+.q-modal .sk-box,
+.set-modal .st-box,
+.pn-box,
+.gc-box {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 !important;
+  border-image-source: url(../../Assets/UI/Assets/kit3/window-frame.webp) !important;
+  border-image-slice: 235 401 375 546 fill !important;
+  border-image-width: calc(235 * var(--wf-u)) calc(401 * var(--wf-u)) calc(375 * var(--wf-u)) calc(546 * var(--wf-u)) !important;
+  border-image-outset: calc(26 * var(--wf-u)) calc(22 * var(--wf-u)) calc(67 * var(--wf-u)) calc(78 * var(--wf-u)) !important;
+  border-image-repeat: stretch !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 1vh 1.6vh #0007);
+}
+/* กรอบยื่นออกนอกกล่อง — กันไม่ให้หน้าต่างชิดขอบจอจนกรอบล้น */
+.q-modal .sk-box,
+.set-modal .st-box,
+.pn-box {
+  max-height: 84vh !important;
+}
+.gc-box:has(.gc-res) {
+  max-height: 92vh;
+}
+
+/* ===== ตัวนับเหรียญ/เพชร/สตามิน่า: แถบรูปที่มีไอคอนซ้ายและปุ่มบวกขวาในตัว =====
+   ตัดรูปเป็น 3 ช่วงแนวนอน (ไอคอน · กลางยืด · ปุ่มบวก) · ซ่อนไอคอนเดิมเพราะรูปมีไอคอนแล้ว · ปุ่มบวกเดิมยังกดได้ (โปร่งใสทับรูป) */
+.rv-cur,
+.st-pill,
+.hud .coin-pill {
+  --bar-h: 5.2vh;
+  --bar-l: 1.03; /* ความกว้างช่วงไอคอน ÷ ความสูงแถบ */
+  --bar-r: 0.77; /* ความกว้างช่วงปุ่มบวก ÷ ความสูงแถบ */
+  height: var(--bar-h) !important;
+  min-width: calc(var(--bar-h) * 4.2);
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  padding: 0 0.8vh !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 calc(var(--bar-h) * var(--bar-r)) 0 calc(var(--bar-h) * var(--bar-l)) !important;
+  border-image-width: 0 calc(var(--bar-h) * var(--bar-r)) 0 calc(var(--bar-h) * var(--bar-l)) !important;
+  border-image-repeat: stretch !important;
+  color: #3b4255 !important;
+  font-weight: 800;
+  font-size: 2.3vh !important;
+  text-shadow: none !important;
+  filter: drop-shadow(0 0.4vh 0.6vh #0004);
+}
+.rv-cur:has(img[src*='coin']),
+.hud .coin-pill:not(.mc-pill) {
+  border-image-source: url(../../Assets/UI/Assets/kit3/bar-coin.webp) !important;
+  border-image-slice: 0 60 0 80 fill !important;
+}
+.rv-cur:has(img[src*='gem']),
+.hud .mc-pill {
+  --bar-l: 0.92;
+  --bar-r: 0.83;
+  border-image-source: url(../../Assets/UI/Assets/kit3/bar-gem.webp) !important;
+  border-image-slice: 0 60 0 66 fill !important;
+}
+.st-pill {
+  --bar-l: 0.67;
+  --bar-r: 0.64;
+  border-image-source: url(../../Assets/UI/Assets/kit3/bar-stamina.webp) !important;
+  border-image-slice: 0 58 0 60 fill !important;
+  margin-right: 0 !important;
+}
+.rv-cur > img,
+.st-pill > .st-ic,
+.hud .coin-pill > img.kicon:first-child {
+  display: none !important;
+}
+.st-pill small {
+  color: #6b7285;
+}
+.st-pill.low b {
+  color: #c8424f;
+}
+.st-pill.over b {
+  color: #b8860b;
+}
+/* ปุ่มบวกเดิม: วางทับปุ่มบวกในรูปแบบโปร่งใส (กดแล้วไปร้านเหมือนเดิม) */
+.rv-cur > i {
+  width: calc(var(--bar-h) * var(--bar-r)) !important;
+  height: var(--bar-h) !important;
+  margin: 0 calc(var(--bar-h) * var(--bar-r) * -1) 0 auto !important;
+  padding: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: transparent !important;
+  border-radius: 0 !important;
+}
+.rv-cur > i svg {
+  opacity: 0;
+}
+/* HUD หน้าย่อยตัวเล็กกว่า */
+.hud .st-pill,
+.hud .coin-pill {
+  --bar-h: max(28px, 5vh);
+  font-size: max(13px, 2.2vh) !important;
+}
+
+/* ===== ปุ่มกลมหน้าแรก (ของขวัญ · ตั้งค่า) — แทนปุ่มกลมม่วงเข้มเดิม ===== */
+.rv-rb {
+  background-size: contain !important;
+  filter: drop-shadow(0 0.4vh 0.6vh #0004) !important;
+}
+.rv-rb[aria-label='ตั้งค่า'] {
+  background-image: url(../../Assets/UI/Assets/kit3/btn-settings.webp) !important;
+}
+.rv-rb[aria-label='ล็อกอินรายวัน'] {
+  background-image: url(../../Assets/UI/Assets/kit3/btn-gift.webp) !important;
+}
+/* ผลสุ่มได้ SR/SSR: แสงรอบหน้าต่างเดิมเป็น box-shadow (ถูกปิดด้านบน) — ใช้แสงแบบ drop-shadow ตามรูปกรอบแทน */
+.gc-box.gc-top3:has(.gc-res) {
+  filter: drop-shadow(0 0 1.4vh #a45be8aa) drop-shadow(0 1vh 1.6vh #0007);
+}
+.gc-box.gc-top4:has(.gc-res) {
+  filter: drop-shadow(0 0 1.8vh #ffc83dcc) drop-shadow(0 1vh 1.6vh #0007);
+}
