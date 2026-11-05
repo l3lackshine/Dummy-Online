@@ -243,3 +243,66 @@
 .gc-res .gc-card.has-card > .gc-cimg {
   position: absolute;
 }
+/* ===== หน้าต่างผลสุ่ม: ธีมเดียวกับหน้าต่างอื่นของเกม (พื้นครีม · กรอบทอง · หัวข้อทอง แบบหน้าต่างเควส) =====
+   ใช้ :has(.gc-res) ให้โดนเฉพาะหน้าต่างผลสุ่ม ไม่โดนหน้าต่าง "รายการและอัตราการออก" (gcList) ที่ใช้ .gc-box เหมือนกัน */
+.gc-box:has(.gc-res) {
+  background: #fffaf2;
+  color: #3b4255;
+  border: 2px solid #e8c77a;
+  box-shadow: 0 10px 30px #0008;
+  max-width: 96vw;
+  max-height: 96vh;
+}
+.gc-box.gc-top3:has(.gc-res) {
+  box-shadow:
+    0 10px 30px #0008,
+    0 0 30px #a45be8aa;
+}
+.gc-box.gc-top4:has(.gc-res) {
+  border-color: #ffc83d;
+  box-shadow:
+    0 10px 30px #0008,
+    0 0 40px #ffc83daa;
+}
+.gc-box:has(.gc-res) h3 {
+  color: #8a6d3b;
+}
+.gc-box:has(.gc-res) .gc-sum {
+  color: #5b6275;
+}
+/* ตัวอักษรบนการ์ดอยู่บนแถบสีเข้ม/กรอบเข้ม — ต้องเป็นสีขาวเอง เพราะพื้นหน้าต่างเปลี่ยนเป็นตัวอักษรสีเข้มแล้ว */
+.gc-res .gc-card,
+.gc-res .gc-card b,
+.gc-res .gc-card small,
+.gc-res .gc-new,
+.gc-res .gc-dup {
+  color: #fff;
+}
+/* ===== ขนาดการ์ดผลสุ่ม: แถวละ 5 ใบ กว้างเท่ากันทุกใบ =====
+   ต้องกำหนดความกว้างการ์ดเอง: รูปการ์ดสำเร็จวางแบบ absolute ไม่ดันความกว้าง ถ้าสุ่มได้แต่การ์ดแบบนี้
+   หน้าต่างจะหดเหลือเท่าความกว้างชื่อ การ์ดเล็กจนไม่เห็นรูป (ที่ผู้เล่นเห็นว่า "บางครั้งรูปไม่ขึ้น")
+   ความกว้างคิดจากความสูงจอด้วย: 2 แถว + หัวข้อ/สรุป/ปุ่ม (GC_CHROME) ต้องพอดีจอแนวนอนโดยไม่ต้องเลื่อน */
+.gc-res {
+  --gc-chrome: 170px;
+  --gc-cw: min(17vw, 132px, calc((96vh - var(--gc-chrome)) / 2 * 5 / 9));
+  grid-template-columns: repeat(5, var(--gc-cw)) !important;
+  justify-content: center;
+}
+.gc-res.n1 {
+  --gc-cw: min(40vw, 170px, calc((96vh - var(--gc-chrome)) * 5 / 9));
+  grid-template-columns: var(--gc-cw) !important;
+  max-width: none;
+}
+/* การ์ดที่ไม่มีรูปการ์ดสำเร็จ (SR/SSR ที่ใช้กรอบ) — ให้รูปตัวละครเต็มพื้นที่ในกรอบ เห็นทั้งตัว ไม่ครอปเป็นสี่เหลี่ยม */
+.gc-res .gc-card .pv-ch {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: none;
+}
+.gc-res .gc-card .pv-ch img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}

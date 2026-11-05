@@ -539,12 +539,10 @@
     padding: 3px 4px;
   }
   .gc-res.n10 {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
     gap: 5px;
   }
   .gc-box:has(.gc-res.n10) {
-    max-width: 96vw;
-    padding: 8px 10px;
+    padding: 8px 12px;
   }
   .gc-res.n10 .gc-card b {
     font-size: 10px;
