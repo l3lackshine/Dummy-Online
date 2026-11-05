@@ -358,3 +358,39 @@
   right: 3px;
   z-index: 6;
 }
+/* หน้าต่าง "รายการและอัตราการออก": จัดเป็นตารางหลายช่องต่อแถว (เดิมหน้าต่างแคบตามเนื้อหา เหลือแถวละ 1 ชิ้น ต้องเลื่อนยาว) — เจ้าของสั่ง */
+.gc-box:has(.gc-grid) {
+  width: min(94vw, 760px);
+  max-width: none;
+  max-height: 86vh;
+}
+.gc-box .gc-grid {
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)) !important;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+.gc-box .gc-grid .item2 {
+  padding: 8px 6px;
+  gap: 4px;
+  font-size: 12px;
+}
+.gc-box .gc-grid .item2 small {
+  font-size: 11px;
+}
+.gc-box .gc-grid .pv-ch {
+  width: 72px;
+  height: 72px;
+}
+.gc-box .gc-grid .pv-back {
+  width: 54px;
+  height: 75px;
+}
+.gc-box .gc-grid .pv-table,
+.gc-box .gc-grid .pv-bg {
+  width: 88px;
+  height: 60px;
+}
+.gc-box .gc-grid .pv-frame {
+  width: 72px;
+  height: 72px;
+}
