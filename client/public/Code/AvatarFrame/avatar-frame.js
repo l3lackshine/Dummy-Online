@@ -10,7 +10,7 @@
     id: 'sakura',
     name: 'ซากุระ',
     asset: './Assets/UI/Assets/kit3/av-frame.webp',
-    circle: { cx: 165, cy: 141.5, r: 100, w: 298, h: 266 },
+    circle: { cx: 335, cy: 277, r: 218, w: 621, h: 532 },
   };
   let frames = [FALLBACK];
   let defaultId = FALLBACK.id;
