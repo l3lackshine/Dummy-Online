@@ -112,7 +112,8 @@
     return out.join('');
   }
   const em = t => (window.Ranked && Ranked.emblem ? Ranked.emblem(t, 'sm') : '');
-  const row = (x, compact) => `<div class="fr-row ${(ST[presOf(x).st] || ST.off)[1]}"><span class=fr-av>${face(x)}</span>
+  // กดรูปเพื่อน = เปิดบัตรโปรไฟล์ (Code/Profile/profile-card.js)
+  const row = (x, compact) => `<div class="fr-row ${(ST[presOf(x).st] || ST.off)[1]}"><span class="fr-av fr-open" title="ดูโปรไฟล์" onclick="profileCardOpen('${E(x.username)}')">${face(x)}</span>
     <span class=fr-nm><b>${E(x.name)}</b><small>@${E(x.username)}${x.badge ? ` · 👑 ${E(x.badge)}` : ''}</small>${stLine(x)}</span>${compact ? '' : em(x.tier)}<span class=fr-acts>${actions(x, compact)}</span></div>`;
 
   function view() {

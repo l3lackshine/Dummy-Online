@@ -438,3 +438,7 @@
     animation: none;
   }
 }
+/* กดรูปเพื่อนเพื่อดูบัตรโปรไฟล์ */
+.fr-av.fr-open {
+  cursor: pointer;
+}
