@@ -126,6 +126,7 @@
       window.battlePass && battlePass.count ? battlePass.count() : 0,
       window.Ranked && P ? Ranked.count() : 0,
       window.Friends && P ? Friends.count() : 0,
+      window.Achievements && P ? Achievements.count() : 0,
     ].join('|');
   }
   function buildHome(app) {
@@ -146,6 +147,7 @@
     const nq = (document.querySelector('.hud-q i') || {}).textContent || '';
     const nb = window.battlePass && battlePass.count ? battlePass.count() : 0; // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
     const nr = window.Ranked && P ? Ranked.count() : 0;
+    const na = window.Achievements && P ? Achievements.count() : 0; // ขั้นความสำเร็จที่รับได้ (Code/Achievements/achievements.js)
     const nf = window.Friends && P ? Friends.count() : 0; // คำขอเป็นเพื่อนที่รอตอบ   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
     const d = document.createElement('div');
     d.className = 'rv';
@@ -165,6 +167,7 @@
         <button class="rv-sb rv-pn" onclick="openPatchNotes()" aria-label="แพตช์โน้ต">${ic('news')}<small>อัปเดต</small></button>
         ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="rankOpen()" aria-label="อันดับ">${ic('trophy')}<small>อันดับ</small>${nr ? '<em>' + nr + '</em>' : ''}</button>` : ''}
         ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="friendsOpen()" aria-label="เพื่อน">${ic('users')}<small>เพื่อน</small>${nf ? '<em>' + nf + '</em>' : ''}</button>` : ''}
+        ${P && window.achOpen ? `<button class="rv-sb rv-pn rv-rk" onclick="achOpen()" aria-label="ความสำเร็จ">${ic('medal')}<small>สำเร็จ</small>${na ? '<em>' + na + '</em>' : ''}</button>` : ''}
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Assets/Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>

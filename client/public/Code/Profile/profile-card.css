@@ -556,3 +556,35 @@
     transition: none;
   }
 }
+
+/* ---------- ทางเข้าหน้าความสำเร็จ (Code/Achievements/) ---------- */
+.pc-more {
+  order: 2;
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: var(--pc-accent2);
+  font: 800 1.8vh Sarabun, sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pc-bar .pc-ach {
+  position: relative;
+  padding-right: 4.6vh;
+}
+/* จุดแดงอยู่ในตัวปุ่ม เพราะปุ่มตัดมุมด้วย clip-path (ของที่ล้นออกนอกปุ่มจะถูกตัด) */
+.pc-ach em {
+  position: absolute;
+  top: 50%;
+  right: 1.6vh;
+  transform: translateY(-50%);
+  min-width: 2.6vh;
+  height: 2.6vh;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  background: #e8344e;
+  color: #fff;
+  font: 800 1.5vh Sarabun, sans-serif;
+  font-style: normal;
+}

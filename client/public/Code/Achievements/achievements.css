@@ -1,0 +1,213 @@
+/* achievements.css — หน้าต่างความสำเร็จ (Code/Achievements/achievements.js) · กรอบใช้ .st-box ของชุด UI ซากุระ (พื้นครีม ขอบทอง)
+   ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน · สีเหรียญ ทองแดง/เงิน/ทอง ตรงกับเหรียญเกียรติยศบนบัตรโปรไฟล์ */
+.ach-box {
+  width: min(94vw, 170vh) !important;
+  max-height: 90vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+}
+.ach-h {
+  margin: 0 0 0.4vh;
+  font-size: 3.4vh;
+  color: #3b4255;
+}
+.ach-sum {
+  margin: 0 0 1vh;
+  font-size: 1.9vh;
+  color: #6b6f80;
+}
+.ach-sum b {
+  color: #d94f86;
+}
+.ach-empty {
+  text-align: center;
+  font-size: 2.2vh;
+  color: #6b6f80;
+  padding: 4vh 0;
+}
+
+/* ---------- แท็บหมวด ---------- */
+.ach-tabs {
+  display: flex;
+  gap: 0.8vh;
+  overflow-x: auto;
+  padding-bottom: 0.8vh;
+  scrollbar-width: none;
+}
+.ach-tab {
+  position: relative;
+  flex: none;
+  padding: 0.8vh 1.8vh;
+  border-radius: 99px;
+  border: 0.25vh solid #e2c784;
+  background: #fffaf0;
+  color: #3b4255;
+  font: 800 2vh Sarabun, sans-serif;
+  cursor: pointer;
+}
+.ach-tab.on {
+  background: linear-gradient(180deg, #ff9ac0, #f0659a);
+  border-color: #f0659a;
+  color: #fff;
+}
+.ach-tab em,
+.ach-row.ready .ach-ic::after {
+  position: absolute;
+  top: -0.6vh;
+  right: -0.6vh;
+  min-width: 2.6vh;
+  height: 2.6vh;
+  border-radius: 99px;
+  display: grid;
+  place-items: center;
+  background: #e8344e;
+  color: #fff;
+  font: 800 1.5vh Sarabun, sans-serif;
+  font-style: normal;
+}
+
+/* ---------- รายการ ---------- */
+.ach-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 62vh), 1fr));
+  gap: 0.9vh;
+  padding: 0.2vh 0.4vh 0.6vh 0;
+}
+.ach-row {
+  display: grid;
+  grid-template-columns: 7vh minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.4vh;
+  border-radius: 1.4vh;
+  background: #fff;
+  border: 0.2vh solid #efe1c2;
+  box-shadow: 0 0.3vh 0.8vh #a5835022;
+}
+.ach-row.ready {
+  border-color: #f0659a;
+  background: #fff4f8;
+}
+.ach-row.done {
+  opacity: 0.78;
+}
+.ach-ic {
+  position: relative;
+  width: 7vh;
+  height: 7vh;
+  display: grid;
+  place-items: center;
+  font-size: 4vh;
+  border-radius: 1.4vh;
+  background: linear-gradient(160deg, #fff3d6, #f6dca0);
+}
+.ach-row.ready .ach-ic::after {
+  content: '!';
+}
+.ach-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+.ach-tx b {
+  font-size: 2.2vh;
+  color: #3b4255;
+}
+.ach-tx small {
+  font-size: 1.8vh;
+  color: #6b6f80;
+}
+.ach-tt {
+  font-size: 1.6vh;
+  color: #b88a2c;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ach-bar {
+  position: relative;
+  height: 1.9vh;
+  border-radius: 99px;
+  background: #f1e9da;
+  overflow: hidden;
+}
+.ach-bar u {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffb3cf, #f0659a);
+}
+.ach-bar em {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 1.4vh Sarabun, sans-serif;
+  font-style: normal;
+  color: #3b4255;
+}
+
+/* เหรียญ 3 ขั้น: ยังไม่ได้ = จาง */
+.ach-mds {
+  display: flex;
+  gap: 0.4vh;
+}
+.ach-md {
+  width: 2.8vh;
+  height: 3.1vh;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  opacity: 0.25;
+  filter: grayscale(0.6);
+}
+.ach-md.got {
+  opacity: 1;
+  filter: none;
+}
+.ach-md.bronze {
+  background: linear-gradient(160deg, #f0b685, #a8653a);
+}
+.ach-md.silver {
+  background: linear-gradient(160deg, #ffffff, #9aa7b8);
+}
+.ach-md.gold {
+  background: linear-gradient(160deg, #fff1a8, #e3a730 55%, #ff9fd0);
+}
+
+.ach-act {
+  min-width: 11vh;
+  text-align: center;
+}
+.ach-get {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.6vh 1.6vh !important;
+  font-size: 2vh !important;
+  line-height: 1.1;
+}
+.ach-get small {
+  font-size: 1.4vh;
+}
+.ach-rw {
+  font-size: 1.6vh;
+  color: #8a8e9c;
+}
+.ach-done {
+  font-size: 1.8vh;
+  font-weight: 800;
+  color: #4caf7a;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ach-row.ready .ach-get {
+    animation: ach-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes ach-pulse {
+    50% {
+      transform: scale(1.06);
+    }
+  }
+}

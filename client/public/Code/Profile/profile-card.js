@@ -140,7 +140,10 @@
   }
 
   // เหรียญหกเหลี่ยม: ได้ฉายาซ้ำหลายครั้ง = ขั้นสูงขึ้น (ทองแดง → เงิน → ทอง + เงาโฮโล)
-  function medalTier(times) {
+  // ฉายาจากความสำเร็จ (id ขึ้นต้น ach:) ใช้ times เป็นระดับเหรียญ 1-3 · ฉายาอื่นนับครั้งที่ได้
+  const ACH_TIERS = { 1: 'bronze', 2: 'silver', 3: 'gold' };
+  function medalTier(times, id) {
+    if (String(id || '').startsWith('ach:')) return ACH_TIERS[times] || 'bronze';
     if (times >= 5) return 'gold';
     if (times >= 2) return 'silver';
     return 'bronze';
@@ -153,11 +156,12 @@
       const m = medals[i];
       slots.push(
         m
-          ? `<div class="pc-medal ${medalTier(m.times)}" title="${escape(m.name)} ×${m.times}"><span>${escape(m.name)}</span>${m.times > 1 ? `<em>×${m.times}</em>` : ''}</div>`
+          ? `<div class="pc-medal ${medalTier(m.times, m.id)}" title="${escape(m.name)}"><span>${escape(m.name)}</span>${m.times > 1 && !String(m.id).startsWith('ach:') ? `<em>×${m.times}</em>` : ''}</div>`
           : '<div class="pc-medal empty"><span>—</span></div>'
       );
     }
-    return `<section class=pc-glory><h4>เส้นทางแห่งเกียรติยศ</h4><div class=pc-medals>${slots.join('')}</div></section>`;
+    const more = card.mine && window.achOpen ? '<button class=pc-more onclick="achOpen()">ความสำเร็จ ›</button>' : '';
+    return `<section class=pc-glory><h4>เส้นทางแห่งเกียรติยศ${more}</h4><div class=pc-medals>${slots.join('')}</div></section>`;
   }
 
   function showcaseHtml(card) {
@@ -193,9 +197,16 @@
     </div>`;
   }
 
+  // ปุ่มเปิดหน้าความสำเร็จ (Code/Achievements/achievements.js) พร้อมจุดแดงจำนวนขั้นที่รับได้
+  function achButton() {
+    if (!window.achOpen) return '';
+    const ready = window.Achievements ? Achievements.count() : 0;
+    return `<button class=pc-ach onclick="achOpen()">🏅 ความสำเร็จ${ready ? `<em>${ready}</em>` : ''}</button>`;
+  }
+
   function myButtons() {
     const note = needsSql ? '<small class=pc-warn>ต้องอัปเดตฐานข้อมูลก่อนแก้ไขบัตร</small>' : '';
-    return `<button class=go onclick="pcEdit()" ${needsSql ? 'disabled' : ''}>✎ แก้ไขบัตร</button><button onclick="pcTheme()" ${needsSql ? 'disabled' : ''}>🎨 ธีม</button><button onclick="pcOldPage()">ชื่อ / ฉายา</button>${note}`;
+    return `<button class=go onclick="pcEdit()" ${needsSql ? 'disabled' : ''}>✎ แก้ไขบัตร</button><button onclick="pcTheme()" ${needsSql ? 'disabled' : ''}>🎨 ธีม</button><button onclick="pcOldPage()">ชื่อ / ฉายา</button>${achButton()}${note}`;
   }
 
   // ---------- หน้าโปรไฟล์ของตัวเอง ----------
