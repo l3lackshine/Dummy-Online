@@ -6,11 +6,10 @@
    Public: PackLoader.url(path) · PackLoader.ready (Promise) · PackLoader.refresh() — เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ เพื่อปลดล็อกภาพเต็ม */
 (function () {
   'use strict';
-  // ชื่อไฟล์ในแพ็กตรงกับพาธในเว็บ (Assets/Character/...) · ช่วงเปลี่ยนผ่าน: แพ็กเก่าที่ยังไม่สร้างใหม่ใช้ชื่อแบบไม่มี Assets/ นำหน้า
-  // EXTEND: ลบการลองชื่อเก่าออกได้เมื่อ GitHub Actions สร้างแพ็กใหม่ (pack/manifest.json ใช้ชื่อ Assets/...) แล้ว
+  // ชื่อไฟล์ในแพ็กตรงกับพาธในเว็บ (Assets/Character/...) — แพ็กสร้างใหม่ด้วยชื่อนี้แล้ว จึงไม่ต้องลองชื่อเก่าอีก
   function packUrl(p) {
     const name = String(p).replace(/^\.\//, '');
-    return urls.get(name) || urls.get(name.replace(/^Assets\//, '')) || null;
+    return urls.get(name) || null;
   }
   const urls = new Map(),
     loaded = new Set(),
