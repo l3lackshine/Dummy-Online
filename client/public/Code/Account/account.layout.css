@@ -1,0 +1,10 @@
+/* account.layout.css — Account · ชั้นจัดหน้าแนวนอน/จอกว้าง (แยกจาก layout.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (min-aspect-ratio: 5/4) {
+  .ksec .pick-row {
+    flex-wrap: wrap;
+    overflow: visible;
+    gap: calc(var(--u) * 0.9);
+    padding: 0;
+  }
+}

@@ -1,0 +1,227 @@
+/* stamina.theme.css — Stamina · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ===== Beta 0.6: สตามิน่า · ฟาร์ม · ไอเทม · เลเวลตัวละคร ===== */
+.st-ic {
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  object-fit: contain;
+}
+.st-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5vh;
+  height: max(30px, 5.4vh);
+  padding: 0 1.6vh 0 0.8vh;
+  border-radius: 99px;
+  border: 0.25vh solid #ffffff55;
+  background: linear-gradient(#2f6b45ee, #1d4a30ee);
+  color: #fff;
+  font:
+    800 max(13px, 2.4vh) Sarabun,
+    sans-serif;
+  cursor: pointer;
+  box-shadow: 0 0.4vh 1vh #0005;
+  margin-right: 1vh;
+}
+.st-pill .st-ic {
+  width: max(22px, 3.8vh);
+  height: max(22px, 3.8vh);
+}
+.st-pill small {
+  font-size: 0.7em;
+  opacity: 0.8;
+  font-weight: 700;
+}
+.st-pill.low {
+  background: linear-gradient(#8a3b2b, #5e2318);
+}
+.st-pill.over b {
+  color: #ffe08a;
+}
+.hud .st-pill {
+  height: auto;
+  padding: 0.3em 0.8em 0.3em 0.4em;
+  font-size: 14px;
+  margin-right: 6px;
+}
+.hud .st-pill .st-ic {
+  width: 20px;
+  height: 20px;
+}
+.st-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0009;
+  padding: 16px;
+}
+.st-box {
+  position: relative;
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 18px;
+  background: #fffaf2;
+  color: #3b4255;
+  padding: 18px 18px 14px;
+  box-shadow: 0 10px 30px #0008;
+  font-family: Sarabun, sans-serif;
+}
+.st-box h4 {
+  margin: 12px 0 6px;
+  font-size: 15px;
+  color: #8a6d3b;
+}
+.st-x {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: 0;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #7d8394;
+}
+.st-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.st-big {
+  width: 64px;
+  height: 64px;
+}
+.st-head small {
+  display: block;
+  font-size: 13px;
+  color: #7d8394;
+}
+.st-head b {
+  font-size: 34px;
+  color: #2f9e4a;
+  font-weight: 900;
+}
+.st-head em {
+  font-style: normal;
+  font-size: 18px;
+  color: #7d8394;
+  font-weight: 700;
+  margin-left: 4px;
+}
+.st-time {
+  margin: 6px 0 4px;
+  font-weight: 700;
+  color: #2e7a48;
+}
+.st-rule {
+  margin: 6px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #555c6e;
+}
+.st-tea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  background: #f2ecdf;
+  margin-bottom: 6px;
+}
+.st-tea span {
+  flex: 1;
+  min-width: 0;
+}
+.st-tea b {
+  display: block;
+  font-size: 15px;
+}
+.st-tea small {
+  font-size: 12px;
+  color: #7d8394;
+}
+.st-drink {
+  border: 0;
+  border-radius: 99px;
+  padding: 8px 18px;
+  font:
+    800 14px Sarabun,
+    sans-serif;
+  background: linear-gradient(#4cd36f, #1f9c4a);
+  color: #fff;
+  cursor: pointer;
+}
+.st-drink:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.st-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #9aa0ad;
+}
+.fm-st .st-ic {
+  width: 22px;
+  height: 22px;
+}
+@media (max-height: 500px) and (min-aspect-ratio: 4/3) {
+  .bp-c .st-ic,
+  .bp-c img {
+    width: 1em;
+    height: 1em;
+  }
+  /* หน้าต่างสตามิน่า: แผ่ออกด้านข้าง 2 คอลัมน์ (ข้อมูล | ชา) */
+  .st-modal .st-box {
+    width: min(94vw, 860px);
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    grid-auto-flow: row dense;
+    gap: 0 18px;
+    align-content: start;
+    padding: 12px 16px;
+  }
+  .st-modal .st-box > * {
+    grid-column: 1;
+  }
+  .st-modal .st-box > h4,
+  .st-modal .st-box > .st-tea,
+  .st-modal .st-box > .st-note {
+    grid-column: 2;
+  }
+  .st-modal .st-box > h4 {
+    grid-row: 1;
+    margin-top: 0;
+  }
+  .st-modal .st-box > .st-tea {
+    margin-bottom: 6px;
+  }
+  .st-head {
+    grid-row: 1 / span 1;
+  }
+  .st-big {
+    width: 48px;
+    height: 48px;
+  }
+  .st-head b {
+    font-size: 28px;
+  }
+  .st-rule {
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 4px 0;
+  }
+  .cl-modal .st-box {
+    display: block;
+    width: min(92vw, 560px);
+  }
+}
+.rv-start .rv-st .st-ic {
+  width: 2.8vh;
+  height: 2.8vh;
+}

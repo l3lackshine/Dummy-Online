@@ -1,0 +1,154 @@
+/* shared-ui.ui.css — Core · ชั้นสไตล์หน้าจอชุด v6 (แยกจาก ui.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ===== UI v6: หน้าแรกใหม่ ป้ายไม้ และหน้าย่อย (เล่นเกม / ร้านค้า / โปรไฟล์) =====
+   ไฟล์นี้โหลดหลัง style.css เพื่อ override เท่านั้น */
+:root {
+  --wood-1: #d8a265;
+  --wood-2: #a56a32;
+  --wood-d: #5a3818;
+  --cream: #fff4dc;
+  --ui-gold: #ffd9a0;
+  --back-img: repeating-linear-gradient(45deg, var(--b1), var(--b1) 4px, var(--b2) 4px, var(--b2) 8px);
+}
+/* พื้นหลังเดียวกันทุกหน้า/ทุกห้อง (เลือกได้ที่หน้าโปรไฟล์) */
+body {
+  background: var(--page-background, #2a1a10);
+  background-color: #1b0f08;
+  background-attachment: fixed;
+}
+@media (min-aspect-ratio: 4/5) {
+  body {
+    background: var(--page-wide, var(--page-background, #2a1a10));
+    background-color: #1b0f08;
+    background-attachment: fixed;
+  }
+}
+/* หลังไพ่ตามสกินที่เลือก */
+.back,
+.shuf-anim i {
+  background: var(--back-img) center/cover no-repeat;
+}
+/* ---- HUD ---- */
+.hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  position: relative;
+  z-index: 6;
+}
+.scene > .hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.hud-who,
+.coin-pill,
+.hud-back {
+  border: 2px solid #e8c48a;
+  background: #2a160ccc;
+  color: var(--cream);
+  border-radius: 99px;
+  font:
+    700 14px Sarabun,
+    sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0005;
+  backdrop-filter: blur(2px);
+}
+.hud-who b {
+  max-width: 34vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.coin-pill {
+  padding: 5px 14px;
+  color: #ffd75e;
+  cursor: default;
+}
+.hud-back {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  font-size: 26px;
+  line-height: 1;
+}
+.hud-av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(#ffe9c9, #f4c58b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex: none;
+}
+.hud-av .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 5%;
+  border-radius: 0;
+}
+.scene .cstat {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  margin: 0;
+  z-index: 7;
+}
+/* ---- หน้าย่อย ---- */
+.pg {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pg-title,
+.plank {
+  container-type: inline-size;
+  background: url(../../Assets/UI/Assets/sign-blank.webp) center/100% 100% no-repeat;
+  aspect-ratio: 760/392;
+  filter: drop-shadow(0 6px 6px #0007);
+}
+.pg-title {
+  width: min(44%, 170px);
+  margin: 0 auto;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.pg-title span {
+  font:
+    700 17cqw/1 Mali,
+    Sarabun,
+    'Noto Sans Thai',
+    sans-serif;
+  color: var(--cream);
+  text-shadow:
+    0 0.9cqw 0 #6b3a18,
+    0 0 2cqw #3b1d0a;
+}
+.pg-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 14px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+}

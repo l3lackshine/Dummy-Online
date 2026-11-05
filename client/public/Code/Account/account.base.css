@@ -1,0 +1,6 @@
+/* account.base.css — Account · ชั้นสไตล์พื้นฐาน (แยกจาก style.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.pv {
+  display: flex;
+  gap: 3px;
+}

@@ -1,0 +1,121 @@
+/* shop.ui.css — Shop · ชั้นสไตล์หน้าจอชุด v6 (แยกจาก ui.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.item2 {
+  background: #00000033;
+  border: 2px solid #7a5530;
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  font-size: 13px;
+}
+/* ร้านค้า: แท็บหมวดหมู่ + การ์ดไอเทมขนาดใหญ่ขึ้น (ดูง่ายกว่าเดิม) */
+.cattabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  width: 100%;
+  max-width: 520px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.cattabs::-webkit-scrollbar {
+  display: none;
+}
+.catbtn {
+  flex: none;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 2px solid #7a5530;
+  background: #00000033;
+  color: var(--cream);
+  font:
+    700 13.5px Sarabun,
+    sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.catbtn.on {
+  border-color: #ffd75e;
+  background: #5a371866;
+  box-shadow: 0 0 0 3px #ffd75e55;
+  color: #ffd75e;
+}
+.grid.big {
+  grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+  gap: 14px;
+}
+.grid.big .item2 {
+  padding: 14px 10px;
+  gap: 10px;
+  font-size: 15px;
+  border-radius: 18px;
+}
+.grid.big .pv-ch {
+  width: 104px;
+  height: 104px;
+  border-radius: 18px;
+}
+.grid.big .pv-back {
+  width: 72px;
+  height: 100px;
+}
+.grid.big .pv-table {
+  width: 120px;
+  height: 80px;
+  border-radius: 20px;
+}
+.grid.big .pv-bg {
+  width: 112px;
+  height: 80px;
+  border-radius: 14px;
+}
+/* ตัวอย่างสกิน */
+.pv-ch {
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(#ffe9c9, #f4c58b);
+}
+.pv-ch img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 4%;
+  display: block;
+}
+.pv-back {
+  display: block;
+  width: 50px;
+  height: 70px;
+  border-radius: 7px;
+  border: 3px solid #fff;
+  box-shadow: 0 3px 0 #0005;
+}
+.pv-table {
+  display: block;
+  width: 84px;
+  height: 56px;
+  border-radius: 16px;
+  border: 4px solid #7b4a22;
+  background: radial-gradient(ellipse at center, var(--t1), var(--t2));
+  background-size: cover;
+}
+.pv-bg {
+  display: block;
+  width: 78px;
+  height: 56px;
+  border-radius: 10px;
+  border: 2px solid #fff7;
+}

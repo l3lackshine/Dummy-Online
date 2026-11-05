@@ -1,0 +1,8 @@
+/* lobby.layout.css — Lobby · ชั้นจัดหน้าแนวนอน/จอกว้าง (แยกจาก layout.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (min-aspect-ratio: 5/4) {
+  .pg[data-pg='create'] .score-sum ul {
+    font-size: max(11.5px, calc(var(--u) * 2.5));
+    line-height: 1.35;
+  }
+}

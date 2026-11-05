@@ -1,0 +1,352 @@
+/* table.base.css — Table · ชั้นสไตล์พื้นฐาน (แยกจาก style.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.top {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px 0;
+}
+.opps {
+  display: flex;
+  gap: 4px;
+  padding: 6px 6px 2px;
+  justify-content: space-around;
+}
+.av {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(#ffe3a3, #f2a93b);
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 3px 0 #0005;
+}
+.o.on .av {
+  border-color: var(--gold);
+  box-shadow:
+    0 0 0 4px #f2b84b88,
+    0 3px 0 #0005;
+  animation: bob 1s ease-in-out infinite;
+}
+@keyframes bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.felt {
+  flex: 1;
+  min-height: 0;
+  margin: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  border: 8px solid #7b4a22;
+  border-radius: 36px;
+  background: radial-gradient(ellipse at center, var(--bg), var(--bg2));
+  box-shadow:
+    inset 0 0 40px #0007,
+    0 5px 0 #4a2b12;
+}
+.tbl {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 0;
+}
+.c {
+  width: 46px;
+  height: 64px;
+  flex: none;
+  border: 1px solid var(--edge);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--blk);
+  font:
+    700 17px/1.1 Sarabun,
+    sans-serif;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #0004;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+}
+.c.r {
+  color: var(--red);
+}
+.c.s {
+  transform: translateY(-12px);
+  box-shadow:
+    0 0 0 3px var(--gold),
+    0 6px 8px #0006;
+}
+.c.sp {
+  outline: 2px solid var(--gold);
+  outline-offset: -3px;
+}
+.m .c {
+  width: 32px;
+  height: 44px;
+  font-size: 13px;
+  cursor: inherit;
+}
+.piles {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 4px 8px 10px;
+  background: #0002;
+  border-radius: 0 0 26px 26px;
+}
+.lab {
+  font-size: 11px;
+  color: #dff0e4;
+  text-align: center;
+  line-height: 1.25;
+}
+.dp {
+  display: flex;
+  overflow-x: auto;
+  padding: 6px 4px 4px;
+}
+.c.d {
+  width: 38px;
+  height: 54px;
+  font-size: 14px;
+  margin-left: -10px;
+}
+.c.d:first-child {
+  margin-left: 0;
+}
+.c.ok {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 0 10px var(--gold);
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.c.new,
+.m.new {
+  animation: pop 0.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .c.new,
+  .m.new,
+  .o.on .av {
+    animation: none;
+  }
+  .c {
+    transition: none;
+  }
+}
+.hint {
+  margin: 6px 12px 0;
+  padding: 6px 14px;
+  min-height: 42px;
+  border-radius: 99px;
+  background: #000a;
+  border: 2px solid #fff3;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+}
+.hint small {
+  display: block;
+  color: var(--mut);
+  font-weight: 400;
+  font-size: 11px;
+}
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 16px 8px 4px;
+  justify-content: center;
+}
+.tools {
+  display: flex;
+  gap: 6px;
+  padding: 0 8px 4px;
+}
+.tools button {
+  flex: 1;
+  padding: 6px;
+  border-radius: 99px;
+  border: 2px solid #fff4;
+  background: #0006;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.acts {
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px 10px;
+}
+.acts button.blue,
+.box button.blue {
+  background: linear-gradient(#4aa3ff, #1f6fe0);
+  box-shadow: 0 4px 0 #134aa0;
+}
+.acts button.org,
+.box button.org {
+  background: linear-gradient(#ffa13a, #f0640d);
+  box-shadow: 0 4px 0 #a9440a;
+}
+.acts button.g,
+.box button.g {
+  background: linear-gradient(#4a5886, #323d66);
+  box-shadow: 0 4px 0 #1b2240;
+}
+.ov {
+  position: fixed;
+  inset: 0;
+  background: #000b;
+  z-index: 9;
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.who .av {
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+}
+.pv .c {
+  width: 32px;
+  height: 44px;
+  font-size: 13px;
+  cursor: default;
+}
+.turn {
+  margin: 2px 10px 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: #0007;
+  color: #fff;
+}
+.turn.mine {
+  background: linear-gradient(#35d06a, #1f9c4a);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.03);
+  }
+}
+.order {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 4px 8px 0;
+  font-size: 12px;
+  color: var(--mut);
+}
+.order i {
+  font-style: normal;
+  color: #fff7;
+}
+.ch {
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: #0005;
+  white-space: nowrap;
+}
+.ch.on {
+  background: var(--gold);
+  color: #2a1d00;
+  font-weight: 700;
+}
+.ch.me:not(.on) {
+  outline: 1px solid #fff5;
+}
+.logs {
+  margin: 4px 12px 0;
+  font-size: 12px;
+  color: #ffe9b0;
+  text-align: center;
+  line-height: 1.3;
+  min-height: 31px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .turn.mine {
+    animation: none;
+  }
+}
+.colL,
+.colR {
+  display: contents;
+}
+.lane {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 4px 6px;
+  margin-bottom: 5px;
+  border-radius: 12px;
+  background: #0003;
+}
+.lane.me {
+  background: #f2b84b22;
+  box-shadow: inset 0 0 0 2px #f2b84b88;
+}
+.who2 {
+  width: 46px;
+  flex: none;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.1;
+  color: #e8f2ea;
+}
+.who2 .av {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  border-width: 2px;
+  margin: 0 auto 2px;
+}
+.who2 b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.ms .m {
+  margin: 0;
+  background: #0005;
+  overflow: visible;
+  padding: 3px 5px;
+}
+.ms .m .c + .c {
+  margin-left: -8px;
+}

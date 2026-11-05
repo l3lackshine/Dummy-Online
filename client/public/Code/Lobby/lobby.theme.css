@@ -1,0 +1,251 @@
+/* lobby.theme.css — Lobby · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ---------------- LOBBY ROOM ---------------- */
+#app.rmv,
+#app.rmv .rm-stage {
+  background: url(../../Assets/UI/Assets/kit2/bg-sub.webp) center/cover no-repeat !important;
+}
+#app.rmv .rm-stage::before,
+#app.rmv .rm-stage::after {
+  display: none !important;
+}
+.rm-back {
+  width: 8vh !important;
+  height: 8vh !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: radial-gradient(circle at 50% 35%, #4b3566, #2a1c3e) !important;
+  box-shadow:
+    0 0 0 0.35vh #d9b06a inset,
+    0 0.5vh 1vh #0005 !important;
+  color: #ffe3a8 !important;
+}
+.rm-title b {
+  color: #3a2748 !important;
+  text-shadow: 0 1px 0 #fff8 !important;
+}
+.rm-title small {
+  color: #6c5585 !important;
+}
+.rm-slot {
+  background: none !important;
+  box-shadow: 0 1vh 2vh #3a274822 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 3vh !important;
+  border-image: var(--k-cream) 90 fill/3vh stretch !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+}
+.rm-slot > * {
+  margin: -3vh;
+}
+.rm-slot .rm-art {
+  inset: -3vh !important;
+  border-radius: 3vh;
+  overflow: hidden;
+}
+.rm-slot .rm-art::before,
+.rm-slot .rm-art::after {
+  display: none !important;
+}
+.rm-slot.on {
+  filter: drop-shadow(0 0 0.9vh #7fe0cf);
+}
+.rm-chip {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 1.9vh !important;
+  border-image: var(--k-dark) 0 119 0 119 fill/0 1.9vh/0 stretch !important;
+  background: none !important;
+  color: #fff !important;
+  height: 3.8vh;
+  display: flex !important;
+  align-items: center;
+  padding: 0 0.3vw !important;
+  box-shadow: none !important;
+}
+.rm-plate {
+  background: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 3vh !important;
+  border-image: var(--k-dark) 0 119 0 119 fill/0 3vh/0 stretch !important;
+  margin: 0 0.6vw 1.2vh !important;
+  padding: 0.6vh 0 !important;
+  border-radius: 0 !important;
+}
+.rm-plate b {
+  color: #fff !important;
+}
+.rm-plate small {
+  color: #e7c98f !important;
+}
+.rm-hint {
+  color: #3a2748 !important;
+  background: #fff9 !important;
+  border-radius: 99px;
+  padding: 0.6vh 2vw !important;
+  text-shadow: none !important;
+  font-weight: 800;
+}
+.rm-card {
+  background: none !important;
+  box-shadow: 0 1vh 2vh #3a274822 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 3.2vh !important;
+  border-image: var(--k-cream) 90 fill/3.2vh stretch !important;
+  border-radius: 0 !important;
+  color: var(--k-ink) !important;
+  padding: 0 !important;
+}
+.rm-card * {
+  color: var(--k-ink) !important;
+}
+.rm-card .rm-row {
+  border-color: #3a274820 !important;
+}
+.rm-code b {
+  color: #3a2748 !important;
+  text-shadow: none !important;
+}
+.rm-code button {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.2vh !important;
+  border-image: var(--k-orange) 0 94 0 94 fill/0 2.2vh/0 stretch !important;
+  background: none !important;
+  color: #fff !important;
+  height: 4.4vh;
+  padding: 0 0.3vw !important;
+  box-shadow: none !important;
+}
+.rm-emotes button {
+  background: #fffc !important;
+  border: 0.25vh solid #e9c27a !important;
+  border-radius: 1.6vh !important;
+  box-shadow: 0 0.4vh 0.8vh #3a274822 !important;
+}
+.rm-acts button,
+.acts.gx-acts button,
+.rs-foot .po-go,
+.rs-foot .g {
+  border-style: solid !important;
+  border-color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  border-image-slice: 0 94 0 94 fill !important;
+  border-image-repeat: stretch !important;
+  text-shadow: 0 0.25vh 0 #0004;
+  font-weight: 800 !important;
+  border-radius: 0 !important;
+}
+.rm-acts button {
+  height: 11vh !important;
+  border-width: 0 5.5vh !important;
+  border-image-width: 0 5.5vh !important;
+  font-size: 3.6vh !important;
+  padding: 0 !important;
+}
+.rm-acts .blue {
+  border-image-source: var(--k-green) !important;
+}
+.rm-acts .gray {
+  border-image-source: var(--k-blue) !important;
+}
+.rm-acts button:disabled {
+  filter: grayscale(0.85) brightness(1.05);
+  opacity: 0.75;
+}
+.rs-foot .po-go {
+  height: 9vh !important;
+  border-width: 0 4.5vh !important;
+  border-image-width: 0 4.5vh !important;
+  border-image-source: var(--k-green) !important;
+  font-size: 2.8vh !important;
+  padding: 0 !important;
+  min-width: 34vh;
+}
+.rs-foot .po-go.done {
+  border-image-source: var(--k-gray) !important;
+}
+.po-st .po-p {
+  background: #fff !important;
+  color: var(--k-ink2) !important;
+  border: 0.2vh solid #ddd0ea !important;
+}
+.po-st .po-p.y {
+  background: #e3f6ea !important;
+  color: #2f8f55 !important;
+  border-color: #9fdcb6 !important;
+}
+/* ---- fixes round 2 ---- */
+.rm-slot {
+  border: 0 !important;
+  border-image: none !important;
+  position: relative;
+}
+.rm-slot > * {
+  margin: 0;
+}
+.rm-slot .rm-art {
+  inset: 1.2vh !important;
+  border-radius: 2.4vh;
+  z-index: 1;
+}
+.rm-slot::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: 0 !important;
+  border: 3vh solid transparent !important;
+  border-image: var(--k-cream) 90 fill/3vh stretch !important;
+  z-index: 0 !important;
+  background: none !important;
+  opacity: 1 !important;
+}
+.rm-slot > .rm-chip,
+.rm-slot > .rm-plate {
+  z-index: 2;
+  position: absolute !important;
+}
+.rm-slot > .rm-chip {
+  top: 2.6vh !important;
+  right: 2vh !important;
+}
+.rm-slot > .rm-plate {
+  left: 1.4vh !important;
+  right: 1.4vh !important;
+  bottom: 2.2vh !important;
+  height: 8vh !important;
+}
+.rm-title {
+  height: 8vh;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 1.2vw !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 4vh !important;
+  border-image: var(--k-dark) 0 119 0 119 fill/0 4vh/0 stretch !important;
+}
+.rm-title b {
+  color: #fff !important;
+  text-shadow: none !important;
+  line-height: 1.1;
+}
+.rm-title small {
+  color: #e7c98f !important;
+}
+.rm-hint {
+  background: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 3vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 3vh/0 stretch !important;
+  justify-self: center;
+  width: auto !important;
+}

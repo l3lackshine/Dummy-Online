@@ -1,0 +1,165 @@
+/* shared-ui.theme-2.css — Core · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ================= RoV-style HOME (preview) ================= */
+#app.home .hud,
+#app.home .signs {
+  display: none !important;
+}
+#app.home .ver {
+  right: 1vw !important;
+  bottom: 0.6vh !important;
+  z-index: 6;
+  font-size: 1.5vh !important;
+}
+/* ================= SUB PAGES (preview) ================= */
+#app:not(.home):not(.gxl):not(.rmv) {
+  background: url(../../Assets/UI/Assets/kit2/bg-sub.webp) center/cover no-repeat !important;
+}
+#app .pg {
+  background: none !important;
+  color: var(--k-ink);
+}
+.pg > .hud {
+  padding: 2vh 2vw !important;
+}
+.hud-back {
+  width: 7.6vh !important;
+  height: 7.6vh !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  justify-content: center;
+  font-size: 4.4vh !important;
+  background: radial-gradient(circle at 50% 35%, #4b3566, #2a1c3e) !important;
+  box-shadow:
+    0 0 0 0.35vh #d9b06a inset,
+    0 0.5vh 1vh #0005 !important;
+  color: #ffe3a8 !important;
+}
+.pg-title {
+  background: none !important;
+  filter: none !important;
+  aspect-ratio: auto !important;
+  width: auto !important;
+  height: 8.4vh;
+  margin-top: 1.8vh !important;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 4.2vh;
+  border-image: var(--k-dark) 0 119 0 119 fill/0 4.2vh/0 stretch;
+  padding: 0 3vw;
+  z-index: 4;
+}
+.pg-title span {
+  font:
+    800 4vh/1 Sarabun,
+    sans-serif !important;
+  color: #fff !important;
+  text-shadow: 0 0.3vh 0 #0005 !important;
+  white-space: nowrap;
+}
+.pg-body {
+  padding: 2vh 3vw 3vh !important;
+}
+/* generic */
+.panel {
+  background: none !important;
+  box-shadow: 0 1vh 2vh #3a274822 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 3vh !important;
+  border-image: var(--k-cream) 90 fill/3vh stretch !important;
+  border-radius: 0 !important;
+  color: var(--k-ink) !important;
+  padding: 0 !important;
+}
+.panel .sec,
+.ksec .sec {
+  color: #7a4fa0 !important;
+  text-shadow: none !important;
+  font-weight: 800;
+}
+.panel p,
+.panel li,
+.panel label,
+.panel small,
+.rule-desc,
+.score-sum {
+  color: var(--k-ink) !important;
+}
+.note {
+  background: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.4vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 2.4vh/0 stretch !important;
+  color: var(--k-ink) !important;
+  padding: 0.8vh 0.6vw !important;
+  font-weight: 700;
+}
+.wbtn {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 3.4vh !important;
+  border-image: var(--k-blue) 0 94 0 94 fill/0 3.4vh/0 stretch !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  text-shadow: 0 0.25vh 0 #0004 !important;
+  min-height: 6.8vh;
+  padding: 0 0.6vw !important;
+  font-weight: 800 !important;
+  border-radius: 0 !important;
+}
+.wbtn.go {
+  border-image-source: var(--k-green) !important;
+}
+.wbtn:disabled {
+  border-image-source: var(--k-gray) !important;
+  opacity: 0.9;
+}
+.chip,
+.catbtn {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.4vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 2.4vh/0 stretch !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--k-ink) !important;
+  border-radius: 0 !important;
+  padding: 0.9vh 0.2vw !important;
+  font-weight: 800 !important;
+}
+.chip.on,
+.catbtn.on {
+  border-image: var(--k-dark) 0 119 0 119 fill/0 2.4vh/0 stretch !important;
+  color: #fff !important;
+}
+.opt input,
+.panel input {
+  background: #fff !important;
+  border: 0.3vh solid #e3d3ec !important;
+  border-radius: 2vh !important;
+  color: var(--k-ink) !important;
+  box-shadow: inset 0 0.3vh 0.6vh #3a274814 !important;
+}
+/* play menu */
+[data-pg='play'] .pg-body {
+  align-content: center !important;
+  justify-content: center !important;
+  gap: 2.4vh 2vw !important;
+}
+.plank {
+  background: none !important;
+  filter: drop-shadow(0 1vh 1.4vh #0004) !important;
+  aspect-ratio: auto !important;
+  height: 24vh;
+  width: min(28vw, 52vh) !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 12vh !important;
+  border-image: var(--k-green) 0 94 0 94 fill/0 12vh/0 stretch !important;
+  padding: 0 !important;
+  color: #fff !important;
+}

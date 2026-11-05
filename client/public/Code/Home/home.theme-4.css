@@ -1,0 +1,179 @@
+/* home.theme-4.css — Home · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rv-start::before {
+  left: -4.4vh;
+  width: 5.6vh;
+  height: 5.6vh;
+}
+.rv-start {
+  border-image: var(--k-green) 0 94 0 94 fill/0 7.5vh/0 stretch !important;
+}
+/* round buttons -> slate circles with ivory icons */
+.rv-sb,
+.rv-nav svg,
+.rm-back,
+.hud-back,
+.pv-h i,
+.pv-set i,
+.pv-link i,
+.iv-empty i,
+.rv-card i {
+  background: url(../../Assets/UI/Assets/kit2/mx-round-dark.webp) center/100% no-repeat !important;
+  box-shadow: none !important;
+  color: var(--gs-ivory) !important;
+}
+.rv-mode i {
+  background: url(../../Assets/UI/Assets/kit2/mx-round-light.webp) center/100% no-repeat !important;
+  box-shadow: none !important;
+  color: var(--k-ink) !important;
+}
+.rv-mode:nth-child(1) i {
+  color: #3a7fc9 !important;
+}
+.rv-mode:nth-child(2) i {
+  color: #2f9e8f !important;
+}
+.rv-rb {
+  filter: saturate(0.35) hue-rotate(200deg) brightness(1.05) drop-shadow(0 0.5vh 0.8vh #0005);
+}
+.gt-ic {
+  background: linear-gradient(#4e576c, #363d4e) !important;
+  box-shadow: 0 0 0 0.3vh var(--gs-gold) !important;
+}
+.rv-start {
+  border-width: 0 round(7.5vh, 1px) !important;
+  border-image-width: 0 round(7.5vh, 1px) !important;
+  height: round(15vh, 1px) !important;
+}
+.rv-start {
+  height: round(11.6vh, 1px) !important;
+  width: 40vh !important;
+  border-width: 0 round(5.8vh, 1px) !important;
+  border-image-width: 0 round(5.8vh, 1px) !important;
+}
+.rv-start b {
+  font-size: 4.8vh !important;
+}
+.rv-start small {
+  font-size: 1.7vh !important;
+}
+.rv-start::before {
+  left: -3.4vh !important;
+  width: 4.4vh !important;
+  height: 4.4vh !important;
+}
+.rv-mode i {
+  width: 8.6vh !important;
+  height: 8.6vh !important;
+  padding: 2.2vh !important;
+}
+.rv-cur {
+  height: round(5.2vh, 1px) !important;
+  border-width: 0 round(2.6vh, 1px) !important;
+  border-image-width: 0 round(2.6vh, 1px) !important;
+  font-size: 2.3vh !important;
+}
+.rv-cur img {
+  width: 4.6vh !important;
+  height: 4.6vh !important;
+}
+.rv-nm {
+  height: round(7vh, 1px) !important;
+  border-width: 0 round(3.5vh, 1px) !important;
+  border-image-width: 0 round(3.5vh, 1px) !important;
+}
+.rv-bp i {
+  color: #e0a521;
+}
+/* ===== ป้ายโปรไฟล์หน้าแรก (แบบใหม่): วงรูปขอบเขียวฟ้า · ป้ายชื่อ/ฉายาขอบทอง · แถบเลเวลตัดเฉียง ===== */
+.rv-me2 {
+  --D: 16vh;
+  position: absolute;
+  left: 1.6vh;
+  top: 1.6vh;
+  width: calc(var(--D) * 3.05);
+  height: var(--D);
+  display: block !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  cursor: pointer;
+  text-align: left;
+  font-family: Sarabun, sans-serif;
+}
+.rv-av2 {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--D);
+  height: var(--D);
+  border-radius: 50%;
+  z-index: 3;
+  background: linear-gradient(160deg, #dff6f1 0%, #9fded7 45%, #55c4bb 100%);
+  box-shadow:
+    0 0.6vh 1.4vh #0006,
+    inset 0 0 0 0.15vh #4a8f8a;
+}
+.rv-av2::before {
+  content: '';
+  position: absolute;
+  inset: 4.5%;
+  border-radius: 50%;
+  border: 0.18vh solid #e9cf86;
+  opacity: 0.9;
+}
+.rv-av2 > span {
+  position: absolute;
+  inset: 9.5%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #27304f;
+  box-shadow: inset 0 0.4vh 0.8vh #0007;
+}
+.rv-av2 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 8%;
+  display: block;
+}
+.rv-plate {
+  position: absolute;
+  left: calc(var(--D) * 0.5);
+  top: 0;
+  width: calc(var(--D) * 2.55);
+  height: calc(var(--D) * 0.58);
+  border-radius: 0 99px 99px 0;
+  z-index: 2;
+  background: linear-gradient(100deg, #7a8798 0%, #6a788b 55%, #5f6d80 100%);
+  box-shadow: 0 0.5vh 1.2vh #0005;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 calc(var(--D) * 0.25) 0 calc(var(--D) * 0.6);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.rv-plate::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--D) * 0.25);
+  right: calc(var(--D) * 0.06);
+  top: 9%;
+  bottom: 9%;
+  border: 0.2vh solid #e9cf86;
+  border-left: 0;
+  border-radius: 0 99px 99px 0;
+  pointer-events: none;
+}
+.rv-plate b {
+  position: relative;
+  color: #fff !important;
+  font-weight: 800;
+  font-size: calc(var(--D) * 0.18);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0.2vh 0.3vh #0006;
+}

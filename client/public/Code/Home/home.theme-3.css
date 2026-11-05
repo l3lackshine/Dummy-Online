@@ -1,0 +1,8 @@
+/* home.theme-3.css — Home · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (max-height: 520px) {
+  .gtile small,
+  .gtile i {
+    font-size: 10px !important;
+  }
+}

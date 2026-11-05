@@ -1,0 +1,51 @@
+/* account.theme-3.css — Account · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.pv-lv b {
+  font:
+    800 max(11px, 1.9vh) Sarabun,
+    sans-serif;
+  color: #b8862b;
+}
+.pv-lv small {
+  grid-column: 1/-1;
+  text-align: center;
+  font-size: max(10px, 1.5vh);
+  color: #7d8394;
+}
+.pv-nrow {
+  display: flex;
+  gap: 0.8vh;
+}
+.pv-nrow input {
+  flex: 1;
+  min-width: 0;
+}
+.pv-nsave {
+  flex: none;
+  border: 0;
+  border-radius: 1.2vh;
+  padding: 0 1.6vh;
+  background: #3b4255;
+  color: #fff;
+  font:
+    800 max(11px, 1.8vh) Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+.pv-nsave:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* ปุ่ม "เปลี่ยน" ใต้รูปโปรไฟล์: กดแล้วไม่เลื่อนออกข้าง */
+.pv-avbtn,
+.pv-avbtn:hover,
+.pv-avbtn:focus {
+  transform: translateX(-50%) !important;
+}
+.pv-avbtn:active {
+  transform: translateX(-50%) translateY(2px) !important;
+}
+/* หน้าโปรไฟล์เหลือ 2 แผง (ตั้งค่าย้ายไปไอคอนเฟือง) */
+.pv {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr) !important;
+}

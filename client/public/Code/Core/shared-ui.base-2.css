@@ -1,0 +1,239 @@
+/* shared-ui.base-2.css — Core · ชั้นสไตล์พื้นฐาน (แยกจาก style.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.acts button,
+.box button,
+.shop button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  border: 0;
+  font-weight: 700;
+  font-size: 17px;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(#5b6bb0, #3a4688);
+  box-shadow: 0 4px 0 #1c2554;
+}
+button:active {
+  transform: translateY(2px);
+}
+button:disabled {
+  opacity: 0.4;
+}
+.page,
+.ov {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.page {
+  height: 100%;
+  overflow: auto;
+}
+.box {
+  background: var(--panel);
+  border: 3px solid var(--gold);
+  border-radius: 22px;
+  padding: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 0 #0006;
+}
+.box h2 {
+  margin: 0 0 8px;
+  color: var(--gold);
+}
+.box p {
+  margin: 8px 0;
+  color: var(--mut);
+  font-size: 13px;
+}
+.box button {
+  width: 100%;
+  margin-top: 12px;
+}
+.box input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  background: #0c1536;
+  color: #fff;
+  font: 16px Sarabun;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+}
+.row small {
+  color: var(--mut);
+  display: block;
+}
+.logo {
+  font: 700 40px/1 Sarabun;
+  text-align: center;
+  color: #ffd75e;
+  text-shadow:
+    0 3px 0 #b8481a,
+    0 6px 0 #0006;
+  margin: 4px 0 14px;
+}
+.logo small {
+  display: block;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 2px 0 #7a3b78;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.box {
+  max-height: 100%;
+  overflow: auto;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  #app {
+    max-width: none;
+    flex-direction: row;
+    gap: 6px;
+  }
+  .pill {
+    font-size: 12px;
+    padding: 0 8px;
+  }
+  .o {
+    font-size: 10px;
+  }
+  .o b {
+    font-size: 11px;
+  }
+  .back {
+    width: 38px;
+    height: 54px;
+  }
+  .page {
+    padding: 8px;
+  }
+  .logo {
+    font-size: 30px;
+    margin: 0 0 8px;
+  }
+}
+/* Skin registry defaults: add new entries in skin/skins.json, not in game code. */
+body {
+  background: var(--page-background, linear-gradient(180deg, #2b2160 0%, #7a3b78 55%, #d9774f 100%)) fixed;
+}
+@media (min-width: 700px) {
+  #app {
+    max-width: 1100px;
+  }
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.pill {
+  font-size: 13px;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .felt .piles .back {
+    width: 36px;
+    height: 50px;
+    font-size: 13px;
+  }
+  .pill {
+    font-size: 11px;
+    padding: 0 8px;
+  }
+}
+.cstat {
+  background: #000a;
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: #ffe9b0;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 8px 0;
+}
+/* ===== v8: ตัวละครขนาดเท่ากัน / พื้นหลังรายผู้เล่น / แผงไพ่ (dock) ที่ใส่สกินได้ ===== */
+:root {
+  --chr: 92px;
+  --btn-img: none;
+  --dock-bg: linear-gradient(#0000, #0004);
+  --dock-border: #ffffff30;
+  --b-blue-1: #4aa3ff;
+  --b-blue-2: #1f6fe0;
+  --b-blue-3: #134aa0;
+  --b-org-1: #ffa13a;
+  --b-org-2: #f0640d;
+  --b-org-3: #a9440a;
+  --b-grn-1: #4cd36f;
+  --b-grn-2: #1f9c4a;
+  --b-grn-3: #14703a;
+  --b-g-1: #4a5886;
+  --b-g-2: #323d66;
+  --b-g-3: #1b2240;
+  --b-tool-1: #0006;
+  --b-tool-2: #0006;
+  --b-tool-3: #0000;
+}
+@media (max-width: 360px) {
+  :root {
+    --chr: 80px;
+  }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  :root {
+    --chr: 54px;
+  }
+}
+.chr .avatar-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 3px 3px #0009);
+}
+.pl.active .chr .avatar-img,
+.dock-me.active .chr .avatar-img {
+  animation: bob 1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl.active .chr .avatar-img,
+  .dock-me.active .chr .avatar-img {
+    animation: none;
+  }
+}
+.dock-me .chr .avatar-img {
+  height: calc(var(--chr) * 1.08);
+  object-position: center top;
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .dock-me .chr .avatar-img {
+    height: calc(var(--chr) * 1.08);
+  }
+}
+.pl-bottom .chr .avatar-img {
+  height: calc(var(--chr) * 1.08);
+  object-position: center top;
+}

@@ -1,0 +1,9 @@
+/* lobby.theme-4.css — Lobby · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (max-aspect-ratio: 1/1) {
+  .cr-col,
+  .cr-go,
+  .cr-go .cr-scroll {
+    overflow: visible;
+  }
+}

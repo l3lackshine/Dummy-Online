@@ -1,0 +1,184 @@
+/* account.theme-2.css — Account · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.pv-stats b {
+  display: block;
+  font-size: 2.6vh;
+}
+.pv-stats small {
+  font-size: 1.6vh;
+  color: var(--k-ink2);
+}
+.pv-mut {
+  font-size: 1.6vh;
+  color: var(--k-ink2);
+  margin: -0.6vh 0 0;
+}
+.pv-f {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+}
+.pv-f > span {
+  font-weight: 800;
+  font-size: 2.2vh;
+  color: #7a4fa0;
+}
+.pv-f input {
+  height: 6.6vh;
+  border-radius: 3.3vh;
+  border: 0.3vh solid #e3d3ec;
+  background: #fff;
+  padding: 0 2vh;
+  font: 800 2.7vh Sarabun;
+  color: var(--k-ink);
+  box-shadow: inset 0 0.3vh 0.6vh #3a274814;
+}
+.pv-f small {
+  font-size: 1.6vh;
+  color: var(--k-ink2);
+}
+.pv-link {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  height: 6.6vh;
+  border-radius: 3.3vh;
+  border: 0.3vh dashed #cdb6de;
+  background: #fff8;
+  color: var(--k-ink);
+  font: 800 2.2vh Sarabun;
+  padding: 0 1vh;
+  cursor: pointer;
+  text-align: left;
+}
+.pv-link i {
+  width: 4.4vh;
+  height: 4.4vh;
+}
+@media (max-height: 520px) {
+  .pv-f > span,
+  .pv-link,
+  .pv-set b,
+  .iv-tabs button,
+  .pv-btn,
+  .pv-h {
+    font-size: 12px !important;
+  }
+  .pv-f input {
+    font-size: 13px !important;
+  }
+  .pv-f small,
+  .pv-set small,
+  .pv-mut,
+  .pv-stats small,
+  .pv-un,
+  .iv-cell b,
+  .iv-tabs button small,
+  .pv-avbtn,
+  .iv-cell em {
+    font-size: 9.5px !important;
+  }
+  .pv-stats b,
+  .pv-tt {
+    font-size: 12px !important;
+  }
+  .pv-card,
+  .iv-det {
+    gap: 6px;
+  }
+}
+.pv-tt {
+  color: #b07a2a !important;
+}
+.nk-warn {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  color: #d6455a;
+  margin-top: 2px;
+}
+.nk-bad {
+  border-color: #d6455a !important;
+  box-shadow: 0 0 0 2px #d6455a44 !important;
+}
+.pv-dm {
+  position: fixed;
+  inset: 0;
+  z-index: 99996;
+  background: #000b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  font-family: Sarabun, sans-serif;
+}
+.pv-dbox {
+  width: min(92vw, 440px);
+  background: #fffaf2;
+  color: #3b4255;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 10px 30px #0008;
+  border: 3px solid #c8424f;
+}
+.pv-dbox h3 {
+  margin: 0 0 6px;
+  color: #c8424f;
+}
+.pv-dbox p {
+  margin: 4px 0;
+}
+.pv-dbox ul {
+  margin: 6px 0 10px;
+  padding-left: 20px;
+  font-size: 14px;
+}
+.pv-dbox label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+.pv-dbox input {
+  font:
+    600 16px Sarabun,
+    sans-serif;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 2px solid #d9cfc0;
+}
+.pv-derr {
+  display: block;
+  min-height: 1.2em;
+  color: #c8424f;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 13px;
+  margin: 4px 0;
+}
+.pv-dacts {
+  display: flex;
+  gap: 10px;
+}
+/* ===== Beta 0.6: รางวัลตามอันดับ · เลเวล · แบทเทิลพาส ===== */
+.lv-badge {
+  display: inline-block;
+  margin-left: 0.5vh;
+  padding: 0.1vh 0.9vh;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #e0a521, #ffd36b);
+  color: #3a2748;
+  font:
+    800 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  vertical-align: middle;
+}
+.pv-lv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.4vh 0.8vh;
+  width: 80%;
+  margin: 0.4vh auto;
+}

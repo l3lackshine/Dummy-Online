@@ -1,0 +1,59 @@
+/* table.ui.css — Table · ชั้นสไตล์หน้าจอชุด v6 (แยกจาก ui.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* หน้าเกม: ไม่มีกรอบพื้นหลังรายที่นั่งแล้ว ใส่แผ่นหลังข้อมูลผู้เล่นให้อ่านง่ายบนภาพห้อง */
+.arena .pl .pl-info {
+  background: #2a160cb8;
+  border-radius: 10px;
+  padding: 2px 7px;
+  color: var(--cream);
+}
+.hint,
+.logs {
+  text-shadow: 0 1px 2px #000;
+}
+/* โต๊ะก่อนเริ่มเกม: กองไพ่กลางโต๊ะ + แผงควบคุมสับ/เริ่ม */
+.deckbox {
+  position: relative;
+  width: 96px;
+  height: 84px;
+  margin: 0 auto;
+}
+.deckbox i {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  width: 46px;
+  height: 64px;
+  margin-left: -23px;
+  border-radius: 7px;
+  border: 3px solid #fff;
+  background: var(--back-img) center/cover no-repeat;
+  box-shadow: 0 2px 0 #0005;
+  transform: translate(0, calc(var(--i) * -0.6px));
+}
+/* ไพ่ที่กำลังบินตอนแจก */
+.fly {
+  position: fixed;
+  z-index: 60;
+  border-radius: 7px;
+  border: 3px solid #fff;
+  background: var(--back-img) center/cover no-repeat;
+  box-shadow: 0 3px 8px #0008;
+  pointer-events: none;
+  will-change: transform;
+}
+.clines {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #f1d9b5;
+  text-align: left;
+}
+.clines summary {
+  cursor: pointer;
+  color: var(--ui-gold);
+  font-weight: 700;
+}
+.clines div {
+  padding: 3px 0;
+  border-bottom: 1px dashed #7a553066;
+}

@@ -1,0 +1,53 @@
+/* gacha.theme.css — Gacha · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.gc-f,
+.gc-i,
+.gc-card {
+  --rk: #cfc6d9;
+  border: 3px solid var(--rk) !important;
+  border-radius: 14px !important;
+  box-shadow:
+    0 0 0 2px #fff8 inset,
+    0 0.6vh 1.2vh #3a274820 !important;
+  position: relative;
+}
+.gc-f.rare,
+.gc-i.rare,
+.gc-card.rare {
+  --rk: var(--rk-rare);
+}
+.gc-f.epic,
+.gc-i.epic,
+.gc-card.epic {
+  --rk: var(--rk-sr);
+  box-shadow:
+    0 0 0 2px #fff8 inset,
+    0 0 1.4vh #e3b24c88 !important;
+}
+.gc-f.legendary,
+.gc-i.legendary,
+.gc-card.legendary {
+  border-color: transparent !important;
+  background:
+    linear-gradient(#fffaf2, #fff3fa) padding-box,
+    conic-gradient(from var(--rk-a, 0deg), #ff7ab6, #ffd36b, #7ce0ff, #c58bff, #ff7ab6) border-box !important;
+  box-shadow: 0 0 1.8vh #ff7ab688 !important;
+  animation: rk-spin 4s linear infinite;
+}
+@property --rk-a {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes rk-spin {
+  to {
+    --rk-a: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-f.legendary,
+  .gc-i.legendary,
+  .gc-card.legendary {
+    animation: none;
+  }
+}

@@ -27,7 +27,9 @@
   | `Account` · `Settings` · `Inventory` · `Shop` | บัญชี ล็อกอิน โปรไฟล์ รางวัลล็อกอิน · ตั้งค่า · ช่องเก็บของ · ร้านค้า |
   | `Items` · `Stamina` · `Farm` · `Characters` | ไอเทม · สตามิน่า · โหมดฟาร์มกับบอท · เลเวลตัวละคร |
   | `Quests` · `BattlePass` · `Gacha` · `Ranked` · `Friends` · `Skills` · `Tutorial` · `PatchNotes` | ระบบละโฟลเดอร์ |
-  | `Theme` · `AssetPack` | ชั้นตกแต่ง/ธีม · โหลดแพ็กรูปที่เข้ารหัส |
+  | `Theme` · `AssetPack` | ชั้นตกแต่ง (`polish.js` · เปลี่ยน 🪙 เป็นรูป) · โหลดแพ็กรูปที่เข้ารหัส |
+
+  ไฟล์ CSS แบบมีชั้นชื่อ `<หมวด>.<ชั้น>.css` (เช่น `table.base.css`, `home.theme-2.css`) — ชั้นเรียง base → ui → layout → polish → theme ชั้นหลังทับชั้นก่อน · เลขต่อท้าย = ส่วนถัดไปของชั้นเดียวกัน · **ลำดับ `<link>` ใน index.html มีผล**
 - `skin/` · `BattlePass/` · `patchnotes.json` — ข้อมูล JSON (บางไฟล์สร้างจากสคริปต์ ห้ามแก้มือ) · `pack/` — แพ็กที่ GitHub Actions สร้าง
 
 **เซิร์ฟเวอร์ `server/src/`**

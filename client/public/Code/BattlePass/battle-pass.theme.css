@@ -1,0 +1,480 @@
+/* battle-pass.theme.css — BattlePass · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* หน้าแบทเทิลพาส */
+.bp {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  height: 100%;
+  min-height: 0;
+  padding: 0 2vh 2vh;
+  box-sizing: border-box;
+}
+.bp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  color: #fff;
+  font:
+    700 max(13px, 2.4vh) Sarabun,
+    sans-serif;
+  text-shadow: 0 1px 3px #0008;
+}
+.bp-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 2vh;
+  padding: 1.4vh 2vh;
+  border-radius: 2vh;
+  background: linear-gradient(110deg, #6e0a1eee, #2a1530ee);
+  color: #fff;
+  box-shadow: 0 0.6vh 1.6vh #0006;
+  border: 0.25vh solid #d4a537;
+}
+.bp-ttl small {
+  color: #ffd1e2;
+  font:
+    600 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+}
+.bp-ttl h3 {
+  margin: 0;
+  font:
+    800 max(16px, 3.4vh) Sarabun,
+    sans-serif;
+  color: #ffe3a8;
+}
+.bp-lvl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.4vh 1.2vh;
+}
+.bp-lvl b {
+  font:
+    900 max(16px, 3.6vh) Sarabun,
+    sans-serif;
+  color: #ffd36b;
+}
+.bp-lvl b small {
+  font-size: 0.5em;
+  color: #ffffffaa;
+}
+.bp-lvl i {
+  background: #ffffff22;
+}
+.bp-lvl small {
+  grid-column: 1/-1;
+  font:
+    600 max(10px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #ffffffcc;
+}
+.bp-claim {
+  border: 0;
+  border-radius: 99px;
+  padding: 1.2vh 2.6vh;
+  font:
+    800 max(12px, 2.2vh) Sarabun,
+    sans-serif;
+  background: #ffffff33;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bp-claim.on {
+  background: linear-gradient(90deg, #ffd36b, #e0a521);
+  color: #3a2748;
+  box-shadow: 0 0 1.6vh #ffd36b88;
+  animation: bpGlow 1.6s ease-in-out infinite;
+}
+.bp-claim:disabled {
+  cursor: default;
+}
+@keyframes bpGlow {
+  50% {
+    box-shadow: 0 0 2.6vh #ffd36bcc;
+  }
+}
+.bp-board {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  border-radius: 2vh;
+  overflow: hidden;
+  background: #fffaf2ee;
+  box-shadow: 0 0.6vh 1.6vh #0004;
+}
+.bp-rows {
+  display: grid;
+  grid-template-rows: 4vh repeat(3, 1fr);
+  border-right: 0.2vh solid #e6dccb;
+  min-width: 17vh;
+}
+.bp-rh {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3vh;
+  padding: 0 1.4vh;
+  border-bottom: 0.2vh solid #e6dccb;
+  color: #3b4255;
+}
+.bp-rh b {
+  font:
+    800 max(12px, 2.1vh) Sarabun,
+    sans-serif;
+}
+.bp-rh small {
+  font:
+    600 max(9px, 1.45vh) Sarabun,
+    sans-serif;
+  color: #7d8394;
+}
+.bp-rh.bp-gem b {
+  color: #4f6fd9;
+}
+.bp-rh.bp-premium b {
+  color: #c8102e;
+}
+.bp-buy {
+  margin-top: 0.3vh;
+  align-self: flex-start;
+  border: 0;
+  border-radius: 99px;
+  padding: 0.5vh 1.4vh;
+  background: linear-gradient(90deg, #6fb4ff, #4f6fd9);
+  color: #fff;
+  font:
+    800 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+.bp-own {
+  font:
+    800 max(10px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #2e9a5a;
+}
+.bp-soon {
+  align-self: flex-start;
+  padding: 0.3vh 1.2vh;
+  border-radius: 99px;
+  background: #eee3d3;
+  color: #8a6d3b;
+  font:
+    800 max(10px, 1.6vh) Sarabun,
+    sans-serif;
+}
+.bp-scroll {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+}
+.bp-col {
+  flex: none;
+  width: 13vh;
+  display: grid;
+  grid-template-rows: 4vh repeat(3, 1fr);
+  border-right: 0.15vh solid #eee3d3;
+}
+.bp-col.done {
+  background: #fff1c9;
+}
+.bp-col.next {
+  background: #ffe3ec;
+}
+.bp-n {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font:
+    900 max(12px, 2.1vh) Sarabun,
+    sans-serif;
+  color: #8a6d3b;
+  border-bottom: 0.2vh solid #e6dccb;
+}
+.bp-col.done .bp-n {
+  color: #b8862b;
+}
+.bp-col.next .bp-n {
+  color: #c8102e;
+}
+.bp-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3vh;
+  padding: 0.6vh;
+  border-bottom: 0.15vh solid #eee3d3;
+  text-align: center;
+  font:
+    700 max(10px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #3b4255;
+}
+.bp-cell.lock {
+  opacity: 0.55;
+}
+.bp-cell.got {
+  opacity: 0.45;
+}
+.bp-cell.ready {
+  background: #fff3b0;
+  box-shadow: inset 0 0 0 0.25vh #e0a521;
+}
+.bp-cell.big.bp-premium {
+  background: linear-gradient(160deg, #ffe3ec, #fff6e0);
+}
+.bp-cell.big.bp-gem {
+  background: linear-gradient(160deg, #e3ecff, #fff);
+}
+.bp-it {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2vh;
+  font-size: max(9px, 1.45vh);
+}
+.bp-it img {
+  width: 5vh;
+  height: 5vh;
+  object-fit: contain;
+}
+.bp-pv {
+  font-style: normal;
+  font-size: max(9px, 1.4vh);
+  color: #c8102e;
+  line-height: 1.25;
+}
+.bp-m {
+  color: #4f6fd9;
+}
+.bp-c {
+  color: #8a6d3b;
+}
+.bp-ok,
+.bp-lk {
+  position: absolute;
+  top: 0.3vh;
+  right: 0.5vh;
+  font-style: normal;
+  font-size: max(10px, 1.6vh);
+}
+.bp-ok {
+  color: #2e9a5a;
+}
+.bp-cyc {
+  background: #f3ecff;
+}
+.bp-how {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8vh 1.8vh;
+  padding: 1vh 1.6vh;
+  border-radius: 1.6vh;
+  background: #120d2ecc;
+  color: #fff;
+  font:
+    600 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+}
+.bp-how em {
+  font-style: normal;
+  color: #ffd36b;
+  font-weight: 800;
+}
+.bp-how b {
+  color: #ffd1e2;
+}
+.bp-q {
+  margin-left: auto;
+  border: 0;
+  border-radius: 99px;
+  padding: 0.6vh 1.8vh;
+  background: #ffd36b;
+  color: #3a2748;
+  font:
+    800 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  cursor: pointer;
+}
+@media (max-height: 520px) {
+  .bp-top {
+    padding: 0.8vh 1.4vh;
+  }
+  .bp-col {
+    width: 11vh;
+  }
+  .bp-rows {
+    min-width: 14vh;
+  }
+  .bp-how {
+    font-size: 10px;
+    gap: 0.4vh 1.2vh;
+  }
+}
+/* แบทเทิลพาส: จำนวนไอเทม */
+.bp-qty {
+  font:
+    900 max(11px, 1.8vh) Sarabun,
+    sans-serif;
+  color: #3b4255;
+}
+.cr-go {
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  overflow: hidden;
+}
+@media (max-height: 500px) and (min-aspect-ratio: 4/3) {
+  /* ---- จอเตี้ยแนวนอน (สูงไม่เกิน ~500px) ---- */
+  /* แบทเทิลพาส: หัวบางลง · ช่องรางวัลย่อ · แถบวิธีได้ EXP เป็นบรรทัดเดียวเลื่อนข้าง */
+  .bp {
+    gap: 1vh;
+    padding: 0 2vh 1.4vh;
+  }
+  .bp-top {
+    padding: 0.8vh 1.6vh;
+    gap: 1.6vh;
+  }
+  .bp-ttl h3 {
+    font-size: max(15px, 4.4vh);
+  }
+  .bp-ttl small {
+    font-size: max(10px, 2.6vh);
+  }
+  .bp-lvl b {
+    font-size: max(15px, 4.6vh);
+  }
+  .bp-lvl small {
+    font-size: max(10px, 2.6vh);
+  }
+  .bp-claim {
+    padding: 0.8vh 2vh;
+    font-size: max(11px, 3vh);
+  }
+  .bp-rows {
+    grid-template-rows: max(16px, 4.4vh) repeat(3, 1fr);
+    min-width: max(96px, 20vh);
+  }
+  .bp-col {
+    grid-template-rows: max(16px, 4.4vh) repeat(3, 1fr);
+    width: max(60px, 13vh);
+  }
+  .bp-n {
+    font-size: max(10px, 2.8vh);
+  }
+  .bp-cell {
+    padding: 0.3vh;
+    gap: 0;
+    font-size: max(9px, 2.3vh);
+    line-height: 1.15;
+  }
+  .bp-it {
+    gap: 0;
+    font-size: max(9px, 2.2vh);
+  }
+  .bp-it img {
+    width: max(18px, 5vh);
+    height: max(18px, 5vh);
+  }
+  .bp-pv {
+    font-size: max(8px, 2.1vh);
+    line-height: 1.1;
+  }
+  .bp-rh {
+    padding: 0 1vh;
+    gap: 0.2vh;
+  }
+  .bp-rh b {
+    font-size: max(11px, 2.9vh);
+  }
+  .bp-rh small {
+    font-size: max(8px, 2.1vh);
+    line-height: 1.15;
+  }
+  .bp-buy,
+  .bp-soon,
+  .bp-own {
+    font-size: max(9px, 2.3vh);
+    padding: 0.3vh 1vh;
+  }
+  .bp-how {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 0.6vh 1.2vh;
+    gap: 2vh;
+    font-size: max(10px, 2.5vh);
+    scrollbar-width: none;
+  }
+  .bp-q {
+    flex: none;
+    padding: 0.4vh 1.4vh;
+    font-size: max(10px, 2.5vh);
+  }
+}
+/* ---- 0.8.0 แบทเทิลพาส: ตั๋วพักร้อน · แท็บภารกิจ · กล่องเลือกของ ---- */
+.bp-top:has(.bp-vac) {
+  grid-template-columns: auto 1fr auto auto;
+}
+.bp-vac {
+  display: flex;
+  align-items: center;
+  gap: 0.8vh;
+  padding: 0.6vh 1.4vh 0.6vh 0.8vh;
+  border-radius: 99px;
+  background: #ffffff1f;
+  border: 0.2vh solid #9fe3ef88;
+  white-space: nowrap;
+}
+.bp-vac img {
+  width: max(26px, 5vh);
+  height: max(26px, 5vh);
+  object-fit: contain;
+}
+.bp-vac span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.bp-vac b {
+  font:
+    800 max(13px, 2.6vh) Sarabun,
+    sans-serif;
+  color: #bff4ff;
+}
+.bp-vac b small {
+  font-size: 0.7em;
+  opacity: 0.8;
+}
+.bp-vac > span > small {
+  font-size: max(9px, 1.5vh);
+  opacity: 0.85;
+}
+.bp-tabs {
+  display: flex;
+  gap: 1vh;
+  flex: none;
+}
+.bp-tabs button {
+  position: relative;
+  border: 0;
+  border-radius: 99px;
+  padding: 0.8vh 2.2vh;
+  font:
+    800 max(11px, 2vh) Sarabun,
+    sans-serif;
+  background: #fff;
+  color: #5a3b6e;
+  box-shadow: 0 0.4vh 1vh #3a274822;
+  cursor: pointer;
+}

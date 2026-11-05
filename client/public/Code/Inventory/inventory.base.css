@@ -1,0 +1,18 @@
+/* inventory.base.css — Inventory · ชั้นสไตล์พื้นฐาน (แยกจาก style.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.item {
+  background: #0c1536;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.item button {
+  margin: 0;
+  padding: 8px;
+  font-size: 14px;
+}

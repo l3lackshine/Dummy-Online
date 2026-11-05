@@ -1,0 +1,287 @@
+/* home.theme-5.css — Home · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rv-plate small {
+  position: relative;
+  color: #f4f1e6 !important;
+  font-size: calc(var(--D) * 0.13);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.95;
+}
+.rv-lvbar {
+  position: absolute;
+  left: calc(var(--D) * 0.5);
+  top: calc(var(--D) * 0.56);
+  width: calc(var(--D) * 2.42);
+  height: calc(var(--D) * 0.36);
+  z-index: 1;
+  background: linear-gradient(#a9abae, #9b9da1);
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+  box-sizing: border-box;
+  padding: 0 0 0 calc(var(--D) * 0.62);
+}
+.rv-lvbar i {
+  position: absolute;
+  left: calc(var(--D) * 0.5);
+  right: calc(var(--D) * 0.18);
+  top: 20%;
+  height: calc(var(--D) * 0.065);
+  border-radius: 99px;
+  background: #5b6070;
+  overflow: hidden;
+}
+.rv-lvbar i u {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(#22e0a6, #16b85a);
+}
+.rv-lvbar b {
+  position: absolute;
+  left: calc(var(--D) * 0.62);
+  bottom: 6%;
+  color: #ffa600 !important;
+  font:
+    900 calc(var(--D) * 0.2)/1 'Arial Black',
+    Arial,
+    sans-serif;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0.15vh 0 #7a4a0055;
+}
+.rv-lvbar b em {
+  font-style: normal;
+  color: #ffd83b;
+  margin-right: 0.35em;
+  font-size: 0.95em;
+}
+.rv-lvbar small {
+  position: absolute;
+  right: calc(var(--D) * 0.5);
+  bottom: 14%;
+  color: #fff !important;
+  font-size: calc(var(--D) * 0.11);
+  line-height: 1;
+  text-shadow: 0 0.1vh 0.2vh #0006;
+}
+@media (max-height: 500px) {
+  .rv-me2 {
+    --D: 20vh;
+  }
+}
+/* ===== หน้าแรก/โปรไฟล์ (0.6.2) ===== */
+/* พื้นหลังหน้าแรกเต็มจอ รวมพื้นที่ขอบเว้า (notch) ไม่ให้เห็นภาพอื่นต่อ */
+#app.home {
+  background: url(../../Assets/UI/Assets/kit2/bg-home.webp) center/cover no-repeat !important;
+}
+#app.home .scene {
+  background: none !important;
+}
+/* ปุ่มแพตช์โน้ตด้านซ้าย */
+.rv-sb.rv-pn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.rv-sb.rv-pn small {
+  font:
+    800 max(8px, 1.6vh)/1 Sarabun,
+    sans-serif;
+  color: #ffe2a6;
+  margin-top: 0.3vh;
+}
+.rv-sb.rv-pn {
+  width: 8.4vh !important;
+  height: 8.4vh !important;
+  padding: 0.8vh !important;
+}
+.rv-sb.rv-pn svg {
+  width: 4.2vh !important;
+  height: 4.2vh !important;
+  flex: none;
+}
+/* ===== ปุ่มเริ่มเล่น: สตามิน่า · แสงวิ่ง · กดยุบ + กลีบซากุระ · ลูกศรเปลี่ยนเกม ===== */
+.rv-play {
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 0.8vh !important;
+}
+.rv-start {
+  position: relative;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+.rv-start::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -7.5vh;
+  right: -7.5vh;
+  clip-path: inset(0 round 99px);
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 0 38%, #fff8 46%, #ffffffcc 50%, #fff8 54%, transparent 62% 100%) no-repeat;
+  background-size: 60% 100%;
+  background-position: -150% 0;
+  animation: rvShine 3.6s ease-in-out infinite;
+}
+@keyframes rvShine {
+  0%,
+  62% {
+    background-position: -150% 0;
+  }
+  100% {
+    background-position: 250% 0;
+  }
+}
+.rv-start:active,
+.rv-start.press {
+  transform: translateY(0.6vh) scale(0.96);
+  filter: drop-shadow(0 0.3vh 0.6vh #0006) brightness(0.97);
+}
+.rv-start b {
+  font-size: 5.6vh !important;
+}
+.rv-start .rv-st {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
+  font-size: max(10px, 2vh) !important;
+  font-weight: 800;
+  opacity: 1 !important;
+  color: #4a3410;
+  text-shadow: none;
+}
+.rv-start .rv-st b {
+  font-size: inherit !important;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.rv-petal {
+  position: fixed;
+  z-index: 9999;
+  width: calc(max(10px, 2.8vh) * var(--sz, 1));
+  height: calc(max(10px, 2.8vh) * var(--sz, 1));
+  margin: calc(max(10px, 2.8vh) * var(--sz, 1) / -2) 0 0 calc(max(10px, 2.8vh) * var(--sz, 1) / -2);
+  pointer-events: none;
+  background: center/contain no-repeat;
+  filter: drop-shadow(0 0.2vh 0.4vh #c0607055);
+  animation: rvPetal 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+@keyframes rvPetal {
+  0% {
+    transform: translate(0, 0) rotate(0) scale(0.6);
+    opacity: 1;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(1);
+    opacity: 0;
+  }
+}
+.rv-swap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8vh;
+  height: 4.6vh;
+  padding: 0 1.8vh;
+  border-radius: 99px;
+  border: 0.25vh solid #e9cf86;
+  background: linear-gradient(#3b4255ee, #2a3040ee);
+  color: #fff;
+  font:
+    800 max(11px, 2.2vh) Sarabun,
+    sans-serif;
+  box-shadow: 0 0.4vh 1vh #0005;
+  cursor: pointer;
+}
+.rv-swap i {
+  font-style: normal;
+  color: #ffd36b;
+  font-size: 0.9em;
+  transition: transform 0.15s;
+}
+.rv-swap:active {
+  transform: translateY(0.3vh);
+}
+.rv-gpick {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 1vh);
+  min-width: 30vh;
+  padding: 1vh;
+  border-radius: 1.8vh;
+  background: #fffaf2;
+  box-shadow: 0 1vh 2.4vh #0007;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  z-index: 20;
+  animation: pgUp 0.18s ease-out;
+}
+.rv-gpick button {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.4vh;
+  border: 0;
+  border-radius: 1.2vh;
+  background: #f2ecdf;
+  color: #3b4255;
+  font:
+    800 max(12px, 2.4vh) Sarabun,
+    sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.rv-gpick button span {
+  font-size: 1.2em;
+}
+.rv-gpick button b {
+  flex: 1;
+}
+.rv-gpick button.on {
+  background: #fff3cf;
+  box-shadow: inset 0 0 0 0.25vh #e0a521;
+}
+.rv-gpick button em {
+  font-style: normal;
+  color: #2e9a5a;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv-start::after {
+    animation: none;
+  }
+  .rv-petal {
+    display: none;
+  }
+}
+/* 0.7.1 หน้าเล่นเกม: ปุ่มเปลี่ยนเกมเปิดรายการเกมด้านล่าง (ไม่มีหน้าเลือกเกมแยกแล้ว) */
+.gcur-w {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 5;
+}
+[data-pg='play'] .gcur-w {
+  grid-column: 1/-1;
+}
+.gcur-w .gcur {
+  width: 100%;
+}
+.gcur-w .rv-gpick {
+  top: calc(100% + 0.8vh);
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  min-width: min(46vh, 90vw);
+}

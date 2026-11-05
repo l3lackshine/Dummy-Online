@@ -1,0 +1,35 @@
+/* lobby.ui.css — Lobby · ชั้นสไตล์หน้าจอชุด v6 (แยกจาก ui.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.box .shuf {
+  border-color: #e8c48a;
+  background: #0003;
+}
+.rule-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #f1d9b5;
+}
+.score-sum ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f1d9b5;
+}
+.score-sum li {
+  margin: 4px 0;
+}
+.pre {
+  padding: 6px 10px 0;
+  text-align: center;
+  color: var(--cream);
+}
+.pre p {
+  margin: 2px 0;
+  font-size: 12px;
+}
+.pre-code {
+  font-size: 17px;
+  letter-spacing: 3px;
+  color: #ffd75e;
+}

@@ -1,0 +1,315 @@
+/* inventory.theme.css — Inventory · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.iv {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6vh;
+  height: 100%;
+}
+.iv-tabs {
+  display: flex;
+  gap: 1vw;
+  flex: none;
+}
+.iv-tabs button {
+  height: 6.4vh;
+  min-width: 17vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8vh;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 3.2vh;
+  border-image: var(--k-white) 0 110 0 110 fill/0 3.2vh/0 stretch;
+  background: none;
+  color: var(--k-ink);
+  font: 800 2.5vh Sarabun;
+  padding: 0 0.3vw;
+  cursor: pointer;
+}
+.iv-tabs button small {
+  min-width: 3vh;
+  height: 3vh;
+  border-radius: 99px;
+  background: #efe4f6;
+  color: #7a4fa0;
+  font-size: 1.7vh;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.8vh;
+}
+.iv-tabs button.on {
+  border-image-source: var(--k-dark);
+  border-image-slice: 0 119 0 119 fill;
+  color: #fff;
+}
+.iv-tabs button.on small {
+  background: #ffffff26;
+  color: #ffe2a6;
+}
+.iv-main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 2vw;
+}
+.iv-grid {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(19vh, 1fr));
+  grid-auto-rows: min-content;
+  gap: 1.6vh;
+  padding: 3vh;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0;
+  border-image: none;
+  background: #ffffffa8;
+  border-radius: 3vh;
+  box-shadow:
+    inset 0 0 0 0.3vh #ffffffcc,
+    0 1vh 2vh #3a274822;
+  align-content: start;
+}
+.iv-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8vh;
+  padding: 1.2vh 0.8vh 1.4vh;
+  border-radius: 2.2vh;
+  border: 0.35vh solid #eadcf2;
+  background: #fff;
+  color: var(--k-ink);
+  font: 800 2vh Sarabun;
+  cursor: pointer;
+  box-shadow: 0 0.5vh 1vh #3a274814;
+}
+.iv-cell.sel {
+  border-color: #7a4fa0;
+  box-shadow:
+    0 0 0 0.4vh #c9a6e6,
+    0 0.8vh 1.4vh #3a274826;
+}
+.iv-cell em {
+  position: absolute;
+  top: -1.2vh;
+  left: 50%;
+  transform: translateX(-50%);
+  font-style: normal;
+  font-size: 1.5vh;
+  background: #4fbf7d;
+  color: #fff;
+  border-radius: 99px;
+  padding: 0.2vh 1vh;
+  white-space: nowrap;
+  z-index: 2;
+}
+.iv-pv {
+  width: 100%;
+  height: 15vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 1.6vh;
+  background: linear-gradient(#f6eefb, #efe3f7);
+}
+.iv-pv > * {
+  max-width: 100%;
+  max-height: 100%;
+}
+.iv-pv img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+}
+.iv-cell b {
+  font-size: 1.9vh;
+  line-height: 1.15;
+  text-align: center;
+}
+.iv-more .iv-pv {
+  font-size: 7vh;
+  color: #b89ccf;
+  background: repeating-linear-gradient(45deg, #f7f1fb 0 1vh, #f1e8f8 1vh 2vh);
+}
+.iv-det {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 3vh;
+  border-image: var(--k-cream) 90 fill/3vh stretch;
+  box-shadow: 0 1vh 2vh #3a274822;
+  overflow: hidden;
+}
+.iv-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 85%, #f3dcc0 0 35%, #0000 36%);
+  margin: -1vh -1vh 0;
+}
+.iv-hero {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 1vh 1vh #3a274840);
+}
+.iv-bigpv {
+  width: 80%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+.iv-bigpv > * {
+  transform: scale(1.6);
+}
+.iv-info {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  padding-top: 1vh;
+}
+.iv-info > b {
+  font-size: 3.2vh;
+  text-align: center;
+}
+.iv-sk {
+  max-height: 22vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 1.6vh;
+  padding: 1vh 1.4vh;
+  font-size: 1.8vh;
+  box-shadow: inset 0 0 0 0.25vh #eadcf2;
+}
+.iv-sk * {
+  color: var(--k-ink) !important;
+}
+.iv-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vh;
+  background: #ffffffa8;
+  border-radius: 3vh;
+  text-align: center;
+}
+.iv-empty i {
+  width: 12vh;
+  height: 12vh;
+  padding: 3vh;
+  border-radius: 50%;
+  color: #ffe2a6;
+  background: radial-gradient(circle at 50% 35%, #4b3566, #2a1c3e);
+  box-shadow: 0 0 0 0.4vh #d9b06a inset;
+}
+.iv-empty b {
+  font-size: 3vh;
+}
+.iv-empty small {
+  font-size: 2vh;
+  color: var(--k-ink2);
+}
+.iv-stage {
+  background: linear-gradient(#0000 40%, #f3dcc099) !important;
+  border-radius: 2vh;
+  margin: 0 !important;
+}
+@media (max-height: 520px) {
+  .iv-sk {
+    font-size: 10px !important;
+  }
+}
+/* tabs / chips: off = white, on = slate */
+.iv-tabs button small {
+  background: #eef0f4;
+  color: var(--k-ink2);
+}
+.iv-tabs button.on small {
+  background: #ffffff22;
+  color: var(--gs-gold);
+}
+.iv-cell.sel {
+  border-color: var(--k-ink) !important;
+  box-shadow:
+    0 0 0 0.4vh var(--gs-gold),
+    0 0.8vh 1.4vh #0002 !important;
+}
+.iv-tabs button {
+  height: round(5.4vh, 1px) !important;
+  border-width: 0 round(2.7vh, 1px) !important;
+  border-image-width: 0 round(2.7vh, 1px) !important;
+}
+/* ช่องเก็บของ: ไอเทม */
+.iv-qty {
+  position: absolute;
+  top: 0.6vh;
+  right: 0.8vh;
+  font-style: normal;
+  font:
+    800 max(11px, 1.8vh) Sarabun,
+    sans-serif;
+  color: #3b4255;
+  background: #ffffffd9;
+  border-radius: 99px;
+  padding: 0 0.8vh;
+}
+.iv-itic {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+.iv-itbig {
+  width: 60%;
+  max-width: 180px;
+  object-fit: contain;
+}
+.iv-desc {
+  margin: 0.6vh 0 1.2vh;
+  color: #555c6e;
+  font-size: max(12px, 2vh);
+}
+.iv-dupes {
+  grid-column: 1/-1;
+  display: block;
+  color: #7d8394;
+  font-size: 12px;
+  margin-top: 6px;
+}
+.iv-sk.has-cl {
+  max-height: 50vh;
+}
+@media (max-height: 500px) and (min-aspect-ratio: 4/3) {
+  /* ช่องเก็บของ → ตัวละคร: ซ่อนภาพใหญ่ ให้ส่วนเลเวล/ชุดแต่งใช้ความสูงเต็ม */
+  .iv-det:has(.iv-sk.has-cl) .iv-stage {
+    display: none;
+  }
+  .iv-det:has(.iv-sk.has-cl) .iv-info {
+    flex: 1;
+    min-height: 0;
+  }
+  .iv-det:has(.iv-sk.has-cl) .iv-info > b {
+    font-size: max(13px, 4vh);
+  }
+  .iv-sk.has-cl {
+    flex: 1;
+    min-height: 0;
+    max-height: none !important;
+  }
+}

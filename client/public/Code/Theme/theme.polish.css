@@ -1,0 +1,51 @@
+/* theme.polish.css — Theme · ชั้นตกแต่ง (แสงเงา ป้าย กลีบซากุระ) (แยกจาก polish.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ===== กลีบซากุระลอย + พลุเมื่อชนะ ===== */
+#pl-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+#pl-fx i {
+  position: absolute;
+  top: -6vh;
+  width: 1.4vmin;
+  height: 1vmin;
+  border-radius: 80% 0 80% 0;
+  background: linear-gradient(135deg, #ffd6e3, #ff9fbd);
+  opacity: 0.75;
+  animation: pl-fall linear infinite;
+}
+@keyframes pl-fall {
+  to {
+    transform: translate(var(--dx), 112vh) rotate(var(--rot));
+  }
+}
+#pl-win {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+}
+#pl-win b {
+  position: absolute;
+  top: -4vh;
+  width: 1vmin;
+  height: 1.8vmin;
+  animation: pl-conf linear forwards;
+}
+@keyframes pl-conf {
+  to {
+    transform: translate(var(--dx), 110vh) rotate(var(--rot));
+    opacity: 0.9;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pl-fx,
+  #pl-win {
+    display: none;
+  }
+}

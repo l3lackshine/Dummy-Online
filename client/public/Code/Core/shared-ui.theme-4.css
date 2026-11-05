@@ -1,0 +1,119 @@
+/* shared-ui.theme-4.css — Core · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (max-height: 520px) {
+  .plank small {
+    font-size: 10px !important;
+  }
+}
+/* ===== Genshin / HSR style buttons (preview variant) ===== */
+:root {
+  --k-green: url(../../Assets/UI/Assets/kit2/mx-green.webp);
+  --k-blue: url(../../Assets/UI/Assets/kit2/mx-blue.webp);
+  --k-orange: url(../../Assets/UI/Assets/kit2/mx-orange.webp);
+  --k-gray: url(../../Assets/UI/Assets/kit2/mx-gray.webp);
+  --k-dark: url(../../Assets/UI/Assets/kit2/mx-dark.webp);
+  --k-pink: url(../../Assets/UI/Assets/kit2/mx-pink.webp);
+  --k-white: url(../../Assets/UI/Assets/kit2/mx-white.webp);
+  --k-ink: #3b4255;
+  --k-ink2: #7d8394;
+  --gs-ivory: #ece5d8;
+  --gs-gold: #d9b86b;
+}
+/* text colour: light / gold pills get slate text */
+.wbtn,
+.rm-acts button,
+.acts.gx-acts button,
+.rs-foot .po-go,
+.rs-foot .g,
+.plank,
+.pv-btn,
+.rm-code button,
+.gx-tools button:nth-child(2),
+.rv-start {
+  color: var(--k-ink) !important;
+  text-shadow: none !important;
+}
+.plank b,
+.plank small,
+.rv-start b,
+.rv-start small {
+  color: var(--k-ink) !important;
+  text-shadow: none !important;
+}
+.rs-foot .po-go.done,
+.rs-foot .g,
+.pv-btn.gray,
+.wbtn:disabled,
+[data-pg='play'] .plank:nth-child(5) {
+  color: var(--gs-ivory) !important;
+}
+[data-pg='play'] .plank:nth-child(5) b,
+[data-pg='play'] .plank:nth-child(5) small {
+  color: var(--gs-ivory) !important;
+}
+/* dark pills keep ivory text */
+.hud-who,
+.coin-pill,
+.hud .pill,
+.gx-hud .pill,
+.rm-top .pill,
+.hud-sk,
+.gx-sk,
+.rv-nm,
+.rv-cur,
+.pg-title span,
+.rm-title b,
+.rm-plate b,
+.rm-chip,
+.gx-name,
+.chip.on,
+.catbtn.on,
+.iv-tabs button.on,
+.rs-tabs button.on {
+  color: var(--gs-ivory) !important;
+}
+.wbtn,
+.rm-acts .gray,
+.acts.gx-acts .grn {
+  --dot: #4a90d9;
+}
+.pv-btn svg {
+  color: var(--k-ink);
+}
+.pv-btn.gray svg {
+  color: var(--gs-ivory);
+}
+/* big buttons with title+subtitle: dot at the left edge */
+.plank,
+.rv-start {
+  position: relative;
+}
+.plank::before,
+.rv-start::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--dot, #e0a521);
+  box-shadow:
+    inset 0 0 0 0.5vh var(--dot, #e0a521),
+    inset 0 0 0 0.8vh #fff;
+}
+.plank::before {
+  left: -7.6vh;
+  width: 6vh;
+  height: 6vh;
+}
+[data-pg='play'] .plank:nth-child(2) {
+  --dot: #e0a521;
+}
+[data-pg='play'] .plank:nth-child(3) {
+  --dot: #4a90d9;
+}
+[data-pg='play'] .plank:nth-child(4) {
+  --dot: #3fb6a8;
+}
+[data-pg='play'] .plank:nth-child(5) {
+  --dot: #8e96a8;
+}

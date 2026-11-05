@@ -1,0 +1,231 @@
+/* lobby.theme-3.css — Lobby · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rm-plate small,
+.rm-title small,
+.rv-nm small {
+  color: var(--gs-gold) !important;
+}
+/* the Genshin "ring dot" on action buttons */
+.wbtn,
+.rm-acts button,
+.acts.gx-acts button,
+.rs-foot .po-go,
+.rs-foot .g,
+.pv-btn,
+.rm-code button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+}
+.wbtn::before,
+.rm-acts button::before,
+.acts.gx-acts button::before,
+.rs-foot .po-go::before,
+.rs-foot .g::before,
+.rm-code button::before {
+  content: '';
+  flex: none;
+  width: 1.05em;
+  height: 1.05em;
+  border-radius: 50%;
+  background: var(--dot, #d9a93b);
+  box-shadow:
+    inset 0 0 0 0.2em var(--dot, #d9a93b),
+    inset 0 0 0 0.3em #fff;
+  margin-left: -0.2em;
+}
+.wbtn.go,
+.rm-acts .blue,
+.rs-foot .po-go,
+.acts.gx-acts .blue {
+  --dot: #e0a521;
+}
+.rm-title {
+  height: 9.4vh !important;
+}
+.rm-title b {
+  font-size: 3.4vh !important;
+  line-height: 1.05 !important;
+}
+.rm-title small {
+  font-size: 1.8vh !important;
+  line-height: 1.1;
+}
+.rs-foot .po-go,
+.rs-foot .g {
+  border-width: 0 round(max(19px, 4.5vh), 1px) !important;
+  border-image-width: 0 round(max(19px, 4.5vh), 1px) !important;
+  height: round(max(38px, 9vh), 1px) !important;
+  min-height: 0 !important;
+}
+.rm-acts button {
+  border-width: 0 round(5.5vh, 1px) !important;
+  border-image-width: 0 round(5.5vh, 1px) !important;
+  height: round(11vh, 1px) !important;
+}
+.rm-plate {
+  border-width: 0 round(max(20px, 3vh), 1px) !important;
+  border-image-width: 0 round(max(20px, 3vh), 1px) !important;
+}
+.rm-acts button {
+  height: round(8.4vh, 1px) !important;
+  border-width: 0 round(4.2vh, 1px) !important;
+  border-image-width: 0 round(4.2vh, 1px) !important;
+  font-size: 3vh !important;
+}
+.rs-foot .po-go,
+.rs-foot .g {
+  height: round(max(34px, 7vh), 1px) !important;
+  border-width: 0 round(max(17px, 3.5vh), 1px) !important;
+  border-image-width: 0 round(max(17px, 3.5vh), 1px) !important;
+  font-size: max(12px, 2.4vh) !important;
+}
+.rm-slot::before {
+  border: var(--lobby-card-w) solid transparent !important;
+  border-image: var(--lobby-card) var(--lobby-card-slice) fill/var(--lobby-card-w) stretch !important;
+}
+.rm-slot {
+  box-shadow: 0 1vh 2.2vh #3a274826 !important;
+}
+.rm-slot .rm-art {
+  inset: 7vh 2.4vh 11.5vh 2.4vh !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.rm-slot .rm-chr {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.rm-slot .rm-chr img,
+.rm-slot .rm-chr .avatar-img {
+  width: auto !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  border-radius: 0 !important;
+  filter: drop-shadow(0 0.8vh 0.8vh #3a274830);
+}
+.rm-slot > .rm-chip {
+  top: 2.4vh !important;
+  right: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%);
+}
+.rm-slot > .rm-plate {
+  left: 2.2vh !important;
+  right: 2.2vh !important;
+  bottom: 2.6vh !important;
+}
+.rm-slot.on {
+  filter: drop-shadow(0 0 0.8vh #f0c873) !important;
+}
+.rm-slot > .rm-chip {
+  white-space: nowrap !important;
+  width: max-content;
+}
+/* characters: same height, feet on one baseline, centred; clipped inside the frame lines */
+.rm-slot .rm-art {
+  inset: 7.4vh 2.6vh 11.2vh 2.6vh !important;
+  overflow: hidden !important;
+  align-items: flex-end !important;
+}
+.rm-slot .rm-chr {
+  align-items: flex-end !important;
+  overflow: visible !important;
+}
+.rm-slot .rm-chr img,
+.rm-slot .rm-chr .avatar-img {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
+  flex: none;
+}
+.rm-slot > .rm-chip,
+.rm-slot > .rm-plate {
+  z-index: 3 !important;
+}
+/* ===== character placement per character (Character.config "lobby": {"align","scale"}) ===== */
+.rm-slot .rm-chr {
+  justify-content: var(--chr-al, center) !important;
+}
+.rm-slot .rm-chr img,
+.rm-slot .rm-chr .avatar-img {
+  height: var(--chr-h, 100%) !important;
+}
+/* ===== card decoration frame (Assets/Item/Frame · equipped per player, shown to everyone) ===== */
+.rm-deco {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.rm-deco::before,
+.rm-deco::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background-image: var(--deco);
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+}
+.rm-deco::before {
+  top: 0;
+  background-position: top center;
+}
+.rm-deco::after {
+  bottom: 0;
+  background-position: bottom center;
+}
+.rm-slot > .rm-chip,
+.rm-slot > .rm-plate {
+  z-index: 3 !important;
+}
+.mm-st {
+  font-size: 13px;
+}
+.pg[data-pg='create'] .panel.cr {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: none !important;
+  margin: 0 auto;
+  columns: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0 2.4vw;
+  padding: 1vh 1.6vw !important;
+  box-sizing: border-box;
+}
+.pg[data-pg='create'] .panel.cr.cr3 {
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr) minmax(0, 1fr);
+}
+.cr-col {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.4vw;
+  scrollbar-width: thin;
+}
+.cr-go .cr-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+@media (max-aspect-ratio: 1/1) {
+  .pg[data-pg='create'] .panel.cr,
+  .pg[data-pg='create'] .panel.cr.cr3 {
+    display: block !important;
+    flex: none;
+  }
+}

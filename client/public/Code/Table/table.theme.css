@@ -1,0 +1,222 @@
+/* table.theme.css — Table · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* ---------------- TABLE ---------------- */
+#app.gxl .gx-stage {
+  background-image: url(../../Assets/UI/Assets/kit2/bg-home.webp) !important;
+}
+.gx-name {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.2vh !important;
+  border-image: var(--k-dark) 0 119 0 119 fill/0 2.2vh/0 stretch !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  height: 4.4vh;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.3vw !important;
+  border-radius: 0 !important;
+  transform: none !important;
+}
+.gx-me.active .gx-name {
+  border-image-source: var(--k-pink) !important;
+  color: #3a2748 !important;
+}
+.gx-pts {
+  background: #fffd !important;
+  color: #3a2748 !important;
+  border: 0.2vh solid #e9c27a !important;
+  box-shadow: none !important;
+}
+.gx-turn {
+  background: #4fbf7d !important;
+  color: #fff !important;
+}
+.gx-gear {
+  width: 8vh !important;
+  height: 8vh !important;
+  border: 0 !important;
+  background: url(../../Assets/UI/Assets/kit2/rb-gear.webp) center/contain no-repeat !important;
+  color: transparent !important;
+  box-shadow: none !important;
+}
+.felt.gx-hub {
+  background: linear-gradient(#2f2142ee, #231833ee) !important;
+  border: 0.35vh solid #d9b06a !important;
+  box-shadow:
+    0 1vh 2.4vh #0006,
+    inset 0 0 0 0.6vh #ffffff10 !important;
+  border-radius: 3vh !important;
+}
+.gx-hint {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 2vh/0 stretch !important;
+  background: none !important;
+  color: #3a2748 !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+}
+.gx-tools button {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.4vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 2.4vh/0 stretch !important;
+  background: none !important;
+  color: #3a2748 !important;
+  font-weight: 800 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  min-width: 4.8vh;
+  padding: 0 !important;
+}
+.gx-tools button:nth-child(2) {
+  border-image-source: var(--k-green) !important;
+  color: #fff !important;
+  border-image-slice: 0 94 0 94 fill !important;
+}
+.acts.gx-acts {
+  gap: 1.4vh !important;
+}
+.acts.gx-acts button {
+  height: 9vh !important;
+  border-width: 0 4.5vh !important;
+  border-image-width: 0 4.5vh !important;
+  font-size: 3.4vh !important;
+  padding: 0 !important;
+}
+.acts.gx-acts .blue {
+  border-image-source: var(--k-blue) !important;
+}
+.acts.gx-acts .grn {
+  border-image-source: var(--k-green) !important;
+}
+.acts.gx-acts .org {
+  border-image-source: var(--k-orange) !important;
+}
+/* ---------------- RESULT ---------------- */
+.ov.rsv {
+  background: #2a1c3e66 !important;
+  backdrop-filter: blur(3px);
+}
+.ov.rsv .rs {
+  background: none !important;
+  box-shadow: 0 2vh 5vh #0006 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 4vh !important;
+  border-image: var(--k-cream) 90 fill/4vh stretch !important;
+  border-radius: 0 !important;
+  color: var(--k-ink) !important;
+  padding: 0 !important;
+}
+.ov.rsv .rs::before,
+.ov.rsv .rs::after {
+  display: none !important;
+}
+.rs-head {
+  margin-top: -1vh;
+}
+.rs-ttl small {
+  color: #c2457a !important;
+  font-weight: 800;
+}
+.rs-ttl h2 {
+  color: #3a2748 !important;
+  text-shadow: none !important;
+}
+.rs-down small {
+  color: var(--k-ink2) !important;
+}
+.rs-tabs button {
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 2.2vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 2.2vh/0 stretch !important;
+  background: none !important;
+  color: var(--k-ink2) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  height: 5vh;
+  font-weight: 800 !important;
+}
+.rs-tabs button.on {
+  border-image-source: var(--k-dark) !important;
+  border-image-slice: 0 119 0 119 fill !important;
+  color: #fff !important;
+}
+.rs-row {
+  background: none !important;
+  box-shadow: none !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 3.2vh !important;
+  border-image: var(--k-white) 0 110 0 110 fill/0 3.2vh/0 stretch !important;
+  border-radius: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  outline: 0 !important;
+}
+.rs-row * {
+  color: var(--k-ink);
+}
+.rs-row.me {
+  border-image-source: var(--k-pink) !important;
+  border-image-slice: 0 119 0 119 fill !important;
+}
+.rs-row.knk {
+  filter: drop-shadow(0 0 0.6vh #f4c36b);
+}
+.rs-chips i {
+  background: #f3eaf8 !important;
+  color: var(--k-ink2) !important;
+  border: 0 !important;
+}
+.rs-pt {
+  color: var(--k-ink) !important;
+}
+.rs-pt small {
+  color: var(--k-ink2) !important;
+}
+.rs-cd {
+  border-radius: 99px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.rs-cd.neg {
+  background: #e46a6a !important;
+  color: #fff !important;
+}
+.rs-av {
+  background: #1f2747 !important;
+  box-shadow: 0 0 0 0.35vh #e9c27a !important;
+}
+.rs-foot .g {
+  height: 9vh !important;
+  border-width: 0 4.5vh !important;
+  border-image-width: 0 4.5vh !important;
+  border-image-source: var(--k-gray) !important;
+  font-size: 2.8vh !important;
+  padding: 0 !important;
+}
+.rs-foot {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.rs-foot .g {
+  min-width: 26vh !important;
+}
+.rs-foot .g {
+  min-width: max(120px, 26vh) !important;
+}
+.ov.rsv .rs {
+  border-width: max(14px, 3.4vh) !important;
+  border-image-width: max(14px, 3.4vh) !important;
+}
+.acts.gx-acts button {
+  min-height: 34px;
+}

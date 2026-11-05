@@ -1,0 +1,102 @@
+/* shop.base.css — Shop · ชั้นสไตล์พื้นฐาน (แยกจาก style.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.coin {
+  color: var(--gold);
+  font-weight: 700;
+}
+.shopg {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.decor-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 6px 0 12px;
+}
+.decor-btn {
+  flex: 1;
+  min-width: 120px;
+  border: 1px solid #ffffff3b;
+  border-radius: 10px;
+  background: #27375c;
+  color: #fff;
+  padding: 9px;
+  font-weight: 700;
+}
+.decor-btn.chosen {
+  border: 2px solid var(--gold);
+  background: #6a5320;
+}
+.chars {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 4px 0 8px;
+}
+.char-opt {
+  flex: 1;
+  max-width: 150px;
+  background: #0c1536;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 6px 4px;
+  color: #fff;
+  font:
+    700 12px Sarabun,
+    sans-serif;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.char-opt img {
+  height: 84px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+.char-opt.on {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px #f2b84b66;
+  background: #1d2a5e;
+}
+.box .char-opt {
+  margin: 0;
+  width: auto;
+  padding: 6px 4px;
+  font-size: 12px;
+  background: #0c1536;
+  box-shadow: none;
+}
+.box .char-opt.on {
+  background: #1d2a5e;
+  box-shadow: 0 0 0 3px #f2b84b66;
+}
+.swatches {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 2px 0 6px;
+}
+.box .sw {
+  width: 42px;
+  height: 42px;
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  border: 2px solid #fff5;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 0 1px 2px #000a;
+  box-shadow: none;
+}
+.box .sw.on,
+.box .dk.on {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px #f2b84b88;
+}

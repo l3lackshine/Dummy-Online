@@ -1,0 +1,47 @@
+/* home.theme-2.css — Home · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.gcur small {
+  color: #7a4fa0 !important;
+}
+/* games */
+.gtile {
+  background: none !important;
+  box-shadow: 0 0.8vh 1.6vh #3a274822 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 2.4vh !important;
+  border-image: var(--k-paper) 90 fill/2.4vh stretch !important;
+  border-radius: 0 !important;
+  color: var(--k-ink) !important;
+  padding: 0 !important;
+}
+.gtile b {
+  color: var(--k-ink) !important;
+}
+.gtile small {
+  color: #5b4a6b !important;
+}
+.gtile i {
+  color: #a07ab8 !important;
+}
+.gtile.on {
+  border-image-source: var(--k-cream) !important;
+  filter: drop-shadow(0 0 0.8vh #f0b54f);
+}
+.gt-ic {
+  background: linear-gradient(#4b3566, #2a1c3e) !important;
+  border-radius: 2vh !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 0.3vh #d9b06a !important;
+}
+.gt-go {
+  color: #7a4fa0 !important;
+}
+[data-pg='play'] .gcur {
+  width: 100%;
+  max-width: 120vh;
+}
+[data-pg='play'] .gcur {
+  grid-column: 1/-1;
+  max-width: none;
+}

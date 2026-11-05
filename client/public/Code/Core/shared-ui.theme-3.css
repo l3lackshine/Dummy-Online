@@ -1,0 +1,132 @@
+/* shared-ui.theme-3.css — Core · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.plank b {
+  font:
+    800 5.4vh/1.1 Sarabun,
+    sans-serif !important;
+  color: #fff !important;
+  text-shadow: 0 0.35vh 0 #0004 !important;
+  white-space: nowrap;
+}
+.plank small {
+  font:
+    700 2.2vh Sarabun,
+    sans-serif !important;
+  color: #fff !important;
+  opacity: 0.95;
+  text-shadow: 0 0.2vh 0 #0003 !important;
+}
+.plank:nth-of-type(2) {
+  border-image-source: var(--k-blue) !important;
+}
+.plank:nth-of-type(3) {
+  border-image-source: var(--k-orange) !important;
+}
+.plank:nth-of-type(4) {
+  border-image-source: var(--k-gray) !important;
+}
+/* ================= PROFILE (settings only) ================= */
+.pg[data-pg='pv'] .pg-body {
+  display: block !important;
+  overflow: hidden !important;
+  padding: 1.6vh 3vw 3vh !important;
+}
+.pv-h {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  font-size: 2.9vh;
+  margin: 0 0 0.4vh;
+  color: var(--k-ink);
+}
+.pv-h i,
+.pv-set i,
+.pv-link i {
+  width: 4.6vh;
+  height: 4.6vh;
+  flex: none;
+  border-radius: 50%;
+  padding: 1vh;
+  color: #ffe2a6;
+  background: radial-gradient(circle at 50% 35%, #4b3566, #2a1c3e);
+  box-shadow: 0 0 0 0.25vh #d9b06a inset;
+}
+.pv-btn {
+  flex: 1;
+  height: 7vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8vh;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 0 3.5vh;
+  border-image: var(--k-blue) 0 94 0 94 fill/0 3.5vh/0 stretch;
+  background: none;
+  color: #fff;
+  font: 800 2.3vh Sarabun;
+  padding: 0;
+  cursor: pointer;
+  text-shadow: 0 0.25vh 0 #0004;
+  white-space: nowrap;
+}
+.pv-btn svg {
+  width: 3vh;
+  height: 3vh;
+  flex: none;
+}
+.pv-btn.gray {
+  border-image-source: var(--k-gray);
+}
+.pv-btn.green {
+  border-image-source: var(--k-green);
+}
+.pv-btn:disabled {
+  cursor: default;
+  opacity: 0.9;
+}
+/* ================= INVENTORY ================= */
+.pg[data-pg='iv'] .pg-body {
+  display: block !important;
+  overflow: hidden !important;
+  padding: 1.4vh 3vw 3vh !important;
+}
+.iv-pv .avatar-img {
+  height: 15vh !important;
+  width: auto !important;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+}
+.iv-info .pv-btn {
+  flex: none;
+  height: 7vh;
+}
+.iv-empty .pv-btn {
+  flex: none;
+  width: 40vh;
+  margin-top: 1vh;
+}
+/* ---- sub pages fixes ---- */
+[data-pg='play'] .pg-body {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 62vh));
+  justify-content: center;
+  align-content: center !important;
+  gap: 2.6vh 2.4vw !important;
+}
+[data-pg='play'] .plank {
+  width: 100% !important;
+  height: 22vh;
+}
+[data-pg='play'] .plank:nth-child(2) {
+  border-image-source: var(--k-green) !important;
+}
+[data-pg='play'] .plank:nth-child(3) {
+  border-image-source: var(--k-blue) !important;
+}
+[data-pg='play'] .plank:nth-child(4) {
+  border-image-source: var(--k-orange) !important;
+}
+[data-pg='play'] .plank:nth-child(5) {
+  border-image-source: var(--k-gray) !important;
+}

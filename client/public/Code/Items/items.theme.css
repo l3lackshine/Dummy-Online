@@ -1,0 +1,36 @@
+/* items.theme.css — Items · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.it-ic {
+  width: 2.2em;
+  height: 2.2em;
+  object-fit: contain;
+  flex: none;
+}
+.st-tea .it-ic {
+  width: 44px;
+  height: 44px;
+}
+.fm-it .it-ic {
+  width: 20px;
+  height: 20px;
+}
+.pg-items .it-ic {
+  width: max(26px, 4.6vh);
+  height: max(26px, 4.6vh);
+}
+.cl-bk .it-ic {
+  width: max(28px, 4.6vh);
+  height: max(28px, 4.6vh);
+}
+.pg-items.big .it-ic {
+  width: max(32px, 5.6vh);
+  height: max(32px, 5.6vh);
+}
+.cr-farm .fm-card .it-ic {
+  width: max(30px, 5.2vh);
+  height: max(30px, 5.2vh);
+}
+.fm-row .fm-it .it-ic {
+  width: max(16px, 2.8vh) !important;
+  height: max(16px, 2.8vh) !important;
+}

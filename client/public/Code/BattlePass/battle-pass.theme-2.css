@@ -1,0 +1,316 @@
+/* battle-pass.theme-2.css — BattlePass · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.bp-tabs button.on {
+  background: linear-gradient(90deg, #8a1530, #5a1a40);
+  color: #ffe7b0;
+  box-shadow: 0 0 0 0.25vh #d4a537;
+}
+.bp-tabs i {
+  position: absolute;
+  top: -0.6vh;
+  right: -0.4vh;
+  min-width: 2.4vh;
+  height: 2.4vh;
+  border-radius: 99px;
+  background: #e8344c;
+  color: #fff;
+  font:
+    800 max(9px, 1.5vh)/2.4vh Sarabun,
+    sans-serif;
+  font-style: normal;
+  padding: 0 0.5vh;
+}
+.bp-ms {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  border-radius: 2vh;
+  background: #120d2ecc;
+  padding: 1.2vh 1.6vh;
+  color: #fff;
+}
+.bp-mh {
+  margin: 0;
+  font:
+    700 max(11px, 1.9vh) Sarabun,
+    sans-serif;
+  color: #ffd1e2;
+}
+.bp-ml {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 52vh), 1fr));
+  gap: 1vh;
+  align-content: start;
+  scrollbar-width: thin;
+}
+.bp-m {
+  display: flex;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.2vh;
+  border-radius: 1.6vh;
+  background: #ffffff12;
+  border: 0.2vh solid #ffffff1a;
+}
+.bp-m.ready {
+  border-color: #ffd36b;
+  background: #ffd36b1c;
+  box-shadow: 0 0 1.2vh #ffd36b44;
+}
+.bp-m.got {
+  opacity: 0.55;
+}
+.bp-mi {
+  font-size: max(18px, 3.6vh);
+  flex: none;
+}
+.bp-mt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+}
+.bp-mt b {
+  font:
+    800 max(12px, 2vh) Sarabun,
+    sans-serif;
+}
+.bp-mt small {
+  font-size: max(10px, 1.6vh);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bp-mt i {
+  display: block;
+  height: 0.8vh;
+  border-radius: 99px;
+  background: #ffffff22;
+  overflow: hidden;
+}
+.bp-mt u {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ff9ab8, #ffd36b);
+}
+.bp-mp {
+  font:
+    700 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  opacity: 0.85;
+  flex: none;
+}
+.bp-me {
+  font:
+    800 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  font-style: normal;
+  color: #ffd36b;
+  flex: none;
+  white-space: nowrap;
+}
+.bp-mb {
+  flex: none;
+  border: 0;
+  border-radius: 99px;
+  padding: 0.7vh 1.6vh;
+  font:
+    800 max(11px, 1.8vh) Sarabun,
+    sans-serif;
+  background: #ffffff22;
+  color: #fff;
+  white-space: nowrap;
+}
+.bp-mb.got {
+  background: none;
+  color: #9fe8ff;
+}
+.bp-mb:disabled {
+  opacity: 0.6;
+}
+.bp-ms.locked .bp-m {
+  filter: grayscale(0.5);
+}
+.cr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #0009;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2vh;
+}
+.cr-box {
+  background: linear-gradient(#3a1530, #1d1236);
+  color: #fff;
+  border: 0.3vh solid #d4a537;
+  border-radius: 2.4vh;
+  padding: 2vh 2.4vh;
+  max-width: min(94vw, 640px);
+  max-height: 94vh;
+  overflow: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh;
+}
+.cr-ic {
+  width: max(56px, 11vh);
+  height: max(56px, 11vh);
+  object-fit: contain;
+  filter: drop-shadow(0 0 1.4vh #ffd36b88);
+}
+.cr-box h3 {
+  margin: 0;
+  font:
+    800 max(16px, 3vh) Mali,
+    Sarabun,
+    sans-serif;
+}
+.cr-box > small {
+  opacity: 0.8;
+}
+.cr-opts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1vh;
+  width: 100%;
+}
+.cr-opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4vh;
+  padding: 1.2vh 0.6vh;
+  border-radius: 1.6vh;
+  border: 0.25vh solid #ffffff2a;
+  background: #ffffff12;
+  color: #fff;
+  cursor: pointer;
+  font-family: Sarabun, sans-serif;
+}
+.cr-opt img {
+  width: max(40px, 8vh);
+  height: max(40px, 8vh);
+  object-fit: contain;
+}
+.cr-opt span {
+  font-size: max(30px, 6vh);
+}
+.cr-opt b {
+  font-size: max(11px, 1.8vh);
+}
+.cr-opt em {
+  font-style: normal;
+  font-weight: 800;
+  color: #ffd36b;
+}
+.cr-opt.on {
+  border-color: #ffd36b;
+  background: #ffd36b26;
+  box-shadow: 0 0 1.4vh #ffd36b66;
+}
+.cr-act {
+  display: flex;
+  gap: 1vh;
+}
+@media (max-width: 520px) {
+  .cr-opts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .bp-tabs button {
+    padding: 0.5vh 1.8vh;
+    font-size: max(10px, 2.6vh);
+  }
+  .bp-ml {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .bp-m {
+    padding: 0.6vh 1vh;
+  }
+  .bp-mt small {
+    font-size: max(9px, 2.2vh);
+  }
+  .bp-vac img {
+    width: 24px;
+    height: 24px;
+  }
+}
+.bp {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+.bp > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.cr-box.wide {
+  max-width: min(96vw, 900px);
+}
+.cr-opts.sh {
+  grid-template-columns: repeat(auto-fill, minmax(max(84px, 14vh), 1fr));
+}
+.cr-opt.sh .cr-ch {
+  width: 100%;
+  height: max(70px, 14vh);
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 1vh;
+}
+.cr-opt.sh small {
+  font-size: max(9px, 1.5vh);
+  opacity: 0.85;
+}
+.cr-opt.sh .cr-ch {
+  object-fit: contain;
+  filter: drop-shadow(0 0 0.8vh #7fc8ff66);
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .cr-box {
+    padding: 1.4vh 2vh;
+    gap: 0.6vh;
+  }
+  .cr-ic {
+    width: 44px;
+    height: 44px;
+  }
+  .cr-box h3 {
+    font-size: max(14px, 4.4vh);
+  }
+  .cr-box > small {
+    font-size: max(10px, 3vh);
+  }
+  .cr-opts.sh {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.8vh;
+  }
+  .cr-opt.sh {
+    padding: 0.6vh 0.4vh;
+  }
+  .cr-opt.sh .cr-ch {
+    height: max(52px, 15vh);
+  }
+  .cr-opt b,
+  .cr-opt em {
+    font-size: max(10px, 3vh);
+  }
+  .cr-opt.sh small {
+    font-size: max(9px, 2.6vh);
+  }
+  .cr-opt img {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -1,0 +1,82 @@
+/* home.layout.css — Home · ชั้นจัดหน้าแนวนอน/จอกว้าง (แยกจาก layout.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (min-aspect-ratio: 5/4) {
+  /* ---------- หน้าแรก: ตัวละครซ้าย · ป้ายไม้ขวา ---------- */
+  #app.home .hero {
+    left: 3%;
+    bottom: 0;
+    height: min(92%, calc(var(--u) * 100));
+    max-width: 46%;
+    width: auto;
+  }
+  #app.home .signs {
+    --sw: min(23vw, calc(var(--u) * 57));
+    right: 5%;
+    top: 53%;
+    transform: translateY(-50%);
+    width: calc(var(--sw) * 2 + var(--u) * 2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: calc(var(--u) * 1.2);
+    align-content: center;
+  }
+  #app.home .s-play {
+    grid-column: 1;
+    grid-row: 1/3;
+    align-self: center;
+  }
+  #app.home .s-shop {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+  }
+  #app.home .s-prof {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+  .pg[data-pg='play'] .gcur,
+  .pg[data-pg='play'] .cstat,
+  .pg[data-pg='play'] .joinbox,
+  .pg[data-pg='play'] .note {
+    flex: 0 0 auto;
+  }
+  .pg[data-pg='play'] .gcur {
+    width: min(100%, calc(var(--u) * 110));
+    max-width: none;
+  }
+  .pg[data-pg='play'] .joinbox,
+  .pg[data-pg='play'] .note {
+    width: min(100%, calc(var(--u) * 80));
+  }
+  /* เลือกเกม: รายการเกมเรียงเป็นตาราง 2 คอลัมน์ */
+  .pg[data-pg='games'] .gtiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--u) * 58), 1fr));
+    gap: calc(var(--u) * 1.2);
+    width: 100%;
+    max-width: calc(var(--u) * 150);
+  }
+  .gtile {
+    padding: calc(var(--u) * 1.2) calc(var(--u) * 1.8);
+    gap: calc(var(--u) * 1.4);
+    border-radius: 14px;
+  }
+  .gt-ic {
+    font-size: calc(var(--u) * 7);
+    width: calc(var(--u) * 8);
+  }
+  .gt-tx b {
+    font-size: max(15px, calc(var(--u) * 3.6));
+  }
+  .gt-tx small {
+    font-size: max(10.5px, calc(var(--u) * 2.4));
+  }
+  .gt-tx i {
+    font-size: max(10px, calc(var(--u) * 2.2));
+  }
+  .gt-go {
+    font-size: calc(var(--u) * 6);
+  }
+}

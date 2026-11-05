@@ -1,0 +1,67 @@
+/* shop.theme.css — Shop · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* shop */
+.item2 {
+  background: none !important;
+  box-shadow: 0 0.6vh 1.2vh #3a274818 !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 2vh !important;
+  border-image: var(--k-paper) 90 fill/2vh stretch !important;
+  border-radius: 0 !important;
+  color: var(--k-ink) !important;
+  padding: 0 !important;
+}
+.item2 b {
+  color: var(--k-ink) !important;
+}
+.iv-pv .pv-ch {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.iv-pv .pv-ch img {
+  height: 100%;
+}
+.catbtn {
+  font-size: max(11px, 2.1vh) !important;
+  white-space: nowrap;
+}
+.cattabs {
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+}
+.pv-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  aspect-ratio: 2/3;
+  background:
+    center/contain no-repeat,
+    linear-gradient(#f7f1fb, #efe3f7);
+  border-radius: 8px;
+}
+.pv-frame.none {
+  background: repeating-linear-gradient(45deg, #f7f1fb 0 6px, #efe6f6 6px 12px);
+  position: relative;
+}
+.pv-frame.none::after {
+  content: 'ไม่ใส่';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9a88ab;
+  font:
+    700 12px Sarabun,
+    sans-serif;
+}
+.iv-bigpv > .pv-frame {
+  transform: none !important;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  min-height: 0;
+}

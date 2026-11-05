@@ -1,0 +1,242 @@
+/* table.layout.css — Table · ชั้นจัดหน้าแนวนอน/จอกว้าง (แยกจาก layout.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+@media (min-aspect-ratio: 5/4) {
+  /* กล่องข้อความ/หน้าต่างซ้อน: ไม่ให้สูงเกินจอ */
+  .ov .box,
+  .pile-dialog,
+  .rule-body {
+    max-height: 92vh;
+    max-height: 92dvh;
+    overflow: auto;
+  }
+  .ov {
+    overflow: auto;
+  }
+  .colL {
+    display: flex;
+    flex-direction: column;
+    flex: 1.3 1 0;
+    min-width: 0;
+    min-height: 0;
+  }
+  .colR {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 calc(var(--u) * 0.8);
+  }
+  .top {
+    padding: calc(var(--u) * 0.7) calc(var(--u) * 1.2) 0;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .arena {
+    padding: 0 calc(var(--u) * 0.4);
+    gap: calc(var(--u) * 0.5);
+  }
+  .felt {
+    margin: 0;
+    min-height: 0;
+    border-width: calc(var(--u) * 1);
+    border-radius: calc(var(--u) * 4.6);
+    padding: calc(var(--u) * 0.7);
+    gap: calc(var(--u) * 0.5);
+  }
+  /* ผู้เล่นรอบโต๊ะ */
+  .pl-info b {
+    font-size: max(10px, calc(var(--u) * 2.6));
+    max-width: calc(var(--u) * 20);
+  }
+  .pl-info small {
+    font-size: max(9px, calc(var(--u) * 2.2));
+  }
+  .pl-left,
+  .pl-right {
+    width: auto;
+  }
+  .pl-left {
+    margin-right: calc(var(--chr) * -0.3);
+  }
+  .pl-right {
+    margin-left: calc(var(--chr) * -0.3);
+  }
+  .pl-left .pl-info,
+  .pl-right .pl-info {
+    min-width: 0;
+    max-width: calc(var(--u) * 17);
+  }
+  .pl-left .pl-info b,
+  .pl-right .pl-info b {
+    max-width: calc(var(--u) * 16);
+  }
+  .pl-top {
+    margin-bottom: calc(var(--chr) * -0.34);
+  }
+  .pl-top .pl-info,
+  .pl-bottom .pl-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+  }
+  .pl-top .pl-info small,
+  .pl-bottom .pl-info small {
+    display: inline;
+  }
+  .pl-bottom {
+    margin-right: calc(var(--u) * 1);
+  }
+  .pl-bottom .chr {
+    height: calc(var(--chr) * 0.7);
+  }
+  .tm {
+    margin: 0;
+    font-size: max(9px, calc(var(--u) * 2));
+  }
+  /* ไพ่บนโต๊ะ */
+  .zone .m .c {
+    width: calc(var(--u) * 5.6);
+    height: calc(var(--u) * 8);
+    font-size: max(9px, calc(var(--u) * 2.3));
+    padding: 1px 2px;
+  }
+  .zone-top .m .c + .c,
+  .zone-bottom .m .c + .c {
+    margin-left: calc(var(--u) * -2.6);
+  }
+  .zone-left .m .c,
+  .zone-right .m .c {
+    width: calc(var(--u) * 8);
+    height: calc(var(--u) * 7);
+  }
+  .zone-left .m .c + .c,
+  .zone-right .m .c + .c {
+    margin-top: calc(var(--u) * -4.6);
+  }
+  .zone-top,
+  .zone-bottom {
+    min-height: calc(var(--u) * 9);
+  }
+  .felt .dp .c.d {
+    width: calc(var(--u) * 8.2);
+    height: calc(var(--u) * 11.8);
+    font-size: max(11px, calc(var(--u) * 3));
+    margin-left: calc(var(--u) * -2.6);
+  }
+  .felt .dp .c.d:first-child {
+    margin-left: 0;
+  }
+  .felt .piles {
+    gap: calc(var(--u) * 1.2);
+  }
+  .felt .piles .lab,
+  .dp + .lab {
+    font-size: max(9px, calc(var(--u) * 2));
+    display: block;
+  }
+  @media (max-height: 420px) {
+    .felt .piles .lab,
+    .dp + .lab {
+      display: none;
+    }
+  }
+  /* ฝั่งขวา: ข้อความ ไพ่ในมือ ปุ่ม */
+  .logs {
+    font-size: max(10px, calc(var(--u) * 2.2));
+  }
+  @media (max-height: 420px) {
+    .logs {
+      display: none;
+    }
+  }
+  .hint {
+    margin: calc(var(--u) * 0.4) calc(var(--u) * 0.6);
+    min-height: calc(var(--u) * 7.5);
+    padding: calc(var(--u) * 0.6) calc(var(--u) * 2);
+    font-size: max(12px, calc(var(--u) * 2.9));
+  }
+  .hint small {
+    font-size: max(10px, calc(var(--u) * 2.3));
+  }
+  .dock-wrap {
+    flex: none;
+  }
+  .hand {
+    padding: calc(var(--u) * 2.8) calc(var(--u) * 1) calc(var(--u) * 0.8);
+    min-height: calc(var(--cw) * 1.42 + var(--u) * 3.6);
+    justify-content: safe center;
+    overflow-y: visible;
+  }
+  .hand .c {
+    flex: 0 0 var(--cw);
+    width: var(--cw);
+    height: calc(var(--cw) * 1.42);
+    margin-left: calc(var(--cw) * -0.2);
+    font-size: max(13px, calc(var(--cw) * 0.4));
+  }
+  .hand .c:first-child {
+    margin-left: 0;
+  }
+  .tools {
+    padding: 0 calc(var(--u) * 0.8) calc(var(--u) * 0.6);
+  }
+  .tools button {
+    padding: calc(var(--u) * 0.7);
+    font-size: max(11px, calc(var(--u) * 2.4));
+  }
+  .acts {
+    padding: calc(var(--u) * 0.4) calc(var(--u) * 0.8) calc(var(--u) * 1);
+    gap: calc(var(--u) * 0.8);
+  }
+  .acts button {
+    padding: calc(var(--u) * 1.7) 4px;
+    font-size: max(13px, calc(var(--u) * 3));
+    border-radius: 12px;
+  }
+  /* เกมอื่น (ป๊อกเด้ง/เก้าเก/ผสมสิบ/อีแก่) ใช้โครงเดียวกัน — ขยายตามจอ */
+  .gx {
+    font-size: max(11px, calc(var(--u) * 2.5));
+    gap: calc(var(--u) * 0.8);
+  }
+  .gs b {
+    font-size: 1em;
+  }
+  .gs small,
+  .gnote,
+  .gpile small,
+  .gstock,
+  .gind {
+    font-size: max(10px, calc(var(--u) * 2.2));
+  }
+  .gx .gcards .c {
+    width: calc(var(--u) * 6.4);
+    height: calc(var(--u) * 9);
+    font-size: max(10px, calc(var(--u) * 2.8));
+  }
+  .gx .gcards .c + .c {
+    margin-left: calc(var(--u) * -3.2);
+  }
+  .gcards .cb {
+    width: calc(var(--u) * 6.4);
+    height: calc(var(--u) * 9);
+  }
+  .gx .gcards .cb + .cb {
+    margin-left: calc(var(--u) * -4.2);
+  }
+  .gcards {
+    min-height: calc(var(--u) * 9.6);
+  }
+  .gpot {
+    font-size: max(11px, calc(var(--u) * 2.7));
+  }
+}
+@media (min-aspect-ratio: 5/4) and (min-width: 1400px) {
+  /* จอกว้างมาก (คอม): จำกัดความกว้างปุ่มใหญ่ๆ ไม่ให้ยืดเกินไป */
+  .acts button {
+    max-width: calc(var(--u) * 45);
+  }
+}

@@ -1,0 +1,15 @@
+/* skills.theme.css — Skills · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.sk-count {
+  background: #fffd !important;
+  color: #3a2748 !important;
+  border: 0.2vh solid #e9c27a !important;
+}
+.sk-count b {
+  color: #c2457a !important;
+}
+.gc-f.common,
+.gc-i.common,
+.gc-card.common {
+  --rk: var(--rk-common);
+}

@@ -1,0 +1,524 @@
+/* table.theme-4.css — Table · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rs-ttl small {
+  color: #b07a2a !important;
+}
+.gx-turn {
+  background: #e0a521 !important;
+}
+.acts.gx-acts button {
+  border-width: 0 round(4.5vh, 1px) !important;
+  border-image-width: 0 round(4.5vh, 1px) !important;
+  height: round(9vh, 1px) !important;
+}
+.gx-name {
+  border-width: 0 round(2.2vh, 1px) !important;
+  border-image-width: 0 round(2.2vh, 1px) !important;
+  height: round(4.4vh, 1px) !important;
+}
+.acts.gx-acts button,
+.rm-acts button,
+.rs-foot .po-go,
+.rs-foot .g {
+  width: round(var(--bw, 100%), 2px);
+}
+.acts.gx-acts {
+  width: round(down, 26vh, 2px) !important;
+}
+.acts.gx-acts .blue {
+  border-image-source: var(--k-green) !important;
+  --dot: #e0a521;
+}
+.acts.gx-acts .grn {
+  border-image-source: var(--k-blue) !important;
+  --dot: #4a90d9;
+}
+.acts.gx-acts button {
+  height: round(6.8vh, 1px) !important;
+  border-width: 0 round(3.4vh, 1px) !important;
+  border-image-width: 0 round(3.4vh, 1px) !important;
+  font-size: 2.7vh !important;
+}
+.acts.gx-acts {
+  gap: 1.1vh !important;
+  width: round(down, 23vh, 2px) !important;
+}
+/* ===== table HUD: no skills button; coins + room + stake in ONE glass sign, top-right ===== */
+#app.gxl .gx-hud {
+  left: auto !important;
+  right: calc(2vh + 7.6vh + 1.4vh) !important;
+  top: 2vh !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 0 !important;
+  height: round(5.6vh, 1px);
+  padding: 0 0.6vh !important;
+  border-radius: 99px;
+  background: rgba(28, 24, 44, 0.34) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.25);
+  backdrop-filter: blur(10px) saturate(1.25);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 0.6vh 1.6vh rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+#app.gxl .gx-hud .gx-sk {
+  display: none !important;
+}
+#app.gxl .gx-gear {
+  top: 2vh !important;
+  right: 2vh !important;
+  width: 7.6vh !important;
+  height: 7.6vh !important;
+}
+#app.gxl .gx-gear {
+  margin-top: -1vh;
+}
+@media (max-height: 520px) {
+  #app.gxl .gx-hud {
+    height: 28px !important;
+  }
+  .acts.gx-acts button {
+    height: 32px !important;
+    border-width: 0 16px !important;
+    border-image-width: 0 16px !important;
+    font-size: 12.5px !important;
+  }
+  .acts.gx-acts {
+    width: 104px !important;
+  }
+}
+/* พื้นหลังที่นั่งของตัวละคร (Character.config "seat") — ตัดเป็นช่องสามเหลี่ยมตามที่นั่ง */
+.gxl .gx-sb {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: center/cover no-repeat;
+  opacity: 0.9;
+  transition:
+    opacity 0.25s,
+    filter 0.25s;
+}
+/* แต่ละช่องย่อกรอบให้เท่าช่องของตัวเอง แล้ววางรูปแบบ cover ตรงกลาง → เห็นส่วนสวยกลางภาพ (ไม่ใช่แค่ขอบบน=เพดาน/ขอบล่าง=พื้น) */
+.gxl .gx-sb-top {
+  inset: 0 0 72% 0;
+  clip-path: polygon(0 0, 100% 0, 72% 100%, 28% 100%);
+  background-position: center 45%;
+}
+.gxl .gx-sb-left {
+  inset: 0 72% 0 0;
+  clip-path: polygon(0 0, 100% 28%, 100% 60%, 0 100%);
+  background-position: center center;
+}
+.gxl .gx-sb-right {
+  inset: 0 0 0 72%;
+  clip-path: polygon(100% 0, 100% 100%, 0 60%, 0 28%);
+  background-position: center center;
+}
+.gxl .gx-sb-bottom {
+  inset: 60% 0 0 0;
+  clip-path: polygon(0 100%, 28% 0, 72% 0, 100% 100%);
+  background-position: center 55%;
+}
+.gxl .gx-sb.on {
+  opacity: 1;
+  filter: brightness(1.08);
+}
+.gxl .gx-bg {
+  position: absolute;
+  z-index: 0;
+}
+.gxl .gx-art {
+  z-index: 1;
+}
+/* ตัวละครของเราไม่ทับปุ่ม: ย้ายไปมุมซ้ายล่างสุด เล็กลง และอยู่ใต้ปุ่มทั้งหมด */
+#app.gxl .gx-art-bottom {
+  left: -1% !important;
+  bottom: 0 !important;
+  width: 11% !important;
+  height: 27% !important;
+  z-index: 1 !important;
+  opacity: 0.85;
+}
+#app.gxl .gx-art-bottom.on {
+  opacity: 1;
+}
+#app.gxl .gx-me {
+  left: calc(11% + 1vh) !important;
+  bottom: 2vh !important;
+}
+#app.gxl .gx-tools {
+  left: calc(11% + 1vh) !important;
+  bottom: calc(2vh + 15vh) !important;
+}
+#app.gxl .gx-dock {
+  left: 24% !important;
+  right: 19% !important;
+}
+/* ===== เกมอื่น (ป๊อกเด้ง เก้าเก ผสมสิบ อีแก่) ใช้โต๊ะแบบเดียวกับดัมมี่ ===== */
+#app.gxo .gx-stage {
+  background: url(../../Assets/UI/Assets/kit2/bg-home.webp) center/cover no-repeat;
+}
+#app.gxo .gx-hub.gxo-hub {
+  left: 24% !important;
+  right: 24% !important;
+  top: 13% !important;
+  bottom: 37% !important;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  overflow: auto;
+  padding: 1.4vh !important;
+}
+#app.gxo .gx-hub .gx {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1vh;
+  justify-content: center;
+}
+#app.gxo .gx-hub .gx-hint {
+  flex: none;
+}
+#app.gxo .gx-sub {
+  font:
+    700 max(10px, 1.9vh) Sarabun,
+    sans-serif;
+  color: #3b4255;
+  background: #fffd;
+  border: 0.2vh solid #e9c27a;
+  border-radius: 99px;
+  padding: 0.1vh 1.2vh;
+  white-space: nowrap;
+}
+#app.gxo .gx-sub small {
+  font: inherit;
+  color: inherit;
+}
+#app.gxo .gxo-log {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(37% - 4.6vh);
+  max-width: 52%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+  font:
+    600 max(10px, 1.8vh) Sarabun,
+    sans-serif;
+  text-shadow: 0 1px 3px #000a;
+}
+/* กลางโต๊ะ: ช่องผู้เล่น/กองทิ้ง เป็นกระจกขาว อ่านง่ายบนพื้นม่วง */
+#app.gxo .gs,
+#app.gxo .gpile {
+  background: #ffffff1f !important;
+  border: 0.2vh solid #ffffff40 !important;
+  border-radius: 1.6vh !important;
+  color: #fff;
+}
+#app.gxo .gs.on,
+#app.gxo .gpile.on {
+  border-color: #e0a521 !important;
+  box-shadow: 0 0 1.2vh #e0a52199 !important;
+}
+#app.gxo .gs.me,
+#app.gxo .gpile.mine {
+  background: #e0a52133 !important;
+}
+#app.gxo .gs small,
+#app.gxo .gpile small,
+#app.gxo .gnote,
+#app.gxo .gstock,
+#app.gxo .gind {
+  color: #f1ecf7 !important;
+}
+#app.gxo .gpot {
+  background: #ffffff1f !important;
+  border: 0.2vh solid #e0a521 !important;
+  color: #ffe3a8 !important;
+}
+#app.gxo .gpile.can {
+  border-color: #7cff9a !important;
+  box-shadow: 0 0 1.2vh #7cff9a88 !important;
+}
+/* ไพ่ในมือและปุ่ม */
+#app.gxo .gxo-dock {
+  left: 24% !important;
+  right: 0 !important;
+  bottom: calc(var(--cw) * -0.3) !important;
+}
+#app.gxo .gxo-dock .hand {
+  padding-right: 30vh !important;
+}
+#app.gxo .gxo-dock .acts.gx-acts {
+  position: fixed;
+  right: 2vh;
+  bottom: 2.5vh;
+  width: round(down, 26vh, 2px);
+}
+#app.gxo .gxo-dock .acts.gx-acts .sm {
+  display: none !important;
+}
+#app.gxo .gxo-dock .acts.gx-acts button:disabled {
+  filter: grayscale(0.7);
+  opacity: 0.7;
+}
+#app.gxo .gxo-dock .gempty {
+  color: #fff;
+  font-weight: 700;
+}
+#app.gxo .c.dim {
+  opacity: 0.5;
+}
+#app.gxl .gx-tools {
+  bottom: calc(2vh + 20vh) !important;
+}
+#app.gxo .gx-hub.gxo-hub {
+  top: 11% !important;
+  bottom: 33% !important;
+}
+#app.gxo .gx-hub .gx {
+  justify-content: safe center;
+  overflow: auto;
+}
+#app.gxo .gslots,
+#app.gxo .gpiles {
+  gap: 0.8vh !important;
+}
+#app.gxo .gs,
+#app.gxo .gpile {
+  padding: 0.6vh 1vh !important;
+  gap: 0.3vh !important;
+}
+#app.gxo .gx .gcards {
+  min-height: 0 !important;
+}
+#app.gxo .gx .gcards .c {
+  width: calc(var(--u) * 5.4) !important;
+  height: calc(var(--u) * 7.6) !important;
+  font-size: max(10px, calc(var(--u) * 2.4)) !important;
+}
+.acts.gx-acts .g {
+  border-image-source: var(--k-gray) !important;
+  color: var(--gs-ivory, #ece5d8) !important;
+  --dot: #8e96a8;
+}
+#app.gxo .gxo-log {
+  bottom: calc(33% - 4.4vh) !important;
+}
+@media (max-height: 520px) {
+  #app.gxl .gx-tools {
+    bottom: calc(2vh + 27vh) !important;
+  }
+}
+/* ===== Beta 0.5.2 · จัดโต๊ะใหม่ =====
+   ป้ายของเรา (คุณ/แต้ม/ตา) → มุมซ้ายล่าง · ปุ่มเรียงไพ่ → แถวล่างข้างไพ่ในมือ
+   ตัวละครเรา → ขวาล่าง ข้างปุ่มเกิด/ทิ้ง · คู่แข่งบน → ซ้ายบน
+   ตัวละครทุกตัวขนาดเท่ากัน ครอปครึ่งตัว (เห็นหน้าชัด) */
+#app.gxl {
+  --chr-bw: min(25vh, 15vw);
+  --chr-bh: min(30vh, 19vw);
+}
+#app.gxl .gx-art {
+  width: var(--chr-bw) !important;
+  height: var(--chr-bh) !important;
+  overflow: visible;
+  clip-path: inset(0 -60% 0 -60%);
+  transform: none !important;
+  opacity: 0.78;
+  -webkit-mask-image: linear-gradient(#000 78%, transparent);
+  mask-image: linear-gradient(#000 78%, transparent);
+}
+#app.gxl .gx-art.on {
+  opacity: 1;
+}
+#app.gxl .gx-art .gx-chr {
+  position: relative;
+}
+#app.gxl .gx-art-top {
+  left: auto !important;
+  right: calc(50% + 9vh) !important;
+  top: 0 !important;
+}
+#app.gxl .gx-art-left {
+  left: calc(var(--u) * 2.5 + 15vh) !important;
+  top: 24% !important;
+}
+#app.gxl .gx-art-right {
+  right: calc(var(--u) * 2.5 + 15vh) !important;
+  left: auto !important;
+  top: 24% !important;
+}
+#app.gxl .gx-art-bottom {
+  left: auto !important;
+  right: calc(2vh + 23vh + 1vh) !important;
+  bottom: 0 !important;
+  opacity: 0.9;
+  --chr-bw: min(34vh, 21vw);
+  --chr-bh: min(32vh, 20vw);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+#app.gxl .gx-art-bottom.on {
+  opacity: 1;
+}
+#app.gxl .gx-me {
+  left: 2vh !important;
+  bottom: 2vh !important;
+}
+#app.gxl .gx-tools {
+  left: calc(2vh + 20vh) !important;
+  bottom: 2vh !important;
+  flex-direction: row;
+  gap: 0.6vh;
+}
+#app.gxl .gx-dock {
+  left: calc(2vh + 20vh + 27vh) !important;
+  right: calc(2vh + 23vh + 2vh) !important;
+}
+@media (max-height: 520px) {
+  #app.gxl .gx-tools {
+    bottom: 2vh !important;
+  }
+}
+/* เกมอื่น: กลางโต๊ะเลื่อนลง ให้ตัวละครบนอยู่ในเขตที่นั่งบนของตัวเอง (ไม่ล้นเข้าเขตพื้นหลังฝั่งซ้าย) */
+#app.gxo .gx-art-top {
+  --chr-bh: min(23vh, 15vw);
+}
+#app.gxo .gx-hub.gxo-hub {
+  top: 22% !important;
+  bottom: 25% !important;
+  left: 23% !important;
+  right: 23% !important;
+  padding: 1vh 1.2vh !important;
+  gap: 0.6vh !important;
+}
+#app.gxo .gx-hub .gx {
+  gap: 0.6vh !important;
+}
+#app.gxo .gxo-log {
+  bottom: calc(25% - 3.6vh) !important;
+}
+#app.gxo .gx .gcards .c {
+  width: calc(var(--u) * 4.4) !important;
+  height: calc(var(--u) * 6.2) !important;
+  font-size: max(9px, calc(var(--u) * 2.1)) !important;
+}
+#app.gxo .gs,
+#app.gxo .gpile {
+  padding: 0.4vh 0.9vh !important;
+  gap: 0.2vh !important;
+}
+#app.gxo .gslots,
+#app.gxo .gpiles {
+  gap: 0.6vh !important;
+}
+@media (max-height: 520px) {
+  /* จอเตี้ย (โทรศัพท์แนวนอน): ช่องผู้เล่น/กองทิ้งเรียงแถวเดียว 4 ช่อง ให้พอดีกลางโต๊ะ */
+  #app.gxo .gslots,
+  #app.gxo .gpiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+  #app.gxo .gs,
+  #app.gxo .gpile {
+    padding: 0.3vh 0.6vh !important;
+  }
+  #app.gxo .gs small,
+  #app.gxo .gpile small {
+    font-size: max(9px, 1.6vh) !important;
+  }
+  #app.gxo .gx-hub.gxo-hub {
+    padding: 0.6vh 0.8vh !important;
+  }
+}
+.rs-cd small,
+.rs-pt small {
+  display: block;
+  font-size: 0.7em;
+  opacity: 0.75;
+  font-weight: 600;
+}
+/* 0.9.0 ป้ายแต้มลอยตรงที่นั่ง (seatfx.js) */
+.seat-fx {
+  position: fixed;
+  z-index: 9100;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 0.25vh 1vh;
+  border-radius: 99px;
+  background: rgba(18, 12, 36, 0.38);
+  color: #fff;
+  font:
+    600 max(10px, 1.7vh) Sarabun,
+    sans-serif;
+  text-shadow: 0 1px 2px #000;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  animation: seatFx 2.8s ease-out forwards;
+}
+.seat-fx b {
+  font-size: 1.15em;
+  font-weight: 800;
+}
+.seat-fx.up b {
+  color: #5dff8f;
+}
+.seat-fx.down b {
+  color: #ff5d6c;
+}
+.seat-fx.up {
+  border-color: #5dff8f44;
+}
+.seat-fx.down {
+  border-color: #ff5d6c44;
+}
+@keyframes seatFx {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.8);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1.05);
+  }
+  18% {
+    transform: translate(-50%, -100%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -150%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -180%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seat-fx {
+    animation: none;
+  }
+}
+/* เส้นแบ่งช่องที่นั่ง: เส้นทองชัด + เงาเข้ม ให้แต่ละช่องแยกกันไม่ปนกัน (gx-bg อยู่เหนือรูปที่นั่ง) */
+#app.gxl .gx-bg {
+  z-index: 1;
+  pointer-events: none;
+}
+#app.gxl .gx-q {
+  fill-opacity: 0.1 !important;
+  stroke: #ffe3a3;
+  stroke-opacity: 0.95;
+  stroke-width: 3.2;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 2px #000c) drop-shadow(0 0 6px #0008);
+}
+#app.gxl .gx-q.on {
+  stroke: #2ff3ff;
+  stroke-width: 4.5;
+  filter: drop-shadow(0 0 3px #000c) drop-shadow(0 0 9px #2ff3ffcc);
+  fill-opacity: 0.06 !important;
+}

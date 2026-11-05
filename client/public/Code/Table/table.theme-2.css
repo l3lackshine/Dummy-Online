@@ -1,0 +1,16 @@
+/* table.theme-2.css — Table · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.panel .hint,
+small.hint {
+  background: none !important;
+  color: var(--k-ink2) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.gx-me.active .gx-name {
+  color: var(--k-ink) !important;
+}
+.acts.gx-acts .org {
+  --dot: #e2683c;
+}

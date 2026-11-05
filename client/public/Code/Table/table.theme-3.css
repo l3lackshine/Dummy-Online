@@ -1,0 +1,7 @@
+/* table.theme-3.css — Table · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rs-foot .g,
+.rs-foot .po-go.done,
+.wbtn:disabled {
+  --dot: #8e96a8;
+}

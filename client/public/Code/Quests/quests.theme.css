@@ -1,0 +1,18 @@
+/* quests.theme.css — Quests · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.q-act {
+  margin: 0.6vh 0 1vh;
+  padding: 0.8vh 1.2vh;
+  border-radius: 1.2vh;
+  background: #fff6e0;
+  display: grid;
+  gap: 0.5vh;
+}
+.q-act b {
+  font-size: 14px;
+  color: #8a6d3b;
+}
+.q-act small {
+  font-size: 11px;
+  color: #7d8394;
+}

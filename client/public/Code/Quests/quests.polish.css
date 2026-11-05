@@ -1,0 +1,9 @@
+/* quests.polish.css — Quests · ชั้นตกแต่ง (แสงเงา ป้าย กลีบซากุระ) (แยกจาก polish.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* แจ้งเควสไม่บังหน้าสรุปผล */
+body:has(.rsv) .q-toast {
+  top: 4px !important;
+  font-size: max(10px, 2.2dvh) !important;
+  padding: 3px 12px !important;
+  z-index: 70;
+}

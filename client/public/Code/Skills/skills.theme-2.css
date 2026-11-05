@@ -1,0 +1,42 @@
+/* skills.theme-2.css — Skills · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.gc-f.common,
+.gc-i.common,
+.gc-card.common {
+  border-image: var(--ui-rarity-common, none) 40 fill/12px stretch;
+}
+.gc-r.common {
+  --rk: var(--rk-common);
+}
+#app.gxo .sk-info {
+  left: auto !important;
+  right: 2vh !important;
+  top: 9vh !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-width: min(30vw, 380px) !important;
+  text-align: left !important;
+}
+#app.gxl .sk-info {
+  left: auto !important;
+  right: 2vh !important;
+  top: 9vh !important;
+  bottom: auto !important;
+  transform: none !important;
+  max-width: min(30vw, 380px) !important;
+  text-align: left !important;
+  font-size: max(11px, 2vh) !important;
+}
+@media (max-height: 500px) and (min-aspect-ratio: 4/3) {
+  /* หน้าต่างสกิล: กว้างขึ้น เนื้อหาแบ่ง 2 คอลัมน์ */
+  .sk-modal.sk-main .sk-box {
+    width: min(94vw, 980px) !important;
+  }
+  .sk-modal.sk-main .ck {
+    columns: 2;
+    column-gap: 20px;
+  }
+  .sk-modal.sk-main .ck > * {
+    break-inside: avoid;
+  }
+}

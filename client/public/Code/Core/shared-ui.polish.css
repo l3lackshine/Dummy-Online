@@ -1,0 +1,42 @@
+/* shared-ui.polish.css — Core · ชั้นตกแต่ง (แสงเงา ป้าย กลีบซากุระ) (แยกจาก polish.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* polish.css — ชั้นตกแต่งภาพ (ไม่แตะกติกา/ตำแหน่ง) โหลดหลังสุด
+   ปิดทั้งหมดได้โดยลบ <link> นี้ใน index.html */
+:root {
+  --gl: #ffe9a8;
+  --gl2: #f2b84b;
+  --glass: linear-gradient(160deg, #2a1d5acc, #120b32dd);
+}
+.back {
+  border-color: #fff;
+  box-shadow:
+    0 0 0 1px #0004,
+    0 3px 6px #0007,
+    0 -2px 4px #0003 inset;
+}
+/* ป้ายสถานะมุมบน */
+#app.gx .gx-hud .pill,
+#app.gx .gx-gear {
+  background: var(--glass);
+  border: 1.5px solid #ffe9a8aa;
+  color: #fff;
+  box-shadow:
+    0 3px 8px #0007,
+    inset 0 1px 0 #fff3;
+  backdrop-filter: blur(3px);
+}
+#app.gx .gx-hub .back {
+  animation: pl-float 3.2s ease-in-out infinite;
+}
+@keyframes pl-float {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+.rs-big b.pos {
+  color: #7dffa8;
+}
+.rs-cd.pos {
+  background: #1f9a4a;
+  color: #eaffef;
+}

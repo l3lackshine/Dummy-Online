@@ -1,0 +1,45 @@
+/* lobby.theme-2.css — Lobby · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+.rs-foot .po-go,
+.rs-foot .g {
+  white-space: nowrap !important;
+  font-size: 2.6vh !important;
+}
+.rs-foot .po-go {
+  min-width: 52vh !important;
+}
+.rs-foot .po-go,
+.rs-foot .g {
+  min-height: 9vh !important;
+  max-height: none !important;
+  flex: none !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+/* ---- small-phone safety (min px sizes) ---- */
+.rm-slot > .rm-plate {
+  height: max(40px, 8vh) !important;
+  border-width: 0 max(20px, 3vh) !important;
+  border-image-width: 0 max(20px, 3vh) !important;
+}
+.rm-plate b {
+  font-size: max(13px, 3vh) !important;
+  line-height: 1.05;
+}
+.rm-plate small {
+  font-size: max(9px, 1.9vh) !important;
+  line-height: 1;
+}
+.rs-foot .po-go,
+.rs-foot .g {
+  min-height: max(38px, 9vh) !important;
+  height: max(38px, 9vh) !important;
+  font-size: max(12px, 2.6vh) !important;
+  border-width: 0 max(19px, 4.5vh) !important;
+  border-image-width: 0 max(19px, 4.5vh) !important;
+}
+.rs-foot .po-go {
+  min-width: max(220px, 52vh) !important;
+}

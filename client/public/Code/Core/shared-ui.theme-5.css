@@ -1,0 +1,380 @@
+/* shared-ui.theme-5.css — Core · ชั้นธีมใหม่ (แยกจาก theme2.css เดิม)
+   ลำดับ <link> ใน index.html มีผลต่อการทับกันของกฎ — ไฟล์ชั้นเดียวกันเรียงตามเลขส่วน */
+/* accents from purple -> slate/gold */
+.panel .sec,
+.ksec .sec,
+.pv-f > span,
+.pv-val,
+.gcur small,
+.gt-go {
+  color: #8a6d3b !important;
+}
+/* integer-pixel slice widths: removes the hairline seam where border-image pieces meet */
+[data-pg='play'] .plank {
+  border-width: 0 round(11vh, 1px) !important;
+  border-image-width: 0 round(11vh, 1px) !important;
+  height: round(22vh, 1px) !important;
+}
+.pv-btn {
+  border-width: 0 round(3.5vh, 1px) !important;
+  border-image-width: 0 round(3.5vh, 1px) !important;
+  height: round(7vh, 1px) !important;
+}
+.wbtn {
+  border-width: 0 round(3.4vh, 1px) !important;
+  border-image-width: 0 round(3.4vh, 1px) !important;
+  min-height: round(6.8vh, 1px) !important;
+}
+.pg-title {
+  border-width: 0 round(4.2vh, 1px) !important;
+  border-image-width: 0 round(4.2vh, 1px) !important;
+  height: round(8.4vh, 1px) !important;
+}
+[data-pg='play'] .pg-body {
+  grid-template-columns: repeat(2, round(down, 62vh, 2px)) !important;
+}
+/* ===== compact heights (about 20-25% lower) ===== */
+[data-pg='play'] .plank {
+  height: round(17vh, 1px) !important;
+  border-width: 0 round(8.5vh, 1px) !important;
+  border-image-width: 0 round(8.5vh, 1px) !important;
+}
+[data-pg='play'] .plank b {
+  font-size: 4.4vh !important;
+}
+[data-pg='play'] .plank small {
+  font-size: 1.9vh !important;
+}
+.plank::before {
+  left: -6vh !important;
+  width: 4.6vh !important;
+  height: 4.6vh !important;
+}
+.wbtn {
+  min-height: round(5.6vh, 1px) !important;
+  border-width: 0 round(2.8vh, 1px) !important;
+  border-image-width: 0 round(2.8vh, 1px) !important;
+}
+.pv-btn {
+  height: round(5.8vh, 1px) !important;
+  border-width: 0 round(2.9vh, 1px) !important;
+  border-image-width: 0 round(2.9vh, 1px) !important;
+  font-size: 2.1vh !important;
+}
+.pg-title {
+  height: round(7vh, 1px) !important;
+  border-width: 0 round(3.5vh, 1px) !important;
+  border-image-width: 0 round(3.5vh, 1px) !important;
+}
+.pg-title span {
+  font-size: 3.3vh !important;
+}
+.coin-pill,
+.hud .pill,
+.rm-top .pill,
+.hud-sk {
+  height: round(5.4vh, 1px) !important;
+  border-width: 0 round(2.7vh, 1px) !important;
+  border-image-width: 0 round(2.7vh, 1px) !important;
+  font-size: 2.4vh !important;
+}
+.chip,
+.catbtn {
+  border-width: 0 round(2vh, 1px) !important;
+  border-image-width: 0 round(2vh, 1px) !important;
+  padding: 0.6vh 0.2vw !important;
+}
+#app.gxl .gx-hud .pill {
+  height: auto !important;
+  border-image: none !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  padding: 0 1.5vh !important;
+  font-size: 2.3vh !important;
+  color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
+  white-space: nowrap;
+}
+#app.gxl .gx-hud .pill + .pill {
+  border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+#app.gxl .gx-hud .kicon {
+  width: 2.9vh;
+  height: 2.9vh;
+}
+@media (max-height: 520px) {
+  #app.gxl .gx-hud .pill {
+    font-size: 11px !important;
+    padding: 0 8px !important;
+  }
+  #app.gxl .gx-hud .kicon {
+    width: 14px;
+    height: 14px;
+  }
+}
+/* ===== lobby player card: swappable frame (change --lobby-card to another image) ===== */
+:root {
+  --lobby-card: var(--ui-lobby-card, url(../../Assets/UI/Assets/kit2/lobby-card.webp));
+  --lobby-card-slice: 95;
+  --lobby-card-w: 5.4vh;
+}
+/* ===== ระดับความหายากในตู้กาชา: Common น้ำเงิน · Rare ม่วง · SR ทอง · SSR กรอบพิเศษ =====
+   ใส่รูปกรอบเองได้ที่ UI/ui.config → "rarity": {"common","rare","sr","ssr"} (เว้นว่าง = ใช้กรอบสีด้านล่าง) */
+:root {
+  --rk-common: #4f8fe0;
+  --rk-rare: #9a5be0;
+  --rk-sr: #e3b24c;
+  --rk-ssr: #ff7ab6;
+}
+/* ===================== Beta 0.5.1 ===================== */
+/* หัวข้อหน้า: พื้นป้ายพอดีกับข้อความ และอยู่กลางจอทุกหน้า */
+.pg-title {
+  container-type: normal !important;
+  width: max-content !important;
+  max-width: 80vw;
+  justify-self: center !important;
+  align-self: start;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2.2vw !important;
+  box-sizing: content-box;
+}
+.pg-title span {
+  font-size: 3.3vh !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+.pg > .pg-title {
+  grid-area: 1/1;
+  z-index: 4;
+}
+#app.gxl .gx-art .gx-chr .avatar-img {
+  position: absolute;
+  max-width: none;
+  width: auto !important;
+  height: calc(100% / var(--ts, 0.5)) !important;
+  object-fit: fill !important;
+  top: calc(-100% * var(--tt, 0) / var(--ts, 0.5));
+  left: 50%;
+  transform: translateX(calc(-100% * var(--tx, 0.5)));
+}
+.pv-dacts .pv-btn {
+  height: 44px;
+}
+.pv-dacts .pv-btn.red {
+  border: 0 !important;
+  border-image: none !important;
+  background: #c8424f !important;
+  color: #fff !important;
+  border-radius: 22px;
+}
+.pv-dacts .pv-btn.red::before {
+  display: none !important;
+}
+.pv-btn:disabled {
+  filter: grayscale(0.8);
+  opacity: 0.6;
+  cursor: default;
+}
+.pg-me .pg-lv {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.8vh;
+  margin-top: 0.6vh;
+  font:
+    800 max(11px, 1.9vh) Sarabun,
+    sans-serif;
+}
+.pg-me .pg-lv i,
+.pv-lv i,
+.q-act i,
+.bp-lvl i {
+  display: block;
+  height: 1.1vh;
+  min-height: 6px;
+  border-radius: 99px;
+  background: #00000022;
+  overflow: hidden;
+}
+.pg-me .pg-lv u,
+.pv-lv u,
+.q-act u,
+.bp-lvl u {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #e0a521, #ffd36b);
+  border-radius: inherit;
+}
+.pg-me .pg-lv small {
+  color: #2e9a5a;
+  font-weight: 800;
+}
+.pg-up {
+  margin-top: 0.6vh;
+  padding: 0.5vh 1vh;
+  border-radius: 1vh;
+  background: linear-gradient(90deg, #ffd36b, #ffb3d1);
+  color: #3a2748;
+  font:
+    800 max(11px, 1.9vh) Sarabun,
+    sans-serif;
+  text-align: center;
+  animation: pgUp 0.6s ease-out;
+}
+@keyframes pgUp {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.pg-cap {
+  margin-top: 0.5vh;
+  font:
+    600 max(10px, 1.6vh) Sarabun,
+    sans-serif;
+  color: #b06a00;
+}
+.pg-wait {
+  display: block;
+  font:
+    600 max(10px, 1.5vh) Sarabun,
+    sans-serif;
+  font-style: normal;
+  opacity: 0.7;
+}
+.pg-kv,
+.pg-me .rs-kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 1vh;
+}
+[data-pg='bp'] .pg-title {
+  display: none !important;
+}
+/* หน้าสรุปผล */
+.pg-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 0.4vh;
+  font:
+    900 max(14px, 2.6vh) Sarabun,
+    sans-serif;
+}
+.pg-prac {
+  display: block;
+  margin: 0.4vh 0;
+  font:
+    900 max(18px, 3.4vh) Sarabun,
+    sans-serif;
+  color: #8a6d3b;
+}
+.pg-items.big {
+  margin: 0.6vh 0;
+  font-size: max(18px, 3.4vh);
+  color: #3b4255;
+}
+/* ===== จัดวางใหม่สำหรับจอเตี้ย (มือถือแนวนอน): เนื้อหาไม่ล้น · แผ่ออกด้านข้าง · ส่วนยาวเลื่อนในกล่องตัวเอง ===== */
+/* หน้าตั้งค่าห้อง: 2–3 คอลัมน์ (เกม+ตั้งค่า | ฟาร์ม | รางวัล+ปุ่มเริ่ม) */
+.pg[data-pg='create'] .pg-body {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+  padding: 1.2vh 2.4vw 2vh !important;
+}
+.cr-col > .sec:first-child,
+.cr-col > .cr-scroll > .sec:first-child {
+  margin-top: 0 !important;
+}
+.cr-go .wbtn.go {
+  flex: none;
+  margin-top: 0 !important;
+}
+@media (max-aspect-ratio: 1/1) {
+  /* จอแคบแนวตั้ง: กลับเป็นคอลัมน์เดียวเลื่อนทั้งหน้า */
+  .pg[data-pg='create'] .pg-body {
+    overflow-y: auto !important;
+  }
+  .cr-go .wbtn.go {
+    margin-top: 1.4vh !important;
+  }
+}
+@media (max-width: 1100px) {
+  /* หัวหน้าย่อย: จอไม่กว้าง → ชื่อหน้าชิดซ้ายถัดจากปุ่มย้อนกลับ ไม่ทับปุ่มด้านขวา */
+  .pg > .pg-title {
+    justify-self: start !important;
+    margin-left: calc(2vw + 10.5vh) !important;
+    margin-right: 0 !important;
+    max-width: 34vw;
+  }
+  .pg > .pg-title span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+}
+/* การ์ดร้านค้า: ปุ่มไม่ล้นการ์ด */
+.item2 .wbtn[disabled] {
+  font-size: 0.82em;
+  white-space: nowrap;
+}
+/* แพตช์โน้ต */
+.ver {
+  cursor: pointer;
+}
+.set-box .pv-h {
+  margin: 0 0 2px;
+}
+.set-box .pv-acts .pv-btn {
+  flex: 1;
+  height: 44px;
+}
+.pv-btn.sm {
+  height: 34px !important;
+  padding: 0 14px;
+  flex: none;
+  font-size: 13px;
+}
+.bp-mb.go {
+  background: linear-gradient(90deg, #ffd36b, #e0a521);
+  color: #3a2748;
+  cursor: pointer;
+}
+.cr-act .wbtn {
+  margin: 0;
+}
+/* รูปหน้าแบบวงกลม (avFace ใน Code/Core/skins.js): ซูมที่หน้าตามกรอบ table ของตัวละคร */
+.av-fc {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  display: block;
+}
+.av-fc .avatar-img {
+  position: absolute !important;
+  max-width: none !important;
+  width: auto !important;
+  height: calc(100% / var(--fz)) !important;
+  left: 50% !important;
+  top: calc(-100% * var(--fy) / var(--fz)) !important;
+  transform: translateX(calc(-100% * var(--fx)));
+  object-fit: fill !important;
+  border-radius: 0 !important;
+}
+.hud-av,
+.pv-av,
+.rs-av {
+  position: relative;
+}

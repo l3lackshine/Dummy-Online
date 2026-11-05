@@ -1,0 +1,41 @@
+/* coin-icons.js — เปลี่ยนอีโมจิเหรียญ 🪙 ในหน้าเกมเป็นรูปเหรียญจากชุด UI (Assets/UI/Assets/kit2/coin.webp)
+   ทำงานหลัง render() ทุกครั้งผ่าน MutationObserver · ไม่แตะช่องพิมพ์ข้อความ */
+(function () {
+  'use strict';
+  const KIT = './Assets/UI/Assets/kit2/';
+
+  function swapCoin(root) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT),
+      hits = [];
+    while (w.nextNode()) if (w.currentNode.nodeValue.includes('🪙')) hits.push(w.currentNode);
+    hits.forEach(t => {
+      if (t.parentNode && /^(INPUT|TEXTAREA|OPTION|SCRIPT|STYLE)$/.test(t.parentNode.nodeName)) return;
+      const frag = document.createDocumentFragment();
+      t.nodeValue.split('🪙').forEach((p, i) => {
+        if (i) {
+          const im = document.createElement('img');
+          im.className = 'kicon';
+          im.src = KIT + 'coin.webp';
+          im.alt = '';
+          frag.appendChild(im);
+        }
+        if (p) frag.appendChild(document.createTextNode(p));
+      });
+      t.parentNode.replaceChild(frag, t);
+    });
+  }
+
+  function pass() {
+    const app = document.getElementById('app');
+    if (!app) return;
+    obs.disconnect();
+    try {
+      swapCoin(app);
+    } catch (e) {
+      console.warn('coin-icons', e);
+    }
+    obs.observe(app, { childList: true, subtree: true, characterData: true });
+  }
+  const obs = new MutationObserver(pass);
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', pass) : pass();
+})();
