@@ -6,7 +6,7 @@
       "id": "sakura",
       "name": "ซากุระ",
       "asset": "./Assets/UI/Assets/kit3/av-frame.webp",
-      "circle": { "cx": 335, "cy": 277, "r": 218, "w": 621, "h": 532 }
+      "circle": { "cx": 349, "cy": 289, "r": 228, "w": 640, "h": 555 }
     }
   ]
 }
