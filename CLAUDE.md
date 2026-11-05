@@ -347,6 +347,10 @@ node scripts/build-assets.js --check  # ตรวจข้อมูลตัว�
 node scripts/build-assets.js          # สร้าง skins.json / gacha.json
 node scripts/gen-catalog-sql.js       # สร้าง seed_catalog.sql
 
+# --- ตัดพื้นหลังรูป UI (Python · ต้องติดตั้ง: pip install numpy pillow scipy pymatting) ---
+python3 scripts/ui-cutout.py <ไฟล์หรือโฟลเดอร์> -o <ปลายทาง> --webp   # พื้นขาว → โปร่งใส ขอบเนียน (alpha matting)
+#   --shadow keep = เก็บแสงเรือง · --no-trim = ไม่ตัดขอบรูป · --ai = ใช้โมเดล ISNet ช่วย (ต้องมี rembg[cpu])
+
 # --- ฐานข้อมูล (ต้องมี PostgreSQL ในเครื่อง) ---
 sh supabase/test/run.sh
 ```
@@ -375,6 +379,7 @@ sh supabase/test/run.sh
 ## 11. ข้อควรระวังอื่น ๆ
 
 - **รูป/ไฟล์ใน `assets-src/`**: ห้ามลบ/แทนที่โดยไม่ถาม — เป็นต้นฉบับที่ GitHub Actions ใช้สร้าง pack (ไฟล์ `.pak` ที่ commit กลับมาห้ามแก้เอง)
+- **รูป UI ชุดซากุระ (`Assets/UI/Assets/kit3/`)**: ตัดพื้นด้วย `scripts/ui-cutout.py` เท่านั้น ขอบทุกชิ้นจะเหมือนกันทั้งชุด · ถ้าตัดไฟล์เดิมใหม่ ต้องได้ขนาดเท่าเดิม (ค่าตัด 9-slice ใน `Code/Theme/sakura-kit.css` อ้างพิกเซลของรูป)
 - **ตัวละครที่มี `price > 0`** = ต้องมีสิทธิ์ถึงจะเห็นรูปเต็ม (ระบบ pack) — ห้ามเอารูปเต็มไปวางนอกระบบนี้
 - **ตัวละคร/พื้นหลังใหม่ต้องลงทะเบียนที่เซิร์ฟเวอร์ด้วย** (`CHARS`/`BGS`) ไม่งั้นเซิร์ฟเวอร์ไม่ยอมรับ
 - **ลำดับ SQL:** รันไฟล์ SQL ให้เสร็จ **ก่อน** อัปเซิร์ฟเวอร์ใหม่ · รัน `v6` ซ้ำเมื่อไหร่ต้องรัน `v7` ตามทุกครั้ง
