@@ -2,7 +2,7 @@
 > เรียงใหม่สุดไว้บน · ห้ามลบรายการเก่า · ทุกแชท/AI ต้องอ่านก่อนเริ่มและเขียนก่อนจบ (ดู CLAUDE.md หมวด 13)
 
 ## สถานะปัจจุบัน
-- งานที่กำลังทำ: ไม่มี · Beta 0.13.3 (ชุด UI ซากุระทั้งเกม) merge เข้า `main` แล้ว (`dbdb528`) — รอเจ้าของเปิดเว็บจริงแล้วแจ้งจุดที่ยังเป็นแบบเดิม
+- งานที่กำลังทำ: Beta 0.13.4 (ตัวละครพูดบนโต๊ะ + บัตรโปรไฟล์ Endfield) เสร็จบน branch `ai/profile-voice` — **รอเจ้าของอนุมัติ push/merge** · ก่อนอัปเว็บต้องรัน `supabase/v13_profile_card.sql` ใน Supabase SQL Editor
 - งานค้างเรียงลำดับ:
   1. โรดแมพก้อน 3 ที่เหลือ: ข้อ 8 ความสำเร็จ + ฉายาพิเศษ · ข้อ 9 ประวัติการเล่น + สถิติแยกเกม · ข้อ 10 เควสเพิ่ม + อีเวนต์ (ดู docs/ROADMAP.md)
   2. (เสร็จ 0.13.3) หน้ารางวัลล็อกอินรายวันเปลี่ยนเป็นพื้นครีม + กรอบซากุระแล้ว
@@ -12,6 +12,30 @@
 - ของที่พักไว้: ระบบเสียงอยู่ใน branch `sound` (ยังไม่ merge · เลขเวอร์ชันในนั้นต้องเปลี่ยนตอนรวม) — รอเสียงพากย์ตัวละครแล้วอัปพร้อมกัน
 
 ## รายการงาน (ใหม่สุดบน)
+
+### 2026-11-05 15:30 · Claude (claude-opus-5-5) · ตัวละครพูดบนโต๊ะ + หน้าโปรไฟล์แบบ Endfield · Beta 0.13.4
+- คำสั่งที่ได้รับ: "ทำเลย พร้อมกับ ระบบ โปรไฟล์ แบบ Enfield" (ต่อจากระดมสมอง: กรอบคำพูดตัวละครบนโต๊ะ + หน้าโปรไฟล์แบบ Arknights: Endfield)
+- branch: `ai/profile-voice` · commit แรก `f9aab98` (บทพูด) → ล่าสุด = commit เลขเวอร์ชัน 0.13.4
+- สร้างใหม่:
+  - `client/public/skin/table-talk.json` — บทพูด 12 ตัวละคร (start/meld/head/deposit/knock/win/lose) + โอกาสพูด (`chance`) + บทกลาง (`defaults`) · ข้อมูลล้วน
+  - `client/public/Code/Table/table-talk.js` + `.css` — อ่าน `S.ev` (ดัมมี่) / `S.over`+`S.res` (ทุกเกม) ทุก 0.3 วิ แบบ seatfx.js ไม่ห่อ render() · ไม่มีผลกับเกม · ไม่พูดในบทสอน
+  - `supabase/v13_profile_card.sql` — คอลัมน์ profiles: bio · showcase · pinned_titles · card_theme · featured_char + `_has_char` · `_profile_card` · `get_profile_card(p_username)` · `set_profile_card(...)` (ตรวจทุกช่อง: bio ≤60 + ตัวกรองคำ · ตู้โชว์ ≤4 ต้องมีตัวจริง · เหรียญ ≤6 ต้องมีฉายาจริง · ธีม 3 แบบ) · ดูของคนอื่นไม่ส่งเหรียญ/เพชร/คลัง
+  - `supabase/test/test_v13.sql` — เทสครบทุกช่อง + สิทธิ์
+  - `client/public/Code/Profile/profile-card.js` + `.css` — หน้าโปรไฟล์ใหม่ (เขียนทับ `profileView()` ของ Account/profile-page.js · หน้าเดิมเปิดจากปุ่ม "ชื่อ / ฉายา") · หน้าต่างแก้ไขบัตร · `profileCardOpen(username)` ดูบัตรคนอื่น · ฐานข้อมูลยังไม่มี v13 = แสดงจาก DB.P แบบอ่านอย่างเดียว + ปิดปุ่มแก้ไข · "ระดับนักไพ่"/ความชำนาญรายเกม = แสดงผลอย่างเดียว (แต้ม = เล่น + ชนะ×2 · 10 แต้ม/เลเวล · สูงสุด 50) ไม่มีรางวัล
+- แก้:
+  - `client/public/index.html` — เพิ่ม `<script>` table-talk.js (defer หลัง seatfx.js) · profile-card.js (หลัง profile-page.js) · `<link>` table-talk.css + profile-card.css (ก่อน sakura-kit.css)
+  - `Code/Settings/settings.js` — เพิ่มแถวสวิตช์ `pvTalk` (บทพูดตัวละคร)
+  - `Code/Friends/friends.js` — ฟังก์ชัน `row` : รูปเพื่อนกดแล้วเปิดบัตร · `friends.css` เพิ่ม cursor
+  - `supabase/test/run.sh` — รัน v13 สองรอบ + test_v13
+  - เลขเวอร์ชัน 0.13.4: version.js · package.json 3 ไฟล์ · patchnotes.json · docs/PATCHNOTES.md
+- ไม่ได้แตะ (แต่เกี่ยวข้อง): `Code/Account/profile.js` · `profile-page.js` · `profile-equip.js` · `Core/router.js` · `Core/skins.js` · กติกาเกมฝั่งเซิร์ฟเวอร์
+- ตรวจแล้ว: `sh supabase/test/run.sh` ผ่านทุกไฟล์ (รวม test_v13) · `node scripts/check-handlers.js` ผ่าน · `node server/test-client-files.js` ผ่าน · `node server/test-client.js` ผ่าน 27 จุด · `node --check` ทุกไฟล์ JS ที่แก้ · screenshot จำลอง (mock DB.call) 915×412 + 1280×720: บัตร 3 ธีม · หน้าต่างแก้ไข · บัตรเพื่อน · โหมดไม่มี v13 · บทพูดบนโต๊ะดัมมี่ (เกิดหัว/เกิด/น็อก/แพ้)
+- ยังไม่ได้ทดสอบ: ฐานข้อมูลจริง (ยังไม่ได้รัน v13 บน Supabase) · โต๊ะเกมอื่นนอกจากดัมมี่ (หาคนชนะจาก res.rows/coin/pts — ต้องดูบนเว็บจริง) · บนมือถือจริง
+- สถานะ: เสร็จ — รอเจ้าของอนุมัติ push/merge
+- งานค้าง/ขั้นต่อไป: 1) เจ้าของรัน `supabase/v13_profile_card.sql` ใน SQL Editor 2) push + merge `ai/profile-voice` 3) เปิดเว็บจริงตรวจหน้าโปรไฟล์ + บทพูดเกมอื่น
+- คำถามที่รอตอบ: อนุมัติ push/merge
+- วิธีย้อนกลับ: ยังไม่ merge = ทิ้ง branch `ai/profile-voice` · merge แล้ว = `git revert` ทีละ commit · SQL v13 แค่เพิ่มคอลัมน์/ฟังก์ชัน ไม่ต้องย้อน (ถ้าจะย้อนจริง: drop ฟังก์ชัน get/set_profile_card, _profile_card, _has_char)
+- ข้อควรระวัง: profile-card.js ต้องโหลดหลัง profile-page.js (เขียนทับ profileView) · หน้าเดิม (ชื่อ/ฉายา) ยังใช้ร่วม — ถ้าแก้ profile-page.js ให้ดูว่าปุ่มย้อนกลับถูกเปลี่ยนเป็น `pcBack()` · ธีมใหม่ต้องเพิ่มทั้ง THEMES (js) + CSS + รายชื่อใน set_profile_card (SQL)
 
 ### 2026-11-05 13:10 · Claude (claude-opus-5-5) · CLAUDE.md เพิ่มคำสั่งสคริปต์ตัดพื้น ui-cutout.py
 - คำสั่งที่ได้รับ: เจ้าของอนุมัติให้ใส่ `scripts/ui-cutout.py` ใน CLAUDE.md
