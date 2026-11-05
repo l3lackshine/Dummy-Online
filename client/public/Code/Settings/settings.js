@@ -22,6 +22,7 @@
       : '';
     return `<button class=st-x onclick="this.closest('.st-modal').remove()">✕</button><h3 class=pv-h><i>${icon('gear')}</i>ตั้งค่า</h3>
       ${toggleRow('pvSfx', 'เสียงเอฟเฟกต์', 'sound', 'เสียงจั่ว ทิ้ง สับไพ่ และเอฟเฟกต์ตัวละคร')}
+      ${toggleRow('pvTalk', 'บทพูดตัวละคร', 'user', 'กรอบคำพูดของตัวละครบนโต๊ะ ตอนเกิดชุด น็อก ชนะ แพ้')}
       <div class=pv-set><i>${icon('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
       <div class=pv-set><i>${icon('news')}</i><span><b>มีอะไรใหม่</b><small>แพตช์โน้ตของแต่ละเวอร์ชัน · ${escape(window.DUMMY_VERSION || '')}</small></span><button class="pv-btn blue sm" onclick="openPatchNotes()">เปิดดู</button></div>
       <div class=pv-acts>${accountButtons()}</div>

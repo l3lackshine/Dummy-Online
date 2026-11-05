@@ -1,0 +1,88 @@
+/* table-talk.css — กรอบคำพูดตัวละครบนโต๊ะ (Code/Table/table-talk.js) · ครีมขอบทองแบบชุด UI ซากุระ */
+.tt-bubble {
+  position: fixed;
+  z-index: 9000;
+  max-width: min(42vw, 260px);
+  padding: 0.7vh 1.4vh;
+  border-radius: 1.6vh;
+  background: #fffaf2;
+  border: 0.25vh solid #e8c77a;
+  color: #3b4255;
+  font:
+    700 max(12px, 2.2vh) Sarabun,
+    sans-serif;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: 0 0.6vh 1.2vh #0005;
+  pointer-events: none;
+  animation: tt-pop 2.6s ease-out forwards;
+}
+.tt-bubble.tt-below {
+  transform: translate(-50%, 0);
+}
+.tt-bubble.tt-above {
+  transform: translate(-50%, -100%);
+}
+/* หางกรอบคำพูดชี้ไปที่ที่นั่ง */
+.tt-bubble::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 1.2vh;
+  height: 1.2vh;
+  background: inherit;
+  border: inherit;
+  transform: translateX(-50%) rotate(45deg);
+}
+.tt-below::before {
+  top: -0.75vh;
+  border-right: 0;
+  border-bottom: 0;
+}
+.tt-above::before {
+  bottom: -0.75vh;
+  border-left: 0;
+  border-top: 0;
+}
+.tt-bubble span {
+  position: relative;
+}
+/* เหตุการณ์ใหญ่ใช้ขอบชมพูซากุระ */
+.tt-bubble.tt-head,
+.tt-bubble.tt-knock,
+.tt-bubble.tt-win {
+  border-color: #f0659a;
+  background: #fff0f6;
+}
+@keyframes tt-pop {
+  0% {
+    opacity: 0;
+    scale: 0.7;
+  }
+  10% {
+    opacity: 1;
+    scale: 1.05;
+  }
+  16%,
+  85% {
+    opacity: 1;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tt-bubble {
+    animation: tt-fade 2.6s linear forwards;
+  }
+  @keyframes tt-fade {
+    0%,
+    85% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
