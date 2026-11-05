@@ -291,6 +291,7 @@ function getCoinsAfterRename(user) {
 | `client/public/pack/*.pak` + `manifest.json` | `assets-src/Assets/` | GitHub Actions (`pack-assets.yml`) |
 | `docs/PATCHNOTES.md` | `client/public/patchnotes.json` | เขียนมือคู่กัน ให้เนื้อหาตรงกัน (เจ้าของโปรเจคอนุมัติแล้ว) |
 | `supabase/name_filter.sql` | `server/src/namefilter.js` | `node scripts/gen-namefilter-sql.js` |
+| `supabase/achievements_seed.sql` | `client/public/skin/achievements.json` | `node scripts/gen-achievements-sql.js` (`--check` = ตรวจอย่างเดียว) |
 
 
 ### ต้องเหมือนกันทุกตัวอักษร (เทสตรวจให้)
