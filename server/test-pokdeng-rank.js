@@ -12,7 +12,10 @@ const hands = {
   2: [3, 32, 43], // 6 แต้ม
   3: [9, 17, 28], // 8 แต้ม (3 ใบ ไม่ใช่ป๊อก)
 };
+// ตั้งสถานะเองทั้งหมด (ไพ่ที่แจกแบบสุ่มอาจจบตาทันทีถ้ามีคนได้ป๊อก)
 G.dealer = 0;
+G.over = false;
+G.res = null;
 G.P.forEach(p => (p.h = hands[p.i].map(S.card)));
 G.phase = 'dealer';
 G.cur = 0;
