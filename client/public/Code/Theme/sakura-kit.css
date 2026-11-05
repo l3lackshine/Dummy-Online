@@ -66,12 +66,13 @@
   text-shadow: none !important;
   filter: drop-shadow(0 0.4vh 0.6vh #0004);
 }
-.rv-cur:has(img[src*='coin']),
+/* หน้าแรก: ตัวนับแรกคือเหรียญ ตัวถัดไปคือเพชร (ไม่ใช้ :has เพราะ WebView รุ่นเก่าบางรุ่นไม่รองรับ) */
+.rv-cur,
 .hud .coin-pill:not(.mc-pill) {
   border-image-source: url(../../Assets/UI/Assets/kit3/bar-coin.webp) !important;
   border-image-slice: 0 60 0 80 fill !important;
 }
-.rv-cur:has(img[src*='gem']),
+.rv-cur ~ .rv-cur,
 .hud .mc-pill {
   --bar-l: 0.92;
   --bar-r: 0.83;

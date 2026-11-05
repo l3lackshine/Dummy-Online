@@ -281,15 +281,16 @@
 /* ===== ขนาดการ์ดผลสุ่ม: แถวละ 5 ใบ กว้างเท่ากันทุกใบ =====
    ต้องกำหนดความกว้างการ์ดเอง: รูปการ์ดสำเร็จวางแบบ absolute ไม่ดันความกว้าง ถ้าสุ่มได้แต่การ์ดแบบนี้
    หน้าต่างจะหดเหลือเท่าความกว้างชื่อ การ์ดเล็กจนไม่เห็นรูป (ที่ผู้เล่นเห็นว่า "บางครั้งรูปไม่ขึ้น")
-   ความกว้างคิดจากความสูงจอด้วย: 2 แถว + หัวข้อ/สรุป/ปุ่ม (GC_CHROME) ต้องพอดีจอแนวนอนโดยไม่ต้องเลื่อน */
+   ความกว้างคิดจากความสูงจอด้วย: 2 แถว + หัวข้อ/สรุป/ปุ่ม (GC_CHROME) ต้องพอดีจอแนวนอนโดยไม่ต้องเลื่อน
+   (92vh = ความสูงสูงสุดของหน้าต่างเมื่อมีกรอบซากุระ — Theme/sakura-kit.css) */
 .gc-res {
   --gc-chrome: 170px;
-  --gc-cw: min(17vw, 132px, calc((96vh - var(--gc-chrome)) / 2 * 5 / 9));
+  --gc-cw: min(17vw, 132px, calc((92vh - var(--gc-chrome)) / 2 * 5 / 9));
   grid-template-columns: repeat(5, var(--gc-cw)) !important;
   justify-content: center;
 }
 .gc-res.n1 {
-  --gc-cw: min(40vw, 170px, calc((96vh - var(--gc-chrome)) * 5 / 9));
+  --gc-cw: min(40vw, 170px, calc((92vh - var(--gc-chrome)) * 5 / 9));
   grid-template-columns: var(--gc-cw) !important;
   max-width: none;
 }
