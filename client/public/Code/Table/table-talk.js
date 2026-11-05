@@ -1,4 +1,4 @@
-/* table-talk.js — ตัวละครพูดบนโต๊ะ: กรอบคำพูดข้างที่นั่ง ตอนเริ่มตา เกิดชุด เกิดหัว ฝากไพ่ น็อก ชนะ แพ้
+/* table-talk.js — ตัวละครพูดบนโต๊ะ: กรอบคำพูดที่รูปตัวละคร (ไม่มีรูป = ข้างป้ายที่นั่ง) ตอนเริ่มตา เกิดชุด เกิดหัว ฝากไพ่ น็อก ชนะ แพ้
    บทพูดอยู่ใน skin/table-talk.json (ข้อมูลล้วน) · ทุกที่นั่งพูดตามตัวละครของตัวเอง รวมบอท · ไม่มีผลกับเกมใด ๆ
    อ่านเหตุการณ์จากสถานะที่เซิร์ฟเวอร์ส่งมาอยู่แล้ว (S.ev ของดัมมี่ · S.over/S.res ทุกเกม) แบบเดียวกับ seatfx.js — ไม่ห่อ render()
    ปิดได้ที่ตั้งค่า → "บทพูดตัวละคร" (localStorage pvTalk) · บทสอนเล่นไม่พูด (มีข้อความสอนอยู่แล้ว)
@@ -14,6 +14,9 @@
   const START_SPEAKERS = 2; // เริ่มตา: สุ่มให้พูดไม่เกินกี่คน
   const START_DELAY_MS = 600;
   const END_DELAY_MS = 500;
+  // ความสูงบนรูปตัวละครที่ใช้วางกรอบคำพูด (สัดส่วนของส่วนที่เห็นบนจอ วัดจากด้านบน)
+  const HEAD_TOP_SEAT = 0.62; // ตัวบน: หัวชิดขอบจอ วางระดับอก ไม่บังหน้า
+  const HEAD_OTHER_SEAT = 0.06; // ตัวซ้าย/ขวา/ของเรา: เหนือหัวเล็กน้อย
 
   let lines = null;
   let gid = null;
@@ -44,8 +47,46 @@
     return document.querySelector(`#app .gx-seat[data-seat="${seat}"]`) || document.querySelector(`#app [data-seat="${seat}"]`);
   }
 
-  // วางกรอบคำพูดใต้ป้ายชื่อที่นั่ง (ที่นั่งของเราอยู่ล่างจอ → วางด้านบน) ไม่ให้ทับป้ายแต้มของ seatfx ที่ลอยขึ้นด้านบน
+  // รูปตัวละครของที่นั่ง (โต๊ะแนวนอน gamegx/games.js: .gx-art-<ตำแหน่ง>) · ตำแหน่งอ่านจากคลาสป้ายที่นั่ง gx-top/left/right · ของเรา = bottom
+  function characterImage(seat) {
+    const badge = seatElement(seat);
+    const match = badge && badge.className.match(/\bgx-(top|left|right)\b/);
+    const position = seat === S.my ? 'bottom' : match && match[1];
+    if (!position) return null;
+    const art = document.querySelector(`#app .gx-art-${position}`);
+    if (!art) return null;
+    return { position, art, img: art.querySelector('img') || art };
+  }
+
+  // ส่วนของตัวละครที่เห็นจริงบนจอ: แนวนอนตามรูป · แนวตั้งตามกล่อง .gx-art (CSS ตัดรูปด้วย clip-path ตามความสูงกล่อง) · ตัดส่วนที่ล้นจอ
+  function visibleRect(image) {
+    const imgRect = image.img.getBoundingClientRect();
+    const boxRect = image.art.getBoundingClientRect();
+    const left = Math.max(0, imgRect.left);
+    const top = Math.max(0, imgRect.top, boxRect.top);
+    const right = Math.min(window.innerWidth, imgRect.right);
+    const bottom = Math.min(window.innerHeight, imgRect.bottom, boxRect.bottom);
+    if (right - left < 4 || bottom - top < 4) return null;
+    return { left, top, width: right - left, height: bottom - top };
+  }
+
+  // วางกรอบคำพูดที่ตัวละคร: ตัวบนสุดหัวชิดขอบจอ → วางกลางตัวแล้วชี้ขึ้น · ตัวอื่นวางเหนือหัวแล้วชี้ลง
+  function placeOnCharacter(bubble, seat) {
+    const image = characterImage(seat);
+    const rect = image && visibleRect(image);
+    if (!rect) return false;
+    const below = image.position === 'top';
+    const x = rect.left + rect.width / 2;
+    const y = below ? rect.top + rect.height * HEAD_TOP_SEAT : rect.top + rect.height * HEAD_OTHER_SEAT;
+    bubble.classList.add(below ? 'tt-below' : 'tt-above');
+    bubble.style.left = x + 'px';
+    bubble.style.top = y + 'px';
+    return true;
+  }
+
+  // ไม่มีรูปตัวละคร (โต๊ะแบบเก่า/อีโมจิ) → วางใต้ป้ายชื่อที่นั่ง (ของเราอยู่ล่างจอ → วางด้านบน)
   function placeBubble(bubble, seat) {
+    if (placeOnCharacter(bubble, seat)) return true;
     const el = seatElement(seat);
     const rect = el && el.getBoundingClientRect();
     if (!rect || !rect.width) return false;
@@ -58,12 +99,18 @@
     return true;
   }
 
-  // ที่นั่งซ้าย/ขวาอยู่ชิดขอบจอ — วัดความกว้างจริงหลังวางแล้ว ดันกรอบเข้ามาไม่ให้ล้นจอ
+  // ที่นั่งซ้าย/ขวาอยู่ชิดขอบจอ — วัดขนาดจริงหลังวางแล้ว ดันกรอบเข้ามาไม่ให้ล้นจอทั้งแนวนอนและแนวตั้ง
   function keepInsideScreen(bubble) {
     const margin = 8;
     const half = bubble.offsetWidth / 2;
+    const height = bubble.offsetHeight;
     const x = parseFloat(bubble.style.left);
+    const y = parseFloat(bubble.style.top);
     bubble.style.left = Math.max(half + margin, Math.min(window.innerWidth - half - margin, x)) + 'px';
+    const above = bubble.classList.contains('tt-above');
+    const minY = above ? height + margin : margin;
+    const maxY = above ? window.innerHeight - margin : window.innerHeight - height - margin;
+    bubble.style.top = Math.max(minY, Math.min(maxY, y)) + 'px';
   }
 
   function say(seat, event) {
