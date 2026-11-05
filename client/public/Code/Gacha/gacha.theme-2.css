@@ -341,3 +341,20 @@
   font-size: 9px;
   padding: 1px 5px;
 }
+/* หน้าต่าง "รายการและอัตราการออก" (gcList): ธีมครีม/ทองชุดเดียวกับหน้าต่างผลสุ่ม — เจ้าของสั่ง */
+.gc-box:has(.gc-grid) {
+  background: #fffaf2;
+  color: #3b4255;
+  border: 2px solid #e8c77a;
+  box-shadow: 0 10px 30px #0008;
+}
+.gc-box:has(.gc-grid) h3 {
+  color: #8a6d3b;
+}
+/* ป้าย NEW / ซ้ำ: วางในมุมการ์ดบนเลเยอร์บนสุด — เดิมยื่นออกนอกการ์ด ถูกขอบการ์ดตัด และกรอบ SR/SSR (::before/::after) ทับ */
+.gc-res .gc-new,
+.gc-res .gc-dup {
+  top: 3px;
+  right: 3px;
+  z-index: 6;
+}
