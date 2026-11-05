@@ -511,6 +511,7 @@ sh supabase/test/run.sh
 - ลบ branch · แก้ประวัติ commit (`--amend`, `rebase -i`) ของ commit ที่ push แล้ว
 - ใช้ `--no-verify` ข้ามตัวตรวจ
 - แก้ไฟล์ที่ GitHub Actions สร้างให้ (`client/public/pack/*.pak`, `manifest.json`) — บอทเป็นคน commit เอง
+- **ข้อยกเว้น:** งานเล็กที่ไม่แตะตัวเกม (เอกสาร · `WORKLOG.md` · `CLAUDE.md`) push และ merge แบบ fast-forward (รวมเข้า `main` โดยไม่สร้าง commit รวม) เข้า `main` ได้เลย · งานที่แก้ไฟล์ในเกม (โค้ด client/server · SQL · ข้อมูลเกม) ทำบน branch ให้เสร็จแล้วถามครั้งเดียวก่อน push/merge
 
 **จบงาน**
 - รายงานผมว่า: ชื่อ branch · รายการ commit (`git log --oneline` ของงานนี้) · `git diff --stat` เทียบกับ `main`
