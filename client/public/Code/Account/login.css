@@ -28,7 +28,7 @@
   box-shadow:
     0 10px 0 #0005,
     0 0 40px #0008;
-  color: var(--cream, #fff4dc);
+  color: #3b4255; /* พื้นครีมจากกรอบซากุระ (Theme/sakura-kit.css) → ตัวอักษรเข้มแบบหน้าต่างในเกม */
 }
 .au-logo {
   text-align: center;
@@ -38,7 +38,7 @@
 .au-logo .au-ic {
   display: block;
   font-size: 44px;
-  filter: drop-shadow(0 3px 0 #0006);
+  filter: drop-shadow(0 2px 0 #0003);
 }
 .au-logo b {
   display: block;
@@ -46,24 +46,22 @@
     700 34px/1.1 Mali,
     Sarabun,
     sans-serif;
-  color: var(--cream, #fff4dc);
-  text-shadow:
-    0 3px 0 #6b3a18,
-    0 0 10px #3b1d0a;
+  color: #8a6d3b;
+  text-shadow: 0 2px 0 #fff;
 }
 .au-logo small {
   font:
     700 15px Mali,
     Sarabun,
     sans-serif;
-  color: #ffd9a0;
+  color: #b08a4a;
   letter-spacing: 0.3em;
 }
 .au-tabs {
   display: flex;
   gap: 6px;
   margin: 6px 0 12px;
-  background: #0004;
+  background: #8a6d3b1f;
   border-radius: 99px;
   padding: 4px;
 }
@@ -73,7 +71,7 @@
   border-radius: 99px;
   padding: 9px 0;
   background: transparent;
-  color: #e8d3b3;
+  color: #7d8394;
   font:
     700 15px Sarabun,
     sans-serif;
@@ -98,23 +96,23 @@
   font:
     700 13px Sarabun,
     sans-serif;
-  color: #ffd9a0;
+  color: #8a6d3b;
 }
 .au-form input:not([type='checkbox']) {
   width: 100%;
   padding: 11px 12px;
   border-radius: 12px;
-  border: 2px solid #c9964f;
-  background: var(--cream, #fff4dc);
-  color: #4a2a10;
+  border: 2px solid #d9cfc0;
+  background: #fff;
+  color: #3b4255;
   font:
     700 16px Sarabun,
     sans-serif;
   outline: none;
 }
 .au-form input:focus {
-  border-color: #ffd75e;
-  box-shadow: 0 0 0 3px #ffd75e66;
+  border-color: #e0a521;
+  box-shadow: 0 0 0 3px #e0a52144;
 }
 .au-form input:disabled {
   opacity: 0.6;
@@ -126,7 +124,7 @@
   font:
     600 13px Sarabun,
     sans-serif;
-  color: #e8d3b3;
+  color: #5b6275;
   cursor: pointer;
 }
 .au-go {
@@ -155,9 +153,9 @@
   margin: 2px 0 0;
   padding: 9px 11px;
   border-radius: 10px;
-  background: #7a1f2b;
-  border: 1px solid #ff8a98;
-  color: #fff;
+  background: #fdecee;
+  border: 1px solid #e8a0a8;
+  color: #c8424f;
   font:
     600 13.5px/1.35 Sarabun,
     sans-serif;
@@ -165,13 +163,13 @@
 .au-hint {
   display: block;
   text-align: center;
-  color: #d9c3a0;
+  color: #7d8394;
   font-size: 12px;
   line-height: 1.35;
 }
 .au-load {
   text-align: center;
-  color: #ffd9a0;
+  color: #8a6d3b;
   font:
     700 16px Sarabun,
     sans-serif;
@@ -197,7 +195,7 @@
   align-items: center;
   gap: 10px;
   margin: 2px 0;
-  color: #d9c3a0;
+  color: #7d8394;
   font:
     600 12.5px Sarabun,
     sans-serif;
@@ -207,7 +205,7 @@
   content: '';
   flex: 1;
   height: 1px;
-  background: #e8c48a66;
+  background: #8a6d3b44;
 }
 .au-google {
   display: flex;
@@ -222,7 +220,7 @@
   font:
     700 15.5px Sarabun,
     sans-serif;
-  box-shadow: 0 3px 0 #0005;
+  box-shadow: 0 3px 0 #0002;
   cursor: pointer;
 }
 .au-google .au-g {
@@ -235,7 +233,7 @@
 }
 .au-google:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #0005;
+  box-shadow: 0 1px 0 #0002;
 }
 .au-google:disabled {
   opacity: 0.65;

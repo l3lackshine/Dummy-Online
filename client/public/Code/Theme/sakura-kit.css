@@ -18,7 +18,8 @@
 .cr-box,
 .mm-box,
 .panel,
-.pg[data-pg='pv'] .pv-card {
+.pg[data-pg='pv'] .pv-card,
+.au-card {
   border-style: solid !important;
   border-color: transparent !important;
   border-width: 0 !important;
