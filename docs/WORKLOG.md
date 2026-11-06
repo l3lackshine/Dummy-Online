@@ -2,7 +2,7 @@
 > เรียงใหม่สุดไว้บน · ห้ามลบรายการเก่า · ทุกแชท/AI ต้องอ่านก่อนเริ่มและเขียนก่อนจบ (ดู CLAUDE.md หมวด 13)
 
 ## สถานะปัจจุบัน
-- งานที่กำลังทำ: ไม่มี · **Beta 0.17.2 ขึ้นแล้ว** (ป้ายชื่อ/ป้ายสถานะห้องรอแบบรูปใหม่ · branch `ai/lobby-plates` merge เข้า main แบบ fast-forward) · ก่อนหน้า **Beta 0.17.1** (กรอบ 4★) (กรอบประจำตัวละคร 4★ วาดจริง + ตัวละคร/ฉาก 5★ อยู่ในกรอบ · merge เข้า main แบบ fast-forward `43a7a11..9069c29`) · ก่อนหน้า: **Beta 0.17.0** (โรดแมพข้อ 11 ก–ง + ข้อ 12 · merge เข้า main แบบ fast-forward `b7a2245..7cf98fd`) · ฐานข้อมูลจริงรันถึง v18 แล้ว (2026-11-06 ~12:20) · แอดมินคนแรก = Blackshine02
+- งานที่กำลังทำ: **ล็อกอินด้วย Google** — เสร็จบน branch `ai/account-google-login` (`349d99d..1e95698` + commit WORKLOG) · รอเจ้าของตั้งค่า Google Cloud/Supabase + อนุญาต push/merge + ตัดสินเลขเวอร์ชัน/แพตช์โน้ต (ดูรายการ 2026-11-06 16:50) · ก่อนหน้า: **Beta 0.17.2 ขึ้นแล้ว** (ป้ายชื่อ/ป้ายสถานะห้องรอแบบรูปใหม่ · branch `ai/lobby-plates` merge เข้า main แบบ fast-forward) · ก่อนหน้า **Beta 0.17.1** (กรอบ 4★) (กรอบประจำตัวละคร 4★ วาดจริง + ตัวละคร/ฉาก 5★ อยู่ในกรอบ · merge เข้า main แบบ fast-forward `43a7a11..9069c29`) · ก่อนหน้า: **Beta 0.17.0** (โรดแมพข้อ 11 ก–ง + ข้อ 12 · merge เข้า main แบบ fast-forward `b7a2245..7cf98fd`) · ฐานข้อมูลจริงรันถึง v18 แล้ว (2026-11-06 ~12:20) · แอดมินคนแรก = Blackshine02
 - **เริ่มแชทใหม่ ทำตามลำดับนี้ได้เลย** (โรดแมพเต็มอยู่ที่ docs/ROADMAP.md)
 - งานค้าง:
   1. ให้เจ้าของตรวจ 0.17.0 บนเว็บจริง (รอ Render/Cloudflare deploy เสร็จ): หน้าแอดมิน 7 แท็บ (ตู้กาชา · จดหมาย · ผู้เล่น · รายงาน) · ส่งจดหมายหาตัวเองแล้วกดรับ · ลองแตะป้ายชื่อผู้เล่นบนโต๊ะ (ต้องเป็นคนจริงที่ล็อกอิน 2 บัญชี)
@@ -11,12 +11,31 @@
   2. ก้อน 2 ที่รออยู่: ข้อ 3 ระบบเสียง (branch `sound` รอเสียงพากย์) · ข้อ 5 ของปลดดาวที่เหลือ: พื้นหลังใหม่ขายในตู้ · เสียงพากย์ 3★ (กรอบ 4★ เสร็จแล้วใน 0.17.1)
   3. ให้เจ้าของตรวจ 0.17.1 บนเว็บจริง: ห้องรอที่ใส่กรอบ 4★ + ปลด 5★ (มือถือแนวนอน)
   3. พักไว้: เตรียมลง Play Store (ยังไม่จ่ายค่าบัญชีนักพัฒนา)
-- คำถามที่รอเจ้าของโปรเจคตอบ: (ว่าง)
+- คำถามที่รอเจ้าของโปรเจคตอบ: ล็อกอิน Google → push/merge ได้ไหม · ขึ้นเป็นเลขเวอร์ชันอะไร (เสนอ Beta 0.18.0) + ลงแพตช์โน้ต
 - ข้อห้ามชั่วคราว: ไม่มี
 - ของที่พักไว้: ระบบเสียงอยู่ใน branch `sound` (ยังไม่ merge · เลขเวอร์ชันในนั้นต้องเปลี่ยนตอนรวม) — รอเสียงพากย์ตัวละครแล้วอัปพร้อมกัน
 - กับดักที่ควรรู้ก่อนเริ่ม: gacha_pull/_quest_progress ฉบับล่าสุดอยู่ใน `supabase/v17_events_admin.sql` · **get_gacha / _uid / delete_my_account ฉบับล่าสุดอยู่ใน `supabase/v18_admin_tools.sql`** (แก้ต่อจากไฟล์นี้) · ผู้ใช้ทดสอบใน supabase/test ใช้รหัสช่วง a–f · 170x · 180x ไปแล้ว · `npm install` จะแก้หัว `server/package-lock.json` เอง — อย่า commit ถ้าไม่ได้ตั้งใจ · ทุกครั้งที่อัปเกมต้องขึ้นเลขเวอร์ชัน + แพตช์โน้ต (patchnotes.json + docs/PATCHNOTES.md)
 
 ## รายการงาน (ใหม่สุดบน)
+
+### 2026-11-06 16:50 · Claude (claude-opus-5-5) · ล็อกอินด้วย Google (เว็บ) + ตั้งชื่อครั้งแรก + ผูกบัญชีเดิม
+- คำสั่งที่ได้รับ: "ทำหน้า login ให้มีด้วย Google" · เจ้าของเลือก 1ก (ทำบนเว็บ ซ่อนในแอป Android) · 2ข (เด้งหน้าตั้งชื่อเล่นทันทีหลังเข้าด้วย Google ครั้งแรก) · 3 ได้ (บัญชีเดิมผูก Google ได้)
+- branch: `ai/account-google-login` (แตกจาก main `75c399e`) · commit `349d99d` (ล็อกอิน) → `19e5003` (ตั้งชื่อครั้งแรก) → `1e95698` (ผูกบัญชีในหน้าตั้งค่า) → commit WORKLOG นี้
+- สร้างใหม่: `Code/Account/first-nickname.js` + `.css` — หน้าต่างตั้งชื่อในเกม (ปิดเองไม่ได้จนตั้งชื่อสำเร็จ มีปุ่มออกจากระบบ) · บันทึกผ่าน `DB.saveName` → `update_profile` (ครั้งแรกฟรี ฐานข้อมูลตัดสิน)
+- แก้:
+  - `Code/Core/db.js` — createClient เพิ่ม `flowType: 'pkce'` (คง `detectSessionInUrl: false`) · th() เพิ่มคำแปล error ของ OAuth · บล็อกใหม่ก่อน `// ---- บัญชี ----`: `DB.oauthAvailable()` (false ในแอป Capacitor) · `DB.hasGoogle()` · `DB.needsNickname()` (ชื่อยังเป็น `u`+10 ตัวและ name_changes = 0) · `DB.signInGoogle()` · `DB.linkGoogle()` · `finishOAuthRedirect()` (แลก `?code=` เป็นเซสชัน ลบพารามิเตอร์ OAuth ออกจาก URL และคืน `?room=` เดิมจาก sessionStorage `dummyOauthReturn`) · `start()` เรียก finishOAuthRedirect ก่อน getSession และ `announceOAuthResult()` หลังวาด · `afterLogin()` เรียก `openFirstNickname()` ถ้า needsNickname
+  - `Code/Account/login.js` — ปุ่ม "เข้าสู่ระบบด้วย Google" (โลโก้ SVG สี่สี) ใต้ข้อความ error ในฟอร์ม · `auGoogle()` · แสดง `DB.oauthError` ครั้งเดียว
+  - `Code/Account/login.css` — `.au-or` `.au-google` · `#app.auth { align-items: flex-start }` (การ์ดสูงเกินจอแนวนอนแล้วหัวการ์ดถูกตัดเลื่อนไม่ถึง) · จอเตี้ยซ่อนเส้น "หรือ"
+  - `Code/Settings/settings.js` — แถว "บัญชี Google" (ปุ่มผูกบัญชี / ผูกแล้ว ✓) แสดงเฉพาะบนเว็บ · `pvLinkGoogle()`
+  - `index.html` — `first-nickname.css` ต่อหลัง `login.css` · `first-nickname.js` ต่อหลัง `login.js` (ไม่สลับลำดับไฟล์อื่น)
+- ไม่ได้แตะ: SQL ทุกไฟล์ (`handle_new_user` ใน schema.sql รองรับผู้ใช้ Google อยู่แล้ว: ชื่อผู้ใช้ `u`+10 ตัว + เหรียญเริ่มต้น) · เซิร์ฟเวอร์ · `mobile/` · `nickname.js` · router.js · daily-login.js (onDbLogin เดิม)
+- ตรวจแล้ว: `node --check` 4 ไฟล์ · check-handlers · test-client-files · test-client (27 จุด) ผ่าน · ยืนยันว่า supabase-js 2.45.4 มี linkIdentity/exchangeCodeForSession · ภาพหน้าจอจาก index.html จริง 915×412 + 1280×640 (บล็อกเน็ตภายนอกทั้งหมด ไม่แตะฐานข้อมูลจริง): หน้าล็อกอิน · หน้าต่างตั้งชื่อ · แถวผูกบัญชีในตั้งค่า · กลับจาก Google แบบกดยกเลิก → ขึ้น "ยกเลิกการเข้าสู่ระบบด้วย Google" และ `?room=ABCD` อยู่ครบ
+- ยังไม่ได้ทดสอบ: ล็อกอิน Google จริงตั้งแต่ต้นจนจบ (ต้องตั้งค่า Google Cloud + Supabase ก่อน) · ผูกบัญชีจริง · บันทึกชื่อครั้งแรกกับฐานข้อมูลจริง · แอป Android จริง (ปุ่มต้องไม่ขึ้น) · Safari/iPhone
+- ต้องตั้งค่าก่อนใช้ได้ (เจ้าของทำเอง มี client secret): Google Cloud OAuth client แบบ Web → Authorized redirect URI `https://apoayzrqkpouhbyexuwn.supabase.co/auth/v1/callback` · Supabase › Authentication › Providers › Google เปิด + ใส่ Client ID/secret · URL Configuration: Site URL `https://dummy-online.pages.dev` + Redirect URLs `https://dummy-online.pages.dev/**` · ผูกบัญชีต้องเปิด **Allow manual linking** (Authentication › Sign In / Providers) · consent screen ถ้ายัง Testing ต้องเพิ่ม test users
+- สถานะ: เสร็จบน branch · รออนุญาต push/merge
+- คำถามที่รอตอบ: push/merge · เลขเวอร์ชัน + แพตช์โน้ต
+- วิธีย้อนกลับ: `git revert 1e95698` (ปุ่มผูกบัญชี) · `git revert 19e5003` (หน้าต่างตั้งชื่อ) · `git revert 349d99d` (ล็อกอิน Google ทั้งหมด) — หรือทิ้ง branch ถ้ายังไม่ merge
+- ข้อควรระวัง: เข้าด้วย Google = บัญชีใหม่แยกจากบัญชีชื่อผู้ใช้/รหัสผ่าน ถ้าไม่ได้ผูกไว้ก่อน · ห้ามลบ `?code=` handling ใน start() (ไม่งั้นกลับจาก Google แล้วไม่ล็อกอิน) · redirectTo = origin+pathname ต้องอยู่ใน Redirect URLs ของ Supabase (รัน vite ในเครื่องต้องเพิ่ม `http://localhost:<พอร์ต>/**` เอง) · ผู้เล่นที่ชื่อชนกันตอนสมัครเดิม (ได้ `u…` อัตโนมัติ) ก็จะเห็นหน้าต่างตั้งชื่อด้วย ซึ่งตั้งใจไว้
 
 ### 2026-11-06 14:25 · Claude (claude-opus-5-5) · ห้องรอ: ป้ายชื่อ + ป้ายสถานะแบบรูป
 - คำสั่งที่ได้รับ: เจ้าของส่งรูปป้าย 2 แบบ — "ใช้อันนี้แทนป้ายชื่อ" (ป้ายน้ำเงินช่อซากุระ) และ "สถานะ พร้อม/ไม่พร้อม ให้ใช้อันที่สอง" (ป้ายม่วงดาว)
