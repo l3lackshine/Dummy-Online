@@ -33,7 +33,7 @@ function resultOverlay() {
   const board = rows
     .map(
       ({ p, pt, cd }, i) =>
-        `<div class="rs-row${p.i === my ? ' me' : ''}${R.k === p.i ? ' knk' : ''}"><b class=rs-rk>${medal[i] || i + 1}</b>${ava(p)}<div class=rs-who><b>${nm(p.i)}${R.k === p.i ? ' 👑' : ''}</b><span class=rs-chips>${(R.nt[p.i] || []).map(x => `<i>${esc(x)}</i>`).join('')}</span></div><div class=rs-pt>${pt}<small>แต้ม</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)}<small>ชิป</small></div></div>`
+        `<div class="rs-row${p.i === my ? ' me' : ''}${R.k === p.i ? ' knk' : ''}"><b class=rs-rk>${medal[i] || i + 1}</b>${ava(p)}<div class=rs-who><b>${nm(p.i)}${R.k === p.i ? ' 👑' : ''}${window.Report ? Report.button(p.i) : ''}</b><span class=rs-chips>${(R.nt[p.i] || []).map(x => `<i>${esc(x)}</i>`).join('')}</span></div><div class=rs-pt>${pt}<small>แต้ม</small></div><div class="rs-cd ${cd > 0 ? 'pos' : cd < 0 ? 'neg' : ''}">${sgn(cd)}<small>ชิป</small></div></div>`
     )
     .join('');
   const pay =

@@ -1,0 +1,73 @@
+/* report.css — หน้าต่างรายงานผู้เล่น + ปุ่ม 🚩 ในหน้าสรุปผล (Code/Report/report.js) · กรอบใช้ .st-box ของชุด UI ซากุระ
+   ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน */
+.rp-box {
+  width: min(92vw, 80vh) !important;
+  max-height: 90vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+  gap: 1vh;
+}
+.rp-h {
+  margin: 0;
+  font-size: 3vh;
+  color: #3b4255;
+}
+.rp-opts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8vh;
+}
+.rp-opt {
+  display: flex;
+  align-items: center;
+  gap: 0.8vh;
+  padding: 1vh 1.2vh;
+  border-radius: 1.2vh;
+  border: 0.2vh solid #efe1c2;
+  background: #fffaf0;
+  font: 700 2vh Sarabun, sans-serif;
+  color: #3b4255;
+  cursor: pointer;
+}
+.rp-opt:has(input:checked) {
+  border-color: #f0659a;
+  background: #fff4f8;
+}
+.rp-note {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.8vh 1vh;
+  border-radius: 1vh;
+  border: 0.2vh solid #e2c784;
+  background: #fffdf8;
+  font: 600 2vh Sarabun, sans-serif;
+  color: #3b4255;
+  resize: none;
+}
+.rp-mut {
+  margin: 0;
+  font-size: 1.7vh;
+  color: #8a8e9c;
+}
+.rp-btns {
+  display: flex;
+  gap: 1vh;
+}
+
+/* ปุ่ม 🚩 ข้างชื่อในหน้าสรุปผลจบตา — เล็กและจาง ไม่แย่งสายตาจากผลแพ้ชนะ */
+.rp-flag {
+  margin-left: 0.6vh;
+  padding: 0 0.6vh;
+  border: 0;
+  border-radius: 0.8vh;
+  background: #ffffff1f;
+  font-size: 1.8vh;
+  line-height: 1.6;
+  opacity: 0.55;
+  cursor: pointer;
+  vertical-align: middle;
+}
+.rp-flag:hover,
+.rp-flag:focus-visible {
+  opacity: 1;
+}

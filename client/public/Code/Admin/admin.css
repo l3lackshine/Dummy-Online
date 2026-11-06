@@ -255,3 +255,48 @@
   font-size: 1.5vh;
   color: #8a8e9c;
 }
+
+/* ---------- ผู้เล่น + รายงาน (v18) ---------- */
+.ad-row.ad-row4 {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+}
+.ad-rp {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4vh;
+  padding: 0.9vh 1.2vh;
+}
+.ad-rp > b {
+  font-size: 2vh;
+  color: #3b4255;
+}
+.ad-rp > b small {
+  font-size: 1.6vh;
+  color: #8a8e9c;
+}
+.ad-rp > small {
+  font-size: 1.6vh;
+  color: #6b6f80;
+}
+.ad-rp .ad-st {
+  align-self: flex-start;
+  margin-left: 0;
+}
+.ad-note {
+  margin: 0;
+  padding: 0.6vh 1vh;
+  border-radius: 0.8vh;
+  background: #fffaf0;
+  font-size: 1.8vh;
+  color: #4a4f60;
+  white-space: pre-line;
+}
+.ad-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6vh;
+}
+.ad-acts .wbtn {
+  padding: 0.5vh 1.4vh !important;
+  font-size: 1.8vh !important;
+}

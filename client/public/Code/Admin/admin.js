@@ -1,9 +1,10 @@
-/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · จดหมายแจกของ · ค้นผู้เล่น/เปลี่ยนชื่อ · รายชื่อแอดมิน
+/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · จดหมายแจกของ · ค้นผู้เล่น/เปลี่ยนชื่อ · รายงานผู้เล่น + แบน/ปิดอีโมต · รายชื่อแอดมิน
    ทุกคำสั่งผ่านฟังก์ชัน admin_* ในฐานข้อมูล (supabase/v17_events_admin.sql · v18_admin_tools.sql) ซึ่งตรวจสิทธิ์และตรวจข้อมูลเอง — ไฟล์นี้เป็นแค่ฟอร์ม
    ปุ่มเข้าหน้านี้ขึ้นเฉพาะบัญชีที่เป็นแอดมิน (Admin.isAdmin() ถาม is_admin จากฐานข้อมูล) · คนอื่นเรียก adminOpen() ก็แก้อะไรไม่ได้
    Public: adminOpen() · adTab(tab) · adEditEvent(id) · adEditEventQuest(eventId, questId) · adEditQuest(id) · adSave() · adCancel()
            adDelete(type, id) · adExpand(eventId) · adMetric(select) · adAddAdmin() · adRemoveAdmin(username) · Admin.isAdmin()
-           adEditBanner(id) · adPay(select) · adRateSum() · adNewMail() · adFindPlayer() · adRename(username)
+           adEditBanner(id) · adPay(select) · adRateSum() · adNewMail(to) · adFindPlayer() · adRename(username)
+           adReportFilter(status) · adResolve(id, status) · adSanction(username)
    EXTEND: ชนิดเควสใหม่ = เพิ่มใน METRICS (และใน SQL _quest_metric_ok / _window_progress) · แท็บใหม่ = เพิ่มใน TABS + ฟังก์ชันวาดแท็บ */
 (function () {
   'use strict';
@@ -15,6 +16,7 @@
     ['gacha', '🎰 ตู้กาชา'],
     ['mail', '📮 จดหมาย'],
     ['players', '👤 ผู้เล่น'],
+    ['reports', '🚩 รายงาน'],
     ['admins', '🛡️ แอดมิน'],
   ];
   const METRICS = [
@@ -31,6 +33,19 @@
   // ใช้เมื่อยังไม่ได้ต่อเซิร์ฟเวอร์ (RULES ว่าง) — สะกดตาม Code/Profile/profile-card.js
   const GAME_NAMES = { dummy: 'ดัมมี่', pokdeng: 'ป๊อกเด้ง', gaogae: 'เก้าเก', somsip: 'ผสมสิบ', eekae: 'อีแก่' };
   const ITEM_ROWS = 4; // ช่องรางวัลไอเทมต่อเควส
+  // ป้ายเหตุผลรายงาน — ตรงกับ REASONS ใน Code/Report/report.js
+  const REPORT_REASONS = { name: 'ชื่อ/ข้อความไม่เหมาะสม', spam: 'ก่อกวน/สแปมอีโมต', cheat: 'สงสัยโกง', afk: 'ออกกลางเกม/ถ่วงเวลา' };
+  const REPORT_STATUS = { open: 'รอตรวจ', resolved: 'จัดการแล้ว', dismissed: 'ไม่มีมูล' };
+  const HOURS_FOREVER = 876000; // 100 ปี = ถาวร (เพดานในฐานข้อมูล)
+  const SANCTION_TIMES = [
+    [1, '1 ชั่วโมง'],
+    [24, '1 วัน'],
+    [72, '3 วัน'],
+    [168, '7 วัน'],
+    [720, '30 วัน'],
+    [HOURS_FOREVER, 'ถาวร'],
+    [0, 'ยกเลิกโทษ'],
+  ];
   const MAIL_DAYS_DEFAULT = 30; // อายุจดหมายตั้งต้น (แอดมินแก้ได้ 1–365 วัน)
   const RATE_UP_DEFAULT = 2; // ตัวคูณเรทอัปตั้งต้นของตู้ใหม่ (แอดมินแก้ได้ 1–20 · ฐานข้อมูลตรวจเพดาน)
   // ใช้เมื่อหาชื่อชนิดใน KINDS (Core/skins.js) ไม่เจอ
@@ -43,9 +58,11 @@
   let sentMails = null; // ผลจาก admin_list_mail (โหลดเมื่อเปิดแท็บจดหมาย)
   let playerQuery = '';
   let foundPlayers = null; // ผลจาก admin_find_player (null = ยังไม่ได้ค้น)
+  let reportFilter = 'open';
+  let reportList = null; // ผลจาก admin_list_reports (โหลดเมื่อเปิดแท็บรายงาน)
   let failMessage = '';
   let tab = 'events';
-  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner' | 'mail' | 'rename', data }
+  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner' | 'mail' | 'rename' | 'sanction', data }
   let expandedEvent = '';
   let busy = false;
   let featOptions = []; // [{ feat, label }] จาก skin/achievements.json
@@ -243,7 +260,7 @@
       </div>`;
   }
 
-  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml, mail: mailFormHtml, rename: renameFormHtml };
+  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml, mail: mailFormHtml, rename: renameFormHtml, sanction: sanctionFormHtml };
 
   function formHtml() {
     const body = FORM_BUILDERS[form.type](form.data);
@@ -518,13 +535,29 @@
   }
 
   // ---------- แท็บผู้เล่น ----------
+  // ป้ายโทษที่ยังมีผล (แบน/ปิดอีโมต) — ว่าง = ไม่มีโทษ
+  function untilText(iso) {
+    if (new Date(iso) - Date.now() > 50 * 365 * 86400000) return 'ถาวร';
+    return 'ถึง ' + dateText(iso);
+  }
+
+  function sanctionBadges(row) {
+    const now = Date.now();
+    const badges = [];
+    if (row.banned_until && new Date(row.banned_until) > now) badges.push(`<em class="ad-st off">แบน${escape(untilText(row.banned_until))}</em>`);
+    if (row.muted_until && new Date(row.muted_until) > now) badges.push(`<em class="ad-st soon">ปิดอีโมต${escape(untilText(row.muted_until))}</em>`);
+    return badges.join('');
+  }
+
   function playerRowHtml(player) {
     const lastLogin = player.last_login_at ? 'ล็อกอินล่าสุด ' + dateText(player.last_login_at) : 'ยังไม่เคยล็อกอิน';
-    return `<div class=ad-row>
-      <span><b>${escape(player.display_name)}</b>
-        <small>@${escape(player.username)}${player.title ? ' · ' + escape(player.title) : ''} · สมัคร ${escape(dateText(player.created_at))} · ${escape(lastLogin)}</small></span>
-      <span></span>
+    const reports = Number(player.open_reports) ? ` · รายงานรอตรวจ ${number(player.open_reports)}` : '';
+    return `<div class="ad-row ad-row4">
+      <span><b>${escape(player.display_name)}</b>${sanctionBadges(player)}
+        <small>@${escape(player.username)}${player.title ? ' · ' + escape(player.title) : ''} · สมัคร ${escape(dateText(player.created_at))} · ${escape(lastLogin)}${reports}</small></span>
       <button class=wbtn onclick="adRename('${escape(player.username)}')">เปลี่ยนชื่อ</button>
+      <button class=wbtn onclick="adNewMail('${escape(player.username)}')">ส่งจดหมาย</button>
+      <button class="wbtn ad-del" onclick="adSanction('${escape(player.username)}')">ลงโทษ</button>
     </div>`;
   }
 
@@ -542,6 +575,72 @@
       <div class=ad-grid>
         ${field('ชื่อใหม่ (ไม่เกิน 14 ตัวอักษร)', textInput('display_name', data.display_name, 'maxlength=14'))}
       </div>`;
+  }
+
+  // ---------- แท็บรายงาน ----------
+  function reportActionsHtml(report) {
+    const user = escape(report.target);
+    const shortcuts = report.target_admin
+      ? ''
+      : `<button class=wbtn onclick="adRename('${user}')">เปลี่ยนชื่อ</button>
+         <button class=wbtn onclick="adNewMail('${user}')">ส่งจดหมายเตือน</button>
+         <button class="wbtn ad-del" onclick="adSanction('${user}')">แบน / ปิดอีโมต</button>`;
+    const resolve =
+      report.status === 'open'
+        ? `<button class="wbtn go" onclick="adResolve(${Number(report.id)},'resolved')">✓ จัดการแล้ว</button>
+           <button class=wbtn onclick="adResolve(${Number(report.id)},'dismissed')">ไม่มีมูล</button>`
+        : `<button class=wbtn onclick="adResolve(${Number(report.id)},'open')">เปิดเรื่องใหม่</button>`;
+    return `<div class=ad-acts>${resolve}${shortcuts}</div>`;
+  }
+
+  function reportRowHtml(report) {
+    const place = [report.game_id ? GAME_NAMES[report.game_id] || report.game_id : '', report.room_code ? 'ห้อง ' + report.room_code : '']
+      .filter(Boolean)
+      .join(' · ');
+    const handled = report.status === 'open' ? '' : ` · ${REPORT_STATUS[report.status]} โดย @${report.handled_by || '?'}`;
+    return `<div class="ad-ev${report.status === 'open' ? ' open' : ''}">
+      <div class=ad-rp>
+        <b>${escape(report.target_name)} <small>@${escape(report.target)}</small></b>${sanctionBadges(report)}
+        <em class="ad-st ${report.status === 'open' ? 'on' : 'end'}">${REPORT_STATUS[report.status] || report.status}</em>
+        <small>${escape(REPORT_REASONS[report.reason] || report.reason)} · โดย @${escape(report.reporter || '?')} · ${escape(dateText(report.created_at))}${place ? ' · ' + escape(place) : ''}${escape(handled)} · รายงานรอตรวจของคนนี้ ${number(report.target_open)}</small>
+        ${report.note ? `<p class=ad-note>“${escape(report.note)}”</p>` : ''}
+        ${reportActionsHtml(report)}
+      </div>
+    </div>`;
+  }
+
+  function reportsTabHtml() {
+    const filters = [
+      ['open', 'รอตรวจ'],
+      ['all', 'ทั้งหมด'],
+    ]
+      .map(([id, name]) => `<button class="ad-tab${reportFilter === id ? ' on' : ''}" onclick="adReportFilter('${id}')">${name}</button>`)
+      .join('');
+    if (!reportList) return `<div class=ad-tabs>${filters}</div><p class=ad-mut>กำลังโหลดรายงาน…</p>`;
+    const rows = reportList.map(reportRowHtml).join('') || '<p class=ad-mut>ไม่มีรายงานที่รอตรวจ 🎉</p>';
+    return `<div class=ad-tabs>${filters}</div><p class=ad-mut>ผู้เล่นรายงานจากโต๊ะเล่น/หน้าสรุปผล · แบน = เข้าเกมและใช้ฟังก์ชันผู้เล่นไม่ได้ (ยังลบบัญชีตัวเองได้) · ปิดอีโมต = ส่งอีโมตบนโต๊ะไม่ได้ · แอดมินลงโทษกันเองไม่ได้</p><div class=ad-list>${rows}</div>`;
+  }
+
+  function sanctionFormHtml(data) {
+    const times = SANCTION_TIMES.map(([hours, label]) => `<option value=${hours}${hours === data.hours ? ' selected' : ''}>${label}</option>`).join('');
+    return `<h4>ลงโทษ @${escape(data.username)}</h4>
+      <div class=ad-grid>
+        ${field('โทษ', `<select name=kind>
+          <option value=mute${data.kind === 'mute' ? ' selected' : ''}>ปิดการส่งอีโมต</option>
+          <option value=ban${data.kind === 'ban' ? ' selected' : ''}>แบน (เข้าเกมไม่ได้)</option></select>`)}
+        ${field('ระยะเวลา', `<select name=hours>${times}</select>`)}
+        ${field('เหตุผล (ผู้เล่นเห็นตอนถูกแบน)', textInput('reason', data.reason, 'maxlength=100'), true)}
+      </div>`;
+  }
+
+  async function loadReports() {
+    try {
+      reportList = await DB.call('admin_list_reports', { p_status: reportFilter });
+    } catch (e) {
+      reportList = [];
+      if (window.dbToast) dbToast(e.message || 'โหลดรายงานไม่ได้ (ฐานข้อมูลยังไม่มี v18?)');
+    }
+    repaint();
   }
 
   // ---------- แท็บแอดมิน ----------
@@ -567,6 +666,7 @@
     if (tab === 'gacha') return gachaTabHtml();
     if (tab === 'mail') return mailTabHtml();
     if (tab === 'players') return playersTabHtml();
+    if (tab === 'reports') return reportsTabHtml();
     if (tab === 'admins') return adminsTabHtml();
     return eventsTabHtml();
   }
@@ -658,18 +758,28 @@
   }
 
   const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner', mail: 'admin_send_mail',
-    rename: 'admin_rename_player' };
+    rename: 'admin_rename_player', sanction: 'admin_set_sanction' };
   const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest', banner: 'admin_delete_banner', mail: 'admin_delete_mail' };
   const DELETE_WARNINGS = {
     event: 'ลบอีเวนต์นี้? เควสและประวัติรับรางวัลของอีเวนต์จะหายไปด้วย',
     banner: 'ลบตู้นี้? การันตีสะสมของผู้เล่นในตู้นี้จะหายไปด้วย (ปิดใช้แทนการลบได้)',
     mail: 'ถอนจดหมายนี้? คนที่ยังไม่กดรับจะไม่ได้ของ',
   };
-  const AFTER_CHANGE = { banner: () => reloadAfterBannerChange(), mail: () => loadMail(), rename: () => findPlayers() };
+  // หลังเปลี่ยนชื่อ/ลงโทษ: โหลดรายการของแท็บที่เปิดอยู่ใหม่ (สั่งได้ทั้งจากแท็บผู้เล่นและแท็บรายงาน)
+  const reloadPeople = () => (tab === 'reports' ? loadReports() : findPlayers());
+  const AFTER_CHANGE = {
+    banner: () => reloadAfterBannerChange(),
+    mail: () => (tab === 'mail' ? loadMail() : reloadPeople()),
+    rename: reloadPeople,
+    sanction: reloadPeople,
+  };
 
   // ฟังก์ชันส่วนใหญ่รับ { p: ข้อมูลฟอร์ม } · เปลี่ยนชื่อรับเป็นช่องแยก
   function saveArgs(type, payload) {
     if (type === 'rename') return { p_username: form.data.username, p_name: payload.display_name };
+    if (type === 'sanction') {
+      return { p_username: form.data.username, p_kind: payload.kind, p_hours: Number(payload.hours), p_reason: payload.reason || '' };
+    }
     return { p: payload };
   }
 
@@ -707,6 +817,7 @@
     repaint();
     if (id === 'gacha') loadGacha(); // โหลดใหม่ทุกครั้งที่เปิดแท็บ — ตู้อาจถูกแก้จาก seed หรือแอดมินคนอื่น
     if (id === 'mail') loadMail();
+    if (id === 'reports') loadReports();
   };
 
   window.adExpand = eventId => {
@@ -751,16 +862,48 @@
     findPlayers();
   };
 
+  // ชื่อที่แสดงปัจจุบันของผู้เล่น จากผลค้นหาหรือรายการรายงาน
+  function currentDisplayName(username) {
+    const found = (foundPlayers || []).find(p => p.username === username);
+    if (found) return found.display_name;
+    const reported = (reportList || []).find(r => r.target === username);
+    return reported ? reported.target_name : '';
+  }
+
   window.adRename = username => {
-    const player = (foundPlayers || []).find(p => p.username === username);
-    if (!player) return;
-    form = { type: 'rename', data: { username, previous: player.display_name, display_name: player.display_name } };
+    const name = currentDisplayName(username);
+    form = { type: 'rename', data: { username, previous: name, display_name: name } };
     repaint();
   };
 
-  window.adNewMail = () => {
-    form = { type: 'mail', data: { days: MAIL_DAYS_DEFAULT } };
+  window.adNewMail = to => {
+    form = { type: 'mail', data: { days: MAIL_DAYS_DEFAULT, to: to || '' } };
     repaint();
+  };
+
+  window.adSanction = username => {
+    form = { type: 'sanction', data: { username, kind: 'mute', hours: 24, reason: '' } };
+    repaint();
+  };
+
+  window.adReportFilter = status => {
+    reportFilter = status;
+    reportList = null;
+    repaint();
+    loadReports();
+  };
+
+  window.adResolve = async (reportId, status) => {
+    if (busy) return;
+    busy = true;
+    try {
+      await DB.call('admin_resolve_report', { p_id: reportId, p_status: status, p_note: '' });
+      if (window.dbToast) dbToast(status === 'open' ? 'เปิดเรื่องใหม่แล้ว' : '✓ ' + REPORT_STATUS[status]);
+      await loadReports();
+    } catch (e) {
+      if (window.dbToast) dbToast(e.message || 'ปิดเรื่องไม่สำเร็จ');
+    }
+    busy = false;
   };
 
   window.adPay = select => {
