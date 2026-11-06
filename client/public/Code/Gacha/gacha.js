@@ -263,7 +263,6 @@
       ['cosm', L('cosm', '🌸 ตู้ของแต่ง')],
       ['week', L('week', '🗓️ ร้านประจำสัปดาห์')],
       ['ticket', L('ticket', '🎫 แลกตั๋ว')],
-      ['inv', L('inv', '🎒 คลังของ')],
     ]
       .map(([k, l]) => `<button class="catbtn${tab === k ? ' on' : ''}" onclick="gcTab('${k}')">${l}</button>`)
       .join('');
