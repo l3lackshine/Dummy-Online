@@ -161,7 +161,7 @@ function renderDummyTable() {
  <div class=hint>${esc(h)}<small>${esc(me.n)} ${me.pts} แต้ม</small></div>
  <div class=dock-wrap><div class=dock><div class=hand>${ho.map(i => face(i, (sel.has(i) ? ' s' : '') + (fresh.has(i) ? ' new' : ''), `data-id=${i} onclick=pick(${i})`)).join('')}</div>
  <div class=tools><button onclick="mv(-1)">◀ ซ้าย</button><button onclick="mv(1)">ขวา ▶</button><button onclick=srt()>เรียงไพ่</button></div>
- <div class=acts><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button><button class="g sm" onclick="if(confirm('ออกจากห้อง?'))leave()">ออก</button></div></div></div></div>${ovl}`;
+ <div class=acts><button class=blue onclick=mld()>เกิด</button><button class=grn onclick=adep()>ฝากออโต้</button><button class=org onclick=dsc()>${S.hand.length === 1 && mine() && S.phase === 'play' ? '🂠 คว่ำน็อก!' : 'ทิ้ง'}</button><button class="g sm" onclick="askLeaveRoom()">ออก</button></div></div></div></div>${ovl}`;
   $('app').innerHTML = gx ? gxView({ top, left, right, pm, pd, h, fresh }) + ovl : oldHtml;
   const d = $('dp');
   if (d) d.scrollLeft = S.disc.length !== pd ? d.scrollWidth : sl;

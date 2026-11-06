@@ -1,0 +1,26 @@
+/* leave-confirm.css — หน้าต่าง "ออกจากห้อง?" · คู่กับ leave-confirm.js
+   กรอบ/สี/ปุ่ม มาจากหน้าต่างกลางของเกม (.st-modal/.st-box + กรอบซากุระใน Theme/sakura-kit.css · .pv-h/.pv-btn)
+   ไฟล์นี้จัดแค่: อยู่เหนือโต๊ะเกม · ความกว้าง · แถวปุ่ม */
+
+/* อยู่เหนือโต๊ะและหน้าต่างอื่นระหว่างเล่น แต่ต่ำกว่าหน้าต่างตั้งชื่อ (9000) และหน้าต่างเวอร์ชันใหม่ (9500) */
+.st-modal.lc-modal {
+  z-index: 8500;
+}
+/* 3 คลาส: ชนะกฎจอแนวนอนของหน้าต่างสตามิน่า (.st-modal .st-box แผ่ 2 คอลัมน์) แบบเดียวกับ .fn-box */
+.st-modal.lc-modal .lc-box {
+  display: block;
+  width: min(340px, 100%);
+  text-align: center;
+}
+.lc-box .pv-h {
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.lc-acts {
+  display: flex;
+  gap: 10px;
+}
+.lc-acts .pv-btn {
+  flex: 1;
+  justify-content: center;
+}

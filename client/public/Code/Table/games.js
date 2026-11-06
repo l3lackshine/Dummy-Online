@@ -30,7 +30,7 @@ function gxAct(t, extra) {
   emit(Object.assign({ t }, extra || {}));
 }
 function gxLeave() {
-  if (confirm('ออกจากห้อง?')) leave();
+  askLeaveRoom(); // หน้าต่างในเกม (Lobby/leave-confirm.js) — confirm() ทำให้หลุดเต็มจอ
 }
 function gxSel(id) {
   if (!gxMine() || S.phase !== 'discard') return;

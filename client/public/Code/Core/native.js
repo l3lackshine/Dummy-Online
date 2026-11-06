@@ -9,8 +9,10 @@
   App.addListener('backButton', function () {
     try {
       if (document.getElementById('pileModal') && typeof closePile === 'function') return closePile();
+      if (window.closeLeaveConfirm && closeLeaveConfirm()) return; // หน้าต่าง "ออกจากห้อง?" เปิดอยู่ = Back ปิดหน้าต่าง
       if (screen === 'game' || (typeof code !== 'undefined' && code)) {
-        if (confirm('ออกจากห้อง?')) leave();
+        if (window.askLeaveRoom) askLeaveRoom();
+        else if (confirm('ออกจากห้อง?')) leave();
         return;
       }
       if (screen === 'home') return App.exitApp();

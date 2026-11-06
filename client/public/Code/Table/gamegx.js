@@ -85,7 +85,7 @@ function gxView(c) {
   ${seatBg(top, 'top')}${seatBg(left, 'left')}${seatBg(right, 'right')}${seatBg(S.my, 'bottom')}
   ${wedge(top, 'top')}${wedge(left, 'left')}${wedge(right, 'right')}${meArt}
   <div class=gx-hud><span class=pill>🪙 ${sv.coins}</span><span class=pill>${soloRoom ? '🤖 เล่นกับบอท' : 'ห้อง ' + esc(code)}</span></div>
-  <button class=gx-gear onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">⚙</button>
+  <button class=gx-gear onclick="askLeaveRoom()" aria-label="ออก">⚙</button>
   ${badge(top, 'top')}${badge(left, 'left')}${badge(right, 'right')}
   <div class="zone zone-top">${ms(top)}</div><div class="zone zone-left">${ms(left)}</div><div class="zone zone-right">${ms(right)}</div><div class="zone zone-bottom">${ms(S.my)}</div>
   <div class="felt gx-hub"><div class=piles>

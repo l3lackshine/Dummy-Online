@@ -89,7 +89,7 @@ function gxRoom(c) {
           : 'ทุกคนพร้อมแล้ว — กดเริ่มเกมได้เลย';
   const row = (k, v) => `<div class=rm-row><span>${k}</span><b>${v}</b></div>`;
   return `<div class=rm-stage>
-  <div class=rm-top><button class=rm-back onclick="if(confirm('ออกจากห้อง?'))leave()" aria-label="ออก">‹</button>
+  <div class=rm-top><button class=rm-back onclick="askLeaveRoom()" aria-label="ออก">‹</button>
     <div class=rm-title><b>${M ? (M.ranked ? '🏆 กำลังหาแมตช์แรงก์' : '🔍 กำลังหาแมตช์') : soloRoom ? '🤖 ห้องเล่นกับบอท' : 'ห้อง ' + esc(code)}</b><small>${esc(rule.name || 'ดัมมี่')}</small></div>
     <span class=pill>🪙 ${sv.coins}</span>${rule.id ? `<button class="pill rl" onclick="showRules('${esc(rule.id)}')">📖 กติกา</button>` : ''}</div>
   <div class=rm-slots>${slots}</div>
