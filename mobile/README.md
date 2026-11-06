@@ -12,7 +12,6 @@
 
 ## โหลดหน้าเว็บสด (แก้เกมแล้วไม่ต้อง build APK ใหม่)
 ตั้ง repo variable **`CLIENT_URL`** = ที่อยู่เว็บเกมบน Render (เช่น `https://dummy-online.onrender.com`) หรือกรอกช่อง `client_url` ตอนกด Run workflow แล้ว build APK **ครั้งเดียว** — หลังจากนั้นแอปจะเปิดเว็บจริงจาก Render ทุกครั้ง แก้ไฟล์เกม (`client/public/`) แล้ว push ให้ Render deploy ก็อัปเดตในแอปเอง · ต้อง build APK ใหม่เฉพาะตอนแก้ `mobile/` (ไอคอน/สิทธิ์/ปลั๊กอิน)
-- Skill Studio อยู่ในเว็บเดียวกัน เปิดที่ `<CLIENT_URL>/skin/skill-studio.html` (ในแอปเป็นหน้าเว็บ เปิดจากเบราว์เซอร์มือถือก็ได้)
 - ตั้ง push ที่แก้ `client/public/` จะไม่ trigger build APK อัตโนมัติอีกแล้ว
 
 ## ตั้งที่อยู่เซิร์ฟเวอร์

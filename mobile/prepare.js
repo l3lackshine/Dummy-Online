@@ -21,7 +21,7 @@ function prepWww() {
     const n = h.replace(/src="https?:\/\/[^"]*socket\.io[^"]*\.js"/, 'src="./socket.io.min.js"');
     if (n === h) die('หา <script> ของ socket.io ใน index.html ไม่เจอ'); fs.writeFileSync(index, n); console.log('• ใช้ socket.io ที่แพ็กในแอป');
   } else console.log('• (ข้าม) ยังไม่ได้ npm install ใน mobile/ — ใช้ socket.io จาก CDN ตาม index.html');
-  // 3) โหมดโหลดหน้าเว็บสด: ตั้ง CLIENT_URL (ที่อยู่เว็บบน Render) → แอปเปิดเว็บจริงทุกครั้ง แก้เกม/Skill Studio แล้ว deploy ที่ Render ไม่ต้อง build APK ใหม่
+  // 3) โหมดโหลดหน้าเว็บสด: ตั้ง CLIENT_URL (ที่อยู่เว็บบน Render) → แอปเปิดเว็บจริงทุกครั้ง แก้เกมแล้ว deploy ที่ Render ไม่ต้อง build APK ใหม่
   const cu = (process.env.CLIENT_URL || '').trim().replace(/\/+$/, '');
   if (cu) {
     if (!/^https:\/\//.test(cu)) die('CLIENT_URL ต้องขึ้นต้นด้วย https://');

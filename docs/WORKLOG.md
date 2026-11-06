@@ -7,7 +7,7 @@
 - งานค้าง:
   1. ให้เจ้าของตรวจ 0.17.0 บนเว็บจริง (รอ Render/Cloudflare deploy เสร็จ): หน้าแอดมิน 7 แท็บ (ตู้กาชา · จดหมาย · ผู้เล่น · รายงาน) · ส่งจดหมายหาตัวเองแล้วกดรับ · ลองแตะป้ายชื่อผู้เล่นบนโต๊ะ (ต้องเป็นคนจริงที่ล็อกอิน 2 บัญชี)
 - งานต่อไปตามโรดแมพ (เรียงลำดับ):
-  1. **ข้อ 13 อัป Skill Studio** (`client/public/skin/skill-studio.html`) ให้ตรงกับระบบสกิล v3
+  1. ~~ข้อ 13 อัป Skill Studio~~ ยกเลิก — เจ้าของสั่งลบ Skill Studio ออกจากโปรเจค (แก้สกิลที่ `skills.json` ตรง)
   2. ก้อน 2 ที่รออยู่: ข้อ 3 ระบบเสียง (branch `sound` รอเสียงพากย์) · ข้อ 5 ของปลดดาว (รอรูป)
   3. พักไว้: เตรียมลง Play Store (ยังไม่จ่ายค่าบัญชีนักพัฒนา)
 - คำถามที่รอเจ้าของโปรเจคตอบ: (ว่าง)
@@ -16,6 +16,17 @@
 - กับดักที่ควรรู้ก่อนเริ่ม: gacha_pull/_quest_progress ฉบับล่าสุดอยู่ใน `supabase/v17_events_admin.sql` · **get_gacha / _uid / delete_my_account ฉบับล่าสุดอยู่ใน `supabase/v18_admin_tools.sql`** (แก้ต่อจากไฟล์นี้) · ผู้ใช้ทดสอบใน supabase/test ใช้รหัสช่วง a–f · 170x · 180x ไปแล้ว · `npm install` จะแก้หัว `server/package-lock.json` เอง — อย่า commit ถ้าไม่ได้ตั้งใจ · ทุกครั้งที่อัปเกมต้องขึ้นเลขเวอร์ชัน + แพตช์โน้ต (patchnotes.json + docs/PATCHNOTES.md)
 
 ## รายการงาน (ใหม่สุดบน)
+
+### 2026-11-06 12:45 · Claude (claude-opus-5-5) · ลบ Skill Studio ออกจากโปรเจค
+- คำสั่งที่ได้รับ: "ลบ skill studio ออกจากโปรเจค เลย" (แทนโรดแมพข้อ 13 ที่จะอัป Skill Studio)
+- branch: `ai/skills-remove-studio`
+- ลบ: `client/public/skin/skill-studio.html` · `client/public/skin/skill-editor.html` (หน้าเด้งไป Skill Studio)
+- แก้ (เอกสาร/คอมเมนต์อย่างเดียว): `README.md` · `supabase/README.md` · `client/public/skin/README.md` · `mobile/README.md` · คอมเมนต์ใน `mobile/prepare.js` · `docs/ROADMAP.md` ข้อ 13 ขีดฆ่า
+- ไม่ได้แตะ (แต่เกี่ยวข้อง): `skills.json` (ยังเป็นที่เก็บสกิล แก้ตรงได้) · `tools/skin-studio/` (Skin Studio แอป Android — คนละตัว) · คอมเมนต์ใน `supabase/schema.sql` บรรทัด 175, 476 (ไฟล์ SQL ที่รันจริงแล้ว — ไม่แก้โดยไม่ถาม) · `CLAUDE.md` บรรทัด 53, 249 (ห้ามแก้เอง — เสนอให้เจ้าของแล้ว)
+- ตรวจแล้ว: ไม่มีโค้ด/เทส/workflow ไหนอ้าง 2 ไฟล์ที่ลบ (grep ทั้ง repo) · `node --check mobile/prepare.js` · `test-client-files.js` · `check-handlers.js` ผ่าน · `skills.json` อ่านได้
+- สถานะ: เสร็จบน branch · รออนุญาต push/merge + แก้ CLAUDE.md
+- วิธีย้อนกลับ: `git revert <commit>` (ไฟล์ที่ลบกลับมาครบ)
+- ข้อควรระวัง: ไม่มีเครื่องมือแก้สกิลแบบหน้าเว็บแล้ว — แก้ `skills.json` ด้วยมือ แล้วรัน `node scripts/gen-catalog-sql.js` ถ้าค่าที่แก้ต้องเข้าฐานข้อมูล
 
 ### 2026-11-06 12:25 · Claude (claude-opus-5-5) · อัป Beta 0.17.0 (รัน v18 + merge)
 - คำสั่งที่ได้รับ: "อัปเลย" + "ลงแพทโน๊ตด้วย"

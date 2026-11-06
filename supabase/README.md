@@ -47,8 +47,8 @@
 - ปรับราคาสุ่ม/โอกาส/pity/ราคารับซื้อ/ตู้ใหม่ ที่ `client/public/skin/gacha.json` แล้วรัน `node scripts/gen-catalog-sql.js`
 
 ## แก้ราคา/เพิ่มของ/แก้ค่าตัวละคร
-1. แก้ `client/public/skin/skins.json` (รายการของ) · `gacha.json` (ตู้/ราคา/โอกาส) และ/หรือ `skills.json` ผ่าน `client/public/skin/skill-studio.html`
-2. `node scripts/gen-catalog-sql.js` → รัน `supabase/seed_catalog.sql` ใหม่ใน SQL Editor (หรือกด "คัดลอก SQL" ใน Skill Studio สำหรับเฉพาะค่าตัวละคร)
+1. แก้ `client/public/skin/skins.json` (รายการของ) · `gacha.json` (ตู้/ราคา/โอกาส) และ/หรือ `skills.json` (แก้ไฟล์ตรง)
+2. `node scripts/gen-catalog-sql.js` → รัน `supabase/seed_catalog.sql` ใหม่ใน SQL Editor
 
 > ถ้ารัน schema.sql แล้วเจอ error จากตารางเก่าที่ชื่อชนกัน (คอลัมน์ไม่ตรง) และไม่มีข้อมูลผู้เล่นที่ต้องเก็บ ให้ลบตารางเกมเดิมทิ้งแล้วรันใหม่ (ระวัง: ลบข้อมูลผู้เล่น)
 
