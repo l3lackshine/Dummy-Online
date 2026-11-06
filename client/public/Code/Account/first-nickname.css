@@ -1,0 +1,125 @@
+/* first-nickname.css — หน้าต่างตั้งชื่อในเกมครั้งแรก · คู่กับ first-nickname.js
+   โทนเดียวกับการ์ดหน้าล็อกอิน (login.css) · z-index สูงกว่าหน้าต่างรางวัลล็อกอินที่เด้งพร้อมกัน */
+.fn-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: #0009;
+}
+.fn-box {
+  width: min(92vw, 380px);
+  max-height: 100%;
+  overflow: auto;
+  padding: 16px 18px 12px;
+  border-radius: 20px;
+  border: 3px solid #e8c48a;
+  background: linear-gradient(#4a2c16f7, #2a160cf7);
+  box-shadow:
+    0 8px 0 #0005,
+    0 0 40px #0008;
+  color: var(--cream, #fff4dc);
+  text-align: center;
+  font-family: Sarabun, sans-serif;
+}
+.fn-box h3 {
+  margin: 0 0 4px;
+  font:
+    700 24px/1.2 Mali,
+    Sarabun,
+    sans-serif;
+  text-shadow: 0 2px 0 #6b3a18;
+}
+.fn-box p {
+  margin: 0 0 12px;
+  color: #ffd9a0;
+  font-size: 14px;
+}
+.fn-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fn-box input {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 2px solid #c9964f;
+  background: var(--cream, #fff4dc);
+  color: #4a2a10;
+  text-align: center;
+  font:
+    700 17px Sarabun,
+    sans-serif;
+  outline: none;
+}
+.fn-box input:focus {
+  border-color: #ffd75e;
+  box-shadow: 0 0 0 3px #ffd75e66;
+}
+.fn-err {
+  min-height: 1.2em;
+  color: #ff9aa6;
+  font:
+    normal 600 13px Sarabun,
+    sans-serif;
+}
+.fn-go {
+  padding: 12px;
+  border-radius: 14px;
+  border: 2px solid #8a1f45;
+  background: linear-gradient(#f48fb1, #d6336c);
+  color: #fff;
+  font:
+    700 17px Sarabun,
+    sans-serif;
+  text-shadow: 0 1px 0 #8a1f45;
+  box-shadow: 0 4px 0 #8a1f45;
+  cursor: pointer;
+}
+.fn-go:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #8a1f45;
+}
+.fn-go:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+.fn-box small {
+  display: block;
+  margin-top: 10px;
+  color: #d9c3a0;
+  font-size: 12px;
+}
+.fn-out {
+  margin-top: 6px;
+  padding: 4px 10px;
+  border: 0;
+  background: none;
+  color: #e8d3b3;
+  font:
+    600 12.5px Sarabun,
+    sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (max-height: 420px) {
+  .fn-box {
+    padding: 10px 14px 8px;
+  }
+  .fn-box h3 {
+    font-size: 19px;
+  }
+  .fn-box p {
+    margin-bottom: 6px;
+  }
+  .fn-box input {
+    padding: 7px 10px;
+  }
+  .fn-go {
+    padding: 8px;
+  }
+}
