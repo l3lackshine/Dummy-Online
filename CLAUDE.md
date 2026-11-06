@@ -50,7 +50,7 @@
 | Server | Node.js + Express + Socket.IO (`server/`) |
 | ฐานข้อมูล/บัญชี | Supabase (PostgreSQL + RLS + ฟังก์ชัน SQL) |
 | แอปมือถือ | Capacitor ห่อหน้าเว็บ (`mobile/`) build ผ่าน GitHub Actions |
-| เครื่องมือเสริม | Skin Studio (แอป Android, `tools/skin-studio/`), Skill Studio (เว็บ `client/public/skin/skill-studio.html`) |
+| เครื่องมือเสริม | Skin Studio (แอป Android, `tools/skin-studio/`) |
 
 ---
 
@@ -246,7 +246,7 @@ function getCoinsAfterRename(user) {
 | ตู้กาชา | สร้าง `Assets/Shop/Gasha/<id>/Config.config` + `banner.webp` → build → `gen-catalog-sql.js` | `gacha.js` |
 | เกมไพ่ใหม่ | สร้าง `rules/<เกม>/` + `register(...)` ใน `rules/index.js` + โต๊ะใน `Code/Table/games.js` (`GX[<id>]`) | โมดูลห้องของเซิร์ฟเวอร์ |
 | ฤดูแบทเทิลพาส | แก้ `BattlePass/*.json` → `node scripts/gen-bp-sql.js` | โค้ดหน้าจอ |
-| สกิล | แก้ผ่าน `skill-studio.html` หรือ `skills.json` | — |
+| สกิล | แก้ `skills.json` ตรง | — |
 | หน้าจอ/ระบบใหม่ | **สร้างโฟลเดอร์/ไฟล์ใหม่** `Code/<ระบบ>/<ระบบ>.js` + `.css` | ไฟล์ระบบอื่น |
 
 **ถ้าต้องต่อยอดฟังก์ชันของไฟล์เดิม** ไฟล์ในโปรเจคใช้วิธี "เขียนทับฟังก์ชันจากไฟล์ที่โหลดทีหลัง" (เช่น `Account/profile-page.js` เขียนทับ `profileView()` ของ `Account/profile.js` · หลายไฟล์ห่อ `render()` ของ `Core/router.js`) — วิธีนี้ทำให้ไฟล์แกนไม่บวม แต่ **ขึ้นกับลำดับ `<script>` ใน `index.html`** ดังนั้น:
