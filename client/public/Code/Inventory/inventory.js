@@ -17,6 +17,46 @@
   let currentTab = 'characters';
   const selected = {}; // ชนิด → id ที่กดดูอยู่ (ยังไม่ได้กดใช้)
 
+  // ความหายาก (ชื่อเดียวกับ gasha.config) → คลาสพื้นหลังช่องตัวละคร · Common ใช้พื้นเดิม
+  // EXTEND: ระดับใหม่ = เพิ่มแถวที่นี่ + กฎ .iv-cell.<คลาส> ใน inventory.theme.css
+  const RARITY_CLASS = {
+    rare: 'r-rare',
+    epic: 'r-sr',
+    legendary: 'r-ssr',
+  };
+  let priceToRarity = []; // จาก skin/gacha.json — ใช้กับตัวละครที่ไม่ได้ระบุความหายากเอง
+
+  // โหลดตารางราคา→ความหายากครั้งเดียว (ไฟล์เดียวกับที่ build-assets.js ใช้จัดระดับ)
+  function loadPriceToRarity() {
+    fetch('./skin/gacha.json')
+      .then(response => response.json())
+      .then(gacha => {
+        priceToRarity = (gacha && gacha.priceToRarity) || [];
+        if (typeof screen !== 'undefined' && screen === 'inv') render();
+      })
+      .catch(() => {});
+  }
+
+  // หาความหายากจากที่ที่ "ถูกที่สุด" ก่อน: ฐานข้อมูล (ตู้กาชาจริง) → ค่าที่ตั้งในตัวละคร → เทียบจากราคา
+  function rarityFromCatalog(characterId) {
+    const banners = (window.DB && DB.G && DB.G.banners) || [];
+    for (const banner of banners) {
+      const found = (banner.items || []).find(i => i.kind === 'characters' && i.item_id === characterId);
+      if (found && found.rarity) return found.rarity;
+    }
+    return '';
+  }
+
+  function rarityFromPrice(price) {
+    const rule = priceToRarity.find(r => (Number(price) || 0) >= r.min);
+    return rule ? rule.rarity : '';
+  }
+
+  function rarityClassOf(character) {
+    const rarity = rarityFromCatalog(character.id) || character.rarity || rarityFromPrice(character.price);
+    return RARITY_CLASS[rarity] || '';
+  }
+
   window.invOpen = kind => {
     currentTab = kind || currentTab;
     go('inv');
@@ -31,7 +71,8 @@
   };
 
   function cell(kind, item, equippedId, pickedId) {
-    return `<button class="iv-cell${item.id === pickedId ? ' sel' : ''}${item.id === equippedId ? ' eq' : ''}" onclick="invSel('${kind}','${escape(item.id)}')">${item.id === equippedId ? '<em>ใช้อยู่</em>' : ''}<span class=iv-pv>${prevBox(kind, item)}</span><b>${escape(item.name || item.n || item.id)}</b></button>`;
+    const rarityClass = kind === 'characters' ? rarityClassOf(item) : '';
+    return `<button class="iv-cell${rarityClass ? ' ' + rarityClass : ''}${item.id === pickedId ? ' sel' : ''}${item.id === equippedId ? ' eq' : ''}" onclick="invSel('${kind}','${escape(item.id)}')">${item.id === equippedId ? '<em>ใช้อยู่</em>' : ''}<span class=iv-pv>${prevBox(kind, item)}</span><b>${escape(item.name || item.n || item.id)}</b></button>`;
   }
 
   function detail(kind, item, equippedId) {
@@ -128,6 +169,7 @@
       return previousRender.apply(this, arguments);
     };
     setInterval(fixShopNote, 200);
+    loadPriceToRarity();
   }
   install();
 })();

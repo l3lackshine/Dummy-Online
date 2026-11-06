@@ -313,3 +313,67 @@
     max-height: none !important;
   }
 }
+
+/* ===== ช่องเก็บของ: จัดช่องให้อยู่กลางแผง (Beta 0.18.4) =====
+   ช่องกว้างคงที่ + flex wrap จัดกลาง → แถวสุดท้ายที่ไม่เต็มก็อยู่กลาง ไม่ชิดซ้าย
+   "safe center" = ของล้นแผงเมื่อไหร่ กลับไปชิดบนเพื่อให้เลื่อนดูแถวแรกได้ */
+.iv-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: safe center;
+}
+.iv-grid > .iv-cell {
+  flex: 0 0 19vh;
+}
+.iv-grid > .iv-dupes {
+  flex: 1 0 100%;
+}
+
+/* ===== พื้นหลังช่องตัวละครตามความหายาก (คลาสจาก inventory.js: RARITY_CLASS) =====
+   Rare = ม่วง · SR = ทอง · SSR = รุ้ง · Common ใช้พื้นพีชเดิม */
+.iv-cell.r-rare .iv-pv .pv-ch {
+  background: radial-gradient(ellipse at 50% 30%, #e9d6ff 0, #b98ee8 55%, #8a5cc7 100%);
+}
+.iv-cell.r-sr .iv-pv .pv-ch {
+  background: radial-gradient(ellipse at 50% 30%, #fff3c4 0, #f3c75a 55%, #c98d1c 100%);
+}
+.iv-cell.r-ssr .iv-pv .pv-ch {
+  background:
+    radial-gradient(ellipse at 50% 30%, #ffffffb3 0, #fff0 60%),
+    linear-gradient(135deg, #ff9ab8, #ffd36e 22%, #b6f0a0 42%, #8fd8ff 62%, #c4a2ff 82%, #ff9ab8);
+  background-size: 100% 100%, 300% 300%;
+  animation: iv-rainbow 6s linear infinite;
+}
+.iv-cell.r-rare {
+  border-color: #c9a6ef;
+}
+.iv-cell.r-sr {
+  border-color: #ecc66a;
+}
+.iv-cell.r-ssr {
+  border-color: #f2a7d0;
+}
+@keyframes iv-rainbow {
+  from {
+    background-position: 0 0, 0% 50%;
+  }
+  to {
+    background-position: 0 0, 300% 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-cell.r-ssr .iv-pv .pv-ch {
+    animation: none;
+  }
+}
+
+/* ===== ดาวตัวละครในแผงรายละเอียด: ดาวที่ปลดแล้ว = เหลือง ยังไม่ปลด = เทาจาง =====
+   ต้องชนะกฎ .iv-sk * { color: ... !important } ด้านบนที่ทำให้ดาวทุกดวงเป็นสีหมึก */
+.iv-sk .ck-stars i {
+  color: #d9d2c6 !important;
+}
+.iv-sk .ck-stars i.on {
+  color: #f5b301 !important;
+  text-shadow: 0 0 0.6vh #ffb30080;
+}
