@@ -194,3 +194,26 @@ select public.admin_delete_mail((select id from mid where name = 'all'));
 select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
 select pg_temp.ok((public.get_mail()->>'unclaimed')::int = 2, 'ถอนจดหมายแล้ว คนที่ยังไม่รับไม่เห็นอีก');
 select pg_temp.ok((select mcash from public.profiles where id = '00000000-0000-0000-0000-000000001802') = (select mcash + 50 from before_m), 'ของที่รับไปแล้วไม่ถูกดึงคืน');
+
+-- ================= ค. เปลี่ยนชื่อผู้เล่น =================
+select pg_temp.as_user('00000000-0000-0000-0000-000000001802');
+select pg_temp.fails($$select public.admin_find_player('ml_')$$, '%เฉพาะแอดมิน%', 'คนทั่วไปค้นผู้เล่นไม่ได้');
+select pg_temp.fails($$select public.admin_rename_player('ml_old', 'x')$$, '%เฉพาะแอดมิน%', 'คนทั่วไปเปลี่ยนชื่อคนอื่นไม่ได้');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select pg_temp.fails($$select public.admin_find_player('m')$$, '%อย่างน้อย 2%', 'คำค้นสั้นเกินไม่รับ');
+select pg_temp.ok((select jsonb_agg(x->>'username' order by x->>'username') from jsonb_array_elements(public.admin_find_player('ML_')) x) = '["ml_new", "ml_old"]',
+  'ค้นจากชื่อผู้ใช้ได้ (ไม่สนตัวพิมพ์ · _ เป็นตัวอักษรจริง)');
+select pg_temp.ok(jsonb_array_length(public.admin_find_player('คนเก่า')) = 1, 'ค้นจากชื่อที่แสดงได้');
+select pg_temp.ok(jsonb_array_length(public.admin_find_player('%%')) = 0, 'พิมพ์ % ไม่กลายเป็นค้นทุกคน');
+update public.profiles set name_changes = 1 where id = '00000000-0000-0000-0000-000000001803';
+create temp table before_r as select coins, name_changes from public.profiles where id = '00000000-0000-0000-0000-000000001803';
+select pg_temp.fails($$select public.admin_rename_player('nobody_here', 'x')$$, '%ไม่พบผู้เล่น%', 'ผู้เล่นต้องมีจริง');
+select pg_temp.fails($$select public.admin_rename_player('ml_old', '   ')$$, '%ชื่อห้ามว่าง%', 'ชื่อใหม่ห้ามว่าง');
+select public.admin_rename_player('ML_OLD', E'ผู้เล่น\n1234567890123');
+select pg_temp.ok((select display_name from public.profiles where username = 'ml_old') = 'ผู้เล่น1234567', 'เปลี่ยนชื่อแล้ว (ตัดอักขระควบคุม · ยาวไม่เกิน 14)');
+select pg_temp.ok((select coins = (select coins from before_r) and name_changes = 1 from public.profiles where username = 'ml_old'),
+  'ไม่หักเหรียญ และไม่นับเป็นสิทธิ์เปลี่ยนชื่อของผู้เล่น');
+select pg_temp.ok((select username from public.profiles where id = '00000000-0000-0000-0000-000000001803') = 'ml_old', 'ชื่อผู้ใช้สำหรับล็อกอินไม่เปลี่ยน');
+select pg_temp.ok((select detail->>'from' from public.admin_log where action = 'rename_player' order by at desc limit 1) = 'คนเก่า',
+  'บันทึกแอดมินเก็บชื่อเดิมไว้ย้อนดูได้');

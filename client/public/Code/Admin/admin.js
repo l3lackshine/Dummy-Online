@@ -1,9 +1,9 @@
-/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · จดหมายแจกของ · รายชื่อแอดมิน
+/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · จดหมายแจกของ · ค้นผู้เล่น/เปลี่ยนชื่อ · รายชื่อแอดมิน
    ทุกคำสั่งผ่านฟังก์ชัน admin_* ในฐานข้อมูล (supabase/v17_events_admin.sql · v18_admin_tools.sql) ซึ่งตรวจสิทธิ์และตรวจข้อมูลเอง — ไฟล์นี้เป็นแค่ฟอร์ม
    ปุ่มเข้าหน้านี้ขึ้นเฉพาะบัญชีที่เป็นแอดมิน (Admin.isAdmin() ถาม is_admin จากฐานข้อมูล) · คนอื่นเรียก adminOpen() ก็แก้อะไรไม่ได้
    Public: adminOpen() · adTab(tab) · adEditEvent(id) · adEditEventQuest(eventId, questId) · adEditQuest(id) · adSave() · adCancel()
            adDelete(type, id) · adExpand(eventId) · adMetric(select) · adAddAdmin() · adRemoveAdmin(username) · Admin.isAdmin()
-           adEditBanner(id) · adPay(select) · adRateSum() · adNewMail()
+           adEditBanner(id) · adPay(select) · adRateSum() · adNewMail() · adFindPlayer() · adRename(username)
    EXTEND: ชนิดเควสใหม่ = เพิ่มใน METRICS (และใน SQL _quest_metric_ok / _window_progress) · แท็บใหม่ = เพิ่มใน TABS + ฟังก์ชันวาดแท็บ */
 (function () {
   'use strict';
@@ -14,6 +14,7 @@
     ['quests', '📜 เควสปกติ'],
     ['gacha', '🎰 ตู้กาชา'],
     ['mail', '📮 จดหมาย'],
+    ['players', '👤 ผู้เล่น'],
     ['admins', '🛡️ แอดมิน'],
   ];
   const METRICS = [
@@ -40,9 +41,11 @@
   let overview = null; // ผลจาก admin_overview
   let gachaData = null; // ผลจาก admin_gacha_data (โหลดเมื่อเปิดแท็บตู้กาชา)
   let sentMails = null; // ผลจาก admin_list_mail (โหลดเมื่อเปิดแท็บจดหมาย)
+  let playerQuery = '';
+  let foundPlayers = null; // ผลจาก admin_find_player (null = ยังไม่ได้ค้น)
   let failMessage = '';
   let tab = 'events';
-  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner' | 'mail', data }
+  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner' | 'mail' | 'rename', data }
   let expandedEvent = '';
   let busy = false;
   let featOptions = []; // [{ feat, label }] จาก skin/achievements.json
@@ -240,7 +243,7 @@
       </div>`;
   }
 
-  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml, mail: mailFormHtml };
+  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml, mail: mailFormHtml, rename: renameFormHtml };
 
   function formHtml() {
     const body = FORM_BUILDERS[form.type](form.data);
@@ -514,6 +517,33 @@
     repaint();
   }
 
+  // ---------- แท็บผู้เล่น ----------
+  function playerRowHtml(player) {
+    const lastLogin = player.last_login_at ? 'ล็อกอินล่าสุด ' + dateText(player.last_login_at) : 'ยังไม่เคยล็อกอิน';
+    return `<div class=ad-row>
+      <span><b>${escape(player.display_name)}</b>
+        <small>@${escape(player.username)}${player.title ? ' · ' + escape(player.title) : ''} · สมัคร ${escape(dateText(player.created_at))} · ${escape(lastLogin)}</small></span>
+      <span></span>
+      <button class=wbtn onclick="adRename('${escape(player.username)}')">เปลี่ยนชื่อ</button>
+    </div>`;
+  }
+
+  function playersTabHtml() {
+    const search = `<div class=ad-add><input id=ad-find value="${escape(playerQuery)}" placeholder="ชื่อผู้ใช้ หรือชื่อที่แสดง (อย่างน้อย 2 ตัว)" maxlength=40
+      onkeydown="if(event.key==='Enter')adFindPlayer()"><button class="wbtn go" onclick="adFindPlayer()">🔍 ค้นหา</button></div>`;
+    if (foundPlayers === null) return search + '<p class=ad-mut>ค้นผู้เล่นเพื่อเปลี่ยนชื่อที่ไม่เหมาะสม · เปลี่ยนเฉพาะชื่อที่แสดง (ชื่อผู้ใช้สำหรับล็อกอินไม่เปลี่ยน)</p>';
+    const rows = foundPlayers.map(playerRowHtml).join('') || '<p class=ad-mut>ไม่พบผู้เล่น</p>';
+    return `${search}<div class=ad-list>${rows}</div>`;
+  }
+
+  function renameFormHtml(data) {
+    return `<h4>เปลี่ยนชื่อผู้เล่น @${escape(data.username)}</h4>
+      <p class=ad-mut>ชื่อเดิม: ${escape(data.previous)} · ไม่หักเหรียญ ไม่ผ่านตัวกรองชื่อ และไม่นับเป็นสิทธิ์เปลี่ยนชื่อของผู้เล่น · บันทึกชื่อเดิมไว้ในบันทึกแอดมิน</p>
+      <div class=ad-grid>
+        ${field('ชื่อใหม่ (ไม่เกิน 14 ตัวอักษร)', textInput('display_name', data.display_name, 'maxlength=14'))}
+      </div>`;
+  }
+
   // ---------- แท็บแอดมิน ----------
   function adminsTabHtml() {
     const rows = (overview.admins || [])
@@ -536,6 +566,7 @@
     if (tab === 'quests') return questsTabHtml();
     if (tab === 'gacha') return gachaTabHtml();
     if (tab === 'mail') return mailTabHtml();
+    if (tab === 'players') return playersTabHtml();
     if (tab === 'admins') return adminsTabHtml();
     return eventsTabHtml();
   }
@@ -626,14 +657,31 @@
     return payload;
   }
 
-  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner', mail: 'admin_send_mail' };
+  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner', mail: 'admin_send_mail',
+    rename: 'admin_rename_player' };
   const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest', banner: 'admin_delete_banner', mail: 'admin_delete_mail' };
   const DELETE_WARNINGS = {
     event: 'ลบอีเวนต์นี้? เควสและประวัติรับรางวัลของอีเวนต์จะหายไปด้วย',
     banner: 'ลบตู้นี้? การันตีสะสมของผู้เล่นในตู้นี้จะหายไปด้วย (ปิดใช้แทนการลบได้)',
     mail: 'ถอนจดหมายนี้? คนที่ยังไม่กดรับจะไม่ได้ของ',
   };
-  const AFTER_CHANGE = { banner: () => reloadAfterBannerChange(), mail: () => loadMail() };
+  const AFTER_CHANGE = { banner: () => reloadAfterBannerChange(), mail: () => loadMail(), rename: () => findPlayers() };
+
+  // ฟังก์ชันส่วนใหญ่รับ { p: ข้อมูลฟอร์ม } · เปลี่ยนชื่อรับเป็นช่องแยก
+  function saveArgs(type, payload) {
+    if (type === 'rename') return { p_username: form.data.username, p_name: payload.display_name };
+    return { p: payload };
+  }
+
+  async function findPlayers() {
+    if (playerQuery.length < 2) return;
+    try {
+      foundPlayers = await DB.call('admin_find_player', { p_query: playerQuery });
+    } catch (e) {
+      if (window.dbToast) dbToast(e.message || 'ค้นหาไม่สำเร็จ');
+    }
+    repaint();
+  }
 
   // หลังแก้ตู้: โหลดรายการตู้ใหม่ + ให้หน้ากาชาโหลดตู้ใหม่ครั้งหน้าที่เปิด (gacha.js โหลดเมื่อ DB.G ว่าง)
   async function reloadAfterBannerChange() {
@@ -693,6 +741,23 @@
     repaint();
   };
 
+  window.adFindPlayer = () => {
+    const input = document.getElementById('ad-find');
+    playerQuery = input ? input.value.trim() : '';
+    if (playerQuery.length < 2) {
+      if (window.dbToast) dbToast('พิมพ์อย่างน้อย 2 ตัวอักษร');
+      return;
+    }
+    findPlayers();
+  };
+
+  window.adRename = username => {
+    const player = (foundPlayers || []).find(p => p.username === username);
+    if (!player) return;
+    form = { type: 'rename', data: { username, previous: player.display_name, display_name: player.display_name } };
+    repaint();
+  };
+
   window.adNewMail = () => {
     form = { type: 'mail', data: { days: MAIL_DAYS_DEFAULT } };
     repaint();
@@ -736,7 +801,7 @@
     busy = true;
     repaint();
     try {
-      await DB.call(SAVE_FUNCTIONS[form.type], { p: payload });
+      await DB.call(SAVE_FUNCTIONS[form.type], saveArgs(form.type, payload));
       if (window.dbToast) dbToast('💾 บันทึกแล้ว');
       if (form.type === 'event_quest') expandedEvent = form.data.event_id;
       const savedType = form.type;

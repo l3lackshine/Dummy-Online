@@ -1,4 +1,4 @@
--- v18_admin_tools.sql — หน้าแอดมินส่วนที่เหลือ (โรดแมพข้อ 11): ก. ตั้งตู้กาชา · ข. แจกของทางจดหมาย
+-- v18_admin_tools.sql — หน้าแอดมินส่วนที่เหลือ (โรดแมพข้อ 11): ก. ตั้งตู้กาชา · ข. แจกของทางจดหมาย · ค. เปลี่ยนชื่อผู้เล่น
 -- รันหลัง v17_events_admin.sql · รันซ้ำได้ ปลอดภัย · แล้วรัน seed_catalog.sql ตามได้ตามปกติ
 -- ตู้กาชามี "เจ้าของ" 2 แบบ:
 --   ตู้จากไฟล์ (Assets/Shop/Gasha/<id>/Config.config → seed_catalog.sql) — admin_owned = false · seed แก้ทับได้เหมือนเดิม
@@ -10,6 +10,7 @@
 -- Public (ผู้เล่น): get_mail() · claim_mail(id) · claim_all_mail()
 -- Public (แอดมิน): admin_gacha_data() · admin_save_banner(p) · admin_delete_banner(id)
 --                  admin_send_mail(p) · admin_list_mail() · admin_delete_mail(id)
+--                  admin_find_player(query) · admin_rename_player(username, name)
 -- ใช้ภายใน: _gacha_admin_rebuild(id) · _gacha_rebuild_admin_pools() (seed_catalog.sql เรียกตัวหลังตอนท้าย) · _mail_visible · _mail_grant
 -- Extend: ช่องใหม่ของตู้ = เพิ่มคอลัมน์ + อ่านใน admin_save_banner + ส่งใน admin_gacha_data / get_gacha
 --         รางวัลจดหมายชนิดใหม่ = เพิ่มคอลัมน์ใน mails + admin_send_mail + _mail_grant
@@ -383,6 +384,38 @@ begin
   return jsonb_build_object('deleted', p_id);
 end $$;
 
+-- ================= ผู้เล่น: ค้นหา + เปลี่ยนชื่อที่ไม่เหมาะสม =================
+-- ค้นจากชื่อผู้ใช้หรือชื่อที่แสดง (บางส่วนของชื่อก็ได้) · สูงสุด 20 คน
+create or replace function public.admin_find_player(p_query text) returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare v_query text := trim(coalesce(p_query, '')); v_like text;
+begin
+  perform public._require_admin();
+  if length(v_query) < 2 then raise exception 'พิมพ์อย่างน้อย 2 ตัวอักษร'; end if;
+  v_like := '%' || replace(replace(replace(v_query, '\', '\\'), '%', '\%'), '_', '\_') || '%';   -- ค้นตามตัวอักษรจริง ไม่ใช่สัญลักษณ์ค้นหา
+  return coalesce((select jsonb_agg(jsonb_build_object('username', p.username, 'display_name', p.display_name, 'title', p.title,
+                                                       'created_at', p.created_at, 'last_login_at', p.last_login_at, 'name_changes', p.name_changes)
+                                    order by p.username)
+                   from (select * from public.profiles
+                         where username ilike v_like or display_name ilike v_like
+                         order by username limit 20) p), '[]');
+end $$;
+
+-- เปลี่ยนชื่อที่แสดง (ไม่ใช่ชื่อผู้ใช้ที่ใช้ล็อกอิน) · ข้ามตัวกรองชื่อและค่าเปลี่ยนชื่อ · ไม่นับเป็นสิทธิ์เปลี่ยนชื่อของผู้เล่น
+-- ความยาว/อักขระควบคุมตรวจเหมือน update_profile (v15) — ชื่อยาวเกินจะล้นป้ายชื่อในเกม
+create or replace function public.admin_rename_player(p_username text, p_name text) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare a uuid := public._require_admin(); v_user uuid; v_old text; v_name text;
+begin
+  select id, display_name into v_user, v_old from public.profiles where lower(username) = lower(trim(coalesce(p_username, ''))) for update;
+  if v_user is null then raise exception 'ไม่พบผู้เล่นชื่อนี้'; end if;
+  v_name := left(trim(regexp_replace(coalesce(p_name, ''), '[[:cntrl:]]', '', 'g')), 14);
+  if v_name = '' then raise exception 'ชื่อห้ามว่าง'; end if;
+  update public.profiles set display_name = v_name, updated_at = now() where id = v_user;
+  perform public._admin_log(a, 'rename_player', p_username, jsonb_build_object('from', v_old, 'to', v_name));
+  return jsonb_build_object('username', lower(trim(p_username)), 'display_name', v_name, 'previous', v_old);
+end $$;
+
 -- ================= สิทธิ์ =================
 revoke all on function
   public._gacha_admin_rebuild(text), public._gacha_rebuild_admin_pools(), public._clean_rates(jsonb), public._clean_pool_items(jsonb),
@@ -391,10 +424,12 @@ from public, anon, authenticated;
 revoke all on function
   public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
   public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
-  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint)
+  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint),
+  public.admin_find_player(text), public.admin_rename_player(text, text)
 from public, anon;
 grant execute on function
   public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
   public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
-  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint)
+  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint),
+  public.admin_find_player(text), public.admin_rename_player(text, text)
 to authenticated;
