@@ -61,10 +61,11 @@
     repeating-linear-gradient(90deg, #ffffff08 0 1px, transparent 1px 4.2vh);
   pointer-events: none;
 }
+/* ตัวละครยึดขอบบน (หัวอยู่ในหน้าต่างเสมอ เว้น 1.5vh) แล้วขยายสูงเกินกรอบ 22% — ส่วนที่เกินคือปลายเท้าล่างสุด ซึ่งแถบปุ่มล่างบังอยู่แล้ว */
 .pc-art {
   position: absolute;
-  inset: -2vh 0 0;
-  background: center bottom / contain no-repeat;
+  inset: 1.5vh 0 0;
+  background: center top / auto 122% no-repeat;
   pointer-events: none;
   filter: drop-shadow(0 0 3vh #0008);
 }
