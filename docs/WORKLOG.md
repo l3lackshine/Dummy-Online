@@ -2,7 +2,7 @@
 > เรียงใหม่สุดไว้บน · ห้ามลบรายการเก่า · ทุกแชท/AI ต้องอ่านก่อนเริ่มและเขียนก่อนจบ (ดู CLAUDE.md หมวด 13)
 
 ## สถานะปัจจุบัน
-- งานที่กำลังทำ: ไม่มี · **Beta 0.18.1 ขึ้นแล้ว** (หน้าล็อกอิน 2 คอลัมน์ไม่ต้องเลื่อน · ดูรายการ 2026-11-06 16:55) · ก่อนหน้า **Beta 0.18.0** (ล็อกอินด้วย Google บนเว็บ + ตั้งชื่อครั้งแรก + ผูกบัญชีเดิม + หน้าล็อกอินกรอบซากุระ · branch `ai/account-google-login` merge เข้า main แบบ fast-forward · ดูรายการ 2026-11-06 16:50) · **ใช้จริงได้เมื่อเจ้าของตั้งค่า Google provider + Allow manual linking + Redirect URLs ที่ Supabase ครบ** · ก่อนหน้า: **Beta 0.17.2 ขึ้นแล้ว** (ป้ายชื่อ/ป้ายสถานะห้องรอแบบรูปใหม่ · branch `ai/lobby-plates` merge เข้า main แบบ fast-forward) · ก่อนหน้า **Beta 0.17.1** (กรอบ 4★) (กรอบประจำตัวละคร 4★ วาดจริง + ตัวละคร/ฉาก 5★ อยู่ในกรอบ · merge เข้า main แบบ fast-forward `43a7a11..9069c29`) · ก่อนหน้า: **Beta 0.17.0** (โรดแมพข้อ 11 ก–ง + ข้อ 12 · merge เข้า main แบบ fast-forward `b7a2245..7cf98fd`) · ฐานข้อมูลจริงรันถึง v18 แล้ว (2026-11-06 ~12:20) · แอดมินคนแรก = Blackshine02
+- งานที่กำลังทำ: **ตรวจเวอร์ชัน/บังคับโหลดใหม่ เสร็จบน branch `ai/core-version-check` รออนุญาต push/merge + เลขเวอร์ชัน** (ดูรายการ 2026-11-06 17:30) · **Beta 0.18.1 ขึ้นแล้ว** (หน้าล็อกอิน 2 คอลัมน์ไม่ต้องเลื่อน · ดูรายการ 2026-11-06 16:55) · ก่อนหน้า **Beta 0.18.0** (ล็อกอินด้วย Google บนเว็บ + ตั้งชื่อครั้งแรก + ผูกบัญชีเดิม + หน้าล็อกอินกรอบซากุระ · branch `ai/account-google-login` merge เข้า main แบบ fast-forward · ดูรายการ 2026-11-06 16:50) · **ใช้จริงได้เมื่อเจ้าของตั้งค่า Google provider + Allow manual linking + Redirect URLs ที่ Supabase ครบ** · ก่อนหน้า: **Beta 0.17.2 ขึ้นแล้ว** (ป้ายชื่อ/ป้ายสถานะห้องรอแบบรูปใหม่ · branch `ai/lobby-plates` merge เข้า main แบบ fast-forward) · ก่อนหน้า **Beta 0.17.1** (กรอบ 4★) (กรอบประจำตัวละคร 4★ วาดจริง + ตัวละคร/ฉาก 5★ อยู่ในกรอบ · merge เข้า main แบบ fast-forward `43a7a11..9069c29`) · ก่อนหน้า: **Beta 0.17.0** (โรดแมพข้อ 11 ก–ง + ข้อ 12 · merge เข้า main แบบ fast-forward `b7a2245..7cf98fd`) · ฐานข้อมูลจริงรันถึง v18 แล้ว (2026-11-06 ~12:20) · แอดมินคนแรก = Blackshine02
 - **เริ่มแชทใหม่ ทำตามลำดับนี้ได้เลย** (โรดแมพเต็มอยู่ที่ docs/ROADMAP.md)
 - งานค้าง:
   1. ให้เจ้าของตรวจ 0.17.0 บนเว็บจริง (รอ Render/Cloudflare deploy เสร็จ): หน้าแอดมิน 7 แท็บ (ตู้กาชา · จดหมาย · ผู้เล่น · รายงาน) · ส่งจดหมายหาตัวเองแล้วกดรับ · ลองแตะป้ายชื่อผู้เล่นบนโต๊ะ (ต้องเป็นคนจริงที่ล็อกอิน 2 บัญชี)
@@ -17,6 +17,27 @@
 - กับดักที่ควรรู้ก่อนเริ่ม: gacha_pull/_quest_progress ฉบับล่าสุดอยู่ใน `supabase/v17_events_admin.sql` · **get_gacha / _uid / delete_my_account ฉบับล่าสุดอยู่ใน `supabase/v18_admin_tools.sql`** (แก้ต่อจากไฟล์นี้) · ผู้ใช้ทดสอบใน supabase/test ใช้รหัสช่วง a–f · 170x · 180x ไปแล้ว · `npm install` จะแก้หัว `server/package-lock.json` เอง — อย่า commit ถ้าไม่ได้ตั้งใจ · ทุกครั้งที่อัปเกมต้องขึ้นเลขเวอร์ชัน + แพตช์โน้ต (patchnotes.json + docs/PATCHNOTES.md)
 
 ## รายการงาน (ใหม่สุดบน)
+
+### 2026-11-06 17:30 · Claude (claude-opus-5-5) · บังคับโหลดเกมใหม่เมื่อมีเวอร์ชันใหม่ (แท็บเก่าที่ไม่รีเฟรช)
+- คำสั่งที่ได้รับ: "แก้หน้าโหลด — ผู้เล่นที่เปิดเกมเวอร์ชันเก่าค้างไว้ไม่รีเฟรช ยังเข้าเกมเวอร์ชันเก่าได้" · เจ้าของเลือก: กำลังเล่นบนโต๊ะ = **รอจบตาก่อนค่อยบังคับ** · **เพิ่มฝั่งเซิร์ฟเวอร์ด้วย**
+- สาเหตุ: เลขเวอร์ชันอ่านครั้งเดียวตอนเปิดหน้า (`APP_VER`) · `SRV_VER` แค่โชว์มุมจอ · เซิร์ฟเวอร์ไม่ตรวจเวอร์ชัน
+- branch: `ai/core-version-check` (แตกจาก main `e8d55af`) · commit `ab18bd5` (เซิร์ฟเวอร์) → `ee570b2` (หน้าเว็บ) → commit WORKLOG นี้
+- สร้างใหม่:
+  - `server/src/net/client-version.js` — `parseVersion` · `isOutdated` (เทียบตัวเลขทีละส่วน · ไม่ส่งเลข = เก่า) · `versionGate(min)` middleware ของ io.use → error `outdated` + `data.min`
+  - `server/test-client-version.js` — 16 จุด (เทียบเลข + เซิร์ฟเวอร์จริงผ่านตัวจำลอง) · เพิ่มต่อท้าย `npm test` ใน `server/package.json`
+  - `client/public/Code/Core/version-check.js` + `.css` — ดึง `./version.js?t=…` แบบ no-store (10 วิหลังเปิด · ทุก 3 นาที · กลับมาที่แท็บ · เน็ตกลับมา) เลขต่างจาก APP_VER → หน้าต่างบังจอ `st-modal vc-modal` (z 9500 · ไม่มีปุ่มปิด · ปุ่ม "โหลดเกมใหม่" = location.reload) · อยู่บนโต๊ะและ `S && !S.over` = รอทุก 2 วิจนจบตา · `VersionCheck.onServerRejected(data)` ขึ้นทันที · แอป Android ขึ้นบรรทัด "ติดตั้งแอปเวอร์ชันใหม่"
+- แก้:
+  - `server/src/config.js` — `MIN_CLIENT_VERSION` จาก env (ว่าง = ปิด)
+  - `server/src/index.js` — require versionGate + `io.use(versionGate(config.MIN_CLIENT_VERSION))` ก่อน middleware ตรวจตัวตน
+  - `client/public/Code/Core/connection.js` — ioOpt.auth ส่ง `{ version: APP_VER }` เสมอ (+ token เมื่อเปิดบัญชี) · connect_error `outdated` → VersionCheck.onServerRejected
+  - `client/public/index.html` — `<link version-check.css>` ต่อท้ายหลัง sakura-kit.css · `<script version-check.js>` ต่อท้ายหลัง coin-icons.js (ไม่สลับลำดับไฟล์อื่น)
+- ไม่ได้แตะ: `AssetPack/pack-loader.js` (หน้าโหลด "กำลังเตรียมเกม" — ขั้น "ตรวจเวอร์ชันไฟล์" ในนั้นแค่อ่าน manifest) · version.js · package.json เลขเวอร์ชัน · patchnotes · home.js (ป้ายเวอร์ชันมุมจอ) · mobile/
+- ตรวจแล้ว: `node --check` ทุกไฟล์ JS ที่แก้/สร้าง · check-handlers · test-client-files · test-client (27) · test-supabase · test-online · test-moderation · test-client-version (16) · `npm test` ทั้งชุด exit 0 · เปิด index.html จริง (บล็อกเน็ตภายนอก ไม่แตะฐานข้อมูล/เซิร์ฟเวอร์จริง) จำลอง version.js เลขเดียวกัน → ไม่ขึ้น · เลขใหม่ระหว่าง `screen='game'`+`S.over=false` → ไม่ขึ้น · `S.over=true` → ขึ้น · onServerRejected → ข้อความเวอร์ชันเก่าเกินไป · ดูภาพ 915×412 + 1280×640
+- ยังไม่ได้ทดสอบ: บน Cloudflare/Render จริง · socket.io จริง (เทสใช้ตัวจำลอง) ว่า `err.data` มาถึง client · มือถือจริง/แอป Android · เบราว์เซอร์แคช JS เก่าหลังกดโหลดใหม่ (Cloudflare Pages ปกติ revalidate ทุกครั้ง)
+- สถานะ: เสร็จบน branch · รออนุญาต push/merge
+- คำถามที่รอตอบ: push/merge + ขึ้นเลขเวอร์ชัน/แพตช์โน้ตไหม · จะตั้ง `MIN_CLIENT_VERSION` บน Render เมื่อไหร่ (ไม่ตั้ง = ด่านเซิร์ฟเวอร์ปิด ใช้แค่ตัวเตือนหน้าเว็บ)
+- วิธีย้อนกลับ: `git revert ee570b2` (หน้าเว็บ) · `git revert ab18bd5` (เซิร์ฟเวอร์) — หรือทิ้ง branch ถ้ายังไม่ merge · ปิดด่านเซิร์ฟเวอร์ทันทีโดยไม่ deploy = ลบ `MIN_CLIENT_VERSION` บน Render
+- ข้อควรระวัง: ตั้ง `MIN_CLIENT_VERSION` ให้ตั้ง **หลัง** หน้าเว็บบน Cloudflare deploy เลขนั้นเสร็จแล้ว (ไม่งั้นโหลดใหม่ก็ยังได้เกมเก่า เข้าไม่ได้จนกว่า deploy เสร็จ) · client ก่อน 0.18.2 ไม่ส่งเลขมา = ถูกปฏิเสธเมื่อเปิดด่าน และไม่มีหน้าต่างอธิบาย (ขึ้นแค่ "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้") · แอป Android แบบไฟล์ในตัว (ไม่ได้ตั้ง CLIENT_URL) ถูกปฏิเสธจนกว่าจะติดตั้ง APK ใหม่ · ตัวตรวจหน้าเว็บเทียบ "ต่างกัน" ไม่ใช่ "ใหม่กว่า" (ย้อนเวอร์ชันก็เตือนด้วย) · ห้ามเปลี่ยนรูปแบบบรรทัดใน version.js (`window.DUMMY_VERSION = '…';`) — version-check.js อ่านด้วย regex
 
 ### 2026-11-06 16:55 · Claude (claude-opus-5-5) · หน้าล็อกอิน 2 คอลัมน์ (จอแนวนอน)
 - คำสั่งที่ได้รับ: "หน้าต่างยาวเกินไป · หน้า login ให้ปุ่มย้ายมาอยู่ทางขวา ดีไซน์ใหม่ให้เห็นภายในหน้าเดียวไม่ต้องเลื่อน" (แนบภาพมือถือแนวนอน)
