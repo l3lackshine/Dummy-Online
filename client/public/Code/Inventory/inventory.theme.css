@@ -397,3 +397,15 @@
   height: 5.6vh;
   font-size: 1.9vh;
 }
+
+/* ===== รูปตัวละครอยู่กลางการ์ด =====
+   .pv-ch เป็น flex (shop.theme.css) แต่ไม่ได้ตั้งแนวนอน รูปที่แคบกว่าการ์ดจึงชิดซ้าย — จัดกลางแนวนอน ยึดเท้าไว้ล่างเหมือนเดิม */
+.iv-pv .pv-ch {
+  width: 100%;
+  justify-content: center;
+}
+.iv-pv .pv-ch img {
+  flex: none;
+  max-width: 100%;
+  object-position: center bottom;
+}
