@@ -117,21 +117,26 @@
     DB.oauthError = '';
   }
 
+  // แบ่ง 2 กลุ่ม: au-main (แท็บ + ช่องกรอก) · au-side (ปุ่ม + ข้อความ) — จอแนวนอนวางซ้าย/ขวา (login.css) ให้จบในจอเดียว
   function formHtml() {
     const register = mode === 'register';
     const disabled = busy ? 'disabled' : '';
     return `
-      <div class=au-tabs role=tablist><button type=button class="${register ? '' : 'on'}" onclick="auMode('login')">เข้าสู่ระบบ</button><button type=button class="${register ? 'on' : ''}" onclick="auMode('register')">สมัครสมาชิก</button></div>
       <form class=au-form onsubmit="return auSubmit(event)" autocomplete="on" novalidate>
+       <div class=au-main>
+        <div class=au-tabs role=tablist><button type=button class="${register ? '' : 'on'}" onclick="auMode('login')">เข้าสู่ระบบ</button><button type=button class="${register ? 'on' : ''}" onclick="auMode('register')">สมัครสมาชิก</button></div>
         <label><span>ชื่อผู้ใช้</span><input id=au_u name=username value="${escape(values.u)}" maxlength=${register ? 20 : 60} placeholder="${register ? 'a-z 0-9 _ (3-20 ตัว)' : 'ชื่อผู้ใช้'}" autocomplete=username autocapitalize=none autocorrect=off spellcheck=false ${disabled}></label>
         ${register ? `<label><span>ชื่อที่แสดงในเกม</span><input id=au_n name=nickname value="${escape(values.n)}" maxlength=14 placeholder="ชื่อเล่น (ไม่เกิน 14 ตัว)" autocomplete=nickname ${disabled}></label>` : ''}
         <label><span>รหัสผ่าน</span><input id=au_p name=password type=password placeholder="${register ? 'อย่างน้อย 6 ตัวอักษร' : 'รหัสผ่าน'}" autocomplete="${register ? 'new-password' : 'current-password'}" ${disabled}></label>
         ${register ? `<label><span>ยืนยันรหัสผ่าน</span><input id=au_p2 name=password2 type=password placeholder="พิมพ์รหัสผ่านอีกครั้ง" autocomplete=new-password ${disabled}></label>` : ''}
         <label class=au-show><input type=checkbox onchange="auShow()"> แสดงรหัสผ่าน</label>
+       </div>
+       <div class=au-side>
         <button class=au-go type=submit ${disabled}>${busy ? '⏳ กำลังดำเนินการ...' : register ? '🎁 สมัครสมาชิก' : '▶ เข้าสู่ระบบ'}</button>
         ${message ? `<p class=au-err role=alert>⚠️ ${escape(message)}</p>` : ''}
         ${googleButtonHtml()}
         <small class=au-hint>${register ? 'สมัครใหม่รับเหรียญเริ่มต้นไปเล่นได้ทันที · ข้อมูลเหรียญ ตัวละคร และเควสผูกกับบัญชี เล่นได้ทุกเครื่อง' : 'ยังไม่มีบัญชี? กด "สมัครสมาชิก" ด้านบน'}</small>
+       </div>
       </form>`;
   }
 

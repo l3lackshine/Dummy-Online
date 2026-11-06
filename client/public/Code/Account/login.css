@@ -87,6 +87,13 @@
   flex-direction: column;
   gap: 10px;
 }
+/* กลุ่มช่องกรอก / กลุ่มปุ่ม (login.js) — ระยะห่างเท่ากับของฟอร์ม (inherit ตามหน้าจอ) */
+.au-main,
+.au-side {
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+}
 .au-form label {
   display: flex;
   flex-direction: column;
@@ -260,5 +267,64 @@
   }
   .au-form input:not([type='checkbox']) {
     padding: 7px 10px;
+  }
+}
+
+/* ===== จอแนวนอน: การ์ดกว้าง 2 คอลัมน์ ให้เห็นครบในจอเดียวไม่ต้องเลื่อน =====
+   ซ้าย = แท็บ + ช่องกรอก (สูงสุด 4 ช่องตอนสมัคร) · ขวา = โลโก้ + ปุ่มเข้าสู่ระบบ + ปุ่ม Google + คำแนะนำ
+   .au-form ใช้ display: contents → กลุ่ม au-main/au-side กลายเป็นช่องในกริดของการ์ดโดยตรง (ฟอร์มยังกด Enter ส่งได้ตามเดิม) */
+@media (min-aspect-ratio: 4/3) and (min-width: 600px) {
+  .au-card {
+    width: min(94vw, 780px);
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'main logo'
+      'main side';
+    column-gap: 26px;
+    align-items: start;
+  }
+  .au-form {
+    display: contents;
+  }
+  .au-logo {
+    grid-area: logo;
+  }
+  .au-main {
+    grid-area: main;
+  }
+  .au-side {
+    grid-area: side;
+    align-self: center;
+  }
+  .au-load {
+    grid-column: 1 / -1;
+  }
+  .au-tabs {
+    margin-top: 0;
+  }
+}
+/* แนวนอน + จอเตี้ย (มือถือ): ลดขอบนอกและช่องไฟ ให้หน้าสมัคร 4 ช่องพอดีความสูงจอ */
+@media (min-aspect-ratio: 4/3) and (min-width: 600px) and (max-height: 520px) {
+  .au-wrap {
+    padding: 8px 14px;
+  }
+  .au-tabs {
+    margin-bottom: 4px;
+  }
+  .au-tabs button {
+    padding: 6px 0;
+  }
+  .au-form label {
+    gap: 2px;
+  }
+  .au-form input:not([type='checkbox']) {
+    padding: 6px 10px;
+    font-size: 15px;
+  }
+  .au-go {
+    margin-top: 0;
+    padding: 10px;
   }
 }
