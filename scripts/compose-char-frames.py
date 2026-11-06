@@ -8,6 +8,7 @@
 ทำ 4 ขั้นต่อตัว: ลบพื้นดำ → กลับด้าน (ถ้าตั้ง) → ย้อมส่วนชมพู/ม่วงเป็นสีประจำตัว (ส่วนทองคงเดิม) → วางชิ้นแต่ง
 แล้ววัด "ช่องว่างกลางกรอบ" เขียนลง Character.config → "lobby"."frame4" (การ์ดห้องรอย่อตัวละครให้อยู่ในช่องนี้ ไม่โดนกรอบบัง)
    หลังรันต้องรัน node scripts/build-assets.js เพื่อส่งค่าเข้า skins.json
+และสร้าง "หน้ากากด้านในกรอบ" ch-<id>-in.webp: ฉาก 5★ เต็มด้านในกรอบ (ลอดใต้ขอบกรอบ) แต่ไม่โผล่ออกนอกกรอบ
 Public: python3 scripts/compose-char-frames.py [--only <id>] [--sheet <ไฟล์.png>]
 Extend: ตัวละครใหม่ → เพิ่มแถวใน CHARACTER_FRAMES (EXTEND ด้านล่าง) แล้วรันใหม่ · กรอบแบบใหม่ → วาง frame-<ชื่อ>.png แล้วอ้างชื่อ
 ต้องมี: pip install numpy pillow scipy
@@ -38,6 +39,9 @@ WINDOW_BAND_TO = 0.65
 WINDOW_SOLID_MAX = 0.12      # แถวที่มีลายกรอบเกิน 12% ของแถบกลาง = ชนลายกรอบแล้ว (กลีบดอกเล็ก ๆ ไม่นับ)
 WINDOW_SOLID_ALPHA = 30      # ความทึบ (0–255) ที่นับว่าเป็นลายกรอบ
 WINDOW_PAD = 0.02            # เว้นห่างจากเส้นกรอบอีกนิด (สัดส่วนความกว้าง)
+INNER_GROW_PX = 48           # หน้ากากด้านใน: ขยายจากช่องว่างเข้าไปใต้แท่งกรอบ (ฉากไม่มีขอบว่างตรงรอยต่อกับกรอบ)
+INNER_EDGE_INSET_PX = 8      # แต่ห้ามเกินเงาของกรอบเอง หดเข้ามาอีกนิด → มุมฉากไม่โผล่ออกนอกกรอบ
+INNER_FEATHER = 1.2          # เบลอขอบหน้ากากนิดเดียว ไม่เป็นขั้นบันได
 STRAY_SHARE = 0.002          # เศษชิ้นเล็กกว่า 0.2% ของชิ้นใหญ่สุด หรือแตะขอบรูป = เศษจากการตัดภาพ ทิ้ง
 
 GOLD_HUE_FROM = 20 / 360     # สีโทนทอง/ส้มทองในกรอบ — ไม่ย้อม (กรอบทุกตัวใช้ทองเป็นสีร่วม)
@@ -243,6 +247,27 @@ def write_window_to_config(character_id, window):
         file.write(json.dumps(config, ensure_ascii=False, indent=2))
 
 
+def make_inner_mask(frame):
+    """หน้ากากรูปทรงด้านในกรอบ (สีขาว · ความทึบ = ส่วนที่ให้ฉากหลังแสดง)
+       = ช่องว่างกลางกรอบ (ถมเกาะกลีบดอกด้านใน) ขยายเข้าใต้แท่งกรอบ ∩ เงาทั้งกรอบที่หดเข้ามา"""
+    solid = np.asarray(frame.getchannel('A')) >= WINDOW_SOLID_ALPHA
+    silhouette = ndimage.binary_fill_holes(solid)
+    labels, count = ndimage.label(~solid)
+    border_ids = set(np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])))
+    sizes = ndimage.sum(~solid, labels, range(1, count + 1))
+    inner_ids = [index + 1 for index in range(count) if index + 1 not in border_ids]
+    main_hole = labels == max(inner_ids, key=lambda label_id: sizes[label_id - 1])
+    main_hole = ndimage.binary_fill_holes(main_hole)
+    grown = ndimage.binary_dilation(main_hole, iterations=INNER_GROW_PX)
+    inside_frame = ndimage.binary_erosion(silhouette, iterations=INNER_EDGE_INSET_PX)
+    mask = (grown & inside_frame).astype(np.float32)
+    mask = ndimage.gaussian_filter(mask, INNER_FEATHER)
+    alpha = Image.fromarray((np.clip(mask, 0, 1) * 255).astype(np.uint8), 'L')
+    white = Image.new('RGBA', frame.size, (255, 255, 255, 0))
+    white.putalpha(alpha)
+    return white
+
+
 # ---------- รวมทั้งหมด ----------
 
 def build_frame(spec, frame_cache):
@@ -285,6 +310,8 @@ def main():
         built[character_id] = build_frame(spec, frame_cache)
         out_path = os.path.join(OUTPUT_DIR, f'ch-{character_id}.webp')
         built[character_id].save(out_path, quality=WEBP_QUALITY)
+        mask_path = os.path.join(OUTPUT_DIR, f'ch-{character_id}-in.webp')
+        make_inner_mask(built[character_id]).save(mask_path, lossless=True)
         window = measure_window(built[character_id])
         write_window_to_config(character_id, window)
         print(f'✓ ch-{character_id}.webp {built[character_id].size} ช่องว่าง {window}')
