@@ -17,6 +17,23 @@
 
 ## รายการงาน (ใหม่สุดบน)
 
+### 2026-11-06 13:45 · Claude (claude-opus-5-5) · ห้องรอ: ตัวละครอยู่ในช่องกลางกรอบ 4★ ไม่โดนบัง
+- คำสั่งที่ได้รับ: "ปรับให้ตัวละครอยู่ในกรอบพอดี ไม่ให้กรอบบัง" (ต่อจากงานกรอบ 4★ ด้านล่าง)
+- branch: `ai/items-char-frames` · commit `c8287c8` (ข้อมูล) → `442dbcc` (ห้องรอ) → commit WORKLOG นี้
+- แก้:
+  - `scripts/compose-char-frames.py` — เพิ่ม measure_window() วัดช่องว่างกลางกรอบ (แถบกลาง 35–65% ของความกว้าง · ระยะเป็นสัดส่วนความกว้าง) + write_window_to_config() เขียน `"lobby"."frame4": {top,bottom,left,right}` ลง Character.config
+  - `client/public/Assets/Character/*/Character.config` 12 ไฟล์ — เพิ่ม lobby.frame4 (สคริปต์เขียน) · `client/public/skin/skins.json` สร้างใหม่ด้วย build-assets (seed_catalog.sql ไม่เปลี่ยน — ไม่ต้องรัน SQL)
+  - `Code/Lobby/lobby-room.js` — place(ch, fr) + ฟังก์ชันใหม่ frameWindow(fr): ใส่กรอบประจำตัวที่มีค่า frame4 → การ์ดได้ `data-fw` + ตัวแปร --fw-t/-b/-l/-r · human() ส่ง p.fr ให้ place · บอท/กรอบทั่วไปเหมือนเดิม
+  - `Code/Lobby/lobby.theme-4.css` ต่อท้าย: `.rm-slot[data-fw] .rm-art` ใช้ margin % (อิงความกว้าง ตรงกับกรอบที่ยืดตามความกว้าง) · max() ไม่ให้ชิดป้ายบน/ป้ายชื่อมากกว่าเดิม
+- ไม่ได้แตะ: deco() · .rm-deco · index.html · ฝั่งเซิร์ฟเวอร์ · ฉาก 5★ (ตอนใส่กรอบ 4★ ฉากจะอยู่ในช่องกลางกรอบด้วย)
+- ตรวจแล้ว: `node --check lobby-room.js` · check-handlers · build-assets --check · test-client-files · test-skin-ids · test-client (exit 0) · ภาพหน้าจอจาก index.html จริง (puppeteer + ข้อมูลห้องจำลอง · ปิด render อัตโนมัติ · รูปตัวละครจาก assets-src) ครบ 12 ตัว ที่ 915×412 และ 4 ตัวที่ 1280×640 — หน้าไม่โดนลายกรอบบัง
+- ยังไม่ได้ทดสอบ: เว็บจริง/มือถือจริง (รูปตัวละครผ่านระบบ pack) · เครื่อง Android รุ่นเก่า (ใช้ CSS max())
+- สถานะ: เสร็จบน branch · รออนุญาต push/merge
+- คำถามที่รอตอบ: แพตช์โน้ต + เวอร์ชัน 0.17.1 · push/merge
+- วิธีย้อนกลับ: `git revert 442dbcc` (การ์ดกลับเป็นแบบเดิม — ค่า frame4 ที่เหลือใน config ไม่มีผล) · `git revert c8287c8`
+- ข้อควรระวัง: แก้แบบกรอบ/ชิ้นแต่ง → รัน compose-char-frames.py แล้วต้องรัน `node scripts/build-assets.js` ต่อ (ไม่งั้น skins.json ยังเป็นค่าช่องเก่า)
+
+
 ### 2026-11-06 13:20 · Claude (claude-opus-5-5) · กรอบประจำตัวละคร 4★ แบบวาดจริง (โรดแมพข้อ 5)
 - คำสั่งที่ได้รับ: "ทำงานที่ค้าง ของปลดดาว เจนผ่าน canvas แล้วใส่เกม" → เจ้าของส่งกรอบวาด 6 รูป (ซ้ำ 1) + ชิ้นแต่งซากุระ 10 ชิ้น ให้ "ผสมกันจนได้ 12 กรอบ"
 - พบ: ฉาก 5★ ครบ 12 ตัวเป็นภาพวาดแล้ว — ที่ค้างจริงคือกรอบ 4★ (รูปชั่วคราวจาก make-char-frames.py) · เครื่องทำงานดาวน์โหลดจาก Canva ไม่ได้ (403) จึงใช้รูปที่เจ้าของแนบมา
