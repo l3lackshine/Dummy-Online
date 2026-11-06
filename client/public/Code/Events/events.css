@@ -1,0 +1,182 @@
+/* events.css — หน้าต่างอีเวนต์ (Code/Events/events.js) · กรอบใช้ .st-box ของชุด UI ซากุระ (พื้นครีม ขอบทอง)
+   ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน · สีชมพู/ทอง ชุดเดียวกับหน้าความสำเร็จ */
+.ev-box {
+  width: min(94vw, 170vh) !important;
+  max-height: 90vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+}
+.ev-h {
+  margin: 0 0 0.8vh;
+  font-size: 3.4vh;
+  color: #3b4255;
+}
+.ev-empty {
+  text-align: center;
+  font-size: 2.2vh;
+  color: #6b6f80;
+  padding: 4vh 0;
+}
+.ev-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vh;
+  padding-right: 0.4vh;
+}
+
+/* ---------- การ์ดอีเวนต์ ---------- */
+.ev-card {
+  padding: 1.2vh 1.4vh;
+  border-radius: 1.6vh;
+  background: #fff;
+  border: 0.2vh solid #efe1c2;
+  box-shadow: 0 0.3vh 0.8vh #a5835022;
+}
+.ev-img {
+  display: block;
+  width: 100%;
+  max-height: 22vh;
+  object-fit: cover;
+  border-radius: 1.2vh;
+  margin-bottom: 1vh;
+}
+.ev-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1vh;
+}
+.ev-head b {
+  font-size: 2.8vh;
+  color: #3b4255;
+}
+.ev-head small {
+  font-size: 1.8vh;
+  font-weight: 700;
+  color: #d94f86;
+  white-space: nowrap;
+}
+.ev-desc {
+  margin: 0.6vh 0 0;
+  font-size: 1.9vh;
+  color: #6b6f80;
+  white-space: pre-line;
+}
+.ev-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8vh;
+  margin-top: 1vh;
+}
+.ev-gacha {
+  font-size: 1.9vh !important;
+  padding: 0.6vh 1.6vh !important;
+}
+.ev-qs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 62vh), 1fr));
+  gap: 0.9vh;
+  margin-top: 1.2vh;
+}
+
+/* ---------- เควสอีเวนต์ ---------- */
+.ev-q {
+  display: grid;
+  grid-template-columns: 6vh minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.2vh;
+  border-radius: 1.2vh;
+  background: #fffaf0;
+  border: 0.2vh solid #efe1c2;
+}
+.ev-q.ready {
+  border-color: #f0659a;
+  background: #fff4f8;
+}
+.ev-q.done {
+  opacity: 0.7;
+}
+.ev-ic {
+  width: 6vh;
+  height: 6vh;
+  display: grid;
+  place-items: center;
+  font-size: 3.4vh;
+  border-radius: 1.2vh;
+  background: linear-gradient(160deg, #fff3d6, #f6dca0);
+}
+.ev-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+.ev-tx b {
+  font-size: 2.1vh;
+  color: #3b4255;
+}
+.ev-tx small {
+  font-size: 1.7vh;
+  color: #6b6f80;
+}
+.ev-tag {
+  margin-left: 0.8vh;
+  padding: 0.1vh 0.8vh;
+  border-radius: 99px;
+  font-size: 1.4vh;
+  color: #5b7fa6;
+  background: #e8f0f8;
+}
+.ev-bar {
+  position: relative;
+  height: 1.9vh;
+  border-radius: 99px;
+  background: #f1e9da;
+  overflow: hidden;
+}
+.ev-bar u {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffb3cf, #f0659a);
+}
+.ev-bar em {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 1.4vh Sarabun, sans-serif;
+  font-style: normal;
+  color: #3b4255;
+}
+.ev-rw {
+  font-size: 1.6vh;
+  font-weight: 700;
+  color: #b88a2c;
+}
+.ev-act {
+  min-width: 9vh;
+  text-align: center;
+}
+.ev-get {
+  padding: 0.6vh 1.8vh !important;
+  font-size: 2vh !important;
+}
+.ev-done {
+  font-size: 1.8vh;
+  font-weight: 800;
+  color: #4caf7a;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ev-q.ready .ev-get {
+    animation: ev-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes ev-pulse {
+    50% {
+      transform: scale(1.06);
+    }
+  }
+}

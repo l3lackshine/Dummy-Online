@@ -1,0 +1,213 @@
+/* admin.css — หน้าแอดมิน (Code/Admin/admin.js) · กรอบใช้ .st-box ของชุด UI ซากุระ · ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน
+   หน้าทำงานของทีมงาน เน้นอ่านง่าย/กรอกง่าย มากกว่าตกแต่ง */
+.ad-box {
+  width: min(96vw, 180vh) !important;
+  max-height: 92vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+}
+.ad-h {
+  margin: 0 0 0.8vh;
+  font-size: 3.2vh;
+  color: #3b4255;
+}
+.ad-h + .ad-body h4,
+.ad-form h4 {
+  margin: 0 0 1vh;
+  font-size: 2.6vh;
+  color: #d94f86;
+}
+.ad-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.4vh;
+}
+.ad-mut {
+  font-size: 1.8vh;
+  color: #8a8e9c;
+  margin: 0.8vh 0;
+}
+
+/* ---------- แท็บ ---------- */
+.ad-tabs {
+  display: flex;
+  gap: 0.8vh;
+  padding-bottom: 1vh;
+}
+.ad-tab {
+  padding: 0.8vh 1.8vh;
+  border-radius: 99px;
+  border: 0.25vh solid #e2c784;
+  background: #fffaf0;
+  color: #3b4255;
+  font: 800 2vh Sarabun, sans-serif;
+  cursor: pointer;
+}
+.ad-tab.on {
+  background: linear-gradient(180deg, #ff9ac0, #f0659a);
+  border-color: #f0659a;
+  color: #fff;
+}
+
+/* ---------- รายการ ---------- */
+.ad-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8vh;
+  margin-top: 1vh;
+}
+.ad-ev {
+  border-radius: 1.2vh;
+  background: #fff;
+  border: 0.2vh solid #efe1c2;
+}
+.ad-ev.open {
+  border-color: #f0659a;
+}
+.ad-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.8vh;
+  padding: 0.8vh 1.2vh;
+  border-radius: 1.2vh;
+  background: #fff;
+}
+.ad-list > .ad-row {
+  border: 0.2vh solid #efe1c2;
+}
+.ad-row.off {
+  opacity: 0.6;
+}
+.ad-row > span {
+  display: block; /* ไอคอน ชื่อ ป้ายสถานะ อยู่บรรทัดเดียวกัน · รายละเอียดขึ้นบรรทัดใหม่ */
+  min-width: 0;
+  cursor: default;
+}
+.ad-ev .ad-row > span {
+  cursor: pointer;
+}
+.ad-row b {
+  font-size: 2vh;
+  color: #3b4255;
+}
+.ad-row small {
+  display: block;
+  white-space: nowrap;
+  font-size: 1.6vh;
+  color: #6b6f80;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ad-row .wbtn {
+  padding: 0.5vh 1.4vh !important;
+  font-size: 1.8vh !important;
+}
+.ad-del {
+  color: #c0394f !important;
+}
+.ad-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+  padding: 0 1.2vh 1.2vh 3vh;
+}
+.ad-sub .ad-row {
+  background: #fffaf0;
+}
+.ad-st {
+  display: inline-block;
+  margin-left: 0.8vh;
+  padding: 0 0.8vh;
+  border-radius: 99px;
+  font-size: 1.4vh;
+  font-style: normal;
+  font-weight: 800;
+}
+.ad-st.on {
+  color: #fff;
+  background: #4caf7a;
+}
+.ad-st.soon {
+  color: #5b7fa6;
+  background: #e8f0f8;
+}
+.ad-st.end,
+.ad-st.off {
+  color: #6b6f80;
+  background: #eef0f4;
+}
+
+/* ---------- ฟอร์ม ---------- */
+.ad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 34vh), 1fr));
+  gap: 1vh 1.4vh;
+}
+.ad-f {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  font-size: 1.7vh;
+  color: #6b6f80;
+}
+.ad-f.wide {
+  grid-column: 1 / -1;
+}
+.ad-f > span {
+  font-weight: 700;
+}
+.ad-f input,
+.ad-f select,
+.ad-f textarea,
+.ad-add input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7vh 1vh;
+  border-radius: 0.9vh;
+  border: 0.2vh solid #e2c784;
+  background: #fffdf8;
+  color: #3b4255;
+  font: 600 2vh Sarabun, sans-serif;
+}
+.ad-f input[readonly] {
+  background: #f1e9da;
+}
+.ad-ck {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6vh;
+  margin-right: 1.6vh;
+  font-size: 1.9vh;
+  color: #3b4255;
+}
+.ad-ck input {
+  width: auto;
+}
+.ad-cks {
+  display: flex;
+  flex-wrap: wrap;
+}
+.ad-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12vh;
+  gap: 0.8vh;
+  margin-top: 0.5vh;
+}
+.ad-prev {
+  max-width: 100%;
+  max-height: 18vh;
+  object-fit: contain;
+  border-radius: 1vh;
+  align-self: flex-start;
+}
+.ad-btns,
+.ad-add {
+  display: flex;
+  gap: 1vh;
+  margin-top: 1.4vh;
+}
+.ad-add input {
+  flex: 1;
+}

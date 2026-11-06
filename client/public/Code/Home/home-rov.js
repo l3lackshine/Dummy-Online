@@ -24,6 +24,8 @@
     users:
       '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.6 14.6c3 0 5.4 2 5.4 5"/>',
     trophy: '<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v3M8 21h8M9 17h6v4H9z"/>',
+    party: '<path d="M4 20 9 7l8 8zM13 3v2M18 6l-1.5 1.5M21 11h-2M15 9c1-2 3-2 4-1"/>', // อีเวนต์ (Code/Events)
+    shield: '<path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6z"/><path d="m9 12 2 2 4-4"/>', // หน้าแอดมิน (Code/Admin)
   };
   const ic = n =>
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
@@ -127,6 +129,8 @@
       window.Ranked && P ? Ranked.count() : 0,
       window.Friends && P ? Friends.count() : 0,
       window.Achievements && P ? Achievements.count() : 0,
+      window.Events && P ? Events.count() + ':' + Events.hasAny() : '',
+      window.Admin && P ? Admin.isAdmin() : false,
     ].join('|');
   }
   function buildHome(app) {
@@ -148,6 +152,9 @@
     const nb = window.battlePass && battlePass.count ? battlePass.count() : 0; // รางวัลแบทเทิลพาสที่รับได้ — แสดงที่การ์ดแบทเทิลพาสเอง ไม่ปนกับเควส
     const nr = window.Ranked && P ? Ranked.count() : 0;
     const na = window.Achievements && P ? Achievements.count() : 0; // ขั้นความสำเร็จที่รับได้ (Code/Achievements/achievements.js)
+    const ne = window.Events && P ? Events.count() : 0; // เควสอีเวนต์ที่รับได้ (Code/Events/events.js)
+    const showEvents = !!(window.Events && P && Events.hasAny());
+    const showAdmin = !!(window.Admin && P && Admin.isAdmin());
     const nf = window.Friends && P ? Friends.count() : 0; // คำขอเป็นเพื่อนที่รอตอบ   // รางวัลอันดับประจำสัปดาห์ที่ยังไม่รับ
     const d = document.createElement('div');
     d.className = 'rv';
@@ -168,6 +175,8 @@
         ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="rankOpen()" aria-label="อันดับ">${ic('trophy')}<small>อันดับ</small>${nr ? '<em>' + nr + '</em>' : ''}</button>` : ''}
         ${P ? `<button class="rv-sb rv-pn rv-rk" onclick="friendsOpen()" aria-label="เพื่อน">${ic('users')}<small>เพื่อน</small>${nf ? '<em>' + nf + '</em>' : ''}</button>` : ''}
         ${P && window.achOpen ? `<button class="rv-sb rv-pn rv-rk" onclick="achOpen()" aria-label="ความสำเร็จ">${ic('medal')}<small>สำเร็จ</small>${na ? '<em>' + na + '</em>' : ''}</button>` : ''}
+        ${showEvents ? `<button class="rv-sb rv-pn rv-rk" onclick="evOpen()" aria-label="อีเวนต์">${ic('party')}<small>อีเวนต์</small>${ne ? '<em>' + ne + '</em>' : ''}</button>` : ''}
+        ${showAdmin ? `<button class="rv-sb rv-pn rv-rk" onclick="adminOpen()" aria-label="แอดมิน">${ic('shield')}<small>แอดมิน</small></button>` : ''}
       </div>
       <div class="rv-ev">
         <button class="rv-card big" onclick="go('shop')"><img src="./Assets/Shop/Gasha/sakuya-up/banner.webp" alt=""><span>ราชินีไพ่ซากุยะ<small>SSR ใหม่ · เรทอัป!</small></span></button>
