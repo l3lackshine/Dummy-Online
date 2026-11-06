@@ -67,9 +67,13 @@
   height: var(--plate-h) !important;
   border-style: solid !important;
   border-color: transparent !important;
-  border-width: 0 calc(var(--plate-h) * 1.2) 0 calc(var(--plate-h) * 0.27) !important; /* รูป 900×265: ซ้าย 70px · ขวา 320px */
-  border-image: url(../../Assets/UI/Assets/lobby/name-plate.webp) 0 320 0 70 fill / 0 calc(var(--plate-h) * 1.2) 0 calc(var(--plate-h) * 0.27) stretch !important;
-  padding: calc(var(--plate-h) * 0.1) 0 0 !important; /* ตัวป้ายอยู่ต่ำกว่ากลางรูปนิดหน่อย (ช่อดอกยื่นขึ้นด้านบน) */
+  /* border-width 0 แต่ border-image-width ไม่ใช่ 0 → รูปยังวาดเต็มป้าย แต่พื้นที่ข้อความเต็มความกว้าง
+     ชื่ออยู่กลางป้ายจริง ๆ (ถ้าใช้ border-width ซ้าย/ขวาไม่เท่ากัน ข้อความจะเบี้ยวไปทางซ้าย) */
+  border-width: 0 !important;
+  border-image: url(../../Assets/UI/Assets/lobby/name-plate.webp) 0 320 0 70 fill / 0 calc(var(--plate-h) * 1.2) 0 calc(var(--plate-h) * 0.27) stretch !important; /* รูป 900×265: ซ้าย 70px · ขวา 320px */
+  padding: calc(var(--plate-h) * 0.1) calc(var(--plate-h) * 0.3) 0 !important; /* ตัวป้ายอยู่ต่ำกว่ากลางรูปนิดหน่อย (ช่อดอกยื่นขึ้นด้านบน) */
+  text-align: center;
+  align-items: center;
   background: none !important;
   box-shadow: none !important;
 }
