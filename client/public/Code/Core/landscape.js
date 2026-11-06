@@ -1,6 +1,7 @@
 /* landscape.js — บังคับเล่นแนวนอนตั้งแต่หน้าแรก
    - แอป Android (Capacitor): ล็อกที่ AndroidManifest (ดู mobile/prepare.js)
-   - เว็บมือถือ: แตะครั้งแรกเพื่อเข้าเต็มจอ + ล็อกแนวนอน (ทำได้เฉพาะเบราว์เซอร์ที่รองรับ) · ถ้ายังเป็นแนวตั้ง จะมีหน้าจอบอกให้หมุนเครื่อง */
+   - เว็บมือถือ: แตะเพื่อเข้าเต็มจอ + ล็อกแนวนอน (ทำได้เฉพาะเบราว์เซอร์ที่รองรับ) · ถ้ายังเป็นแนวตั้ง จะมีหน้าจอบอกให้หมุนเครื่อง
+   - หลุดเต็มจอเมื่อไหร่ (กลับจากหน้า Google · หน้าต่าง confirm() ของเบราว์เซอร์ตอนออกจากห้อง) แตะครั้งถัดไปจะกลับเข้าเต็มจอเอง */
 (function () {
   var so = screen.orientation,
     de = document.documentElement;
@@ -24,15 +25,20 @@
   }
   lock();
   var coarse = window.matchMedia && matchMedia('(pointer:coarse)').matches;
-  if (coarse)
-    addEventListener(
-      'pointerdown',
-      function once() {
-        removeEventListener('pointerdown', once);
-        goFull();
-      },
-      { passive: true }
-    );
+  // ใช้ click ไม่ใช่ pointerdown: Chrome มือถือไม่นับการแตะแบบ pointerdown เป็น "ผู้เล่นกดเอง" จึงไม่ยอมเข้าเต็มจอ
+  // ฟังทุกครั้ง (ไม่ใช่ครั้งเดียว) เพราะ confirm()/ออกไปหน้าอื่น ทำให้หลุดเต็มจอได้ตลอดการเล่น
+  function isNativeApp() {
+    var cap = window.Capacitor;
+    return !!(cap && cap.isNativePlatform && cap.isNativePlatform()); // แอปเต็มจออยู่แล้ว (ดู Core/native.js)
+  }
+  function fullscreenNow() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  function backToFullscreen() {
+    if (isNativeApp() || fullscreenNow()) return;
+    goFull();
+  }
+  if (coarse) addEventListener('click', backToFullscreen, { capture: true, passive: true });
   function mk() {
     if (document.getElementById('rotHint')) return;
     var d = document.createElement('div');
