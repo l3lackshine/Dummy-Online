@@ -50,3 +50,6 @@ psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v16.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v17_events_admin.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v17_events_admin.sql"   # รันซ้ำต้องไม่พัง
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v17.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v18_admin_tools.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v18_admin_tools.sql"   # รันซ้ำต้องไม่พัง
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v18.sql"
