@@ -1,8 +1,9 @@
-/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · รายชื่อแอดมิน
-   ทุกคำสั่งผ่านฟังก์ชัน admin_* ในฐานข้อมูล (supabase/v17_events_admin.sql) ซึ่งตรวจสิทธิ์และตรวจข้อมูลเอง — ไฟล์นี้เป็นแค่ฟอร์ม
+/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · รายชื่อแอดมิน
+   ทุกคำสั่งผ่านฟังก์ชัน admin_* ในฐานข้อมูล (supabase/v17_events_admin.sql · v18_admin_tools.sql) ซึ่งตรวจสิทธิ์และตรวจข้อมูลเอง — ไฟล์นี้เป็นแค่ฟอร์ม
    ปุ่มเข้าหน้านี้ขึ้นเฉพาะบัญชีที่เป็นแอดมิน (Admin.isAdmin() ถาม is_admin จากฐานข้อมูล) · คนอื่นเรียก adminOpen() ก็แก้อะไรไม่ได้
    Public: adminOpen() · adTab(tab) · adEditEvent(id) · adEditEventQuest(eventId, questId) · adEditQuest(id) · adSave() · adCancel()
            adDelete(type, id) · adExpand(eventId) · adMetric(select) · adAddAdmin() · adRemoveAdmin(username) · Admin.isAdmin()
+           adEditBanner(id) · adPay(select) · adRateSum()
    EXTEND: ชนิดเควสใหม่ = เพิ่มใน METRICS (และใน SQL _quest_metric_ok / _window_progress) · แท็บใหม่ = เพิ่มใน TABS + ฟังก์ชันวาดแท็บ */
 (function () {
   'use strict';
@@ -11,6 +12,7 @@
   const TABS = [
     ['events', '🎉 อีเวนต์'],
     ['quests', '📜 เควสปกติ'],
+    ['gacha', '🎰 ตู้กาชา'],
     ['admins', '🛡️ แอดมิน'],
   ];
   const METRICS = [
@@ -27,13 +29,17 @@
   // ใช้เมื่อยังไม่ได้ต่อเซิร์ฟเวอร์ (RULES ว่าง) — สะกดตาม Code/Profile/profile-card.js
   const GAME_NAMES = { dummy: 'ดัมมี่', pokdeng: 'ป๊อกเด้ง', gaogae: 'เก้าเก', somsip: 'ผสมสิบ', eekae: 'อีแก่' };
   const ITEM_ROWS = 4; // ช่องรางวัลไอเทมต่อเควส
+  const RATE_UP_DEFAULT = 2; // ตัวคูณเรทอัปตั้งต้นของตู้ใหม่ (แอดมินแก้ได้ 1–20 · ฐานข้อมูลตรวจเพดาน)
+  // ใช้เมื่อหาชื่อชนิดใน KINDS (Core/skins.js) ไม่เจอ
+  const KIND_NAMES = { characters: 'ตัวละคร', backs: 'หลังไพ่', tables: 'ผ้าปูโต๊ะ', backgrounds: 'พื้นหลัง', frames: 'กรอบการ์ด' };
 
   let adminChecked = null; // id ผู้ใช้ที่ถามสิทธิ์ไปแล้ว
   let adminYes = false;
   let overview = null; // ผลจาก admin_overview
+  let gachaData = null; // ผลจาก admin_gacha_data (โหลดเมื่อเปิดแท็บตู้กาชา)
   let failMessage = '';
   let tab = 'events';
-  let form = null; // { type: 'event' | 'event_quest' | 'quest', data }
+  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner', data }
   let expandedEvent = '';
   let busy = false;
   let featOptions = []; // [{ feat, label }] จาก skin/achievements.json
@@ -231,8 +237,10 @@
       </div>`;
   }
 
+  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml };
+
   function formHtml() {
-    const body = form.type === 'event' ? eventFormHtml(form.data) : form.type === 'event_quest' ? eventQuestFormHtml(form.data) : questFormHtml(form.data);
+    const body = FORM_BUILDERS[form.type](form.data);
     return `<form class=ad-form onsubmit="adSave();return false">${body}
       <div class=ad-btns><button type=submit class="wbtn go"${busy ? ' disabled' : ''}>💾 บันทึก</button>
       <button type=button class=wbtn onclick="adCancel()">ยกเลิก</button></div></form>`;
@@ -289,6 +297,173 @@
     return `<button class="wbtn go" onclick="adEditQuest('')">＋ เพิ่มเควส</button>${note}<div class=ad-list>${rows}</div>`;
   }
 
+  // ---------- แท็บตู้กาชา ----------
+  // โอกาสในฐานข้อมูลเก็บหน่วย 0.01% (รวม 10,000) · ฟอร์มแสดงเป็น %
+  function unitsToPercent(units) {
+    return Math.round(Number(units || 0)) / 100;
+  }
+
+  function kindName(kind) {
+    const found = (typeof KINDS !== 'undefined' ? KINDS : []).find(k => k[0] === kind);
+    return found ? found[1] : KIND_NAMES[kind] || kind;
+  }
+
+  function rarityName(rarity) {
+    const found = (gachaData.rarities || []).find(r => r.rarity === rarity);
+    return found ? found.name : rarity;
+  }
+
+  function rateSummary(banner) {
+    const rates = banner.admin_owned ? (banner.admin_cfg || {}).rates || {} : banner.rates || {};
+    const parts = (gachaData.rarities || [])
+      .filter(r => Number(rates[r.rarity]) > 0)
+      .map(r => `${r.name} ${unitsToPercent(rates[r.rarity])}%`);
+    return parts.join(' · ') || 'ยังไม่มีของ';
+  }
+
+  function priceSummary(banner) {
+    if (banner.ticket) return `${itemLabel(banner.ticket)} · ขาดตั๋วใช้ 💎${number(banner.ticket_mcash || 0)}`;
+    const parts = [];
+    if (banner.single_coins) parts.push('🪙' + number(banner.single_coins) + '/1');
+    if (banner.ten_coins) parts.push('🪙' + number(banner.ten_coins) + '/10');
+    if (banner.single_mcash) parts.push('💎' + number(banner.single_mcash) + '/1');
+    if (banner.ten_mcash) parts.push('💎' + number(banner.ten_mcash) + '/10');
+    return parts.join(' ') || 'ยังไม่ตั้งราคา';
+  }
+
+  function bannerRowHtml(banner) {
+    const owner = banner.admin_owned ? '<em class="ad-st on">แอดมินดูแล</em>' : '<em class="ad-st soon">จากไฟล์</em>';
+    const state = banner.active ? '' : '<em class="ad-st off">ปิดอยู่</em>';
+    const events = (banner.events || []).length ? ' · อีเวนต์: ' + banner.events.join(', ') : '';
+    const deleteButton = banner.admin_owned
+      ? `<button class="wbtn ad-del" onclick="adDelete('banner','${escape(banner.id)}')">ลบ</button>`
+      : '<span></span>';
+    return `<div class="ad-row${banner.active ? '' : ' off'}">
+      <span><b>${escape(banner.name)}</b>${owner}${state}
+        <small>${escape(rateSummary(banner))} · ${escape(priceSummary(banner))}${banner.pity ? ' · การันตี ' + banner.pity : ''}${escape(events)}</small></span>
+      <button class=wbtn onclick="adEditBanner('${escape(banner.id)}')">แก้</button>${deleteButton}
+    </div>`;
+  }
+
+  function gachaTabHtml() {
+    if (!gachaData) return '<p class=ad-mut>กำลังโหลดตู้กาชา…</p>';
+    const rows = (gachaData.banners || []).map(bannerRowHtml).join('') || '<p class=ad-mut>ยังไม่มีตู้</p>';
+    const note = '<p class=ad-mut>ตู้ "จากไฟล์" มาจาก Assets/Shop/Gasha · กดแก้แล้วบันทึก = ย้ายมาให้แอดมินดูแล · ตู้ที่ผูกอีเวนต์จะเปิดเฉพาะช่วงอีเวนต์</p>';
+    return `<button class="wbtn go" onclick="adEditBanner('')">＋ สร้างตู้</button>${note}<div class=ad-list>${rows}</div>`;
+  }
+
+  // ค่าเริ่มของฟอร์ม: ตู้แอดมินอ่านจาก admin_cfg · ตู้จากไฟล์อ่านจากของในตู้ตอนนี้ · ตู้ใหม่เริ่มว่าง
+  function bannerFormData(banner) {
+    if (!banner) {
+      const firstTicket = (gachaData.tickets || [])[0] || '';
+      return { grp: 'char', pay: 'ticket', ticket: firstTicket, active: true, rates: {}, items: [], rate_up: [], rate_up_mult: RATE_UP_DEFAULT };
+    }
+    const config = banner.admin_owned ? banner.admin_cfg || {} : {};
+    const rates = {};
+    Object.entries(config.rates || banner.rates || {}).forEach(([rarity, units]) => {
+      rates[rarity] = unitsToPercent(units);
+    });
+    return Object.assign({}, banner, {
+      pay: banner.ticket ? 'ticket' : 'coins',
+      rates,
+      items: config.items || banner.items || [],
+      rate_up: config.rate_up || [],
+      rate_up_mult: config.rate_up_mult || RATE_UP_DEFAULT,
+    });
+  }
+
+  function rateInput(rarity, value) {
+    return `<input name="rate:${rarity}" type=number step=0.01 min=0 max=100 inputmode=decimal value="${escape(value == null ? 0 : value)}" oninput="adRateSum()">`;
+  }
+
+  function ratesTotal(rates) {
+    const sum = Object.values(rates || {}).reduce((total, value) => total + Number(value || 0), 0);
+    return Math.round(sum * 100) / 100;
+  }
+
+  function payFieldsHtml(data) {
+    const ticketOptions = (gachaData.tickets || [])
+      .map(id => `<option value="${escape(id)}"${id === data.ticket ? ' selected' : ''}>${escape(itemLabel(id))}</option>`)
+      .join('');
+    const show = mode => (data.pay === mode ? '' : ' style="display:none"');
+    return `${field('วิธีจ่าย', `<select name=pay onchange="adPay(this)">
+        <option value=ticket${data.pay === 'ticket' ? ' selected' : ''}>ตั๋ว (ตั๋วไม่พอหักเพชร)</option>
+        <option value=coins${data.pay === 'coins' ? ' selected' : ''}>เหรียญ / เพชร</option></select>`)}
+      <div class="ad-f wide ad-pay ad-pay-ticket"${show('ticket')}><div class=ad-grid>
+        ${field('ตั๋วที่ใช้', `<select name=ticket>${ticketOptions}</select>`)}
+        ${field('เพชรแทนตั๋ว 1 ใบ (ว่าง = ต้องมีตั๋ว)', numberInput('ticket_mcash', data.ticket_mcash))}
+        ${field('เพชรแทนตั๋ว 10 ใบ (ว่าง = 10 เท่า)', numberInput('ticket_mcash10', data.ticket_mcash10))}
+      </div></div>
+      <div class="ad-f wide ad-pay ad-pay-coins"${show('coins')}><div class=ad-grid>
+        ${field('🪙 สุ่ม 1 ครั้ง', numberInput('single_coins', data.single_coins))}
+        ${field('🪙 สุ่ม 10 ครั้ง', numberInput('ten_coins', data.ten_coins))}
+        ${field('💎 สุ่ม 1 ครั้ง', numberInput('single_mcash', data.single_mcash))}
+        ${field('💎 สุ่ม 10 ครั้ง', numberInput('ten_mcash', data.ten_mcash))}
+      </div><span class=ad-mut>เว้นว่าง = ไม่รับสกุลนั้น · ใส่อย่างน้อย 1 ช่อง</span></div>`;
+  }
+
+  function ratesFieldsHtml(data) {
+    const inputs = (gachaData.rarities || []).map(r => field(`โอกาส ${escape(r.name)} (%)`, rateInput(r.rarity, data.rates[r.rarity]))).join('');
+    return `${inputs}<div class="ad-f"><span>รวม (ต้องได้ 100%)</span><b class=ad-rsum>${ratesTotal(data.rates)}%</b></div>`;
+  }
+
+  // รายการของแยกตามชนิด: ติ๊กซ้าย = อยู่ในตู้ · ติ๊กขวา = เรทอัป
+  function poolItemsHtml(data) {
+    const byKind = {};
+    (gachaData.catalog || []).forEach(item => {
+      (byKind[item.kind] = byKind[item.kind] || []).push(item);
+    });
+    const groups = Object.entries(byKind).map(([kind, items]) => {
+      const rows = items
+        .map(item => {
+          const inPool = data.items.includes(item.key);
+          const rateUp = data.rate_up.includes(item.key);
+          return `<div class=ad-pi>${checkbox('item:' + item.key, inPool, `${escape(item.name)} <small>${escape(rarityName(item.rarity))}</small>`)}
+            ${checkbox('up:' + item.key, rateUp, 'เรทอัป')}</div>`;
+        })
+        .join('');
+      return `<div class=ad-pk><b>${escape(kindName(kind))}</b>${rows}</div>`;
+    });
+    return `<div class="ad-f wide"><span>ของในตู้ (โอกาสของระดับแบ่งเท่ากันทุกชิ้น · ของเรทอัปได้ส่วนแบ่งตามตัวคูณ)</span>
+      <div class=ad-pool>${groups.join('') || 'ไม่มีของในแคตตาล็อก'}</div></div>`;
+  }
+
+  function bannerFormHtml(data) {
+    const fromFile = data.id && !data.admin_owned;
+    const warning = fromFile
+      ? '<p class="ad-mut ad-warn">ตู้นี้มาจากไฟล์ของเกม — บันทึกแล้วจะย้ายมาให้แอดมินดูแล และแก้ Config.config ของตู้นี้จะไม่มีผลอีก</p>'
+      : '';
+    const preview = data.image_url ? `<img class=ad-prev src="${escape(data.image_url)}" alt="">` : '';
+    return `<h4>${data.id ? 'แก้ตู้กาชา' : 'สร้างตู้กาชา'}</h4>${warning}
+      <div class=ad-grid>
+        ${idField(data)}
+        ${field('ชื่อตู้', textInput('name', data.name, 'maxlength=40'))}
+        ${field('คำอธิบาย', `<textarea name=description maxlength=300 rows=2>${escape(data.description || '')}</textarea>`, true)}
+        ${field('ลิงก์รูปแบนเนอร์ (https://… หรือ ./Assets/… · ว่าง = ใช้รูปในไฟล์)', textInput('image_url', data.image_url, 'maxlength=500'), true)}
+        ${preview ? `<div class="ad-f wide">${preview}</div>` : ''}
+        ${field('หมวด', `<select name=grp>
+          <option value=char${data.grp !== 'cosm' ? ' selected' : ''}>ตู้ตัวละคร</option>
+          <option value=cosm${data.grp === 'cosm' ? ' selected' : ''}>ตู้ของแต่ง (ของซ้ำแปลงเป็นเหรียญ)</option></select>`)}
+        ${payFieldsHtml(data)}
+        ${ratesFieldsHtml(data)}
+        ${field('การันตี SSR ใน (ครั้ง · 0 = ปิด)', numberInput('pity', data.pity || 0))}
+        ${field('ตัวคูณเรทอัป (1–20)', numberInput('rate_up_mult', data.rate_up_mult))}
+        ${field('ลำดับ', numberInput('sort', data.sort || 0))}
+        <div class="ad-f">${checkbox('active', data.active !== false, 'เปิดใช้')}</div>
+        ${poolItemsHtml(data)}
+      </div>`;
+  }
+
+  async function loadGacha() {
+    try {
+      gachaData = await DB.call('admin_gacha_data', {});
+    } catch (e) {
+      gachaData = { banners: [], rarities: [], catalog: [], tickets: [] };
+      if (window.dbToast) dbToast(e.message || 'โหลดตู้กาชาไม่ได้ (ฐานข้อมูลยังไม่มี v18?)');
+    }
+    repaint();
+  }
+
   // ---------- แท็บแอดมิน ----------
   function adminsTabHtml() {
     const rows = (overview.admins || [])
@@ -309,6 +484,7 @@
     if (!overview) return '<p class=ad-mut>กำลังโหลด…</p>';
     if (form) return formHtml();
     if (tab === 'quests') return questsTabHtml();
+    if (tab === 'gacha') return gachaTabHtml();
     if (tab === 'admins') return adminsTabHtml();
     return eventsTabHtml();
   }
@@ -359,7 +535,29 @@
     return items;
   }
 
+  // ช่องติ๊กที่ชื่อขึ้นต้นด้วย prefix → รายการ "ชนิด:รหัส" ที่ติ๊กไว้
+  function checkedKeys(values, prefix) {
+    return Object.keys(values)
+      .filter(name => name.startsWith(prefix) && values[name])
+      .map(name => name.slice(prefix.length));
+  }
+
+  function buildBannerPayload(values) {
+    const rates = {};
+    (gachaData.rarities || []).forEach(r => {
+      rates[r.rarity] = values['rate:' + r.rarity];
+    });
+    const payload = { rates, items: checkedKeys(values, 'item:'), rate_up: checkedKeys(values, 'up:') };
+    Object.keys(values)
+      .filter(name => !name.includes(':'))
+      .forEach(name => {
+        payload[name] = values[name];
+      });
+    return payload;
+  }
+
   function buildPayload(values) {
+    if (form.type === 'banner') return buildBannerPayload(values);
     if (form.type === 'event') {
       const bannerIds = Object.keys(values).filter(k => k.startsWith('banner:') && values[k]).map(k => k.slice('banner:'.length));
       return Object.assign({}, values, {
@@ -376,8 +574,18 @@
     return payload;
   }
 
-  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest' };
-  const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest' };
+  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner' };
+  const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest', banner: 'admin_delete_banner' };
+  const DELETE_WARNINGS = {
+    event: 'ลบอีเวนต์นี้? เควสและประวัติรับรางวัลของอีเวนต์จะหายไปด้วย',
+    banner: 'ลบตู้นี้? การันตีสะสมของผู้เล่นในตู้นี้จะหายไปด้วย (ปิดใช้แทนการลบได้)',
+  };
+
+  // หลังแก้ตู้: โหลดรายการตู้ใหม่ + ให้หน้ากาชาโหลดตู้ใหม่ครั้งหน้าที่เปิด (gacha.js โหลดเมื่อ DB.G ว่าง)
+  async function reloadAfterBannerChange() {
+    await loadGacha();
+    if (window.DB) DB.G = null;
+  }
 
   // ---------- คำสั่งจากหน้าจอ ----------
   window.adminOpen = () => {
@@ -395,6 +603,7 @@
     tab = id;
     form = null;
     repaint();
+    if (id === 'gacha') loadGacha(); // โหลดใหม่ทุกครั้งที่เปิดแท็บ — ตู้อาจถูกแก้จาก seed หรือแอดมินคนอื่น
   };
 
   window.adExpand = eventId => {
@@ -422,6 +631,33 @@
     repaint();
   };
 
+  window.adEditBanner = bannerId => {
+    if (!gachaData) return;
+    const existing = (gachaData.banners || []).find(b => b.id === bannerId);
+    form = { type: 'banner', data: bannerFormData(existing) };
+    repaint();
+  };
+
+  window.adPay = select => {
+    const formEl = select.closest('.ad-form');
+    formEl.querySelectorAll('.ad-pay').forEach(box => {
+      box.style.display = box.classList.contains('ad-pay-' + select.value) ? '' : 'none';
+    });
+  };
+
+  window.adRateSum = () => {
+    const formEl = document.querySelector('.ad-modal .ad-form');
+    if (!formEl) return;
+    const rates = {};
+    formEl.querySelectorAll('input[name^="rate:"]').forEach(input => {
+      rates[input.name] = input.value;
+    });
+    const total = ratesTotal(rates);
+    const label = formEl.querySelector('.ad-rsum');
+    label.textContent = total + '%';
+    label.classList.toggle('bad', total !== 100);
+  };
+
   window.adMetric = select => {
     const featBox = select.closest('.ad-form').querySelector('.ad-feat');
     if (featBox) featBox.style.display = select.value === 'feat' ? '' : 'none';
@@ -441,8 +677,10 @@
       await DB.call(SAVE_FUNCTIONS[form.type], { p: payload });
       if (window.dbToast) dbToast('💾 บันทึกแล้ว');
       if (form.type === 'event_quest') expandedEvent = form.data.event_id;
+      const savedBanner = form.type === 'banner';
       form = null;
       await loadOverview();
+      if (savedBanner) await reloadAfterBannerChange();
       if (window.Events) Events.refresh();
     } catch (e) {
       form.data = Object.assign({}, form.data, payload); // เก็บค่าที่กรอกไว้ ให้แก้แล้วกดบันทึกใหม่ได้
@@ -454,13 +692,13 @@
 
   window.adDelete = async (type, id) => {
     if (busy) return;
-    const warning = type === 'event' ? 'ลบอีเวนต์นี้? เควสและประวัติรับรางวัลของอีเวนต์จะหายไปด้วย' : 'ลบเควสนี้?';
-    if (!window.confirm(warning)) return;
+    if (!window.confirm(DELETE_WARNINGS[type] || 'ลบเควสนี้?')) return;
     busy = true;
     try {
       await DB.call(DELETE_FUNCTIONS[type], { p_id: id });
       if (window.dbToast) dbToast('🗑️ ลบแล้ว');
       await loadOverview();
+      if (type === 'banner') await reloadAfterBannerChange();
       if (window.Events) Events.refresh();
     } catch (e) {
       if (window.dbToast) dbToast(e.message || 'ลบไม่สำเร็จ');

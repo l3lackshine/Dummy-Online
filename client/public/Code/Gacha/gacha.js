@@ -87,7 +87,8 @@
   function pullPanel() {
     const b = banner();
     if (!b) return '<p class=note>ยังไม่มีตู้กาชาเปิดอยู่ (ผู้ดูแลต้องรัน supabase/seed_catalog.sql)</p>';
-    const bimg = window.Assets && Assets.bannerImage(b.id);
+    // ลิงก์รูปที่แอดมินตั้ง (v18) มาก่อนรูปในไฟล์ · ยังเคารพค่า "แสดงแบบรูป" ใน Shopsetting.config เหมือนเดิม
+    const bimg = window.Assets && (b.image_url && Assets.gachaDisplay() === 'image' ? b.image_url : Assets.bannerImage(b.id));
     const bs = tabBanners(),
       R = DB.G.rarities || {},
       rk = r => (R[r] || {}).sort || 0;

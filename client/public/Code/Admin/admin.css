@@ -211,3 +211,47 @@
 .ad-add input {
   flex: 1;
 }
+
+/* ---------- ตู้กาชา (v18) ---------- */
+.ad-warn {
+  color: #b5651d;
+  font-weight: 700;
+}
+.ad-rsum {
+  font-size: 2.4vh;
+  color: #4caf7a;
+}
+.ad-rsum.bad {
+  color: #c0394f;
+}
+.ad-pool {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 40vh), 1fr));
+  gap: 1vh;
+}
+.ad-pk {
+  padding: 0.8vh 1vh;
+  border-radius: 1vh;
+  border: 0.2vh solid #efe1c2;
+  background: #fff;
+}
+.ad-pk > b {
+  display: block;
+  margin-bottom: 0.4vh;
+  font-size: 1.9vh;
+  color: #d94f86;
+}
+.ad-pi {
+  display: flex;
+  justify-content: space-between; /* ติ๊ก "อยู่ในตู้" ชิดซ้าย · ติ๊ก "เรทอัป" ชิดขวา */
+  align-items: center;
+  padding: 0.2vh 0;
+  border-top: 0.1vh dashed #efe1c2;
+}
+.ad-pi .ad-ck {
+  margin-right: 0;
+}
+.ad-pi small {
+  font-size: 1.5vh;
+  color: #8a8e9c;
+}
