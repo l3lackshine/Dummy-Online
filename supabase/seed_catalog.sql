@@ -94,16 +94,16 @@ update public.gacha_pool set weight = 0 where (banner_id, kind, item_id) not in 
 do $$ begin if to_regprocedure('public._gacha_rebuild_admin_pools()') is not null then perform public._gacha_rebuild_admin_pools(); end if; end $$;
 
 insert into public.character_defs(id, max_stars, star_costs, bonus_pct) values
-('boy', 4, '{1}', null),
-('girl', 4, '{1}', null),
-('rina-01', 5, '{1}', null),
-('arya-01', 5, '{1}', null),
-('rena-01', 5, '{1}', null),
-('sakuya-ssr', 5, '{1}', null),
-('rei-r', 5, '{1}', null),
-('haru-r', 5, '{1}', null),
-('ken-r', 5, '{1}', null),
-('leo-r', 5, '{1}', null),
-('yuna-r', 5, '{1}', null),
-('miyu-r', 5, '{1}', null)
+('boy', 4, '{1,1,1,1}', null),
+('girl', 4, '{1,1,1,1}', null),
+('rina-01', 5, '{1,1,1,1}', null),
+('arya-01', 5, '{1,1,1,1}', null),
+('rena-01', 5, '{1,1,1,1}', null),
+('sakuya-ssr', 5, '{1,1,1,1}', null),
+('rei-r', 5, '{1,1,1,1}', null),
+('haru-r', 5, '{1,1,1,1}', null),
+('ken-r', 5, '{1,1,1,1}', null),
+('leo-r', 5, '{1,1,1,1}', null),
+('yuna-r', 5, '{1,1,1,1}', null),
+('miyu-r', 5, '{1,1,1,1}', null)
 on conflict (id) do update set max_stars = excluded.max_stars, star_costs = excluded.star_costs, bonus_pct = excluded.bonus_pct;
