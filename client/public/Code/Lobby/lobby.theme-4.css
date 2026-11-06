@@ -7,3 +7,10 @@
     overflow: visible;
   }
 }
+/* ===== กรอบประจำตัวละคร (ปลด 4★): ตัวละครอยู่ในช่องว่างกลางกรอบ ไม่โดนลายบัง =====
+   lobby-room.js ใส่ data-fw + ตัวแปร --fw-t/-b/-l/-r (สัดส่วนความกว้างการ์ด จาก Character.config "lobby"."frame4")
+   ใช้ margin % เพราะ margin อิงความกว้างเสมอ ตรงกับกรอบที่ยืดตามความกว้าง · max() กันไม่ให้ชิดป้ายบน/ป้ายชื่อล่างกว่าเดิม */
+.rm-slot[data-fw] .rm-art {
+  inset: 0 !important;
+  margin: max(var(--fw-t), 7.4vh) var(--fw-r) max(var(--fw-b), 11.2vh) var(--fw-l) !important;
+}

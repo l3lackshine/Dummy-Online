@@ -12,12 +12,27 @@ function gxRoom(c) {
   const mine = ps.find(p => p.you),
     people = mine ? [mine, ...ps.filter(p => p !== mine)] : ps.slice();
   // ตำแหน่งตัวละครในการ์ด: Character.config "lobby": {"align": "left|center|right", "scale": 0.8}
-  const place = ch => {
+  const place = (ch, fr) => {
     const x = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => y.id === ch),
       l = (x && x.lobby) || {};
     const al = { left: 'flex-start', right: 'flex-end' }[l.align] || 'center',
       sc = Number(l.scale) > 0 ? Math.min(1.5, Number(l.scale)) : 1;
-    return ` style="--chr-al:${al};--chr-h:${Math.round(sc * 100)}%"`;
+    const fit = frameWindow(fr);
+    return `${fit ? ' data-fw' : ''} style="--chr-al:${al};--chr-h:${Math.round(sc * 100)}%${fit}"`;
+  };
+  // กรอบประจำตัวละคร (ปลด 4★) มีลายหนักบน/ล่าง — ย่อตัวละครให้อยู่ในช่องว่างกลางกรอบ ไม่โดนลายบังหน้า
+  // ค่าช่องว่างวัดจากรูปกรอบโดย scripts/compose-char-frames.py → Character.config "lobby"."frame4"
+  // หน่วยเป็นสัดส่วนของ "ความกว้าง" การ์ด (กรอบยืดตามความกว้าง) → CSS ใช้เป็น margin % (margin % อิงความกว้างเสมอ)
+  const frameWindow = fr => {
+    if (!fr || !/^ch-[a-z0-9-]+$/.test(fr)) return '';
+    const owner = ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(y => 'ch-' + y.id === fr);
+    const win = owner && owner.lobby && owner.lobby.frame4;
+    if (!win) return '';
+    const percent = value => {
+      const number = Number(value);
+      return Number.isFinite(number) ? Math.min(100, Math.max(0, number * 100)).toFixed(1) + '%' : '0%';
+    };
+    return `;--fw-t:${percent(win.top)};--fw-b:${percent(win.bottom)};--fw-l:${percent(win.left)};--fw-r:${percent(win.right)}`;
   };
   // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
   const s5bg = p => {
@@ -33,7 +48,7 @@ function gxRoom(c) {
   };
   const human = p => {
     const on = p.host || p.ready;
-    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
+    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch, p.fr)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`;
   };
   const bot = i =>
