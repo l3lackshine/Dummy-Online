@@ -11,7 +11,8 @@
   DB.enabled = true;
   DB.loading = true;
   const sb = (DB.client = window.supabase.createClient(url, key, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+    // flowType pkce: ล็อกอิน Google กลับมาเป็น ?code= แล้วเราแลกเป็นเซสชันเองใน finishOAuthRedirect() (ไม่ให้ไลบรารีอ่าน URL เอง)
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' },
   }));
   const DOMAIN = String(CFG.AUTH_EMAIL_DOMAIN || 'example.com').replace(/^@/, '');
   const th = m => {
@@ -30,6 +31,11 @@
         'ระบบอีเมลปฏิเสธชื่อนี้ — ตั้ง AUTH_EMAIL_DOMAIN ใน config.js เป็นโดเมนที่ใช้งานได้',
       ],
       [/failed to fetch|networkerror|network request failed|load failed/i, 'เชื่อมต่อฐานข้อมูลไม่ได้ ตรวจสอบอินเทอร์เน็ต'],
+      [/identity is already linked|already linked to another user/i, 'บัญชี Google นี้ผูกกับผู้เล่นคนอื่นอยู่แล้ว'],
+      [/manual linking is disabled/i, 'ยังไม่ได้เปิดการผูกบัญชี — เจ้าของเกมต้องเปิด "Allow manual linking" ที่ Supabase'],
+      [/provider is not enabled|unsupported provider/i, 'ยังไม่ได้เปิดล็อกอินด้วย Google — เจ้าของเกมต้องเปิดที่ Supabase'],
+      [/access_denied|access denied|user cancelled|cancelled/i, 'ยกเลิกการเข้าสู่ระบบด้วย Google'],
+      [/code verifier|flow state/i, 'ลิงก์ล็อกอินหมดอายุ ลองกดเข้าสู่ระบบด้วย Google ใหม่'],
     ];
     for (const [re, t] of map) if (re.test(m)) return t;
     return m || 'เกิดข้อผิดพลาด';
@@ -95,11 +101,103 @@
 
   DB.stars = id => Math.max(1, Number(DB.P && DB.P.characters && DB.P.characters[id]) || 1);
 
+  // ---- ล็อกอิน / ผูกบัญชีด้วย Google (OAuth) ----
+  // ขั้นตอน: กดปุ่ม → ไปหน้า Google → Google ส่งกลับมาที่ Supabase → Supabase ส่งกลับมาหน้าเกมพร้อม ?code=
+  // EXTEND: ผู้ให้บริการอื่น (เช่น Facebook) = เพิ่มชื่อใน OAUTH_PROVIDERS แล้วเรียก startOAuth('<ชื่อ>', 'login')
+  const OAUTH_PROVIDERS = ['google'];
+  const OAUTH_PARAMS = ['code', 'error', 'error_code', 'error_description', 'state'];
+  const OAUTH_RETURN_KEY = 'dummyOauthReturn'; // จำ ?query เดิม (เช่น ?room=ลิงก์ชวน) และว่ากำลัง "ล็อกอิน" หรือ "ผูกบัญชี"
+
+  // แอป Android (WebView) ใช้ล็อกอิน Google ไม่ได้ — Google บล็อกหน้าเว็บที่ฝังในแอป
+  DB.oauthAvailable = () => {
+    const cap = window.Capacitor;
+    const isApp = !!(cap && cap.isNativePlatform && cap.isNativePlatform());
+    return !isApp;
+  };
+
+  DB.hasGoogle = () => {
+    const identities = (DB.user && DB.user.identities) || [];
+    return identities.some(identity => identity.provider === 'google');
+  };
+
+  // ชื่ออัตโนมัติที่ฐานข้อมูลตั้งให้บัญชีใหม่ที่ไม่ได้กรอกชื่อ (u + รหัส 10 ตัว · ดู handle_new_user ใน schema.sql)
+  const AUTO_NAME = /^u[0-9a-f]{10}$/;
+  DB.needsNickname = () => {
+    const P = DB.P;
+    if (!P) return false;
+    if (Number(P.name_changes) >= 1) return false; // เคยตั้งชื่อเองแล้ว
+    return AUTO_NAME.test(String(P.display_name || ''));
+  };
+
+  function rememberOAuthReturn(intent) {
+    try {
+      sessionStorage.setItem(OAUTH_RETURN_KEY, JSON.stringify({ intent, search: location.search }));
+    } catch (e) {}
+  }
+
+  function takeOAuthReturn() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(OAUTH_RETURN_KEY) || 'null');
+      sessionStorage.removeItem(OAUTH_RETURN_KEY);
+      return saved || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // ส่งกลับมาที่หน้าเดิมแบบไม่มี ?query — ต้องตรงกับ Redirect URLs ที่ตั้งไว้ใน Supabase
+  const oauthRedirectUrl = () => location.origin + location.pathname;
+
+  async function startOAuth(provider, intent) {
+    if (!OAUTH_PROVIDERS.includes(provider)) throw new Error('ไม่รองรับการล็อกอินแบบนี้');
+    if (!DB.oauthAvailable()) throw new Error('ล็อกอินด้วย Google ได้เฉพาะบนเว็บ ยังใช้ในแอปไม่ได้');
+    rememberOAuthReturn(intent);
+    const options = { redirectTo: oauthRedirectUrl() };
+    const request =
+      intent === 'link' ? sb.auth.linkIdentity({ provider, options }) : sb.auth.signInWithOAuth({ provider, options });
+    const { error } = await request;
+    if (error) throw new Error(th(error.message));
+    // สำเร็จ = หน้าเว็บกำลังเปลี่ยนไปหน้า Google (ไม่ต้องทำอะไรต่อ)
+  }
+
+  DB.signInGoogle = () => startOAuth('google', 'login');
+  DB.linkGoogle = () => startOAuth('google', 'link');
+
+  // ลบพารามิเตอร์ OAuth ออกจากแถบที่อยู่ (กันรีเฟรชแล้วแลกรหัสซ้ำ) แล้วคืน ?query เดิมก่อนออกไปหน้า Google
+  function cleanOAuthUrl(savedSearch) {
+    const params = new URLSearchParams(savedSearch || location.search);
+    OAUTH_PARAMS.forEach(name => params.delete(name));
+    const query = params.toString();
+    history.replaceState(null, '', location.pathname + (query ? '?' + query : '') + location.hash);
+  }
+
+  // เรียกตอนเปิดหน้าเกม: ถ้าเพิ่งกลับมาจาก Google ให้แลก ?code= เป็นเซสชัน
+  // ผลลัพธ์เก็บไว้ที่ DB.oauthError (หน้าล็อกอินแสดง) และ DB.oauthLinked (แจ้งว่าผูกบัญชีแล้ว)
+  async function finishOAuthRedirect() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const failure = params.get('error_description') || params.get('error');
+    if (!code && !failure) return;
+    const saved = takeOAuthReturn();
+    cleanOAuthUrl(saved.search);
+    if (failure) {
+      DB.oauthError = th(failure);
+      return;
+    }
+    const { error } = await sb.auth.exchangeCodeForSession(code);
+    if (error) {
+      DB.oauthError = th(error.message);
+      return;
+    }
+    DB.oauthLinked = saved.intent === 'link';
+  }
+
   // ---- บัญชี ----
   async function start() {
     DB.loading = true;
     DB.user = null;
     try {
+      await finishOAuthRedirect();
       const { data } = await sb.auth.getSession();
       if (data && data.session) {
         DB.user = data.session.user;
@@ -110,6 +208,15 @@
     }
     DB.loading = false;
     repaint();
+    announceOAuthResult();
+  }
+  // กลับมาจาก Google ขณะล็อกอินอยู่แล้ว (ผูกบัญชี) → แจ้งผลด้วยข้อความลอย · ถ้ายังไม่ล็อกอิน หน้าล็อกอินจะแสดง DB.oauthError เอง
+  function announceOAuthResult() {
+    if (!authed || !window.dbToast) return;
+    if (DB.oauthLinked) dbToast('ผูกบัญชี Google แล้ว ใช้ปุ่ม Google เข้าเกมได้เลย');
+    else if (DB.oauthError) dbToast(DB.oauthError);
+    DB.oauthLinked = false;
+    DB.oauthError = '';
   }
   async function afterLogin() {
     const r = await call('record_login'); // อัปเดตเวลาล็อกอินล่าสุด + จำนวนวันติดกัน
@@ -120,6 +227,11 @@
     if (typeof window.onDbLogin === 'function')
       try {
         window.onDbLogin(r);
+      } catch (e) {}
+    // บัญชีใหม่จาก Google ยังมีแค่ชื่ออัตโนมัติ (u…) → เปิดหน้าต่างตั้งชื่อเล่น (Account/first-nickname.js)
+    if (DB.needsNickname() && typeof window.openFirstNickname === 'function')
+      try {
+        window.openFirstNickname();
       } catch (e) {}
   }
   DB.signIn = async (u, pw) => {

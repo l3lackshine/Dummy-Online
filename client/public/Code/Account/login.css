@@ -186,7 +186,68 @@
     12px Sarabun,
     sans-serif;
 }
+/* การ์ดสูงกว่าจอ (มือถือแนวนอนหลังเพิ่มปุ่ม Google) → ถ้า #app จัดกึ่งกลางเอง หัวการ์ดจะล้นขึ้นบนจนเลื่อนไปดูไม่ได้
+   .au-wrap สูงอย่างน้อยเต็มจอและจัดการ์ดกึ่งกลางอยู่แล้ว จึงให้ #app เริ่มจากด้านบนแทน */
+#app.auth {
+  align-items: flex-start;
+}
+/* เส้นคั่น "หรือ" + ปุ่มเข้าสู่ระบบด้วย Google (พื้นขาว โลโก้สี่สี ตามแนวทางปุ่มของ Google) */
+.au-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0;
+  color: #d9c3a0;
+  font:
+    600 12.5px Sarabun,
+    sans-serif;
+}
+.au-or::before,
+.au-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e8c48a66;
+}
+.au-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #3c4043;
+  font:
+    700 15.5px Sarabun,
+    sans-serif;
+  box-shadow: 0 3px 0 #0005;
+  cursor: pointer;
+}
+.au-google .au-g {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.au-google:hover {
+  background: #f8f9fa;
+}
+.au-google:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0005;
+}
+.au-google:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
 @media (max-height: 520px) {
+  .au-or {
+    display: none; /* จอเตี้ย: ประหยัดความสูง ปุ่มขาวแยกจากปุ่มชมพูชัดอยู่แล้ว */
+  }
+  .au-google {
+    padding: 7px 12px;
+  }
   .au-logo .au-ic {
     display: none;
   }
