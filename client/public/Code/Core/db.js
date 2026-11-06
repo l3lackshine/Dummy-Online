@@ -10,10 +10,23 @@
   if (!url || !key || !window.supabase || !window.supabase.createClient) return;
   DB.enabled = true;
   DB.loading = true;
+  // จำ ?query ตอนเปิดหน้าไว้ก่อน — ไลบรารีแลก ?code= แล้วลบออกจาก URL เอง ช้าหรือเร็วกว่า 'load' ก็ได้แล้วแต่เน็ต
+  const launchSearch = location.search;
+  const libraryWillExchange = hasCodeVerifier(); // ต้องดูก่อนสร้าง client — ไลบรารีลบ verifier ทิ้งหลังแลกรหัส
   const sb = (DB.client = window.supabase.createClient(url, key, {
-    // flowType pkce: ล็อกอิน Google กลับมาเป็น ?code= แล้วเราแลกเป็นเซสชันเองใน finishOAuthRedirect() (ไม่ให้ไลบรารีอ่าน URL เอง)
+    // flowType pkce: ล็อกอิน Google กลับมาเป็น ?code= · ไลบรารีแลกเป็นเซสชันเองตอนสร้าง client (ทำแม้ detectSessionInUrl: false
+    // เมื่อมี code verifier ในเครื่อง) — finishOAuthRedirect() จึงรอผลนั้น แล้วแลกเองเฉพาะตอนไลบรารีไม่ได้แลก
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' },
   }));
+  // ไลบรารีแลก ?code= เองเมื่อมี "<storageKey>-code-verifier" ใน localStorage (เก็บไว้ตอนกดไปหน้า Google)
+  function hasCodeVerifier() {
+    try {
+      if (!new URLSearchParams(launchSearch).get('code')) return false;
+      return Object.keys(localStorage).some(name => name.endsWith('-code-verifier'));
+    } catch (e) {
+      return false;
+    }
+  }
   const DOMAIN = String(CFG.AUTH_EMAIL_DOMAIN || 'example.com').replace(/^@/, '');
   const th = m => {
     m = String(m || '');
@@ -174,22 +187,32 @@
   // เรียกตอนเปิดหน้าเกม: ถ้าเพิ่งกลับมาจาก Google ให้แลก ?code= เป็นเซสชัน
   // ผลลัพธ์เก็บไว้ที่ DB.oauthError (หน้าล็อกอินแสดง) และ DB.oauthLinked (แจ้งว่าผูกบัญชีแล้ว)
   async function finishOAuthRedirect() {
-    const params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(launchSearch);
     const code = params.get('code');
     const failure = params.get('error_description') || params.get('error');
     if (!code && !failure) return;
     const saved = takeOAuthReturn();
+    // รอไลบรารีอ่าน ?code= จาก URL ให้เสร็จก่อนลบออก — ถ้าลบก่อน ไลบรารีจะไม่ได้แลก
+    const libraryResult = failure ? {} : await sb.auth.initialize();
     cleanOAuthUrl(saved.search);
     if (failure) {
       DB.oauthError = th(failure);
       return;
     }
-    const { error } = await sb.auth.exchangeCodeForSession(code);
+    const error = libraryResult.error || (await exchangeIfLibraryDidNot(code));
     if (error) {
       DB.oauthError = th(error.message);
       return;
     }
     DB.oauthLinked = saved.intent === 'link';
+  }
+
+  // ไลบรารีแลกรหัสไปแล้ว = ห้ามแลกซ้ำ (รหัสใช้ได้ครั้งเดียว → ขึ้น "ลิงก์ล็อกอินหมดอายุ" ทั้งที่เข้าได้แล้ว)
+  // ไลบรารีไม่ได้แลก (ไม่มี code verifier ในเครื่องนี้ เช่น เปิดลิงก์คนละเบราว์เซอร์) → แลกเองเพื่อได้ข้อความผิดพลาดที่ตรงเหตุ
+  async function exchangeIfLibraryDidNot(code) {
+    if (libraryWillExchange) return null;
+    const { error } = await sb.auth.exchangeCodeForSession(code);
+    return error || null;
   }
 
   // ---- บัญชี ----
