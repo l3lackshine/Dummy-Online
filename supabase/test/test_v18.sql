@@ -217,3 +217,73 @@ select pg_temp.ok((select coins = (select coins from before_r) and name_changes 
 select pg_temp.ok((select username from public.profiles where id = '00000000-0000-0000-0000-000000001803') = 'ml_old', 'ชื่อผู้ใช้สำหรับล็อกอินไม่เปลี่ยน');
 select pg_temp.ok((select detail->>'from' from public.admin_log where action = 'rename_player' order by at desc limit 1) = 'คนเก่า',
   'บันทึกแอดมินเก็บชื่อเดิมไว้ย้อนดูได้');
+
+-- ================= ง. รายงานผู้เล่น + แบน/ปิดอีโมต =================
+-- 1802 = gc_player · 1803 = ml_old · 1804 = ml_new · 1801 = แอดมิน
+select pg_temp.ok(not has_function_privilege('authenticated', 'public.record_report(uuid, uuid, text, text, text, text)', 'execute'),
+  'ผู้เล่นยิงรายงานตรงไม่ได้ (ต้องผ่านเซิร์ฟเวอร์เกม)');
+select pg_temp.ok(has_function_privilege('service_role', 'public.record_report(uuid, uuid, text, text, text, text)', 'execute'), 'เซิร์ฟเวอร์เกมบันทึกรายงานได้');
+select pg_temp.ok(not has_function_privilege('authenticated', 'public.get_sanction(uuid)', 'execute'), 'ผู้เล่นดูโทษของคนอื่นไม่ได้');
+
+select pg_temp.fails($$select public.record_report('00000000-0000-0000-0000-000000001802', '00000000-0000-0000-0000-000000001802', 'spam')$$,
+  '%ตัวเอง%', 'รายงานตัวเองไม่ได้');
+select pg_temp.fails($$select public.record_report('00000000-0000-0000-0000-000000001802', '00000000-0000-0000-0000-000000001803', 'hate')$$,
+  '%เหตุผล%', 'เหตุผลแปลก ๆ ไม่รับ');
+select pg_temp.ok((public.record_report('00000000-0000-0000-0000-000000001802', '00000000-0000-0000-0000-000000001803', 'spam',
+  E'ส่งอีโมตรัว\nทั้งตา', 'dummy', 'ABCD')->>'duplicate')::boolean = false, 'บันทึกรายงานแล้ว');
+select pg_temp.ok((public.record_report('00000000-0000-0000-0000-000000001802', '00000000-0000-0000-0000-000000001803', 'name')->>'duplicate')::boolean,
+  'รายงานคนเดิมซ้ำใน 24 ชม. นับเป็นเรื่องเดิม');
+select public.record_report('00000000-0000-0000-0000-000000001804', '00000000-0000-0000-0000-000000001803', 'cheat', 'ไพ่สวยผิดปกติ', 'pokdeng', 'WXYZ');
+select pg_temp.ok((select note from public.reports where reason = 'spam') = 'ส่งอีโมตรัว ทั้งตา', 'ข้อความรายงานตัดอักขระควบคุม');
+-- กันรายงานรัว: วันละไม่เกิน 10 เรื่อง
+insert into public.reports(reporter, target, reason, status)
+select '00000000-0000-0000-0000-000000001804', '00000000-0000-0000-0000-000000001802', 'afk', 'dismissed' from generate_series(1, 9);
+select pg_temp.fails($$select public.record_report('00000000-0000-0000-0000-000000001804', '00000000-0000-0000-0000-000000001801', 'afk')$$,
+  '%ไม่เกินวันละ 10%', 'รายงานเกินวันละ 10 ครั้งไม่ได้');
+delete from public.reports where status = 'dismissed';
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001802');
+select pg_temp.fails($$select public.admin_list_reports()$$, '%เฉพาะแอดมิน%', 'คนทั่วไปดูรายงานไม่ได้');
+select pg_temp.fails($$select public.admin_set_sanction('ml_old', 'ban', 1)$$, '%เฉพาะแอดมิน%', 'คนทั่วไปแบนคนอื่นไม่ได้');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+create temp table rp as select r from jsonb_array_elements(public.admin_list_reports()) r;
+select pg_temp.ok((select count(*) from rp) = 2 and (select bool_and(r->>'target' = 'ml_old' and (r->>'target_open')::int = 2) from rp),
+  'แอดมินเห็นรายงานที่เปิดอยู่ + จำนวนเรื่องของคนนั้น');
+select pg_temp.ok((select r->>'reporter' from rp where r->>'reason' = 'spam') = 'gc_player', 'แอดมินเห็นชื่อผู้รายงาน');
+select pg_temp.ok((select (x->>'open_reports')::int from jsonb_array_elements(public.admin_find_player('ml_old')) x) = 2, 'หน้าค้นผู้เล่นบอกจำนวนรายงาน');
+select public.admin_resolve_report((select (r->>'id')::bigint from rp where r->>'reason' = 'cheat'), 'dismissed', 'ตรวจแล้วไม่พบ');
+select pg_temp.ok(jsonb_array_length(public.admin_list_reports()) = 1 and jsonb_array_length(public.admin_list_reports('all')) = 2,
+  'ปิดเรื่องแล้วไม่อยู่ในรายการที่เปิดอยู่');
+select pg_temp.ok((select handled_by from public.reports where reason = 'cheat') = '00000000-0000-0000-0000-000000001801', 'บันทึกว่าใครปิดเรื่อง');
+select pg_temp.fails($$select public.admin_resolve_report(999999, 'resolved')$$, '%ไม่พบรายงาน%', 'รายงานที่ไม่มีจริงปิดไม่ได้');
+
+-- ลงโทษ
+select pg_temp.fails($$select public.admin_set_sanction('gc_admin', 'ban', 24)$$, '%แอดมิน%', 'แบนแอดมินไม่ได้');
+select pg_temp.fails($$select public.admin_set_sanction('ml_old', 'kick', 24)$$, '%ชนิดโทษ%', 'ชนิดโทษแปลก ๆ ไม่รับ');
+select pg_temp.fails($$select public.admin_set_sanction('ml_old', 'ban', -1)$$, '%ระยะเวลา%', 'เวลาติดลบไม่รับ');
+select public.admin_set_sanction('ml_old', 'mute', 24);
+select pg_temp.ok((public.get_sanction('00000000-0000-0000-0000-000000001803')->>'muted')::boolean
+  and not (public.get_sanction('00000000-0000-0000-0000-000000001803')->>'banned')::boolean, 'ปิดอีโมต 24 ชม. (ยังเล่นได้)');
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.ok(public.get_mail() is not null, 'ถูกปิดอีโมตยังใช้ฟังก์ชันผู้เล่นได้');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select public.admin_set_sanction('ml_old', 'ban', 72, 'ส่งอีโมตก่อกวน');
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.fails($$select public.get_profile()$$, '%ถูกระงับถึง%ส่งอีโมตก่อกวน%', 'ถูกแบน: โหลดโปรไฟล์ไม่ได้ พร้อมบอกวันหมดโทษและเหตุผล');
+select pg_temp.fails($$select public.claim_all_mail()$$, '%ถูกระงับ%', 'ถูกแบน: รับของไม่ได้');
+select pg_temp.fails($$select public.delete_my_account('wrong')$$, '%ไม่ตรงกับบัญชี%', 'ถูกแบน: ยังเข้าถึงการลบบัญชีตัวเองได้');
+select pg_temp.ok((public.get_sanction('00000000-0000-0000-0000-000000001803')->>'banned')::boolean, 'เซิร์ฟเวอร์เห็นว่าถูกแบน');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select public.admin_set_sanction('ml_old', 'ban', 876000, 'โกง');
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.fails($$select public.get_profile()$$, '%ระงับถาวร%', 'แบนถาวรขึ้นว่า "ถาวร"');
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select public.admin_set_sanction('ml_old', 'ban', 0);
+select public.admin_set_sanction('ml_old', 'mute', 0);
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.ok((public.get_profile()->>'username') = 'ml_old', 'ยกเลิกแบนแล้วกลับมาเล่นได้');
+select pg_temp.ok((select ban_reason = '' and muted_until is null from public.profiles where username = 'ml_old'), 'ยกเลิกโทษแล้วล้างเหตุผล');
+select pg_temp.ok((select count(*) from public.admin_log where action like 'sanction_%') = 5, 'ทุกการลงโทษลงบันทึกแอดมิน');

@@ -1,4 +1,5 @@
 -- v18_admin_tools.sql — หน้าแอดมินส่วนที่เหลือ (โรดแมพข้อ 11): ก. ตั้งตู้กาชา · ข. แจกของทางจดหมาย · ค. เปลี่ยนชื่อผู้เล่น
+--                  ง. รายงานผู้เล่น + แบน/ปิดอีโมต (คู่กับโรดแมพข้อ 12 ปุ่มรายงาน)
 -- รันหลัง v17_events_admin.sql · รันซ้ำได้ ปลอดภัย · แล้วรัน seed_catalog.sql ตามได้ตามปกติ
 -- ตู้กาชามี "เจ้าของ" 2 แบบ:
 --   ตู้จากไฟล์ (Assets/Shop/Gasha/<id>/Config.config → seed_catalog.sql) — admin_owned = false · seed แก้ทับได้เหมือนเดิม
@@ -11,6 +12,10 @@
 -- Public (แอดมิน): admin_gacha_data() · admin_save_banner(p) · admin_delete_banner(id)
 --                  admin_send_mail(p) · admin_list_mail() · admin_delete_mail(id)
 --                  admin_find_player(query) · admin_rename_player(username, name)
+--                  admin_list_reports(status) · admin_resolve_report(id, status, note) · admin_set_sanction(username, kind, hours, reason)
+-- รายงาน: ผู้เล่นรายงานจากโต๊ะ/หน้าสรุปผลผ่านเซิร์ฟเวอร์เกม (เซิร์ฟเวอร์รู้ว่าใครนั่งที่ไหน client ไม่รู้ id บัญชีคนอื่น)
+--   → record_report(...) เรียกได้เฉพาะ service_role · get_sanction(user) ให้เซิร์ฟเวอร์ตรวจแบน/ปิดอีโมต
+-- แบน: _uid() (ตัวระบุผู้ใช้ของทุกฟังก์ชันผู้เล่น) ปฏิเสธบัญชีที่ถูกแบน พร้อมบอกวันหมดโทษ · ลบบัญชีตัวเองยังทำได้ (delete_my_account ไม่ผ่าน _uid)
 -- ใช้ภายใน: _gacha_admin_rebuild(id) · _gacha_rebuild_admin_pools() (seed_catalog.sql เรียกตัวหลังตอนท้าย) · _mail_visible · _mail_grant
 -- Extend: ช่องใหม่ของตู้ = เพิ่มคอลัมน์ + อ่านใน admin_save_banner + ส่งใน admin_gacha_data / get_gacha
 --         รางวัลจดหมายชนิดใหม่ = เพิ่มคอลัมน์ใน mails + admin_send_mail + _mail_grant
@@ -34,6 +39,28 @@ create table if not exists public.mails (
   expires_at    timestamptz not null
 );
 create index if not exists mails_target on public.mails(target_user, expires_at);
+
+-- โทษของบัญชี: ว่าง/เลยเวลาแล้ว = ไม่มีโทษ
+alter table public.profiles add column if not exists banned_until timestamptz;
+alter table public.profiles add column if not exists ban_reason   text not null default '';
+alter table public.profiles add column if not exists muted_until  timestamptz;
+
+create table if not exists public.reports (
+  id          bigserial primary key,
+  reporter    uuid not null references public.profiles(id) on delete cascade,
+  target      uuid not null references public.profiles(id) on delete cascade,
+  reason      text not null check (reason in ('name', 'spam', 'cheat', 'afk')),   -- ชื่อ/ข้อความ · ก่อกวน/สแปมอีโมต · สงสัยโกง · ออกกลางเกม/ถ่วงเวลา
+  note        text not null default '',
+  game_id     text,
+  room_code   text,
+  status      text not null default 'open' check (status in ('open', 'resolved', 'dismissed')),
+  admin_note  text not null default '',
+  handled_by  uuid references public.profiles(id) on delete set null,
+  handled_at  timestamptz,
+  created_at  timestamptz not null default now()
+);
+create index if not exists reports_status on public.reports(status, created_at desc);
+create index if not exists reports_reporter on public.reports(reporter, created_at desc);
 -- เก็บเฉพาะ "รับแล้ว" (เหมือน user_quests) · ลบจดหมาย = แถวรับแล้วหายตาม
 create table if not exists public.user_mails (
   user_id    uuid   not null references public.profiles(id) on delete cascade,
@@ -43,9 +70,12 @@ create table if not exists public.user_mails (
 );
 alter table public.mails      enable row level security;
 alter table public.user_mails enable row level security;
+alter table public.reports    enable row level security;
 -- ไม่มี policy = อ่าน/เขียนตรงไม่ได้ · ทุกอย่างผ่านฟังก์ชันด้านล่าง
-revoke all on public.mails, public.user_mails from anon, authenticated;
-revoke all on sequence public.mails_id_seq from anon, authenticated;
+revoke all on public.mails, public.user_mails, public.reports from anon, authenticated;
+revoke all on sequence public.mails_id_seq, public.reports_id_seq from anon, authenticated;
+-- คอลัมน์โทษใน profiles: ผู้เล่นอ่านแถวตัวเองได้ (policy "own read") แต่แก้เองไม่ได้ — profiles ไม่มี policy ให้แก้ตรง ·
+-- แก้ผ่าน admin_set_sanction เท่านั้น
 
 -- ================= ตู้กาชา: คำนวณน้ำหนัก =================
 -- หน่วยโอกาสในฐานข้อมูล: 1 = 0.0001% (ผลรวมทั้งตู้ 1,000,000 = 100%) · admin_cfg.rates เก็บหน่วย 0.01% (รวม 10,000) เหมือน rarityWeights ในไฟล์
@@ -394,7 +424,9 @@ begin
   if length(v_query) < 2 then raise exception 'พิมพ์อย่างน้อย 2 ตัวอักษร'; end if;
   v_like := '%' || replace(replace(replace(v_query, '\', '\\'), '%', '\%'), '_', '\_') || '%';   -- ค้นตามตัวอักษรจริง ไม่ใช่สัญลักษณ์ค้นหา
   return coalesce((select jsonb_agg(jsonb_build_object('username', p.username, 'display_name', p.display_name, 'title', p.title,
-                                                       'created_at', p.created_at, 'last_login_at', p.last_login_at, 'name_changes', p.name_changes)
+                                                       'created_at', p.created_at, 'last_login_at', p.last_login_at, 'name_changes', p.name_changes,
+                                                       'banned_until', p.banned_until, 'muted_until', p.muted_until,
+                                                       'open_reports', (select count(*) from public.reports r where r.target = p.id and r.status = 'open'))
                                     order by p.username)
                    from (select * from public.profiles
                          where username ilike v_like or display_name ilike v_like
@@ -416,20 +448,148 @@ begin
   return jsonb_build_object('username', lower(trim(p_username)), 'display_name', v_name, 'previous', v_old);
 end $$;
 
+-- ================= ง. แบน: ตัวระบุผู้ใช้ของทุกฟังก์ชันผู้เล่น =================
+-- ข้อความบอกโทษ (ว่าง = ไม่ได้ถูกแบน) · อ่าน profiles ด้วยสิทธิ์เจ้าของฟังก์ชัน เพราะ _uid() ถูกเรียกจากฟังก์ชันสิทธิ์ผู้เล่นได้ด้วย
+create or replace function public._ban_message(p_user uuid) returns text
+language sql stable security definer set search_path = public as $$
+  select case when p.banned_until is null or p.banned_until <= now() then ''
+              else 'บัญชีนี้ถูกระงับ' ||
+                   case when p.banned_until > now() + interval '50 year' then 'ถาวร'
+                        else 'ถึง ' || to_char(p.banned_until at time zone 'Asia/Bangkok', 'DD/MM/YYYY HH24:MI') end ||
+                   case when p.ban_reason <> '' then ' (เหตุผล: ' || p.ban_reason || ')' else '' end ||
+                   ' · ติดต่อทีมงาน dummy.online.support@gmail.com'
+         end
+  from public.profiles p where p.id = p_user $$;
+
+-- เหมือน schema.sql ทุกอย่าง + ปฏิเสธบัญชีที่ถูกแบน → ฟังก์ชันผู้เล่นทุกตัว (รับรางวัล กาชา โหลดโปรไฟล์) หยุดทำงานให้บัญชีนั้นทันที
+create or replace function public._uid() returns uuid language plpgsql stable as $$
+declare v uuid := auth.uid(); v_ban text;
+begin
+  if v is null then raise exception 'กรุณาเข้าสู่ระบบ'; end if;
+  v_ban := public._ban_message(v);
+  if v_ban <> '' then raise exception '%', v_ban; end if;
+  return v;
+end $$;
+
+-- เหมือน schema.sql ทุกอย่าง ยกเว้นบรรทัด "v18": ใช้ auth.uid() ตรง ๆ ให้บัญชีที่ถูกแบนยังลบบัญชีตัวเองได้ (สิทธิ์ลบข้อมูลส่วนตัว)
+create or replace function public.delete_my_account(p_confirm text) returns boolean
+language plpgsql security definer set search_path = public, auth as $$
+declare u uuid := auth.uid(); v_user text;   -- v18
+begin
+  if u is null then raise exception 'กรุณาเข้าสู่ระบบ'; end if;   -- v18
+  select username into v_user from public.profiles where id = u;
+  if v_user is null then raise exception 'ไม่พบบัญชี'; end if;
+  if lower(trim(coalesce(p_confirm, ''))) <> lower(v_user) then raise exception 'ชื่อผู้ใช้ที่พิมพ์ยืนยันไม่ตรงกับบัญชีนี้'; end if;
+  delete from auth.users where id = u;
+  return true;
+end $$;
+
+-- ================= ง. รายงานผู้เล่น: ฝั่งเซิร์ฟเวอร์เกม (service_role) =================
+-- เซิร์ฟเวอร์เกมเรียกหลังตรวจว่าทั้งสองคนอยู่ห้องเดียวกันจริง · กันรายงานรัว: คนเดิมซ้ำใน 24 ชม. = นับเป็นเรื่องเดิม · วันละไม่เกิน 10 เรื่อง
+create or replace function public.record_report(p_reporter uuid, p_target uuid, p_reason text, p_note text default '',
+                                                p_game text default null, p_room text default null) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare v_id bigint;
+begin
+  if p_reporter is null or p_target is null then raise exception 'ต้องล็อกอินทั้งผู้รายงานและผู้ถูกรายงาน'; end if;
+  if p_reporter = p_target then raise exception 'รายงานตัวเองไม่ได้'; end if;
+  if coalesce(p_reason, '') not in ('name', 'spam', 'cheat', 'afk') then raise exception 'เหตุผลการรายงานไม่ถูกต้อง'; end if;
+  if not exists (select 1 from public.profiles where id = p_target) then raise exception 'ไม่พบผู้เล่นที่รายงาน'; end if;
+  select id into v_id from public.reports
+  where reporter = p_reporter and target = p_target and status = 'open' and created_at > now() - interval '24 hour' limit 1;
+  if v_id is not null then return jsonb_build_object('id', v_id, 'duplicate', true); end if;
+  if (select count(*) from public.reports where reporter = p_reporter and created_at > now() - interval '24 hour') >= 10 then
+    raise exception 'รายงานได้ไม่เกินวันละ 10 ครั้ง';
+  end if;
+  insert into public.reports(reporter, target, reason, note, game_id, room_code)
+  values (p_reporter, p_target, p_reason, public._clean_text(p_note, 300),
+          left(nullif(trim(coalesce(p_game, '')), ''), 30), left(nullif(trim(coalesce(p_room, '')), ''), 12))
+  returning id into v_id;
+  return jsonb_build_object('id', v_id, 'duplicate', false);
+end $$;
+
+-- โทษปัจจุบันของบัญชี — เซิร์ฟเวอร์เกมใช้ตอนเชื่อมต่อ (แบน) และตอนส่งอีโมต (ปิดอีโมต)
+create or replace function public.get_sanction(p_user uuid) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object(
+    'banned', p.banned_until is not null and p.banned_until > now(), 'banned_until', p.banned_until,
+    'muted', p.muted_until is not null and p.muted_until > now(), 'muted_until', p.muted_until)
+  from public.profiles p where p.id = p_user $$;
+
+-- ================= ง. รายงานผู้เล่น: ฝั่งแอดมิน =================
+-- p_status: 'open' (ค่าเริ่ม) · 'all' · 'resolved' · 'dismissed' · ล่าสุด 100 เรื่อง
+create or replace function public.admin_list_reports(p_status text default 'open') returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare v_status text := coalesce(nullif(trim(p_status), ''), 'open');
+begin
+  perform public._require_admin();
+  return coalesce((select jsonb_agg(jsonb_build_object(
+      'id', r.id, 'reason', r.reason, 'note', r.note, 'game_id', r.game_id, 'room_code', r.room_code, 'status', r.status,
+      'admin_note', r.admin_note, 'created_at', r.created_at, 'handled_at', r.handled_at,
+      'handled_by', (select username from public.profiles h where h.id = r.handled_by),
+      'reporter', (select username from public.profiles x where x.id = r.reporter),
+      'target', t.username, 'target_name', t.display_name, 'target_admin', public._is_admin(t.id),
+      'banned_until', t.banned_until, 'muted_until', t.muted_until,
+      'target_open', (select count(*) from public.reports o where o.target = r.target and o.status = 'open'))
+    order by r.created_at desc)
+    from (select * from public.reports where v_status = 'all' or status = v_status order by created_at desc limit 100) r
+    join public.profiles t on t.id = r.target), '[]');
+end $$;
+
+create or replace function public.admin_resolve_report(p_id bigint, p_status text, p_note text default '') returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare a uuid := public._require_admin();
+begin
+  if coalesce(p_status, '') not in ('resolved', 'dismissed', 'open') then raise exception 'สถานะต้องเป็น resolved · dismissed · open'; end if;
+  update public.reports set status = p_status, admin_note = public._clean_text(p_note, 300),
+    handled_by = case when p_status = 'open' then null else a end, handled_at = case when p_status = 'open' then null else now() end
+  where id = p_id;
+  if not found then raise exception 'ไม่พบรายงานนี้'; end if;
+  perform public._admin_log(a, 'resolve_report', p_id::text, jsonb_build_object('status', p_status, 'note', p_note));
+  return jsonb_build_object('id', p_id, 'status', p_status);
+end $$;
+
+-- p_kind: 'ban' (เข้าเกมไม่ได้ · ใช้ฟังก์ชันผู้เล่นไม่ได้) · 'mute' (ส่งอีโมตบนโต๊ะไม่ได้)
+-- p_hours: จำนวนชั่วโมง · 0 = ยกเลิกโทษ · สูงสุด 876,000 ชม. (100 ปี = ถาวร) · แอดมินด้วยกันลงโทษไม่ได้ (กันล็อกระบบ)
+create or replace function public.admin_set_sanction(p_username text, p_kind text, p_hours int, p_reason text default '') returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare a uuid := public._require_admin(); v_user uuid; v_until timestamptz;
+begin
+  select id into v_user from public.profiles where lower(username) = lower(trim(coalesce(p_username, '')));
+  if v_user is null then raise exception 'ไม่พบผู้เล่นชื่อนี้'; end if;
+  if public._is_admin(v_user) then raise exception 'ลงโทษบัญชีแอดมินไม่ได้ (ถอดสิทธิ์แอดมินก่อน)'; end if;
+  if coalesce(p_kind, '') not in ('ban', 'mute') then raise exception 'ชนิดโทษต้องเป็น ban หรือ mute'; end if;
+  if p_hours is null or p_hours < 0 or p_hours > 876000 then raise exception 'ระยะเวลาต้องอยู่ระหว่าง 0 ถึง 876000 ชั่วโมง'; end if;
+  v_until := case when p_hours = 0 then null else now() + make_interval(hours => p_hours) end;
+  if p_kind = 'ban' then
+    update public.profiles set banned_until = v_until, ban_reason = case when v_until is null then '' else public._clean_text(p_reason, 100) end
+    where id = v_user;
+  else
+    update public.profiles set muted_until = v_until where id = v_user;
+  end if;
+  perform public._admin_log(a, 'sanction_' || p_kind, p_username, jsonb_build_object('hours', p_hours, 'reason', p_reason));
+  return jsonb_build_object('username', lower(trim(p_username)), 'kind', p_kind, 'until', v_until);
+end $$;
+
 -- ================= สิทธิ์ =================
 revoke all on function
   public._gacha_admin_rebuild(text), public._gacha_rebuild_admin_pools(), public._clean_rates(jsonb), public._clean_pool_items(jsonb),
-  public._mail_visible(uuid, public.mails), public._mail_json(uuid, public.mails), public._mail_grant(uuid, public.mails)
+  public._mail_visible(uuid, public.mails), public._mail_json(uuid, public.mails), public._mail_grant(uuid, public.mails),
+  public._ban_message(uuid), public.record_report(uuid, uuid, text, text, text, text), public.get_sanction(uuid)
 from public, anon, authenticated;
+-- เซิร์ฟเวอร์เกมเรียกด้วย secret key
+grant execute on function public.record_report(uuid, uuid, text, text, text, text), public.get_sanction(uuid) to service_role;
 revoke all on function
   public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
   public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
   public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint),
-  public.admin_find_player(text), public.admin_rename_player(text, text)
+  public.admin_find_player(text), public.admin_rename_player(text, text),
+  public.admin_list_reports(text), public.admin_resolve_report(bigint, text, text), public.admin_set_sanction(text, text, int, text)
 from public, anon;
 grant execute on function
   public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
   public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
   public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint),
-  public.admin_find_player(text), public.admin_rename_player(text, text)
+  public.admin_find_player(text), public.admin_rename_player(text, text),
+  public.admin_list_reports(text), public.admin_resolve_report(bigint, text, text), public.admin_set_sanction(text, text, int, text)
 to authenticated;
