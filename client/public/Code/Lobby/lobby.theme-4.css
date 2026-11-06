@@ -14,3 +14,48 @@
   inset: 0 !important;
   margin: max(var(--fw-t), 7.4vh) var(--fw-r) max(var(--fw-b), 11.2vh) var(--fw-l) !important;
 }
+/* ฉาก 5★ เต็มด้านในกรอบประจำตัว (lobby-room.js framedScene) — แบ่งครึ่งบน/ล่าง ใช้หน้ากากรูปทรงกรอบ
+   เหมือน .rm-deco ทุกอย่าง (ยืดตามความกว้าง ชิดบน/ชิดล่าง) → ขอบฉากซ้อนใต้แท่งกรอบพอดี ไม่โผล่มุมออกนอกกรอบ
+   ฉากจริงอยู่ใน ::before สูง 200% (= สูงทั้งการ์ด) ของแต่ละครึ่ง → ภาพต่อกันเนียนตรงกลาง */
+.rm-fbg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.rm-fbg > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50%;
+  overflow: hidden;
+  -webkit-mask-image: var(--fmask);
+  mask-image: var(--fmask);
+  -webkit-mask-size: 100% auto;
+  mask-size: 100% auto;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.rm-fbg > .rm-fbg-top {
+  top: 0;
+  -webkit-mask-position: top center;
+  mask-position: top center;
+}
+.rm-fbg > .rm-fbg-bot {
+  bottom: 0;
+  -webkit-mask-position: bottom center;
+  mask-position: bottom center;
+}
+.rm-fbg > span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 200%;
+  background: var(--fscene) center / cover no-repeat;
+}
+.rm-fbg > .rm-fbg-top::before {
+  top: 0;
+}
+.rm-fbg > .rm-fbg-bot::before {
+  bottom: 0;
+}

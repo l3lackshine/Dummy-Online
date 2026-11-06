@@ -37,7 +37,16 @@ function gxRoom(c) {
   // ฉาก 5 ดาวหลังตัวละครในการ์ด (เมื่อผู้เล่นปลด 5 ดาวตัวที่ใช้)
   const s5bg = p => {
     const x = p.s5 && gxChar(p.ch);
+    if (frameWindow(p.fr)) return ''; // ใส่กรอบประจำตัว → ฉากไปอยู่ใน framedScene() แทน (เต็มด้านในกรอบ)
     return x && x.star5 ? ` style="background:url('${esc(x.star5)}') center/cover"` : '';
+  };
+  // ฉาก 5 ดาวเมื่อใส่กรอบประจำตัว 4★: เต็มด้านในกรอบ ไม่เหลือช่องว่างรอบตัวละคร และตัดตามรูปทรงกรอบ ไม่โผล่ออกนอกกรอบ
+  // หน้ากาก ch-<id>-in.webp สร้างคู่กับกรอบโดย scripts/compose-char-frames.py · แบ่งครึ่งบน/ล่างเหมือน .rm-deco ให้ซ้อนตรงกัน
+  const framedScene = p => {
+    const scene = p.s5 && gxChar(p.ch);
+    if (!scene || !scene.star5 || !frameWindow(p.fr)) return '';
+    const maskUrl = assetUrl('./Assets/Item/Frame/' + p.fr + '-in.webp');
+    return `<i class=rm-fbg style="--fscene:url('${esc(scene.star5)}');--fmask:url('${esc(maskUrl)}')"><span class=rm-fbg-top></span><span class=rm-fbg-bot></span></i>`;
   };
   // กรอบการ์ดที่ผู้เล่นใส่ (Assets/Item/Frame) — วางทับตัวละคร ใต้ป้ายสถานะ/ชื่อ
   const deco = fr => {
@@ -48,7 +57,7 @@ function gxRoom(c) {
   };
   const human = p => {
     const on = p.host || p.ready;
-    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch, p.fr)}><div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
+    return `<div class="rm-slot${p.you ? ' me' : ''}${p.host ? ' host' : ''}${on ? ' on' : ''}"${place(p.ch, p.fr)}>${framedScene(p)}<div class=rm-art${s5bg(p)}>${artOf(av(p.name, p.ch))}</div>${deco(p.fr)}<em class=rm-chip>${roleOf(p)}</em>
       <div class=rm-plate><b>${esc(p.you ? 'คุณ' : p.name)}</b><small>${p.you ? esc(p.name) : p.host ? 'เจ้าของห้อง' : 'ผู้เล่น'}</small></div></div>`;
   };
   const bot = i =>
