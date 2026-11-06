@@ -126,3 +126,71 @@ select pg_temp.ok(exists (select 1 from public.gacha_log where banner_id = 'bn_t
 select pg_temp.fails($$select public.admin_delete_banner('bn_test')$$, '%ไม่พบตู้%', 'ลบซ้ำไม่ได้');
 select pg_temp.ok((select count(*) from public.admin_log where action in ('save_banner', 'delete_banner')) = 5, 'ทุกการแก้ตู้ลงบันทึกแอดมิน');
 select public.admin_delete_event('ev_gc');
+
+-- ================= ข. จดหมายแจกของ =================
+insert into auth.users(id, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-000000001803', '{"username":"ml_old","display_name":"คนเก่า"}');
+update public.profiles set created_at = now() - interval '10 day'
+where id in ('00000000-0000-0000-0000-000000001802', '00000000-0000-0000-0000-000000001803');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001802');
+select pg_temp.fails($$select public.admin_send_mail('{"title":"x"}')$$, '%เฉพาะแอดมิน%', 'คนทั่วไปส่งจดหมายไม่ได้');
+select pg_temp.fails($$select public.admin_list_mail()$$, '%เฉพาะแอดมิน%', 'คนทั่วไปดูจดหมายที่ส่งไม่ได้');
+select pg_temp.ok(not has_function_privilege('authenticated', 'public._mail_grant(uuid, public.mails)', 'execute'), 'client เรียกตัวให้รางวัลจดหมายตรงไม่ได้');
+select pg_temp.ok(not has_function_privilege('anon', 'public.get_mail()', 'execute'), 'ไม่ล็อกอินอ่านจดหมายไม่ได้');
+
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select pg_temp.fails($$select public.admin_send_mail('{"title":""}')$$, '%ใส่หัวข้อ%', 'หัวข้อห้ามว่าง');
+select pg_temp.fails($$select public.admin_send_mail('{"title":"x","to":"nobody_here"}')$$, '%ไม่พบผู้เล่น%', 'ผู้รับต้องมีจริง');
+select pg_temp.fails($$select public.admin_send_mail('{"title":"x","reward_mcash":"100001"}')$$, '%เพชร ต้องอยู่ระหว่าง%', 'เพชรเกินเพดานไม่รับ');
+select pg_temp.fails($$select public.admin_send_mail('{"title":"x","reward_items":{"no-such":1}}')$$, '%ไม่มีไอเทม%', 'ไอเทมที่ไม่มีจริงไม่รับ');
+select pg_temp.fails($$select public.admin_send_mail('{"title":"x","days":"0"}')$$, '%อายุจดหมาย%', 'อายุจดหมาย 0 วันไม่รับ');
+
+create temp table mid(name text, id bigint);
+insert into mid select 'one', (public.admin_send_mail('{"to":"GC_PLAYER","title":"ชดเชยปัญหา","body":"ขออภัย","reward_coins":500,"reward_items":{"ticket-b":2}}')->>'id')::bigint;
+insert into mid select 'all', (public.admin_send_mail('{"title":"ฉลองเปิดเกม","reward_mcash":50,"reward_items":{"ticket-b":1},"days":7}')->>'id')::bigint;
+insert into mid select 'new', (public.admin_send_mail('{"title":"ของขวัญคนใหม่","reward_coins":100,"include_new":true}')->>'id')::bigint;
+insert into mid select 'note', (public.admin_send_mail('{"title":"ประกาศ","body":"ปิดปรับปรุงพรุ่งนี้"}')->>'id')::bigint;
+insert into mid select 'gone', (public.admin_send_mail('{"to":"gc_player","title":"หมดอายุแล้ว","reward_coins":999}')->>'id')::bigint;
+update public.mails set expires_at = now() - interval '1 minute' where id = (select id from mid where name = 'gone');
+select pg_temp.ok((select count(*) from public.admin_log where action = 'send_mail') = 5, 'ส่งจดหมายลงบันทึกแอดมิน');
+select pg_temp.ok((select count(*) from jsonb_array_elements(public.admin_list_mail()) m where m->>'to' = 'gc_player') = 2, 'แอดมินเห็นผู้รับรายคน');
+
+-- ผู้เล่นที่มีบัญชีก่อนส่ง
+select pg_temp.as_user('00000000-0000-0000-0000-000000001802');
+create temp table box1 as select public.get_mail() as j;
+select pg_temp.ok((select jsonb_array_length(j->'mails') from box1) = 4 and (select (j->>'unclaimed')::int from box1) = 4,
+  'เห็นจดหมายถึงตัวเอง + ส่งทุกคน 3 ฉบับ (ไม่เห็นฉบับหมดอายุ)');
+create temp table before_m as select coins, mcash from public.profiles where id = '00000000-0000-0000-0000-000000001802';
+select public.claim_mail((select id from mid where name = 'one'));
+select pg_temp.ok((select coins from public.profiles where id = '00000000-0000-0000-0000-000000001802') = (select coins + 500 from before_m), 'รับจดหมาย: ได้เหรียญ');
+select pg_temp.ok(public._qty('00000000-0000-0000-0000-000000001802', 'items', 'ticket-b') >= 2, 'รับจดหมาย: ได้ไอเทม');
+select pg_temp.fails(format('select public.claim_mail(%s)', (select id from mid where name = 'one')), '%รับจดหมายนี้แล้ว%', 'รับซ้ำไม่ได้');
+select pg_temp.fails(format('select public.claim_mail(%s)', (select id from mid where name = 'gone')), '%หมดอายุ%', 'จดหมายหมดอายุรับไม่ได้');
+do $$ declare j jsonb; begin
+  j := public.claim_all_mail();
+  perform pg_temp.ok((j->>'count')::int = 3 and (j->>'mcash')::int = 50 and (j->>'coins')::int = 100 and (j->'items'->>'ticket-b')::int = 1,
+    'รับทั้งหมด: 3 ฉบับที่เหลือ ยอดรวมถูก (ฉบับไม่มีของก็นับว่ารับแล้ว)');
+end $$;
+select pg_temp.ok((select mcash from public.profiles where id = '00000000-0000-0000-0000-000000001802') = (select mcash + 50 from before_m), 'รับทั้งหมด: ได้เพชร');
+select pg_temp.ok((public.get_mail()->>'unclaimed')::int = 0, 'รับครบแล้วไม่มีจุดแดง');
+select pg_temp.ok((public.claim_all_mail()->>'count')::int = 0, 'กดรับทั้งหมดซ้ำได้ของ 0 ฉบับ');
+
+-- ผู้เล่นคนอื่นที่มีบัญชีก่อนส่ง: ไม่เห็นจดหมายรายคนของคนอื่น
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.ok((public.get_mail()->>'unclaimed')::int = 3, 'คนอื่นเห็นเฉพาะจดหมายส่งทุกคน');
+select pg_temp.fails(format('select public.claim_mail(%s)', (select id from mid where name = 'one')), '%ไม่พบจดหมาย%', 'รับจดหมายของคนอื่นไม่ได้');
+
+-- ผู้เล่นที่สมัครหลังส่ง: เห็นเฉพาะฉบับที่เลือก "รวมคนใหม่"
+insert into auth.users(id, raw_user_meta_data) values ('00000000-0000-0000-0000-000000001804', '{"username":"ml_new","display_name":"คนใหม่"}');
+update public.profiles set created_at = now() + interval '1 second' where id = '00000000-0000-0000-0000-000000001804';
+select pg_temp.as_user('00000000-0000-0000-0000-000000001804');
+select pg_temp.ok((select jsonb_agg(m->>'title') from jsonb_array_elements(public.get_mail()->'mails') m) = '["ของขวัญคนใหม่"]',
+  'คนสมัครหลังส่งเห็นเฉพาะฉบับที่รวมคนใหม่');
+
+-- ถอนจดหมาย
+select pg_temp.as_user('00000000-0000-0000-0000-000000001801');
+select public.admin_delete_mail((select id from mid where name = 'all'));
+select pg_temp.as_user('00000000-0000-0000-0000-000000001803');
+select pg_temp.ok((public.get_mail()->>'unclaimed')::int = 2, 'ถอนจดหมายแล้ว คนที่ยังไม่รับไม่เห็นอีก');
+select pg_temp.ok((select mcash from public.profiles where id = '00000000-0000-0000-0000-000000001802') = (select mcash + 50 from before_m), 'ของที่รับไปแล้วไม่ถูกดึงคืน');

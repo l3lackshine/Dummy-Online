@@ -1,18 +1,50 @@
--- v18_admin_tools.sql — หน้าแอดมินส่วนที่เหลือ (โรดแมพข้อ 11): ก. ตั้งตู้กาชา
+-- v18_admin_tools.sql — หน้าแอดมินส่วนที่เหลือ (โรดแมพข้อ 11): ก. ตั้งตู้กาชา · ข. แจกของทางจดหมาย
 -- รันหลัง v17_events_admin.sql · รันซ้ำได้ ปลอดภัย · แล้วรัน seed_catalog.sql ตามได้ตามปกติ
 -- ตู้กาชามี "เจ้าของ" 2 แบบ:
 --   ตู้จากไฟล์ (Assets/Shop/Gasha/<id>/Config.config → seed_catalog.sql) — admin_owned = false · seed แก้ทับได้เหมือนเดิม
 --   ตู้ของแอดมิน (สร้าง หรือแก้ตู้จากไฟล์ในหน้าแอดมิน) — admin_owned = true · seed ข้ามตู้นี้ · ค่าตั้งอยู่ใน admin_cfg
 -- โอกาสของตู้แอดมิน: แอดมินใส่ % ต่อระดับ (รวม 100%) + เลือกของในตู้ + ของเรทอัป
 --   น้ำหนักในระดับเดียวกันแบ่งเท่ากัน · ของเรทอัปได้ส่วนแบ่ง × ตัวคูณ · ผลรวมของระดับเท่ากับ % ที่ใส่พอดี (ไม่เพี้ยนตามตัวคูณ)
+-- จดหมาย: แอดมินส่งให้ผู้เล่นรายคนหรือทุกคน · แนบเหรียญ/เพชร/ไอเทมได้ · ผู้เล่นกดรับเองในกล่องจดหมาย · หมดอายุตามวันที่ตั้ง
+--   ส่งทุกคน: ได้เฉพาะบัญชีที่มีอยู่ตอนส่ง (include_new = รวมคนที่สมัครหลังส่งด้วย จนจดหมายหมดอายุ)
+-- Public (ผู้เล่น): get_mail() · claim_mail(id) · claim_all_mail()
 -- Public (แอดมิน): admin_gacha_data() · admin_save_banner(p) · admin_delete_banner(id)
--- ใช้ภายใน: _gacha_admin_rebuild(id) · _gacha_rebuild_admin_pools() (seed_catalog.sql เรียกตัวหลังตอนท้าย)
+--                  admin_send_mail(p) · admin_list_mail() · admin_delete_mail(id)
+-- ใช้ภายใน: _gacha_admin_rebuild(id) · _gacha_rebuild_admin_pools() (seed_catalog.sql เรียกตัวหลังตอนท้าย) · _mail_visible · _mail_grant
 -- Extend: ช่องใหม่ของตู้ = เพิ่มคอลัมน์ + อ่านใน admin_save_banner + ส่งใน admin_gacha_data / get_gacha
+--         รางวัลจดหมายชนิดใหม่ = เพิ่มคอลัมน์ใน mails + admin_send_mail + _mail_grant
 
 -- ================= ตาราง =================
 alter table public.gacha_banners add column if not exists admin_owned boolean not null default false;
 alter table public.gacha_banners add column if not exists admin_cfg   jsonb   not null default '{}';
 alter table public.gacha_banners add column if not exists image_url   text    not null default '';
+
+create table if not exists public.mails (
+  id            bigserial primary key,
+  target_user   uuid references public.profiles(id) on delete cascade,   -- ว่าง = ส่งทุกคน
+  include_new   boolean not null default false,                         -- ส่งทุกคน: คนที่สมัครหลังส่งได้ด้วยไหม
+  title         text not null,
+  body          text not null default '',
+  reward_coins  int not null default 0 check (reward_coins >= 0),
+  reward_mcash  int not null default 0 check (reward_mcash >= 0),
+  reward_items  jsonb not null default '{}',                             -- { "ticket-b": 3 } · id ตาม economy.items
+  created_by    uuid references public.profiles(id) on delete set null,
+  created_at    timestamptz not null default now(),
+  expires_at    timestamptz not null
+);
+create index if not exists mails_target on public.mails(target_user, expires_at);
+-- เก็บเฉพาะ "รับแล้ว" (เหมือน user_quests) · ลบจดหมาย = แถวรับแล้วหายตาม
+create table if not exists public.user_mails (
+  user_id    uuid   not null references public.profiles(id) on delete cascade,
+  mail_id    bigint not null references public.mails(id) on delete cascade,
+  claimed_at timestamptz not null default now(),
+  primary key (user_id, mail_id)
+);
+alter table public.mails      enable row level security;
+alter table public.user_mails enable row level security;
+-- ไม่มี policy = อ่าน/เขียนตรงไม่ได้ · ทุกอย่างผ่านฟังก์ชันด้านล่าง
+revoke all on public.mails, public.user_mails from anon, authenticated;
+revoke all on sequence public.mails_id_seq from anon, authenticated;
 
 -- ================= ตู้กาชา: คำนวณน้ำหนัก =================
 -- หน่วยโอกาสในฐานข้อมูล: 1 = 0.0001% (ผลรวมทั้งตู้ 1,000,000 = 100%) · admin_cfg.rates เก็บหน่วย 0.01% (รวม 10,000) เหมือน rarityWeights ในไฟล์
@@ -231,13 +263,138 @@ begin
       order by b.sort, b.id) from public.gacha_banners b where b.active and public._banner_open(b.id)), '[]'));   -- v17: ตู้อีเวนต์ขึ้นเฉพาะช่วงอีเวนต์
 end $$;
 
+-- ================= จดหมาย: ฝั่งผู้เล่น =================
+-- เห็นจดหมายไหม: ยังไม่หมดอายุ และ (ส่งถึงเรา หรือ ส่งทุกคนตอนที่เรามีบัญชีแล้ว / ส่งทุกคนแบบรวมคนใหม่)
+create or replace function public._mail_visible(p_user uuid, m public.mails) returns boolean
+language sql stable security definer set search_path = public as $$
+  select m.expires_at > now() and (
+    m.target_user = p_user
+    or (m.target_user is null and (m.include_new or exists (select 1 from public.profiles p where p.id = p_user and p.created_at <= m.created_at))))
+$$;
+
+create or replace function public._mail_json(p_user uuid, m public.mails) returns jsonb
+language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('id', m.id, 'title', m.title, 'body', m.body, 'created_at', m.created_at, 'expires_at', m.expires_at,
+    'reward_coins', m.reward_coins, 'reward_mcash', m.reward_mcash, 'reward_items', m.reward_items,
+    'claimed', exists (select 1 from public.user_mails um where um.user_id = p_user and um.mail_id = m.id))
+$$;
+
+-- ให้รางวัล + บันทึกว่ารับแล้ว · ผู้เรียกต้องล็อกแถวผู้เล่นและตรวจสิทธิ์มาก่อน
+create or replace function public._mail_grant(p_user uuid, m public.mails) returns void
+language plpgsql security definer set search_path = public as $$
+declare k text; n text;
+begin
+  insert into public.user_mails(user_id, mail_id) values (p_user, m.id);
+  if m.reward_coins > 0 then perform public._wallet_add(p_user, 'coins', m.reward_coins, 'mail', m.id::text); end if;
+  if m.reward_mcash > 0 then perform public._wallet_add(p_user, 'mcash', m.reward_mcash, 'mail', m.id::text); end if;
+  for k, n in select * from jsonb_each_text(m.reward_items) loop
+    perform public._grant_qty(p_user, 'items', k, n::int);
+  end loop;
+end $$;
+
+-- จดหมายล่าสุด 50 ฉบับ (ใหม่สุดก่อน) + จำนวนที่ยังไม่รับ (ใช้ขึ้นจุดแดง)
+create or replace function public.get_mail() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+declare u uuid := public._uid(); v_list jsonb;
+begin
+  select coalesce(jsonb_agg(public._mail_json(u, m) order by m.created_at desc, m.id desc), '[]') into v_list
+  from (select * from public.mails m where public._mail_visible(u, m) order by m.created_at desc, m.id desc limit 50) m;
+  return jsonb_build_object('mails', v_list,
+    'unclaimed', (select count(*) from jsonb_array_elements(v_list) x where not (x ->> 'claimed')::boolean));
+end $$;
+
+create or replace function public.claim_mail(p_id bigint) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare u uuid := public._uid(); m public.mails;
+begin
+  perform 1 from public.profiles where id = u for update;   -- กันกดรับซ้อนสองครั้งพร้อมกัน
+  select * into m from public.mails where id = p_id;
+  if not found or not public._mail_visible(u, m) then raise exception 'ไม่พบจดหมายนี้ (อาจหมดอายุแล้ว)'; end if;
+  if exists (select 1 from public.user_mails where user_id = u and mail_id = m.id) then raise exception 'รับจดหมายนี้แล้ว'; end if;
+  perform public._mail_grant(u, m);
+  return jsonb_build_object('coins', m.reward_coins, 'mcash', m.reward_mcash, 'items', m.reward_items, 'mail', public._mail_json(u, m));
+end $$;
+
+-- รับทุกฉบับที่ยังไม่รับ · คืนยอดรวม
+create or replace function public.claim_all_mail() returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare u uuid := public._uid(); m public.mails; v_coins bigint := 0; v_mcash bigint := 0; v_items jsonb := '{}'; v_count int := 0;
+        k text; n text;
+begin
+  perform 1 from public.profiles where id = u for update;
+  for m in select * from public.mails ml
+           where public._mail_visible(u, ml) and not exists (select 1 from public.user_mails um where um.user_id = u and um.mail_id = ml.id)
+           order by ml.id loop
+    perform public._mail_grant(u, m);
+    v_count := v_count + 1;
+    v_coins := v_coins + m.reward_coins;
+    v_mcash := v_mcash + m.reward_mcash;
+    for k, n in select * from jsonb_each_text(m.reward_items) loop
+      v_items := v_items || jsonb_build_object(k, coalesce((v_items ->> k)::int, 0) + n::int);
+    end loop;
+  end loop;
+  return jsonb_build_object('count', v_count, 'coins', v_coins, 'mcash', v_mcash, 'items', v_items);
+end $$;
+
+-- ================= จดหมาย: ฝั่งแอดมิน =================
+-- p: to (ชื่อผู้ใช้ · ว่าง = ทุกคน) include_new title body reward_coins reward_mcash reward_items{} days
+-- เพดานรางวัลเท่ากับเควสอีเวนต์ (v17 _clean_quest_fields) · กันพิมพ์ศูนย์เกิน
+create or replace function public.admin_send_mail(p jsonb) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare a uuid := public._require_admin(); v_to text := trim(coalesce(p ->> 'to', '')); v_user uuid; v_title text; v_id bigint;
+begin
+  if v_to <> '' then
+    select id into v_user from public.profiles where lower(username) = lower(v_to);
+    if v_user is null then raise exception 'ไม่พบผู้เล่นชื่อ %', v_to; end if;
+  end if;
+  v_title := public._clean_text(p ->> 'title', 60);
+  if v_title = '' then raise exception 'ใส่หัวข้อจดหมาย'; end if;
+  insert into public.mails(target_user, include_new, title, body, reward_coins, reward_mcash, reward_items, created_by, expires_at)
+  values (v_user, v_user is null and coalesce((p ->> 'include_new')::boolean, false), v_title, public._clean_text(p ->> 'body', 1000),
+          public._clean_int(p ->> 'reward_coins', 'เหรียญ', 0, 1000000, 0), public._clean_int(p ->> 'reward_mcash', 'เพชร', 0, 100000, 0),
+          public._clean_items(p -> 'reward_items'), a,
+          now() + make_interval(days => public._clean_int(p ->> 'days', 'อายุจดหมาย (วัน)', 1, 365, 30)))
+  returning id into v_id;
+  perform public._admin_log(a, 'send_mail', v_id::text, p);
+  return (select to_jsonb(m) from public.mails m where m.id = v_id);
+end $$;
+
+-- จดหมายที่ส่งล่าสุด 50 ฉบับ + ผู้รับ + จำนวนคนที่กดรับแล้ว
+create or replace function public.admin_list_mail() returns jsonb
+language plpgsql stable security definer set search_path = public as $$
+begin
+  perform public._require_admin();
+  return coalesce((select jsonb_agg(to_jsonb(m) || jsonb_build_object(
+      'to', (select username from public.profiles p where p.id = m.target_user),
+      'claimed_count', (select count(*) from public.user_mails um where um.mail_id = m.id),
+      'expired', m.expires_at <= now())
+    order by m.created_at desc, m.id desc)
+    from (select * from public.mails order by created_at desc, id desc limit 50) m), '[]');
+end $$;
+
+-- ถอนจดหมาย: ผู้ที่ยังไม่รับจะไม่เห็นอีก · ของที่รับไปแล้วไม่ถูกดึงคืน
+create or replace function public.admin_delete_mail(p_id bigint) returns jsonb
+language plpgsql security definer set search_path = public as $$
+declare a uuid := public._require_admin(); v_row jsonb;
+begin
+  delete from public.mails where id = p_id returning to_jsonb(mails.*) into v_row;
+  if v_row is null then raise exception 'ไม่พบจดหมายนี้'; end if;
+  perform public._admin_log(a, 'delete_mail', p_id::text, v_row);
+  return jsonb_build_object('deleted', p_id);
+end $$;
+
 -- ================= สิทธิ์ =================
 revoke all on function
-  public._gacha_admin_rebuild(text), public._gacha_rebuild_admin_pools(), public._clean_rates(jsonb), public._clean_pool_items(jsonb)
+  public._gacha_admin_rebuild(text), public._gacha_rebuild_admin_pools(), public._clean_rates(jsonb), public._clean_pool_items(jsonb),
+  public._mail_visible(uuid, public.mails), public._mail_json(uuid, public.mails), public._mail_grant(uuid, public.mails)
 from public, anon, authenticated;
 revoke all on function
-  public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text)
+  public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
+  public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
+  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint)
 from public, anon;
 grant execute on function
-  public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text)
+  public.admin_gacha_data(), public.admin_save_banner(jsonb), public.admin_delete_banner(text),
+  public.get_mail(), public.claim_mail(bigint), public.claim_all_mail(),
+  public.admin_send_mail(jsonb), public.admin_list_mail(), public.admin_delete_mail(bigint)
 to authenticated;
