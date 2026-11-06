@@ -1,9 +1,9 @@
-/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · รายชื่อแอดมิน
+/* admin.js — หน้าแอดมินในเกม: อีเวนต์ (เพิ่ม/แก้/ลบ + เควสอีเวนต์ + ผูกตู้กาชา) · เควสรายวัน/รายสัปดาห์ · ตู้กาชา · จดหมายแจกของ · รายชื่อแอดมิน
    ทุกคำสั่งผ่านฟังก์ชัน admin_* ในฐานข้อมูล (supabase/v17_events_admin.sql · v18_admin_tools.sql) ซึ่งตรวจสิทธิ์และตรวจข้อมูลเอง — ไฟล์นี้เป็นแค่ฟอร์ม
    ปุ่มเข้าหน้านี้ขึ้นเฉพาะบัญชีที่เป็นแอดมิน (Admin.isAdmin() ถาม is_admin จากฐานข้อมูล) · คนอื่นเรียก adminOpen() ก็แก้อะไรไม่ได้
    Public: adminOpen() · adTab(tab) · adEditEvent(id) · adEditEventQuest(eventId, questId) · adEditQuest(id) · adSave() · adCancel()
            adDelete(type, id) · adExpand(eventId) · adMetric(select) · adAddAdmin() · adRemoveAdmin(username) · Admin.isAdmin()
-           adEditBanner(id) · adPay(select) · adRateSum()
+           adEditBanner(id) · adPay(select) · adRateSum() · adNewMail()
    EXTEND: ชนิดเควสใหม่ = เพิ่มใน METRICS (และใน SQL _quest_metric_ok / _window_progress) · แท็บใหม่ = เพิ่มใน TABS + ฟังก์ชันวาดแท็บ */
 (function () {
   'use strict';
@@ -13,6 +13,7 @@
     ['events', '🎉 อีเวนต์'],
     ['quests', '📜 เควสปกติ'],
     ['gacha', '🎰 ตู้กาชา'],
+    ['mail', '📮 จดหมาย'],
     ['admins', '🛡️ แอดมิน'],
   ];
   const METRICS = [
@@ -29,6 +30,7 @@
   // ใช้เมื่อยังไม่ได้ต่อเซิร์ฟเวอร์ (RULES ว่าง) — สะกดตาม Code/Profile/profile-card.js
   const GAME_NAMES = { dummy: 'ดัมมี่', pokdeng: 'ป๊อกเด้ง', gaogae: 'เก้าเก', somsip: 'ผสมสิบ', eekae: 'อีแก่' };
   const ITEM_ROWS = 4; // ช่องรางวัลไอเทมต่อเควส
+  const MAIL_DAYS_DEFAULT = 30; // อายุจดหมายตั้งต้น (แอดมินแก้ได้ 1–365 วัน)
   const RATE_UP_DEFAULT = 2; // ตัวคูณเรทอัปตั้งต้นของตู้ใหม่ (แอดมินแก้ได้ 1–20 · ฐานข้อมูลตรวจเพดาน)
   // ใช้เมื่อหาชื่อชนิดใน KINDS (Core/skins.js) ไม่เจอ
   const KIND_NAMES = { characters: 'ตัวละคร', backs: 'หลังไพ่', tables: 'ผ้าปูโต๊ะ', backgrounds: 'พื้นหลัง', frames: 'กรอบการ์ด' };
@@ -37,9 +39,10 @@
   let adminYes = false;
   let overview = null; // ผลจาก admin_overview
   let gachaData = null; // ผลจาก admin_gacha_data (โหลดเมื่อเปิดแท็บตู้กาชา)
+  let sentMails = null; // ผลจาก admin_list_mail (โหลดเมื่อเปิดแท็บจดหมาย)
   let failMessage = '';
   let tab = 'events';
-  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner', data }
+  let form = null; // { type: 'event' | 'event_quest' | 'quest' | 'banner' | 'mail', data }
   let expandedEvent = '';
   let busy = false;
   let featOptions = []; // [{ feat, label }] จาก skin/achievements.json
@@ -237,7 +240,7 @@
       </div>`;
   }
 
-  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml };
+  const FORM_BUILDERS = { event: eventFormHtml, event_quest: eventQuestFormHtml, quest: questFormHtml, banner: bannerFormHtml, mail: mailFormHtml };
 
   function formHtml() {
     const body = FORM_BUILDERS[form.type](form.data);
@@ -464,6 +467,53 @@
     repaint();
   }
 
+  // ---------- แท็บจดหมาย ----------
+  function mailRewardSummary(mail) {
+    return rewardSummary({ reward_coins: mail.reward_coins, reward_mcash: mail.reward_mcash, reward_items: mail.reward_items });
+  }
+
+  function mailRowHtml(mail) {
+    const target = mail.target_user ? '@' + (mail.to || '?') : mail.include_new ? 'ทุกคน (รวมคนสมัครใหม่)' : 'ทุกคน';
+    const state = mail.expired ? '<em class="ad-st off">หมดอายุ</em>' : '';
+    return `<div class="ad-row${mail.expired ? ' off' : ''}">
+      <span><b>${escape(mail.title)}</b>${state}
+        <small>ถึง ${escape(target)} · ${escape(mailRewardSummary(mail))} · รับแล้ว ${number(mail.claimed_count)} คน · ส่ง ${escape(dateText(mail.created_at))} · หมด ${escape(dateText(mail.expires_at))}</small></span>
+      <span></span>
+      <button class="wbtn ad-del" onclick="adDelete('mail','${Number(mail.id)}')">ถอน</button>
+    </div>`;
+  }
+
+  function mailTabHtml() {
+    if (!sentMails) return '<p class=ad-mut>กำลังโหลดจดหมาย…</p>';
+    const rows = sentMails.map(mailRowHtml).join('') || '<p class=ad-mut>ยังไม่เคยส่งจดหมาย</p>';
+    const note = '<p class=ad-mut>ผู้เล่นกดรับของเองในกล่องจดหมาย · ถอนจดหมาย = คนที่ยังไม่รับจะไม่เห็นอีก (ของที่รับไปแล้วไม่ถูกดึงคืน) · แสดง 50 ฉบับล่าสุด</p>';
+    return `<button class="wbtn go" onclick="adNewMail()">＋ ส่งจดหมาย</button>${note}<div class=ad-list>${rows}</div>`;
+  }
+
+  function mailFormHtml(data) {
+    return `<h4>ส่งจดหมาย</h4>
+      <div class=ad-grid>
+        ${field('ถึง (ชื่อผู้ใช้ · ว่าง = ผู้เล่นทุกคน)', textInput('to', data.to, 'maxlength=40 placeholder="ว่าง = ทุกคน"'))}
+        <div class="ad-f">${checkbox('include_new', !!data.include_new, 'ส่งทุกคน: รวมคนที่สมัครหลังส่งด้วย')}</div>
+        ${field('หัวข้อ', textInput('title', data.title, 'maxlength=60'), true)}
+        ${field('ข้อความ', `<textarea name=body maxlength=1000 rows=4>${escape(data.body || '')}</textarea>`, true)}
+        ${field('แนบเหรียญ', numberInput('reward_coins', data.reward_coins || 0))}
+        ${field('แนบเพชร', numberInput('reward_mcash', data.reward_mcash || 0))}
+        ${field('อายุจดหมาย (วัน)', numberInput('days', data.days || MAIL_DAYS_DEFAULT))}
+        ${itemRowsHtml(data.reward_items)}
+      </div>`;
+  }
+
+  async function loadMail() {
+    try {
+      sentMails = await DB.call('admin_list_mail', {});
+    } catch (e) {
+      sentMails = [];
+      if (window.dbToast) dbToast(e.message || 'โหลดจดหมายไม่ได้ (ฐานข้อมูลยังไม่มี v18?)');
+    }
+    repaint();
+  }
+
   // ---------- แท็บแอดมิน ----------
   function adminsTabHtml() {
     const rows = (overview.admins || [])
@@ -485,6 +535,7 @@
     if (form) return formHtml();
     if (tab === 'quests') return questsTabHtml();
     if (tab === 'gacha') return gachaTabHtml();
+    if (tab === 'mail') return mailTabHtml();
     if (tab === 'admins') return adminsTabHtml();
     return eventsTabHtml();
   }
@@ -567,6 +618,7 @@
       });
     }
     const payload = Object.assign({}, values);
+    if (form.type === 'mail') payload.reward_items = readItems(values);
     if (form.type === 'event_quest') {
       payload.event_id = form.data.event_id;
       payload.reward_items = readItems(values);
@@ -574,12 +626,14 @@
     return payload;
   }
 
-  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner' };
-  const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest', banner: 'admin_delete_banner' };
+  const SAVE_FUNCTIONS = { event: 'admin_save_event', event_quest: 'admin_save_event_quest', quest: 'admin_save_quest', banner: 'admin_save_banner', mail: 'admin_send_mail' };
+  const DELETE_FUNCTIONS = { event: 'admin_delete_event', event_quest: 'admin_delete_event_quest', quest: 'admin_delete_quest', banner: 'admin_delete_banner', mail: 'admin_delete_mail' };
   const DELETE_WARNINGS = {
     event: 'ลบอีเวนต์นี้? เควสและประวัติรับรางวัลของอีเวนต์จะหายไปด้วย',
     banner: 'ลบตู้นี้? การันตีสะสมของผู้เล่นในตู้นี้จะหายไปด้วย (ปิดใช้แทนการลบได้)',
+    mail: 'ถอนจดหมายนี้? คนที่ยังไม่กดรับจะไม่ได้ของ',
   };
+  const AFTER_CHANGE = { banner: () => reloadAfterBannerChange(), mail: () => loadMail() };
 
   // หลังแก้ตู้: โหลดรายการตู้ใหม่ + ให้หน้ากาชาโหลดตู้ใหม่ครั้งหน้าที่เปิด (gacha.js โหลดเมื่อ DB.G ว่าง)
   async function reloadAfterBannerChange() {
@@ -604,6 +658,7 @@
     form = null;
     repaint();
     if (id === 'gacha') loadGacha(); // โหลดใหม่ทุกครั้งที่เปิดแท็บ — ตู้อาจถูกแก้จาก seed หรือแอดมินคนอื่น
+    if (id === 'mail') loadMail();
   };
 
   window.adExpand = eventId => {
@@ -635,6 +690,11 @@
     if (!gachaData) return;
     const existing = (gachaData.banners || []).find(b => b.id === bannerId);
     form = { type: 'banner', data: bannerFormData(existing) };
+    repaint();
+  };
+
+  window.adNewMail = () => {
+    form = { type: 'mail', data: { days: MAIL_DAYS_DEFAULT } };
     repaint();
   };
 
@@ -671,16 +731,18 @@
   window.adSave = async () => {
     if (busy || !form) return;
     const payload = buildPayload(readForm());
+    // ส่งทุกคนแก้ไม่ได้หลังส่ง (ถอนได้อย่างเดียว) — ถามซ้ำกันกดพลาด
+    if (form.type === 'mail' && !String(payload.to || '').trim() && !window.confirm('ส่งจดหมายนี้ให้ผู้เล่นทุกคน?')) return;
     busy = true;
     repaint();
     try {
       await DB.call(SAVE_FUNCTIONS[form.type], { p: payload });
       if (window.dbToast) dbToast('💾 บันทึกแล้ว');
       if (form.type === 'event_quest') expandedEvent = form.data.event_id;
-      const savedBanner = form.type === 'banner';
+      const savedType = form.type;
       form = null;
       await loadOverview();
-      if (savedBanner) await reloadAfterBannerChange();
+      if (AFTER_CHANGE[savedType]) await AFTER_CHANGE[savedType]();
       if (window.Events) Events.refresh();
     } catch (e) {
       form.data = Object.assign({}, form.data, payload); // เก็บค่าที่กรอกไว้ ให้แก้แล้วกดบันทึกใหม่ได้
@@ -695,10 +757,10 @@
     if (!window.confirm(DELETE_WARNINGS[type] || 'ลบเควสนี้?')) return;
     busy = true;
     try {
-      await DB.call(DELETE_FUNCTIONS[type], { p_id: id });
+      await DB.call(DELETE_FUNCTIONS[type], { p_id: type === 'mail' ? Number(id) : id }); // จดหมายใช้รหัสตัวเลข
       if (window.dbToast) dbToast('🗑️ ลบแล้ว');
       await loadOverview();
-      if (type === 'banner') await reloadAfterBannerChange();
+      if (AFTER_CHANGE[type]) await AFTER_CHANGE[type]();
       if (window.Events) Events.refresh();
     } catch (e) {
       if (window.dbToast) dbToast(e.message || 'ลบไม่สำเร็จ');

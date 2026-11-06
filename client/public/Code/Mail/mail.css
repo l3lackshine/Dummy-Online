@@ -1,0 +1,111 @@
+/* mail.css — กล่องจดหมาย (Code/Mail/mail.js) · กรอบใช้ .st-box ของชุด UI ซากุระ (พื้นครีม ขอบทอง)
+   ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน · สีชมพู/ทอง ชุดเดียวกับหน้าอีเวนต์ */
+.ml-box {
+  width: min(94vw, 150vh) !important;
+  max-height: 90vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+}
+.ml-h {
+  display: flex;
+  align-items: center;
+  gap: 1.6vh;
+  margin: 0 0 0.8vh;
+  font-size: 3.4vh;
+  color: #3b4255;
+}
+.ml-all {
+  padding: 0.5vh 1.6vh !important;
+  font-size: 1.9vh !important;
+}
+.ml-empty {
+  text-align: center;
+  font-size: 2.2vh;
+  color: #6b6f80;
+  padding: 4vh 0;
+}
+.ml-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9vh;
+  padding-right: 0.4vh;
+}
+
+/* ---------- จดหมาย 1 ฉบับ ---------- */
+.ml-m {
+  display: grid;
+  grid-template-columns: 6vh minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.2vh;
+  border-radius: 1.2vh;
+  background: #fffaf0;
+  border: 0.2vh solid #efe1c2;
+}
+.ml-m.new {
+  border-color: #f0659a;
+  background: #fff4f8;
+}
+.ml-m.done {
+  opacity: 0.7;
+}
+.ml-ic {
+  width: 6vh;
+  height: 6vh;
+  display: grid;
+  place-items: center;
+  font-size: 3.4vh;
+  border-radius: 1.2vh;
+  background: linear-gradient(160deg, #fff3d6, #f6dca0);
+}
+.ml-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+.ml-tx b {
+  font-size: 2.1vh;
+  color: #3b4255;
+}
+.ml-tx small {
+  font-size: 1.6vh;
+  color: #8a8e9c;
+}
+.ml-tx p {
+  margin: 0.2vh 0 0;
+  font-size: 1.9vh;
+  color: #4a4f60;
+  white-space: pre-line; /* ข้อความจากแอดมินขึ้นบรรทัดใหม่ตามที่พิมพ์ */
+}
+.ml-rw {
+  font-size: 1.8vh;
+  font-weight: 700;
+  color: #b88a2c;
+}
+.ml-act {
+  min-width: 10vh;
+  text-align: center;
+}
+.ml-get {
+  padding: 0.6vh 1.8vh !important;
+  font-size: 2vh !important;
+}
+.ml-done {
+  font-size: 1.8vh;
+  font-weight: 800;
+  color: #4caf7a;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ml-m.new .ml-get {
+    animation: ml-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes ml-pulse {
+    50% {
+      transform: scale(1.06);
+    }
+  }
+}
