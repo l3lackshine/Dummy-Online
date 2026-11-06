@@ -1,6 +1,6 @@
 {
   "name": "dummy-online-android",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "private": true,
   "description": "ตัวห่อแอป Android (Capacitor) สำหรับ Dummy Online — สร้าง APK ผ่าน GitHub Actions",
   "dependencies": {
