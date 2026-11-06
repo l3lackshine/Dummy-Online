@@ -1,0 +1,236 @@
+/* history.css — หน้าต่างประวัติการเล่น + สถิติแยกเกม (Code/History/history.js) · กรอบใช้ .st-box ของชุด UI ซากุระ (พื้นครีม ขอบทอง)
+   ใช้หน่วย vh เพราะจอเกมเป็นแนวนอน · สีชมพู/ทอง ชุดเดียวกับหน้าความสำเร็จ (Code/Achievements/achievements.css) */
+.hs-box {
+  width: min(94vw, 170vh) !important;
+  max-height: 90vh;
+  display: flex !important; /* กรอบ .st-box บางหน้าตั้งเป็น grid หลายคอลัมน์ — หน้านี้ต้องเรียงลงล่างคอลัมน์เดียว */
+  flex-direction: column;
+}
+.hs-h {
+  margin: 0 0 0.8vh;
+  font-size: 3.4vh;
+  color: #3b4255;
+}
+.hs-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.4vh;
+}
+.hs-empty {
+  text-align: center;
+  font-size: 2.2vh;
+  color: #6b6f80;
+  padding: 4vh 0;
+}
+.hs-note {
+  margin: 0 0 0.8vh;
+  font-size: 1.7vh;
+  color: #8a8e9c;
+}
+
+/* ---------- แท็บ ---------- */
+.hs-tabs {
+  display: flex;
+  gap: 0.8vh;
+  padding-bottom: 1vh;
+}
+.hs-tab {
+  padding: 0.8vh 1.8vh;
+  border-radius: 99px;
+  border: 0.25vh solid #e2c784;
+  background: #fffaf0;
+  color: #3b4255;
+  font: 800 2vh Sarabun, sans-serif;
+  cursor: pointer;
+}
+.hs-tab.on {
+  background: linear-gradient(180deg, #ff9ac0, #f0659a);
+  border-color: #f0659a;
+  color: #fff;
+}
+
+/* ---------- ประวัติล่าสุด ---------- */
+.hs-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 62vh), 1fr));
+  gap: 0.9vh;
+}
+.hs-row {
+  display: grid;
+  grid-template-columns: 7vh minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.2vh;
+  padding: 1vh 1.4vh;
+  border-radius: 1.4vh;
+  background: #fff;
+  border: 0.2vh solid #efe1c2;
+  box-shadow: 0 0.3vh 0.8vh #a5835022;
+}
+.hs-row.win {
+  border-color: #f0659a;
+  background: #fff4f8;
+}
+.hs-res {
+  height: 5vh;
+  border-radius: 1.2vh;
+  display: grid;
+  place-items: center;
+  font: 800 2vh Sarabun, sans-serif;
+  color: #6b6f80;
+  background: #eef0f4;
+}
+.hs-row.win .hs-res {
+  color: #fff;
+  background: linear-gradient(160deg, #ffb3cf, #f0659a);
+}
+.hs-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3vh;
+  min-width: 0;
+}
+.hs-main b {
+  font-size: 2.2vh;
+  color: #3b4255;
+}
+.hs-main small {
+  font-size: 1.7vh;
+  color: #6b6f80;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4vh;
+}
+.hs-chips:empty {
+  display: none;
+}
+.hs-chip {
+  padding: 0.2vh 1vh;
+  border-radius: 99px;
+  font-size: 1.5vh;
+  font-weight: 700;
+  color: #6b6f80;
+  background: #f1e9da;
+}
+.hs-chip.feat {
+  color: #b88a2c;
+  background: #fff3d6;
+}
+.hs-chip.bot {
+  color: #5b7fa6;
+  background: #e8f0f8;
+}
+.hs-rw {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2vh;
+  min-width: 10vh;
+}
+.hs-rw small {
+  font-size: 1.6vh;
+  color: #8a8e9c;
+}
+.hs-coin {
+  font-size: 2vh;
+  color: #b88a2c;
+  white-space: nowrap;
+}
+
+/* ---------- สถิติแยกเกม ---------- */
+.hs-total {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.9vh;
+  margin-bottom: 1.2vh;
+}
+.hs-total div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1vh;
+  border-radius: 1.4vh;
+  background: linear-gradient(160deg, #fff3d6, #f6dca0);
+}
+.hs-total b {
+  font-size: 3vh;
+  color: #3b4255;
+}
+.hs-total small {
+  font-size: 1.6vh;
+  color: #6b6f80;
+}
+.hs-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 44vh), 1fr));
+  gap: 0.9vh;
+}
+.hs-game {
+  padding: 1.2vh 1.6vh;
+  border-radius: 1.4vh;
+  background: #fff;
+  border: 0.2vh solid #efe1c2;
+  box-shadow: 0 0.3vh 0.8vh #a5835022;
+}
+.hs-game-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1vh;
+}
+.hs-game-h b {
+  font-size: 2.4vh;
+  color: #3b4255;
+}
+.hs-game-h small {
+  font-size: 1.7vh;
+  color: #6b6f80;
+}
+.hs-rate {
+  position: relative;
+  margin: 0.8vh 0;
+}
+.hs-rate i {
+  display: block;
+  height: 2.2vh;
+  border-radius: 99px;
+  background: #f1e9da;
+  overflow: hidden;
+}
+.hs-rate u {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffb3cf, #f0659a);
+}
+.hs-rate em {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 800 1.5vh Sarabun, sans-serif;
+  font-style: normal;
+  color: #3b4255;
+}
+.hs-lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hs-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1vh;
+  padding: 0.4vh 0;
+  font-size: 1.8vh;
+  color: #6b6f80;
+  border-top: 0.15vh dashed #efe1c2;
+}
+.hs-lines b {
+  color: #3b4255;
+  text-align: right;
+}

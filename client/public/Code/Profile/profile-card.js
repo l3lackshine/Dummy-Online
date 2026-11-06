@@ -204,9 +204,15 @@
     return `<button class=pc-ach onclick="achOpen()">🏅 ความสำเร็จ${ready ? `<em>${ready}</em>` : ''}</button>`;
   }
 
+  // ปุ่มเปิดหน้าประวัติการเล่น + สถิติแยกเกม (Code/History/history.js)
+  function historyButton() {
+    if (!window.historyOpen) return '';
+    return '<button onclick="historyOpen()">📜 ประวัติ</button>';
+  }
+
   function myButtons() {
     const note = needsSql ? '<small class=pc-warn>ต้องอัปเดตฐานข้อมูลก่อนแก้ไขบัตร</small>' : '';
-    return `<button class=go onclick="pcEdit()" ${needsSql ? 'disabled' : ''}>✎ แก้ไขบัตร</button><button onclick="pcTheme()" ${needsSql ? 'disabled' : ''}>🎨 ธีม</button><button onclick="pcOldPage()">ชื่อ / ฉายา</button>${achButton()}${note}`;
+    return `<button class=go onclick="pcEdit()" ${needsSql ? 'disabled' : ''}>✎ แก้ไขบัตร</button><button onclick="pcTheme()" ${needsSql ? 'disabled' : ''}>🎨 ธีม</button><button onclick="pcOldPage()">ชื่อ / ฉายา</button>${achButton()}${historyButton()}${note}`;
   }
 
   // ---------- หน้าโปรไฟล์ของตัวเอง ----------
