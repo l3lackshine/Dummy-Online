@@ -6,6 +6,7 @@
 (function () {
   'use strict';
   if (!(window.DB && DB.enabled)) return;
+  const icon = window.UiKit.icon;
 
   const NAME_MAX_LENGTH = 14; // ต้องเท่ากับที่ฐานข้อมูลตัด (left(…, 14) ใน update_profile)
   const MODAL_CLASS = 'fn-modal';
@@ -65,24 +66,27 @@
     DB.signOut();
   };
 
+  // ใช้กล่องหน้าต่างกลางของเกม (st-modal/st-box + หัวข้อ pv-h + ปุ่ม pv-btn) → ได้กรอบซากุระจาก Theme/sakura-kit.css เหมือนหน้าต่างอื่น
   function modalHtml() {
-    return `<div class=fn-box role=dialog aria-modal=true aria-labelledby=fnTitle>
-        <h3 id=fnTitle>ตั้งชื่อในเกม</h3>
+    return `<div class="st-box fn-box" role=dialog aria-modal=true aria-labelledby=fnTitle>
+        <h3 class=pv-h id=fnTitle><i>${icon('user')}</i>ตั้งชื่อในเกม</h3>
         <p>ชื่อนี้จะแสดงบนโต๊ะให้ผู้เล่นคนอื่นเห็น</p>
         <form onsubmit="fnSave();return false" novalidate>
           <input id=fnName maxlength=${NAME_MAX_LENGTH} placeholder="ชื่อเล่น (ไม่เกิน ${NAME_MAX_LENGTH} ตัว)" autocomplete=nickname spellcheck=false>
           <em id=fnErr class=fn-err role=alert></em>
-          <button id=fnGo class=fn-go type=submit>✔ ใช้ชื่อนี้</button>
+          <div class=fn-acts>
+            <button type=button class="pv-btn gray" onclick="fnSignOut()">${icon('out')}ออกจากระบบ</button>
+            <button id=fnGo class="pv-btn blue" type=submit>✔ ใช้ชื่อนี้</button>
+          </div>
         </form>
-        <small>ตั้งครั้งแรกฟรี · เปลี่ยนภายหลังได้ที่หน้าโปรไฟล์ (มีค่าเหรียญ)</small>
-        <button type=button class=fn-out onclick="fnSignOut()">ออกจากระบบ</button>
+        <small class=fn-note>ตั้งครั้งแรกฟรี · เปลี่ยนภายหลังได้ที่หน้าโปรไฟล์ (มีค่าเหรียญ)</small>
       </div>`;
   }
 
   window.openFirstNickname = () => {
     if (findModal()) return;
     const modal = document.createElement('div');
-    modal.className = MODAL_CLASS;
+    modal.className = 'st-modal ' + MODAL_CLASS;
     modal.innerHTML = modalHtml();
     document.body.appendChild(modal);
     // จอสัมผัสไม่โฟกัสเอง (คีย์บอร์ดเด้งบังหน้าต่าง) — เหมือนหน้าล็อกอิน
