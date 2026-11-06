@@ -25,6 +25,17 @@
 
 ## รายการงาน (ใหม่สุดบน)
 
+### 2026-11-06 10:20 · Claude (claude-opus-5-5) · แก้ปุ่มหน้าแรกซ้อนกัน · Beta 0.16.1
+- คำสั่งที่ได้รับ: แก้ 0.16 ปุ่มด้านล่างซ้อนกัน (ภาพจากมือถือ: ปุ่มแถบข้างทับปุ่มร้านค้า/ช่องเก็บของ)
+- สาเหตุ: 0.16.0 เพิ่มปุ่มอีเวนต์ + แอดมิน แถบข้าง `.rv-side` เริ่มที่ top 40vh และเรียงลงล่างไม่มีขอบเขต จึงยาวลงไปทับ `.rv-nav`
+- branch: `ai/home-side-fix` · `965211f` (CSS) · `7ffbd6d` (เวอร์ชัน 0.16.1 + แพตช์โน้ต)
+- แก้: `Code/Home/home.theme-5.css` ต่อท้ายไฟล์: `.rv-side` top 24vh · bottom 20vh · flex-wrap + align-content flex-start (ปุ่มที่ล้นขึ้นคอลัมน์ที่สองทางขวา) · gap 1.6vh · เวอร์ชัน 0.16.1 (version.js + package.json 3 ตัว) · patchnotes.json + PATCHNOTES.md
+- ไม่ได้แตะ: home-rov.js · sakura-kit.css (ขนาดปุ่ม 9.6vh คงเดิม)
+- ตรวจแล้ว: screenshot จำลองหน้าแรกตอนล็อกอิน (ปุ่มครบ 6 ปุ่ม) ที่ 800×360 · 915×412 · 1280×640 — ไม่ทับเมนูล่าง · check-handlers · test-client-files · test-client ผ่าน
+- ยังไม่ได้ทดสอบ: มือถือจริง · จอที่สูงน้อยกว่า 360px
+- วิธีย้อนกลับ: `git revert 7ffbd6d 965211f`
+- ข้อควรระวัง: ถ้าเพิ่มปุ่มแถบข้างอีก ปุ่มจะขึ้นคอลัมน์ใหม่เอง (คอลัมน์ละ ~4–5 ปุ่ม) · ถ้าเปลี่ยนขนาดป้ายโปรไฟล์/เมนูล่าง ต้องปรับ top/bottom ของ .rv-side ตาม
+
 ### 2026-11-06 11:10 · Claude (claude-opus-5-5) · อัป Beta 0.16.0 ขึ้นจริง
 - คำสั่งที่ได้รับ: "อัปเลย"
 - ทำ: เทียบ md5 ของ gacha_pull · get_gacha · _quest_progress บนฐานข้อมูลจริงกับที่สร้างจาก repo (ถึง v16) — ตรงกันทั้ง 3 ตัว จึงแทนด้วยฉบับ v17 ได้ปลอดภัย → Supabase MCP `apply_migration` v17_events_admin → ตั้งแอดมิน: `insert into public.admins(user_id) select id from public.profiles where lower(username) = 'blackshine02'` → ตรวจ: แอดมิน 1 คน (เจ้าของ) · anon เรียก admin_* ไม่ได้ · ตัวช่วยภายในเรียกจาก client ไม่ได้ · ตาราง admins/events อ่าน-เขียนตรงไม่ได้ · เควสปกติ 16 อันเท่าเดิม · get_gacha ยังเห็นตู้ครบ 3 ตู้ (ยังไม่มีอีเวนต์ผูกตู้) → push `ai/events-admin` + merge fast-forward เข้า `main` (`abe7167..2a426ff`)
