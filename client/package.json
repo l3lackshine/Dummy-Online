@@ -1,6 +1,6 @@
 {
   "name": "dummy-online-4p-client",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "private": true,
   "scripts": {
     "dev": "vite public --host 0.0.0.0",
