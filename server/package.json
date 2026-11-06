@@ -1,6 +1,6 @@
 {
   "name": "dummy-online-4p-server",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "private": true,
   "description": "Socket.IO backend starter for 4-player Thai rummy",
   "main": "src/index.js",
