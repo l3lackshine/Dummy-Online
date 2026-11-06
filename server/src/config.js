@@ -30,6 +30,7 @@ function readConfig() {
     RATE_PER_SEC: numberFromEnv('RATE_PER_SEC', 20),
     FRIEND_TTL_MS: numberFromEnv('FRIEND_TTL_MS', 30000), // แคชรายชื่อเพื่อน (0 = ไม่แคช)
     PACK_MASTER: process.env.PACK_MASTER,
+    MIN_CLIENT_VERSION: process.env.MIN_CLIENT_VERSION || '', // เกมที่เก่ากว่านี้เชื่อมต่อไม่ได้ (ว่าง = ปิด · ดู net/client-version.js)
   };
 }
 

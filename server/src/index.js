@@ -30,6 +30,7 @@ const registerMatchEvents = require('./events/match-events');
 const registerGameEvents = require('./events/game-events');
 const registerEmoteEvents = require('./events/emote-events');
 const registerReportEvents = require('./events/report-events');
+const { versionGate } = require('./net/client-version');
 
 const config = readConfig();
 const app = express();
@@ -75,6 +76,9 @@ app.get('/health', (_req, res) =>
   })
 );
 app.get('/', (_req, res) => res.send('Dummy Online backend is running'));
+
+// ---------- ด่านเวอร์ชัน: ไม่รับแท็บเกมเก่าที่ไม่ได้รีเฟรช (ตั้ง MIN_CLIENT_VERSION ใน env · ว่าง = ปิด) — ตรวจก่อนตัวตนเพราะไม่ต้องถามฐานข้อมูล ----------
+io.use(versionGate(config.MIN_CLIENT_VERSION));
 
 // ---------- ตรวจตัวตน: เปิดใช้ Supabase แล้วต้องแนบ access token ตอนเชื่อมต่อ (client ส่งใน auth.token) ----------
 io.use(async (socket, next) => {
