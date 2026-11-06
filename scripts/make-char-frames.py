@@ -1,4 +1,4 @@
-# กรอบการ์ดประจำตัวละคร (ปลด 4★) — รูปชั่วคราว รอรูปจริงจาก Canva มาแทนที่ไฟล์เดิม
+# กรอบการ์ดประจำตัวละคร (ปลด 4★) — รูปชั่วคราวรุ่นแรก · เลิกใช้แล้ว: รูปจริงสร้างจาก scripts/compose-char-frames.py (อย่ารันทับ)
 import sys,os,math,random
 from PIL import Image,ImageDraw,ImageFilter
 OUT=sys.argv[1]; os.makedirs(OUT,exist_ok=True)
