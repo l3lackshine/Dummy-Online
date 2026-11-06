@@ -35,6 +35,8 @@ async function verifyToken(token) {
   try {
     const u = await fetchJson(c.url + '/auth/v1/user', { headers: { apikey: c.pub, Authorization: 'Bearer ' + token } });
     if (!u || !u.id) return null;
+    // บัญชีที่ถูกแบน (v18) → ไม่ผ่าน = เชื่อมต่อเกมไม่ได้ · ตรวจไม่ได้ = ปล่อยผ่าน (ดู moderation.js)
+    if (await require('./moderation').isBanned({ rpc }, u.id)) return null;
     const rows = await fetchJson(`${c.url}/rest/v1/profiles?id=eq.${encodeURIComponent(u.id)}&select=display_name`, {
       headers: { apikey: c.secret },
     });

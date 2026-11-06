@@ -4,6 +4,7 @@
 //   match/      หาแมตช์ + หน้าต่างกดพร้อม          results/  บันทึกผลเกม + แรงก์ลงฐานข้อมูล
 //   friends/    สถานะออนไลน์ + ชวนเข้าห้อง           net/      ด่านกรองข้อมูลจาก client
 //   events/     ผูก Socket.IO event กับระบบข้างบน    rules/    กติกาเกม (เรียกผ่านทะเบียน Rules เท่านั้น)
+//   moderation.js  โทษของบัญชี (แบน/ปิดอีโมต) — ใช้ใน supabase.js และ events/
 // Public (ใช้ในเทส): module.exports = { server, io, rooms, online, friendCache }
 // EXTEND: ระบบใหม่ = สร้างไฟล์ install<ระบบ>(ctx) แล้วเรียกใน buildContext() · event ใหม่ = เพิ่มไฟล์ใน events/ แล้วเรียกใน onConnection()
 const express = require('express');
@@ -28,6 +29,7 @@ const registerRoomEvents = require('./events/room-events');
 const registerMatchEvents = require('./events/match-events');
 const registerGameEvents = require('./events/game-events');
 const registerEmoteEvents = require('./events/emote-events');
+const registerReportEvents = require('./events/report-events');
 
 const config = readConfig();
 const app = express();
@@ -98,6 +100,7 @@ function onConnection(socket) {
   registerMatchEvents(socket, ctx);
   registerGameEvents(socket, ctx);
   registerEmoteEvents(socket, ctx);
+  registerReportEvents(socket, ctx);
 }
 io.on('connection', onConnection);
 
