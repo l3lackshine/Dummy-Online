@@ -64,7 +64,13 @@
    "price": 0,
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.358,
+     "bottom": 0.356,
+     "left": 0.14,
+     "right": 0.151
+    }
    },
    "table": {
     "top": 0,
@@ -80,7 +86,13 @@
    "name": "สาวน้อยหางม้า",
    "price": 0,
    "lobby": {
-    "align": "left"
+    "align": "left",
+    "frame4": {
+     "top": 0.301,
+     "bottom": 0.545,
+     "left": 0.17,
+     "right": 0.206
+    }
    },
    "table": {
     "top": 0,
@@ -97,7 +109,13 @@
    "price": 1500,
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.354,
+     "bottom": 0.478,
+     "left": 0.112,
+     "right": 0.182
+    }
    },
    "table": {
     "top": 0.01,
@@ -114,7 +132,13 @@
    "price": 1500,
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.326,
+     "bottom": 0.623,
+     "left": 0.25,
+     "right": 0.24
+    }
    },
    "table": {
     "top": 0.01,
@@ -131,7 +155,13 @@
    "price": 1500,
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.317,
+     "bottom": 0.475,
+     "left": 0.168,
+     "right": 0.158
+    }
    },
    "table": {
     "top": 0,
@@ -150,7 +180,13 @@
    "rarity": "legendary",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.358,
+     "bottom": 0.356,
+     "left": 0.14,
+     "right": 0.151
+    }
    },
    "table": {
     "top": 0,
@@ -169,7 +205,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.354,
+     "bottom": 0.478,
+     "left": 0.112,
+     "right": 0.182
+    }
    },
    "table": {
     "top": 0,
@@ -188,7 +230,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.301,
+     "bottom": 0.545,
+     "left": 0.206,
+     "right": 0.17
+    }
    },
    "table": {
     "top": 0,
@@ -207,7 +255,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.317,
+     "bottom": 0.475,
+     "left": 0.158,
+     "right": 0.168
+    }
    },
    "table": {
     "top": 0,
@@ -226,7 +280,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.354,
+     "bottom": 0.478,
+     "left": 0.182,
+     "right": 0.112
+    }
    },
    "table": {
     "top": 0,
@@ -245,7 +305,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.326,
+     "bottom": 0.623,
+     "left": 0.24,
+     "right": 0.25
+    }
    },
    "table": {
     "top": 0,
@@ -264,7 +330,13 @@
    "rarity": "rare",
    "lobby": {
     "align": "center",
-    "scale": 1
+    "scale": 1,
+    "frame4": {
+     "top": 0.358,
+     "bottom": 0.356,
+     "left": 0.14,
+     "right": 0.151
+    }
    },
    "table": {
     "top": 0.12,

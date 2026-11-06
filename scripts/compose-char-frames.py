@@ -6,12 +6,15 @@
    frame-<แบบ>.png   กรอบ 5 แบบ (พื้นดำหรือโปร่งใส) — สคริปต์ลบพื้นดำเอง
    deco/*.png        ชิ้นแต่ง (ตัดพื้นขาวแล้วด้วย scripts/ui-cutout.py)
 ทำ 4 ขั้นต่อตัว: ลบพื้นดำ → กลับด้าน (ถ้าตั้ง) → ย้อมส่วนชมพู/ม่วงเป็นสีประจำตัว (ส่วนทองคงเดิม) → วางชิ้นแต่ง
+แล้ววัด "ช่องว่างกลางกรอบ" เขียนลง Character.config → "lobby"."frame4" (การ์ดห้องรอย่อตัวละครให้อยู่ในช่องนี้ ไม่โดนกรอบบัง)
+   หลังรันต้องรัน node scripts/build-assets.js เพื่อส่งค่าเข้า skins.json
 Public: python3 scripts/compose-char-frames.py [--only <id>] [--sheet <ไฟล์.png>]
 Extend: ตัวละครใหม่ → เพิ่มแถวใน CHARACTER_FRAMES (EXTEND ด้านล่าง) แล้วรันใหม่ · กรอบแบบใหม่ → วาง frame-<ชื่อ>.png แล้วอ้างชื่อ
 ต้องมี: pip install numpy pillow scipy
 """
 import argparse
 import colorsys
+import json
 import os
 
 import numpy as np
@@ -30,6 +33,11 @@ BIG_HOLE_SHARE = 0.01        # ก้อนดำที่ใหญ่เกิ�
 EDGE_BAND_PX = 4             # แถบรอบพื้นดำที่คำนวณความโปร่งจากความสว่าง (ขอบนุ่ม ไม่เป็นฝ้าดำ)
 EDGE_FADE_FROM = 12          # ในแถบขอบ: สว่างต่ำกว่านี้ = โปร่งหมด
 EDGE_FADE_RANGE = 70         # สว่างเกิน FROM + RANGE = ทึบหมด
+WINDOW_BAND_FROM = 0.35      # วัดขอบบน/ล่างของช่องว่างจากแถบกลางกรอบ 35–65% ของความกว้าง (ตัวละครยืนกลางการ์ด)
+WINDOW_BAND_TO = 0.65
+WINDOW_SOLID_MAX = 0.12      # แถวที่มีลายกรอบเกิน 12% ของแถบกลาง = ชนลายกรอบแล้ว (กลีบดอกเล็ก ๆ ไม่นับ)
+WINDOW_SOLID_ALPHA = 30      # ความทึบ (0–255) ที่นับว่าเป็นลายกรอบ
+WINDOW_PAD = 0.02            # เว้นห่างจากเส้นกรอบอีกนิด (สัดส่วนความกว้าง)
 STRAY_SHARE = 0.002          # เศษชิ้นเล็กกว่า 0.2% ของชิ้นใหญ่สุด หรือแตะขอบรูป = เศษจากการตัดภาพ ทิ้ง
 
 GOLD_HUE_FROM = 20 / 360     # สีโทนทอง/ส้มทองในกรอบ — ไม่ย้อม (กรอบทุกตัวใช้ทองเป็นสีร่วม)
@@ -197,6 +205,44 @@ def place_deco(frame, deco):
     frame.alpha_composite(piece, (min(max(left, 0), frame.width - piece.width), min(max(top, 0), frame.height - piece.height)))
 
 
+# ---------- ช่องว่างกลางกรอบ (ให้ตัวละครอยู่ข้างใน) ----------
+
+def measure_window(frame):
+    """ระยะจากขอบรูปถึงช่องว่างกลางกรอบ เป็นสัดส่วนของ "ความกว้าง" กรอบ
+       (CSS วางกรอบยืดตามความกว้างการ์ด ครึ่งบนชิดบน ครึ่งล่างชิดล่าง — ระยะบน/ล่างจึงคิดเทียบความกว้าง)"""
+    solid = np.asarray(frame.getchannel('A')) >= WINDOW_SOLID_ALPHA
+    height, width = solid.shape
+    middle_row = height // 2
+    left = np.where(solid[middle_row, :width // 2])[0].max() + 1
+    right = width // 2 + np.where(solid[middle_row, width // 2:])[0].min()
+    band = solid[:, int(width * WINDOW_BAND_FROM):int(width * WINDOW_BAND_TO)].mean(axis=1)
+    top = middle_row
+    while top > 0 and band[top - 1] <= WINDOW_SOLID_MAX:
+        top -= 1
+    bottom = middle_row
+    while bottom < height - 1 and band[bottom + 1] <= WINDOW_SOLID_MAX:
+        bottom += 1
+    return {
+        'top': round(top / width + WINDOW_PAD, 3),
+        'bottom': round((height - 1 - bottom) / width + WINDOW_PAD, 3),
+        'left': round(float(left / width) + WINDOW_PAD, 3),
+        'right': round(float((width - right) / width) + WINDOW_PAD, 3),
+    }
+
+
+def write_window_to_config(character_id, window):
+    """เก็บช่องว่างไว้ใน Character.config ข้างค่าวางตัวละครเดิมของห้องรอ ("lobby") — ไม่แตะค่าอื่น"""
+    path = os.path.join(ROOT, 'client/public/Assets/Character', character_id, 'Character.config')
+    with open(path, encoding='utf-8') as file:
+        config = json.load(file)
+    lobby = config.setdefault('lobby', {})
+    if lobby.get('frame4') == window:
+        return
+    lobby['frame4'] = window
+    with open(path, 'w', encoding='utf-8') as file:
+        file.write(json.dumps(config, ensure_ascii=False, indent=2))
+
+
 # ---------- รวมทั้งหมด ----------
 
 def build_frame(spec, frame_cache):
@@ -239,7 +285,9 @@ def main():
         built[character_id] = build_frame(spec, frame_cache)
         out_path = os.path.join(OUTPUT_DIR, f'ch-{character_id}.webp')
         built[character_id].save(out_path, quality=WEBP_QUALITY)
-        print(f'✓ ch-{character_id}.webp {built[character_id].size}')
+        window = measure_window(built[character_id])
+        write_window_to_config(character_id, window)
+        print(f'✓ ch-{character_id}.webp {built[character_id].size} ช่องว่าง {window}')
     if args.sheet and built:
         save_preview_sheet(built, args.sheet)
 
