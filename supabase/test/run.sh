@@ -44,3 +44,6 @@ psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v14.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v15_title_select.sql"
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v15_title_select.sql"   # รันซ้ำต้องไม่พัง
 psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v15.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v16_history.sql"
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/../v16_history.sql"   # รันซ้ำต้องไม่พัง
+psql -v ON_ERROR_STOP=1 -q -d $DB -f "$D/test_v16.sql"
