@@ -1,0 +1,32 @@
+/* version-check.css — หน้าต่าง "มีเวอร์ชันใหม่" · คู่กับ Core/version-check.js
+   กรอบ/สี/ปุ่ม มาจากหน้าต่างกลางของเกม (.st-modal/.st-box + กรอบซากุระใน Theme/sakura-kit.css · .pv-h/.pv-btn)
+   ไฟล์นี้จัดแค่: อยู่บนสุด · ความกว้าง · จัดกลาง */
+
+/* อยู่เหนือทุกหน้าต่าง รวมหน้าต่างตั้งชื่อครั้งแรก (.fn-modal = 9000) — เล่นต่อไม่ได้จนกว่าจะโหลดใหม่ */
+.st-modal.vc-modal {
+  z-index: 9500;
+}
+/* 3 คลาส: ชนะกฎจอแนวนอนของหน้าต่างสตามิน่า (.st-modal .st-box แผ่ 2 คอลัมน์) แบบเดียวกับ .fn-box */
+.st-modal.vc-modal .vc-box {
+  display: block;
+  width: min(400px, 100%);
+  text-align: center;
+}
+.vc-box .pv-h {
+  justify-content: center;
+}
+.vc-box p {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.vc-box .pv-btn {
+  width: 100%;
+  justify-content: center;
+}
+.vc-note {
+  display: block;
+  margin-top: 8px;
+  color: #7d8394;
+  font-size: 12px;
+}

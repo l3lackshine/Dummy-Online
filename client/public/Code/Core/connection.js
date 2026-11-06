@@ -10,10 +10,11 @@ function conn() {
     return;
   }
   const ioOpt = { transports: ['websocket', 'polling'] };
-  if (window.DB && DB.enabled)
-    ioOpt.auth = cb => {
-      DB.token().then(t => cb({ token: t || '' }));
-    }; // ส่ง access token ให้เซิร์ฟเวอร์ตรวจตัวตนทุกครั้งที่เชื่อมต่อ
+  // ส่งเลขเวอร์ชันเกมทุกครั้ง — เซิร์ฟเวอร์ไม่รับแท็บเก่าที่ไม่ได้รีเฟรช (server/src/net/client-version.js)
+  ioOpt.auth = cb => {
+    if (!(window.DB && DB.enabled)) return cb({ version: APP_VER });
+    DB.token().then(t => cb({ token: t || '', version: APP_VER })); // + access token ให้เซิร์ฟเวอร์ตรวจตัวตน
+  };
   sock = io(CFG.BACKEND_URL || undefined, ioOpt);
   sock.on('connect', () => {
     lerr = '';
@@ -38,6 +39,7 @@ function conn() {
     }
   });
   sock.on('connect_error', e => {
+    if (e && e.message === 'outdated' && window.VersionCheck) return VersionCheck.onServerRejected(e.data);
     if (e && e.message === 'unauthorized' && window.DB && DB.enabled) {
       lerr = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่';
       if (window.DB.signOut) DB.signOut();
