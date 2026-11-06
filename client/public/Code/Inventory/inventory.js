@@ -1,10 +1,10 @@
 /* inventory.js — หน้าช่องเก็บของ (screen === 'inv', เปิดด้วย invOpen(kind)): ตัวละคร · กรอบการ์ด · หลังไพ่ · โต๊ะ · พื้นหลัง · ไอเทม
    เลือกใช้ของด้วย equip() (Code/Core/skins.js) · รูปตัวอย่างใช้ prevBox() (Code/Shop/shop.js) · ไอเทมใช้ Items (Code/Items/items.js)
-   Public: invOpen(kind) · invTab(kind) · invSel(kind, id)
+   Public: invOpen(kind) · invTab(kind) · invSel(kind, id) · invSell(characterId, qty)
    EXTEND: แท็บใหม่ = เพิ่มแถวใน TABS (ชนิดเดียวกับ SKIN_REGISTRY) */
 (function () {
   'use strict';
-  const { escape, dbOn, icon } = window.UiKit;
+  const { escape, dbOn, icon, number } = window.UiKit;
 
   const TABS = [
     ['characters', 'ตัวละคร'],
@@ -75,6 +75,63 @@
     return `<button class="iv-cell${rarityClass ? ' ' + rarityClass : ''}${item.id === pickedId ? ' sel' : ''}${item.id === equippedId ? ' eq' : ''}" onclick="invSel('${kind}','${escape(item.id)}')">${item.id === equippedId ? '<em>ใช้อยู่</em>' : ''}<span class=iv-pv>${prevBox(kind, item)}</span><b>${escape(item.name || item.n || item.id)}</b></button>`;
   }
 
+  // ---------- ขายตัวซ้ำเป็นเหรียญ (ย้ายมาจากแท็บ "คลังของ" ในหน้าร้านค้า · Beta 0.18.4) ----------
+  // ราคาที่แสดงอ่านจากแคตตาล็อกกาชา (DB.G) เพื่อโชว์เท่านั้น — ฐานข้อมูล (sell_dupes) เป็นคนคิดเงินจริงและกันขายตัวสุดท้าย
+  let selling = false;
+  let catalogRequested = false;
+
+  // ราคาต่อ 1 ตัว: ราคาเฉพาะตัวในตู้ (ถ้าแอดมินตั้ง) ไม่งั้นตามระดับความหายาก
+  function sellPriceOf(characterId) {
+    const gacha = DB.G || {};
+    const rarities = gacha.rarities || {};
+    for (const banner of gacha.banners || []) {
+      const found = (banner.items || []).find(i => i.kind === 'characters' && i.item_id === characterId);
+      if (!found) continue;
+      if (Number(found.sell_coins) > 0) return Number(found.sell_coins);
+      return Number((rarities[found.rarity] || {}).sell_coins) || 0;
+    }
+    return 0;
+  }
+
+  // แคตตาล็อกกาชาโหลดตอนเปิดหน้าร้าน — เปิดช่องเก็บของก่อนก็ยังต้องรู้ราคา จึงขอเองครั้งเดียว
+  function ensureCatalog() {
+    if (DB.G || catalogRequested) return;
+    catalogRequested = true;
+    DB.gacha()
+      .then(() => render())
+      .catch(() => {});
+  }
+
+  function sellSection(characterId) {
+    if (!dbOn()) return '';
+    const duplicates = Math.max(0, DB.qty('characters', characterId) - 1);
+    if (!duplicates) return '';
+    ensureCatalog();
+    const unitPrice = sellPriceOf(characterId);
+    if (!unitPrice) return '';
+    const disabled = selling ? 'disabled' : '';
+    const sellOne = `<button class="pv-btn blue" ${disabled} onclick="invSell('${escape(characterId)}',1)">ขาย 1 · 🪙 ${number(unitPrice)}</button>`;
+    const sellAll =
+      duplicates > 1
+        ? `<button class="pv-btn blue" ${disabled} onclick="invSell('${escape(characterId)}',${duplicates})">ขายซ้ำทั้งหมด ${duplicates} · 🪙 ${number(unitPrice * duplicates)}</button>`
+        : '';
+    return `<div class=iv-sell><small>ตัวซ้ำ ${duplicates} · ขายเป็นเหรียญ (เก็บไว้ 1 ตัวเสมอ)</small><div class=iv-sell-row>${sellOne}${sellAll}</div></div>`;
+  }
+
+  window.invSell = async (characterId, quantity) => {
+    if (selling) return;
+    selling = true;
+    render();
+    try {
+      const result = await DB.sell('characters', characterId, quantity);
+      if (window.dbToast) dbToast(`ขายตัวซ้ำ ${result.sold} ชิ้น ได้ 🪙 ${number(result.coins_gained)}`);
+    } catch (e) {
+      if (window.dbToast) dbToast(e.message);
+    }
+    selling = false;
+    render();
+  };
+
   function detail(kind, item, equippedId) {
     const big =
       kind === 'characters' && item.asset
@@ -88,7 +145,8 @@
       kind === 'characters' && typeof skCharCard === 'function'
         ? `<div class="iv-sk${window.CharLv ? ' has-cl' : ''}">${window.CharLv ? CharLv.section(item.id) : ''}${skCharCard(item.id, { compact: true })}</div>`
         : '';
-    return `<div class=iv-det><div class=iv-stage>${big}</div><div class=iv-info><b>${escape(item.name || item.n || item.id)}</b>${extra}${button}</div></div>`;
+    const sell = kind === 'characters' ? sellSection(item.id) : '';
+    return `<div class=iv-det><div class=iv-stage>${big}</div><div class=iv-info><b>${escape(item.name || item.n || item.id)}</b>${extra}${sell}${button}</div></div>`;
   }
 
   // ปุ่มของไอเทมแต่ละแบบ: ชา (ดื่ม) · ตั๋วสุ่ม (ไปตู้) · กล่อง (เปิด) · คัมภีร์ (ใช้ที่หน้าตัวละคร)

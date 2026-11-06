@@ -377,3 +377,23 @@
   color: #f5b301 !important;
   text-shadow: 0 0 0.6vh #ffb30080;
 }
+
+/* ===== ขายตัวซ้ำในแผงรายละเอียดตัวละคร (inventory.js: sellSection) ===== */
+.iv-sell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6vh;
+}
+.iv-sell small {
+  font-size: 1.7vh;
+  color: var(--k-ink2);
+  text-align: center;
+}
+.iv-sell-row {
+  display: flex;
+  gap: 1vh;
+}
+.iv-sell-row .pv-btn {
+  height: 5.6vh;
+  font-size: 1.9vh;
+}
