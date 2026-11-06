@@ -59,3 +59,34 @@
 .rm-fbg > .rm-fbg-bot::before {
   bottom: 0;
 }
+/* ===== ป้ายชื่อ + ป้ายสถานะบนการ์ดห้องรอ (รูปจาก Assets/UI/Assets/lobby/) =====
+   ใช้ border-image: ส่วนซ้าย/ขวา (มุมตัด · ช่อซากุระ · ลายประดับ) คงสัดส่วน ยืดเฉพาะช่วงกลางที่เป็นพื้นเรียบ
+   ความกว้างขอบคิดจากความสูงป้าย × (ช่วงตัดในรูป ÷ ความสูงรูป) → ลายไม่บิดไม่ว่าจอขนาดไหน */
+.rmv .rm-slot > .rm-plate {
+  --plate-h: max(46px, 10vh); /* สูงกว่าป้ายเดิม: ช่อดอกกินที่ด้านบน ตัวป้ายจริงสูงราว 70% ของรูป */
+  height: var(--plate-h) !important;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 calc(var(--plate-h) * 1.2) 0 calc(var(--plate-h) * 0.27) !important; /* รูป 900×265: ซ้าย 70px · ขวา 320px */
+  border-image: url(../../Assets/UI/Assets/lobby/name-plate.webp) 0 320 0 70 fill / 0 calc(var(--plate-h) * 1.2) 0 calc(var(--plate-h) * 0.27) stretch !important;
+  padding: calc(var(--plate-h) * 0.1) 0 0 !important; /* ตัวป้ายอยู่ต่ำกว่ากลางรูปนิดหน่อย (ช่อดอกยื่นขึ้นด้านบน) */
+  background: none !important;
+  box-shadow: none !important;
+}
+.rmv .rm-slot > .rm-chip {
+  --chip-h: max(24px, 4.6vh);
+  height: var(--chip-h) !important;
+  min-width: calc(var(--chip-h) * 3.67); /* รูป 1000×272 — กว้างอย่างน้อยเท่าสัดส่วนจริง ดาวกลางป้ายไม่ถูกบีบ */
+  justify-content: center;
+  border-style: solid !important;
+  border-color: transparent !important;
+  border-width: 0 calc(var(--chip-h) * 0.55) !important; /* ซ้าย/ขวา 150px ÷ 272 */
+  border-image: url(../../Assets/UI/Assets/lobby/status-plate.webp) 0 150 0 150 fill / 0 calc(var(--chip-h) * 0.55) stretch !important;
+  padding: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: #3b2a6b !important; /* ป้ายสีม่วงอ่อน — ตัวอักษรเข้มอ่านง่ายกว่าสีขาวเดิม */
+  text-shadow: 0 0 0.4vh #ffffffcc;
+  font-size: max(10px, 1.9vh) !important;
+  font-weight: 800;
+}
