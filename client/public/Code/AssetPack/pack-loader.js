@@ -2,6 +2,7 @@
    Flow: อ่าน pack/manifest.json → แพ็กฟรี (base) ขอกุญแจจากเซิร์ฟเวอร์ → แพ็กตัวละครที่ซื้อแล้ว ขอกุญแจพร้อม token ล็อกอิน
          (ไม่มีสิทธิ์ = เซิร์ฟเวอร์ตอบ 403 → ข้าม ใช้ภาพตัวอย่างขนาดเล็กแทน) → ดาวน์โหลด/ใช้แคชในเครื่อง → ถอดรหัสในหน่วยความจำ
          → แทนที่รูปในทะเบียนสกิน (SKIN_REGISTRY) → ปิดหน้าโหลด
+   ขั้น "ตรวจเวอร์ชันไฟล์": ไฟล์เกมที่เบราว์เซอร์เก็บไว้เก่ากว่า version.js บนเว็บ = โหลดหน้าใหม่ให้เอง 1 ครั้ง (reloadIfStale)
    ไม่มี manifest (โหมดพัฒนา/ยังไม่แพ็ก) = ข้ามเงียบ ๆ เกมใช้ไฟล์ตรงตามเดิม
    Public: PackLoader.url(path) · PackLoader.ready (Promise) · PackLoader.refresh() — เรียกหลังซื้อ/สุ่มได้ตัวละครใหม่ เพื่อปลดล็อกภาพเต็ม */
 (function () {
@@ -21,6 +22,7 @@
     s3: 'ถอดรหัสไฟล์',
     s4: 'เตรียมภาพ',
     tip: 'ครั้งแรกอาจใช้เวลาสักครู่ ครั้งต่อไปจะเร็วขึ้นมาก',
+    reload: 'พบเวอร์ชันใหม่ กำลังโหลดใหม่',
     fail: 'โหลดไม่สำเร็จ',
     retry: 'ลองอีกครั้ง',
   };
@@ -85,6 +87,46 @@
     ov.querySelector('.pk-msg').textContent = T.fail + ' — ' + (e && e.message ? e.message : e);
     ov.querySelector('button').onclick = () => location.reload();
   };
+  // ---------- ตรวจเวอร์ชันไฟล์ (ตัวเตือนระหว่างเล่นอยู่ที่ Core/version-check.js — ไฟล์นี้ตรวจตอนเปิดเกมเท่านั้น) ----------
+  const VERSION_TIMEOUT_MS = 4000; // เน็ตช้า/หลุด = ข้ามไปเตรียมเกมต่อ ไม่ให้ค้างที่หน้าโหลด
+  const STALE_RELOAD_KEY = 'dummyStaleReload'; // จำเลขที่เคยโหลดใหม่ไปแล้ว — กันโหลดใหม่วนไม่จบถ้าเบราว์เซอร์ยังส่งไฟล์เก่า
+
+  const bareVersion = text => String(text || '').replace(/^beta\s*/i, '').trim();
+
+  // อ่านเลขจากเนื้อไฟล์ version.js โดยไม่รันโค้ด (รูปแบบเดียวกับ Core/version-check.js)
+  async function fetchLiveVersion() {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), VERSION_TIMEOUT_MS);
+    try {
+      const response = await fetch('./version.js?t=' + Date.now(), { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) return '';
+      const match = (await response.text()).match(/DUMMY_VERSION\s*=\s*['"]([^'"]+)['"]/);
+      return match ? match[1] : '';
+    } catch (e) {
+      return '';
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // คืน true = กำลังโหลดหน้าใหม่ (ไม่ต้องเตรียมเกมต่อ)
+  async function reloadIfStale() {
+    const loadedVersion = window.DUMMY_VERSION || '';
+    const liveVersion = await fetchLiveVersion();
+    if (!loadedVersion || !liveVersion || bareVersion(liveVersion) === bareVersion(loadedVersion)) return false;
+    let alreadyTried = false;
+    try {
+      alreadyTried = sessionStorage.getItem(STALE_RELOAD_KEY) === liveVersion;
+      sessionStorage.setItem(STALE_RELOAD_KEY, liveVersion);
+    } catch (e) {
+      return false; // จำไม่ได้ว่าเคยลองแล้ว = ไม่เสี่ยงโหลดวน ปล่อยให้หน้าต่างเตือนใน version-check.js จัดการ
+    }
+    if (alreadyTried) return false;
+    prog(0.04, T.reload);
+    location.reload();
+    return true;
+  }
+
   // ---------- กุญแจ (ขอจากเซิร์ฟเวอร์ตามสิทธิ์ · เก็บแคชในเครื่องเพื่อไม่ต้องรอเซิร์ฟเวอร์ทุกครั้ง) ----------
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)),
     ls = (k, v) => {
@@ -320,6 +362,7 @@
     L.packs = manifest.packs;
     mount();
     prog(0.04, T.s1);
+    if (await reloadIfStale()) return false;
     await loadPacks(manifest.packs, prog);
     prog(0.92, T.s4);
     await whenRegistry();
