@@ -1,6 +1,6 @@
 /* settings.js — หน้าต่างตั้งค่า (เปิดจากไอคอนเฟืองมุมบนขวา): เสียงเอฟเฟกต์ · ภาษา · แพตช์โน้ต · ล็อกอินรายวัน · ออกจากระบบ · ลบบัญชี · นโยบายความเป็นส่วนตัว
    ค่าเปิด/ปิดเก็บใน localStorage (pvSfx = เสียงเอฟเฟกต์)
-   Public: openSettings() · pvTog(key)
+   Public: openSettings() · pvTog(key) · pvLinkGoogle()
    EXTEND: ตัวเลือกเปิด/ปิดใหม่ = เพิ่มบรรทัด toggleRow(...) ใน settingsHtml() แล้วอ่านค่าด้วย UiKit.lsGet(key, '1') */
 (function () {
   'use strict';
@@ -16,6 +16,23 @@
     return `<button class="pv-btn blue" onclick="openDaily()">${icon('gift')}ล็อกอินรายวัน</button><button class="pv-btn gray" onclick="this.closest('.st-modal').remove();DB.signOut()">${icon('out')}ออกจากระบบ</button>`;
   }
 
+  // ผูก Google กับบัญชีนี้ (บัญชีเดิมแบบชื่อผู้ใช้/รหัสผ่าน) → ครั้งหน้ากด "เข้าสู่ระบบด้วย Google" ได้เลย · แสดงเฉพาะบนเว็บ
+  function googleLinkRow() {
+    if (!dbOn() || !DB.oauthAvailable || !DB.oauthAvailable()) return '';
+    const action = DB.hasGoogle()
+      ? '<em class=pv-val>ผูกแล้ว ✓</em>'
+      : '<button class="pv-btn blue sm" onclick="pvLinkGoogle()">ผูกบัญชี</button>';
+    return `<div class=pv-set><i>${icon('user')}</i><span><b>บัญชี Google</b><small>ผูกไว้เพื่อเข้าเกมด้วย Google ได้ทุกเครื่อง</small></span>${action}</div>`;
+  }
+
+  window.pvLinkGoogle = async () => {
+    try {
+      await DB.linkGoogle(); // สำเร็จ = เปลี่ยนไปหน้า Google แล้วกลับมาพร้อมข้อความ "ผูกบัญชี Google แล้ว"
+    } catch (e) {
+      if (window.dbToast) dbToast(e.message || 'ผูกบัญชี Google ไม่สำเร็จ');
+    }
+  };
+
   function settingsHtml() {
     const deleteButton = dbOn()
       ? `<button class=pv-del onclick="this.closest('.st-modal').remove();pvDelAsk()">ลบบัญชีถาวร</button>`
@@ -25,6 +42,7 @@
       ${toggleRow('pvTalk', 'บทพูดตัวละคร', 'user', 'กรอบคำพูดของตัวละครบนโต๊ะ ตอนเกิดชุด น็อก ชนะ แพ้')}
       <div class=pv-set><i>${icon('globe')}</i><span><b>ภาษา</b></span><em class=pv-val>ไทย</em></div>
       <div class=pv-set><i>${icon('news')}</i><span><b>มีอะไรใหม่</b><small>แพตช์โน้ตของแต่ละเวอร์ชัน · ${escape(window.DUMMY_VERSION || '')}</small></span><button class="pv-btn blue sm" onclick="openPatchNotes()">เปิดดู</button></div>
+      ${googleLinkRow()}
       <div class=pv-acts>${accountButtons()}</div>
       <div class=set-foot>${deleteButton}<a class=pv-priv href="./privacy.html" target=_blank rel=noopener>นโยบายความเป็นส่วนตัว</a></div>`;
   }
