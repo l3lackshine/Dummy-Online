@@ -18,6 +18,27 @@
 
 ## รายการงาน (ใหม่สุดบน)
 
+### 2026-11-07 20:20 · Gemini 3.8 Flash · ระบบเสียงเกม + แยกปรับระดับเสียงเอฟเฟกต์และ BGM
+- คำสั่งที่ได้รับ: "ดูให้หน่อยใส่เสียงแล้วทำไมในเกมไม่มีเสียง" → "เพิ่มปุ่ม ปรับระดับเสียง ใน setting ให้หน่อย" → "เสียงคลิก ไม่มี" → "แยกการปรับระดับเสียง ระหว่าง เสียง เอฟเฟค และ เสียง BMG"
+- สาเหตุเดิม: ในเกมไม่มีโค้ดเรียก Assets.play() ตามจังหวะเกม, เพลงล็อบบี้ไม่มีระบบเล่น BGM, ssrfx.js เรียก Sound.play ผิด
+- branch: `ai/audio-split-volume` (แตกจาก main `7c8bd15`) · commit `f530a76`
+- แก้:
+  - `Code/AssetPack/assetpack.js` — เพิ่ม `getSfxVolume()`, `setSfxVolume()`, `getBgmVolume()`, `setBgmVolume()`, `playMusic()`, `stopMusic()`, และดัก event click ทั่วทั้งเกม
+  - `Code/Settings/settings.js` — แยกแถวตั้งค่า: สลับเปิด/ปิดเสียงเอฟเฟกต์ + Slider ปรับระดับเสียงเอฟเฟกต์ และ สลับเปิด/ปิดเพลง BGM + Slider ปรับระดับเสียงเพลง BGM
+  - `Code/Settings/settings.theme.css` — เพิ่มสไตล์ `.pv-slider-wrap` และ `.pv-slider`
+  - `Code/Table/dummy-table.js` — เพิ่มเสียง draw, meld, discard, win และคลิกเลือกไพ่
+  - `Code/Table/games.js` — เพิ่มเสียง draw, discard, click, win ในเกมอื่น
+  - `Code/Core/connection.js` — เพิ่มเสียง turn และ win/lose ตามผลคะแนน
+  - `Code/Core/router.js` — ควบคุมการเริ่มเพลง BGM lobby / table
+  - `Code/Table/ssrfx.js` — แก้ `Sound.play('gacha')` เป็น `Assets.play('gacha')`
+- ไม่ได้แตะ: กติกาเกม / ฐานข้อมูล / ตัวเลขเศรษฐกิจ
+- ตรวจแล้ว: `node --check` assetpack.js + settings.js (ผ่าน) · `node scripts/check-handlers.js` (ผ่าน) · `node server/test-client-files.js` (ผ่าน)
+- ยังไม่ได้ทดสอบ: เสียงบนเบราว์เซอร์จริง
+- สถานะ: เสร็จ (commit บน branch แล้ว ยังไม่ push/merge ตามกฎ CLAUDE.md)
+- คำถามที่รอตอบ: รอเจ้าของโปรเจคทดสอบและยืนยันเพื่อ push/merge
+- วิธีย้อนกลับ: `git revert f530a76` หรือกลับไป branch main
+- ข้อควรระวัง: เบราว์เซอร์มี Autoplay policy เพลง BGM จะเริ่มเล่นเมื่อมีการคลิกหรือแตะหน้าจอครั้งแรก
+
 ### 2026-11-06 21:35 · Claude (claude-opus-5-5) · รูปตัวละครในช่องเก็บของไม่อยู่กลาง
 - คำสั่งที่ได้รับ: "แก้ตัวละครในช่องเก็บของไม่อยู่ตรงกลาง เสร็จแล้วอัปได้เลย"
 - สาเหตุ: `.iv-pv .pv-ch` (shop.theme.css) เป็น flex ยึดล่างแต่ไม่ได้จัดแนวนอน — รูป (กว้างตามสัดส่วน แคบกว่าการ์ด) จึงชิดซ้ายของการ์ด (ตัวตารางเองอยู่กลางแล้วจาก 0.18.4)
