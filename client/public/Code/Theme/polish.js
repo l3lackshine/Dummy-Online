@@ -30,7 +30,9 @@
     setTimeout(() => w.remove(), 5500);
   };
   const tick = () => {
-    fx.style.display = app.classList.contains('gx') ? '' : 'none';
+    const isHome = app.classList.contains('home');
+    const isTable = app.classList.contains('gx') || app.classList.contains('gxl');
+    fx.style.display = isHome || isTable ? '' : 'none';
     try {
       if (typeof S !== 'undefined' && S && S.over && S.gid && S.gid !== lastWin) {
         lastWin = S.gid;
