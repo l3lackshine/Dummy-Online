@@ -98,6 +98,7 @@ function conn() {
     render();
   });
   sock.on('game:state', s => {
+    const prevOver = S && S.over;
     S = s;
     if (s.phase !== 'draw') closePile();
     if (s.rule && s.rule !== 'dummy') clearDeal();
@@ -110,6 +111,14 @@ function conn() {
       dealtGid = s.gid;
       startDeal(s);
     } // ตาใหม่ (ยังไม่มีใครเดิน) → แจกไพ่ทีละใบ
+    // --- เสียงเอฟเฟกต์ ---
+    if (window.Assets) {
+      if (!s.over && s.cur === s.my) Assets.play('turn');
+      if (s.over && !prevOver) {
+        const cd = s.res && s.res.coin && s.res.coin.delta ? s.res.coin.delta[s.my] || 0 : 0;
+        Assets.play(cd >= 0 ? 'win' : 'lose');
+      }
+    }
     if (s.over) {
       // ไม่มีเดิมพัน: จบตาได้เหรียญตามอันดับ (โหมดบัญชี = เซิร์ฟเวอร์จ่ายแล้วแจ้ง wallet:update · ไม่ล็อกอิน = จ่ายในเครื่องครั้งเดียวต่อตา)
       if (!paid) {

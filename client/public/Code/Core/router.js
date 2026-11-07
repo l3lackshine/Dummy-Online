@@ -69,7 +69,11 @@ function render() {
 }
 function renderGame() {
   if (!authed) return authView();
-  if (screen !== 'game' || !S) return lobbyView();
+  if (screen !== 'game' || !S) {
+    if (window.Assets && Assets.playMusic) Assets.playMusic('lobby');
+    return lobbyView();
+  }
+  if (window.Assets && Assets.playMusic) Assets.playMusic('table');
   if (S.rule && S.rule !== 'dummy' && window.renderOther) return renderOther();
   renderDummyTable(); // โต๊ะดัมมี่ (Table/dummy-table.js)
 }

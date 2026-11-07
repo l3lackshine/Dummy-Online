@@ -34,6 +34,36 @@
     gachaLabel: (key, def) => ((st.shop.gacha || {}).labels || {})[key] || def,
     bannerImage: id => (A.gachaDisplay() === 'image' && st.banners[id]) || '',
     char: id => ((typeof SKIN_REGISTRY !== 'undefined' && SKIN_REGISTRY.characters) || []).find(c => c.id === id) || null,
+    getSfxVolume() {
+      try {
+        const v = localStorage.getItem('pvVolSfx');
+        if (v != null) return Math.min(1, Math.max(0, Number(v)));
+        // ถ้ายังไม่เคยตั้งแยก ลองดึงจาก pvVol รวมเดิม
+        const old = localStorage.getItem('pvVol');
+        if (old != null) return Math.min(1, Math.max(0, Number(old)));
+      } catch (e) {}
+      return Math.min(1, Math.max(0, Number(st.snd.master) || 0.8));
+    },
+    setSfxVolume(val) {
+      const v = Math.min(1, Math.max(0, Number(val)));
+      try { localStorage.setItem('pvVolSfx', String(v)); } catch (e) {}
+    },
+    getBgmVolume() {
+      try {
+        const v = localStorage.getItem('pvVolBgm');
+        if (v != null) return Math.min(1, Math.max(0, Number(v)));
+        const old = localStorage.getItem('pvVol');
+        if (old != null) return Math.min(1, Math.max(0, Number(old)));
+      } catch (e) {}
+      return Math.min(1, Math.max(0, Number(st.snd.master) || 0.8));
+    },
+    setBgmVolume(val) {
+      const v = Math.min(1, Math.max(0, Number(val)));
+      try { localStorage.setItem('pvVolBgm', String(v)); } catch (e) {}
+      if (A._bgm) {
+        A._bgm.volume = v * 0.5;
+      }
+    },
     play(name, charId) {
       // เสียงเฉพาะตัวละครก่อน แล้วค่อยเสียงหลักของเกม
       try {
@@ -41,10 +71,37 @@
           f = (c && c.sounds && c.sounds[name]) || ((st.snd.events || {})[name] ? './Assets/Sounds/' + st.snd.events[name] : '');
         if (!f) return;
         const a = new Audio(f);
-        a.volume = Math.min(1, Math.max(0, Number(st.snd.master) || 0.8));
+        a.volume = A.getSfxVolume();
         const p = a.play();
         if (p && p.catch) p.catch(() => {});
       } catch (e) {}
+    },
+    // ---------- เพลงพื้นหลัง (BGM) ----------
+    _bgm: null,
+    _bgmKey: '',
+    playMusic(key) {
+      // key = 'lobby' | 'table' | '' (หยุดเพลง)
+      const file = (st.snd.music || {})[key] || '';
+      const wantKey = key + ':' + file;
+      if (A._bgmKey === wantKey) return; // เพลงเดิมกำลังเล่นอยู่
+      A.stopMusic();
+      if (!file) return;
+      try {
+        const a = new Audio('./Assets/Sounds/' + file);
+        a.loop = true;
+        a.volume = A.getBgmVolume() * 0.5;
+        const p = a.play();
+        if (p && p.catch) p.catch(() => {});
+        A._bgm = a;
+        A._bgmKey = wantKey;
+      } catch (e) {}
+    },
+    stopMusic() {
+      if (A._bgm) {
+        try { A._bgm.pause(); } catch (e) {}
+        A._bgm = null;
+        A._bgmKey = '';
+      }
     },
   });
   function applyUi(ui) {
@@ -77,4 +134,14 @@
         render();
       } catch (e) {}
   });
+
+  // เล่นเสียงคลิก (click) อัตโนมัติเมื่อกดปุ่มหรือแท็บต่าง ๆ ทั่วทั้งเกม
+  document.addEventListener('click', e => {
+    try {
+      const btn = e.target.closest('button, .catbtn, .tab, .pill.rl, .nav-item, [role="button"]');
+      if (btn && !btn.disabled && window.Assets && Assets.play) {
+        Assets.play('click');
+      }
+    } catch (err) {}
+  }, true);
 })();

@@ -183,7 +183,7 @@
         reduced() ? 0 : 1250
       );
       try {
-        if (window.Sound) Sound.play('gacha');
+        if (window.Assets) Assets.play('gacha');
       } catch (e) {}
     });
   }

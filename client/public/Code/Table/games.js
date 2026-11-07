@@ -27,6 +27,12 @@ function gxAct(t, extra) {
     return render();
   }
   hint = '';
+  if (window.Assets) {
+    if (t === 'draw' || t === 'take') Assets.play('draw');
+    else if (t === 'dis' || t === 'fold') Assets.play('discard');
+    else if (t === 'call' || t === 'raise' || t === 'stay') Assets.play('click');
+    else if (t === 'win') Assets.play('win');
+  }
   emit(Object.assign({ t }, extra || {}));
 }
 function gxLeave() {
@@ -35,6 +41,7 @@ function gxLeave() {
 function gxSel(id) {
   if (!gxMine() || S.phase !== 'discard') return;
   sel = sel.has(id) ? new Set() : new Set([id]);
+  if (window.Assets) Assets.play('click');
   render();
 }
 function gxDis() {

@@ -25,6 +25,7 @@ function drw() {
   }
   hint = '';
   closePile();
+  if (window.Assets) Assets.play('draw');
   emit({ t: 'draw' });
 }
 function tk(i) {
@@ -34,18 +35,25 @@ function tk(i) {
   }
   if (!Number.isInteger(i) || i < 0 || i >= (S.disc || []).length) return;
   hint = '';
+  if (window.Assets) Assets.play('draw');
   emit({ t: 'take', i });
 }
 function pick(id) {
   if (!mine() || S.phase !== 'play') return;
   const on = !sel.has(id);
   on ? sel.add(id) : sel.delete(id);
+  if (window.Assets) Assets.play('click');
   const e = document.querySelector('.hand [data-id="' + id + '"]');
   if (e) e.classList.toggle('s', on);
 }
 const act = a => {
   hint = '';
   sel = new Set();
+  if (window.Assets) {
+    if (a.t === 'meld' || a.t === 'dep' || a.t === 'autodep') Assets.play('meld');
+    else if (a.t === 'dis') Assets.play('discard');
+    else if (a.t === 'knock') Assets.play('win');
+  }
   emit(a);
 };
 function mld() {
